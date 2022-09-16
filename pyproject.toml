@@ -1,0 +1,29 @@
+[tool.poetry]
+name = "pdfalyzer"
+version = "1.0.0"
+description = "Analyze evil (and non-evil) PDFs."
+authors = ["Michel <michel@cryptadamus.com>"]
+
+[tool.poetry.dependencies]
+python = "^3.9"
+anytree = "~=2.8"
+cairosvg = "~=2.5"
+chardet = ">=4.0"
+pdfid = "~=1.1"
+PyPDF2 = "~=2.10"
+py-pdf-parser = "~=0.10.1"
+rich = "^12.5.1"
+textual = "^0.1.18"
+
+[tool.poetry.dev-dependencies]
+pytest = "^7.1.2"
+
+[build-system]
+requires = ["poetry-core>=1.0.0"]
+build-backend = "poetry.core.masonry.api"
+
+
+[tool.pytest.ini_options]
+addopts = [
+    "--import-mode=importlib",
+]

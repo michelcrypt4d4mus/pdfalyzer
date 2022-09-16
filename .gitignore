@@ -1,0 +1,16 @@
+# Python
+poetry.lock
+/.venv/*
+/__pycache__/
+*__pycache__*
+
+# Project subdirs
+/log/*
+/tools
+/tmp
+
+# Other
+.DS_Store
+/doc/_data_structures.py
+/doc/PyPDF2
+LICENSE

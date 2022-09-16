@@ -1,0 +1,7 @@
+anytree~=2.8.0
+cairosvg
+chardet
+pdfid
+pypdf2~=2.10,>=2.10.5
+rich~=12.5,>=12.5.1
+typing-extensions~=4.3
