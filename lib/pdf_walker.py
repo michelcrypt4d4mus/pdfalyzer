@@ -5,12 +5,13 @@ searching the tree and printing out information.
 """
 from collections import defaultdict
 from os.path import basename
+from weakref import ref
 
 from anytree import LevelOrderIter, RenderTree, SymlinkNode
 from anytree.render import DoubleStyle
 from anytree.search import findall_by_attr
 from PyPDF2 import PdfReader
-from PyPDF2.generic import IndirectObject
+from PyPDF2.generic import IndirectObject, NameObject, NumberObject
 from rich.panel import Panel
 from rich.text import Text
 
@@ -18,11 +19,14 @@ from lib.decorators.document_model_printer import print_with_header
 from lib.decorators.pdf_tree_node import PdfTreeNode
 from lib.font_info import FontInfo
 from lib.util.adobe_strings import (COLOR_SPACE, DEST, EXT_G_STATE, FONT, K, KIDS, NON_TREE_REFERENCES, NUMS,
-     OPEN_ACTION, P, PARENT, RESOURCES, SIZE, STRUCT_ELEM, TRAILER, UNLABELED, XOBJECT)
+     OBJECT_STREAM, OPEN_ACTION, P, PARENT, PREV, RESOURCES, SIZE, STRUCT_ELEM, TRAILER, TYPE, UNLABELED, XOBJECT,
+     XREF, XREF_STREAM)
 from lib.util.exceptions import PdfWalkError
 from lib.util.logging import log
 from lib.util.string_utils import console, get_symlink_representation, pp, print_section_header
 
+
+TRAILER_FALLBACK_ID = 10000000
 
 # Some PdfObjects can't be properly placed in the tree until the entire tree is parsed
 INDETERMINATE_REFERENCES = [
@@ -43,10 +47,14 @@ class PdfWalker:
         self.pdf_basename = basename(pdf_path)
         pdf_file = open(pdf_path, 'rb')  # Filehandle must be left open for PyPDF2 to perform seeks
         self.pdf = PdfReader(pdf_file)
+
         # Initialize tracking variables
         self.indeterminate_ids = set()  # See INDETERMINATE_REFERENCES comment
         self.traversed_nodes = {}
         self.font_infos = []
+        self.max_generation = 0
+
+        # Build the tree
         self.walk_pdf()
 
     def walk_pdf(self):
@@ -55,13 +63,21 @@ class PdfWalker:
         We build the rest by recursively following references we find in nodes we encounter.
         """
         trailer = self.pdf.trailer
-        # Technically the trailer has no ID in the PDF but we set it to the number of objects for convenience
-        self.pdf_tree = PdfTreeNode(trailer, TRAILER, trailer.get(SIZE, 100000000))
+        self.pdf_size = trailer.get(SIZE)
+
+        # Technically the trailer has no ID in the PDF but we set it to the /Size of the PDF for convenience
+        if self.pdf_size is None:
+            trailer_id = TRAILER_FALLBACK_ID
+        else:
+            trailer_id = self.pdf_size
+
+        self.pdf_tree = PdfTreeNode(trailer, TRAILER, trailer_id)
         self.traversed_nodes[self.pdf_tree.idnum] = self.pdf_tree
         self.walk_node(self.pdf_tree)
         self._resolve_indeterminate_nodes()  # After scanning all the objects we place nodes whose position was uncertain
         self._extract_font_infos()
         self._verify_all_traversed_nodes_are_in_tree()
+        self._verify_untraversed_nodes_are_untraversable()
         self._symlink_other_relationships()  # Create symlinks for non parent/child relationships between nodes
         log.info(f"Walk complete.")
 
@@ -69,32 +85,16 @@ class PdfWalker:
         """Recursively walk the PDF's tree structure starting at a given node"""
         log.info(f'walk_node() called with {node}. Object dump:\n{print_with_header(node.obj, node.label)}')
         self._ensure_safe_to_walk(node)
-        nodes_to_walk_next = []
+        references = node.references()
 
-        # Build PdfTreeNode objects for refs in :node; figure out what refs should be walked next
-        for key, value in node.references().items():
-            if isinstance(value, IndirectObject):
-                nodes_to_walk_next += self._process_reference(node, key, key, value)
-            elif isinstance(value, list):
-                for i, reference in enumerate(value):
-                    # Lists can have a mix of values and IndirectObject refs so we skip the non-refs
-                    if not isinstance(reference, IndirectObject):
-                        continue
+        for (key, address, value) in references:
+            self._process_reference(node, key, address, value)
 
-                    # Array element references get an index, e.g. 'Kids[0]', 'Kids[1]', etc.
-                    nodes_to_walk_next += self._process_reference(node, key, f'{key}[{i}]', reference)
-            elif isinstance(value, dict):
-                for subkey, subvalue in value.items():
-                    if not isinstance(subvalue, IndirectObject):
-                        continue
+        node.all_references_processed = True
 
-                    # Dict element references get brackets, e.g. 'Font[/F1]', 'Font[/F2]', etc.
-                    nodes_to_walk_next += self._process_reference(node, key, f'{key}[{subkey}]', subvalue)
-            elif isinstance(value, (IndirectObject, list, dict)):
-                raise PdfWalkError(f"Failed to process {node} ref {key} to {reference} ({reference.get_object()}")
-
-        for next_node in nodes_to_walk_next:
-            self.walk_node(next_node)
+        for next_node in [self.traversed_nodes[ref.pdf_obj.idnum] for ref in references]:
+            if not next_node.all_references_processed:
+                self.walk_node(next_node)
 
     def find_node_by_idnum(self, idnum):
         """Find node with idnum in the tree. Return None if that node is not in tree or not reachable from the root."""
@@ -167,6 +167,7 @@ class PdfWalker:
 
     def _process_reference(self, node: PdfTreeNode, key: str, k: str, reference: IndirectObject) -> [PdfTreeNode]:
         """Place the referenced node in the tree. Returns a list of nodes to walk next."""
+        self.max_generation = max([self.max_generation, reference.generation or 0])
         seen_before = (reference.idnum in self.traversed_nodes)
         referenced_node = self._build_or_find_node(reference, k)
         reference_log_string = f"{node} reference at {k} to {referenced_node}"
@@ -203,7 +204,7 @@ class PdfWalker:
 
         # Indeterminate references need to wait until everything has been scanned to be placed
         elif key in INDETERMINATE_REFERENCES:
-            log.warning(f'  Indeterminate {reference_log_string}')
+            log.info(f'  Indeterminate {reference_log_string}')
             referenced_node.add_relationship(node, k)
             self.indeterminate_ids.add(referenced_node.idnum)
             return [referenced_node]
@@ -246,7 +247,7 @@ class PdfWalker:
 
         for idnum in self.indeterminate_ids:
             if self.find_node_by_idnum(idnum):
-                log.warning(f"{idnum} is already in tree...")
+                log.warning(f"Node with ID {idnum} marked indeterminate but found in tree...")
                 continue
 
             set_lowest_id_node_as_parent = False
@@ -295,14 +296,15 @@ class PdfWalker:
 
     def _extract_font_infos(self) -> None:
         """Extract information about fonts in the tree and place it in self.font_infos"""
-        for resource_node in [node for node in findall_by_attr(self.pdf_tree, name='label', value=RESOURCES)]:
-            log.debug(f"Extracting fonts from {resource_node}...")
-            known_font_ids = [fi.idnum for fi in self.font_infos]
+        for node in LevelOrderIter(self.pdf_tree):
+            if isinstance(node.obj, dict) and RESOURCES in node.obj:
+                log.debug(f"Extracting fonts from node with {RESOURCES}: {node}...")
+                known_font_ids = [fi.idnum for fi in self.font_infos]
 
-            self.font_infos += [
-                fi for fi in FontInfo.extract_font_infos(resource_node.parent.obj)
-                if fi.idnum not in known_font_ids
-            ]
+                self.font_infos += [
+                    fi for fi in FontInfo.extract_font_infos(node.obj)
+                    if fi.idnum not in known_font_ids
+                ]
 
     def _ensure_safe_to_walk(self, node) -> None:
         if not node.idnum in self.traversed_nodes:
@@ -331,8 +333,8 @@ class PdfWalker:
         if reference.idnum in self.traversed_nodes:
             return self.traversed_nodes[reference.idnum]
 
-        # TODO: known_to_parent_as should not be passed for non-child relationships (as it stands it is
-        #       corrected later when the true parent is found)
+        # TODO: known_to_parent_as should not be passed for non-child relationships even though as it
+        #       stands it is corrected later when the true parent is found.
         log.debug(f"Building node for {reference_key} -> {reference}")
         new_node = PdfTreeNode.from_reference(reference, reference_key)
         self.traversed_nodes[reference.idnum] = new_node
@@ -369,3 +371,60 @@ class PdfWalker:
             msg = f"Nodes were traversed but never placed: {missing_nodes}"
             console.print(msg)
             raise PdfWalkError(msg)
+
+    def _verify_untraversed_nodes_are_untraversable(self) -> None:
+        """Make sure any PDF object IDs we can't find in tree are /ObjStm or /Xref nodes"""
+        if self.pdf_size is None:
+            log.warning(f"{SIZE} not found in PDF trailer; cannot verify all nodes are in tree")
+            return
+
+        if self.max_generation > 0:
+            log.warning(f"_verify_untraversed_nodes_are_untraversable() only checking generation {self.max_generation}")
+
+        for idnum in [i + 1 for i in range(self.pdf_size)]:
+            if self.find_node_by_idnum(idnum) is not None:
+                log.debug(f"Verified object {idnum} is in tree")
+                continue
+
+            ref = IndirectObject(idnum, self.max_generation, self.pdf)
+            obj = ref.get_object()
+
+            if obj is None:
+                log.error(f"Cannot find ref {ref} in PDF!")
+                continue
+            elif isinstance(obj, (NumberObject, NameObject)):
+                log.info(f"Obj {idnum} is a {type(obj)} w/value {obj}; if referenced by /Length etc. this is a nonissue but maybe worth doublechecking")
+                continue
+            elif not isinstance(obj, dict):
+                log.error(f"Obj {idnum} ({obj}) of type {type(obj)} isn't dict, cannot determine if it should be in tree")
+                continue
+            elif TYPE not in obj:
+                log.error(f"Obj {idnum} ({obj}) has no {TYPE} and is not in tree. Not raising exception but this may be a serious error.")
+                continue
+
+            obj_type = obj[TYPE]
+
+            if obj_type == OBJECT_STREAM:
+                log.debug(f"Object with id {idnum} not found in tree because it's an {OBJECT_STREAM}")
+            elif obj[TYPE] == XREF:
+                placeable = XREF_STREAM in self.pdf.trailer
+
+                for k, v in self.pdf.trailer.items():
+                    xref_val_for_key = obj.get(k)
+
+                    if k in [XREF_STREAM, PREV]:
+                        continue
+                    elif k == SIZE:
+                        if xref_val_for_key is None or v != (xref_val_for_key + 1):
+                            log.warning(f"{XREF} has {SIZE} of {xref_val_for_key}, trailer has {SIZE} of {v}")
+                            placeable = False
+
+                        continue
+                    elif k not in obj or v != obj.get(k):
+                        log.warning(f"Trailer has {k} -> {v} but {XREF} obj has {obj.get(k)} at that key")
+                        placeable = False
+
+                if placeable:
+                    self.pdf_tree.add_child(self._build_or_find_node(ref, XREF_STREAM))
+            else:
+                log.warning(f"{XREF} Obj {idnum} not found in tree!")

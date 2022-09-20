@@ -96,6 +96,7 @@ LABEL_STYLES = [
     [re.compile('^/(URI|Names)'),                         'white'],
     [re.compile(f'^{adobe_strings.XOBJECT}'),             'grey37'],
     [re.compile(f'^{adobe_strings.UNLABELED}'),           'grey35 reverse'],
+    [re.compile(f'^{adobe_strings.XREF}'),                'color(148)'],
 ]
 
 LABEL_STYLES += [

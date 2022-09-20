@@ -62,7 +62,7 @@ if args.txt_output_to and args.export_svgs:
     raise ArgumentError("Can't write to file and export SVG at the same time")
 
 if not args.debug:
-    log.setLevel(logging.ERROR)
+    log.setLevel(logging.WARNING)
 
 
 # Execute

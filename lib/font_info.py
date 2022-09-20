@@ -36,7 +36,11 @@ class FontInfo:
         Extract all the fonts from a given /Resources PdfObject node.
         obj_with_resources must have '/Resources' because that's what _cmap module expects
         """
-        resources = obj_with_resources[RESOURCES].get_object()
+        resources = obj_with_resources[RESOURCES]
+
+        if isinstance(resources, IndirectObject):
+            resources = resources.get_object()
+
         fonts = resources.get(FONT, None)
 
         if fonts is None:
@@ -78,8 +82,12 @@ class FontInfo:
 
         # /Font attributes
         self.font = font
-        self.sub_type = font.sub_type
+        self.sub_type = font.get(SUBTYPE)
         self.widths = font.get('/Widths')
+
+        if isinstance(self.widths, IndirectObject):
+            self.widths = self.widths.get_object()
+
         self.base_font = font.get('/BaseFont')
         self.first_and_last_char = [font.get('/FirstChar'), font.get('/LastChar')]
         self.display_title = f"{self.idnum}. Font {self.label} "

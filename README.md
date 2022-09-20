@@ -9,7 +9,12 @@ A PDF analysis tool geared towards combing the innards of possibly malicious PDF
 
 If you're looking for one of these things this may be the tool for you.
 
-All internal PDF objects are guaranteed to be shown in the tree. An exception will be raised if there's any issue placing a node while parsing or if, at the end of parsing, there are any nodes not reachable from the root of the tree.
+An exception will be raised if there's any issue placing a node while parsing or if there are any nodes not reachable from the root of the tree at the end of parsing.
+
+All internal PDF objects are guaranteed to exist in the tree except:
+1. `/ObjStm` (object stream) objects which will be unrolled into the set of objects in the stream
+2. `/XRef` Cross-reference stream objects which hold the same references as the `/Trailer`
+Warnings will be printed in both situations.
 
 ### What It Don't Do
 This tool is mostly about examining a PDF's logical structure and assisting with the discovery of malicious content. As such it doesn't have much to offer as far as extracting text from PDFs, rendering PDFs[^1], writing new PDFs, or many of the more conventional things one might do with a portable document.
@@ -50,7 +55,7 @@ pip install -r requirements.txt   # Install packages
 
 **Troubleshooting the installation**
 1. If you encounter an error building the python `cryptography` package check your `pip` version (`pip --version`). If it's less than 22.0, upgrade `pip` with `pip install --upgrade pip`.
-2. On linux if you encounter an error building `wheel` or `cffi`, you may need to install some packages like a compiler for the `rust` language or some SSL libraries. `sudo apt-get install build-essential libssl-dev libffi-dev rustc` may help.
+2. On linux if you encounter an error building `wheel` or `cffi` you may need to install some packages like a compiler for the `rust` language or some SSL libraries. `sudo apt-get install build-essential libssl-dev libffi-dev rustc` may help.
 
 ### Installing Didier Stevens's PDF Analysis Tools
 Stevens's tools provide comprehensive info about the contents of a PDF, are guaranteed not to trigger the rendering of any malicious content (especially `pdfid.py`), and have been battle tested for well over a decade. It would probably be a good idea to analyze your PDF with his tools before you start working with this one.

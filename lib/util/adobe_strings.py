@@ -32,6 +32,7 @@ KIDS            = PagesAttributes.KIDS
 LAST            = '/Last'
 NEXT            = '/Next'
 NUMS            = '/Nums'
+OBJECT_STREAM   = '/ObjStm'
 OPEN_ACTION     = CatalogDictionary.OPEN_ACTION
 P               = '/P'  # Equivalent of /Parent for /StructElem
 PARENT          = PagesAttributes.PARENT
@@ -45,6 +46,8 @@ TO_UNICODE      = '/ToUnicode'
 TYPE            = PageAttributes.TYPE
 TYPE1_FONT      = '/Type1'
 XOBJECT         = Resources.XOBJECT
+XREF            = '/XRef'
+XREF_STREAM     = '/XRefStm'
 
 # There can be up to 3 /Length1, Length2, etc. keys depending on the type of font.
 # They indicate points in the binary stream where different sections of the font definition

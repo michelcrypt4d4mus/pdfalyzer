@@ -17,10 +17,11 @@ from rich.table import Table
 from rich.text import Text
 from rich.tree import Tree
 
-from lib.util.adobe_strings import DANGEROUS_PDF_KEYS, FONT, TYPE, NEXT, TYPE1_FONT, S, SUBTYPE, TRAILER, UNLABELED
+from lib.util.adobe_strings import (DANGEROUS_PDF_KEYS, FONT, TYPE, NEXT, TYPE1_FONT, S, SUBTYPE, TRAILER, UNLABELED,
+     XREF, XREF_STREAM)
 from lib.util.exceptions import PdfWalkError
 from lib.util.logging import log
-from lib.util.pdf_object_helper import pdf_object_id
+from lib.util.pdf_object_helper import PdfObjectRef, get_references, pdf_object_id
 from lib.util.string_utils import (NEWLINE_BYTE, clean_byte_string, console, get_label_style, get_node_type_style,
      get_symlink_representation, get_type_style, get_type_string_style, pypdf_class_name)
 
@@ -41,6 +42,7 @@ class PdfTreeNode(NodeMixin):
         self.idnum = idnum
         self.known_to_parent_as = known_to_parent_as
         self.other_relationships = []
+        self.all_references_processed = False
 
         if isinstance(obj, DictionaryObject):
             self.type = obj.get(TYPE)
@@ -68,6 +70,7 @@ class PdfTreeNode(NodeMixin):
             raise PdfWalkError(f"Cannot set {parent} as parent of {self}, parent is already {self.parent}")
 
         self.parent = parent
+        # Adjust incorrect known_to_parent_as that can arise when adding non tree references to the walker
         self.known_to_parent_as = self._find_reference_to_this_node(parent)
         log.info(f"  Added {parent} as parent of {self}")
 
@@ -82,9 +85,9 @@ class PdfTreeNode(NodeMixin):
             else:
                 raise PdfWalkError(f"{self} already has child w/this ID: {child}")
 
+        self.children = self.children + (child,)
         # Adjust incorrect known_to_parent_as that can arise when adding non tree references to the walker
         child.known_to_parent_as = child._find_reference_to_this_node(self)
-        self.children = self.children + (child,)
         log.info(f"  Added {child} as child of {self}")
 
     def add_relationship(self, from_node: 'PdfTreeNode', reference_key: str) -> None:
@@ -118,53 +121,24 @@ class PdfTreeNode(NodeMixin):
         return {k: v for (k, v) in self.obj.items() if not isinstance(v, IndirectObject)}
 
     def references(self):
-        """Returns a mapping from ref keys to IndirectObjects (or lists/dicts containing IndirectObjects)"""
-        if isinstance(self.obj, list) and not isinstance(self.obj, dict):
-            if does_list_have_any_references(self.obj):
-                return {i: element for i, element in enumerate(self.obj)}
-            else:
-                return {}
-
-        if not isinstance(self.obj, dict):
-            log.warning(f"Returning no references for {self}")
-            return {}
-
-        references = {}
-
-        for ref_key, value in self.obj.items():
-            if isinstance(value, IndirectObject) or (isinstance(value, list) and does_list_have_any_references(value)):
-                references[ref_key] = value
-            elif isinstance(value, dict) and does_list_have_any_references(value.values()):
-                references[ref_key] = {k: v for k, v in value.items() if isinstance(v, IndirectObject)}
-
-        return references
+        return get_references(self.obj)
 
     def _find_reference_to_this_node(self, other_node: 'PdfTreeNode') -> str:
-        """Find the key used in other_node to refer to this node"""
-        if isinstance(other_node.obj, list):
-            return other_node.obj.index(self.obj)
-        elif isinstance(other_node.obj, dict):
-            for ref_key, reference in other_node.obj.items():
-                if isinstance(reference, IndirectObject) and reference.idnum == self.idnum:
-                    return ref_key
+        """Find the address used in other_node to refer to this node"""
+        refs_to_this_node = [ref for ref in other_node.references() if ref.pdf_obj.idnum == self.idnum]
 
-                refererenced_obj = reference.get_object()
-
-                if isinstance(refererenced_obj, list):
-                    idnums = [pdf_object_id(obj) for obj in refererenced_obj]
-
-                    if self.idnum in idnums:
-                        return f"{ref_key}[{idnums.index(self.idnum)}]"
-                elif isinstance(refererenced_obj, dict):
-                    idnum_map = {k: pdf_object_id(v) for k, v in refererenced_obj.items()}
-
-                    if self.idnum in idnum_map.values():
-                        subkey = list({k: v for k, v in idnum_map.items() if v == self.idnum}.keys())[0]
-                        return f"{ref_key}[{subkey}]"
-
-        # The /Next nodes are only linked through known to the parent through /First and /Last, not directly
-        if self.label != NEXT:
-            raise PdfWalkError(f"Could not find reference from {other_node} to {self}")
+        if len(refs_to_this_node) == 1:
+            return refs_to_this_node[0].reference_address
+        elif len(refs_to_this_node) == 0:
+            # /XRef streams are basically trailer nodes without any direct reference
+            if self.parent.label == TRAILER and self.type == XREF and XREF_STREAM in self.parent.obj:
+                return XREF_STREAM
+            elif self.label != NEXT:
+                raise PdfWalkError(f"Could not find reference from {other_node} to {self}")
+        else:
+            log.warning(f"Multiple references from {other_node} to {self}: {refs_to_this_node}")
+            return refs_to_this_node[0].reference_address
+            #raise PdfWalkError(f"Multiple references from {other_node} to {self}: {refs_to_this_node}")
 
     ######################################
     # BELOW HERE IS JUST TEXT FORMATTING #
@@ -301,14 +275,8 @@ class PdfTreeNode(NodeMixin):
         return self.__str__()
 
 
-# These could be static methods?
-def does_list_have_any_references(_list):
-    """Return true if any element of _list is an IndirectObject"""
-    return any(isinstance(item, IndirectObject) for item in _list)
-
-
 def to_table_row(reference_key, obj, is_single_row_table=False) -> [Text]:
-    """Turns PDF object properties into a formatted 3-tuple for use in Rich tables representing PDBObjects"""
+    """Turns PDF object properties into a formatted 3-tuple for use in Rich tables representing PdfObjects"""
     value_style = get_type_style(type(obj))
     type_string = pypdf_class_name(obj)
     # Type col is redundant if it's something like a TextString node
@@ -325,12 +293,12 @@ def to_table_row(reference_key, obj, is_single_row_table=False) -> [Text]:
         value = f"{PdfTreeNode.from_reference(obj, reference_col.plain)}"
     elif isinstance(obj, list):
         value = [
-            f"{PdfTreeNode.from_reference(item, reference_col.plain)}" if isinstance(item, IndirectObject) else str(item)
+            f"{PdfTreeNode.from_reference(item, reference_col.plain)}" if isinstance(item, IndirectObject) else item
             for item in obj
         ]
     elif isinstance(obj, dict):
         value = {
-            k: f"{PdfTreeNode.from_reference(v, k)}" if isinstance(v, IndirectObject) else str(v)
+            k: f"{PdfTreeNode.from_reference(v, k)}" if isinstance(v, IndirectObject) else v
             for k, v in obj.items()
         }
     else:
