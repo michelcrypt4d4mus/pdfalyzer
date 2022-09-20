@@ -188,7 +188,7 @@ Things like, say, a hidden binary `/F` (PDF instruction meaning "URL") followed 
 
 [^3]: At least they weren't catching it as of September 2022.
 
-![Node Summary](doc/svgs/svgs_rendered_as_png/font_checking_dangerous_instructions.png)
+![Node Summary](doc/svgs/svgs_rendered_as_png/font29.js.1.png)
 
 ## Compute Summary Statistics About A PDF's Inner Structure
 Some simple counts of some properties of the internal PDF objects. Not the most exciting but sometimes helpful. `pdfid.py` also does something much like this.

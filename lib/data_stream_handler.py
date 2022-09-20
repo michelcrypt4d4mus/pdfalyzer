@@ -147,7 +147,7 @@ class DataStreamHandler:
 
         # Print the output
         size_str = f"({size} bytes before and {size} bytes after [error]{clean_byte_string(highlighted_bytes)}[/error] at position {around_idx})"
-        console.print(f"Surrounding bytes {size_str}: ")
+        console.print(f"Surrounding raw bytes {size_str}: ")
         console.print(section)
 
         for encoding in ENCODINGS_TO_ATTEMPT:
