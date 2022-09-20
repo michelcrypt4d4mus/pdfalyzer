@@ -53,6 +53,9 @@ python -m venv .venv              # Create a virtualenv in .venv
 pip install -r requirements.txt   # Install packages
 ```
 
+#### While We Have Your Attention
+There's [a script to test against all the PDFs in `~/Documents`](scripts/test_against_all_pdfs_in_Documents_folder.sh). If you're on a system where that folder exists and you feel like running a quick test, run it and see if it raises any errors (and if it does, open issues here on the github page).
+
 **Troubleshooting the installation**
 1. If you encounter an error building the python `cryptography` package check your `pip` version (`pip --version`). If it's less than 22.0, upgrade `pip` with `pip install --upgrade pip`.
 2. On linux if you encounter an error building `wheel` or `cffi` you may need to install some packages like a compiler for the `rust` language or some SSL libraries. `sudo apt-get install build-essential libssl-dev libffi-dev rustc` may help.
@@ -210,10 +213,12 @@ Some simple counts of some properties of the internal PDF objects. Not the most 
 
 
 # Contributing
-Contributions are welcome, just make sure:
+One easy way of contributing is to run [the script to test against all the PDFs in `~/Documents`](scripts/test_against_all_pdfs_in_Documents_folder.sh) and reporting any issues.
+
+Beyond that contributions are welcome, just make sure that before you open a pull request:
+
 1. The test suite passes (run by typing `pytest`)
 1. You add a description of your changes to [the changelog](CHANGELOG.md)
-Before you open a pull request.
 
 If your pull request includes some `pytest` setup/unit testing you'll be my new favorite person.
 

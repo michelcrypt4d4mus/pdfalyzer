@@ -403,7 +403,9 @@ class PdfWalker:
                 log.error(f"Obj {idnum} ({obj}) of type {type(obj)} isn't dict, cannot determine if it should be in tree")
                 continue
             elif TYPE not in obj:
-                log.error(f"Obj {idnum} ({obj}) has no {TYPE} and is not in tree. Not raising exception but this may be a serious error.")
+                msg = f"Obj {idnum} has no {TYPE} and is not in tree. Either a loose node w/no data or an error in pdfalyzer."
+                msg += f"\nHere's the contents for you to assess:\n{obj}"
+                log.error(msg)
                 continue
 
             obj_type = obj[TYPE]

@@ -5,6 +5,7 @@ Rich colors: https://rich.readthedocs.io/en/stable/appendix/colors.html
 from collections import namedtuple
 from numbers import Number
 from pprint import PrettyPrinter
+from pydoc import ispackage
 from shutil import get_terminal_size
 import re
 import sys
@@ -32,6 +33,9 @@ DEFAULT_LABEL_STYLE = 'yellow'
 PDFALYZER_THEME = Theme({
     'address': 'color(238)',
     'bytes': 'color(100) dim',
+    'bytes_decoded': 'color(220)',
+    'bytes_highlighted': 'bright_red bold',
+    'ascii_unprintable': 'color(220) dim',
     'font_property': 'color(135)',
     'headline': 'bold white underline',
     'off_white': 'color(245)',
@@ -48,6 +52,7 @@ PDFALYZER_THEME = Theme({
     'lowpriority': 'bright_black',
     'siren': 'blink bright_white on red3',
     'grey': 'color(241)',
+    'dark_grey': 'color(234)',
     'darkest_grey': 'color(235) dim',
     # Good events
     'good': 'green4',
@@ -122,6 +127,53 @@ ENCODINGS = [
     'utf-8',
     'utf-16',
 ]
+
+UNPRINTABLE_ASCII = [
+    'Null',
+    'StartOfHeading',
+    'StartOfText',
+    'EndOfText',
+    'EndOfTransmission',
+    'Enquiry',
+    'Acknowledgement',
+    'Bell',
+    'BackSpace',
+    'HorizontalTab',
+    'LineFeed',
+    'VerticalTab',
+    'FormFeed',
+    'CarriageReturn',
+    'ShiftOut',
+    'ShiftIn',
+    'DataLineEscape',
+    'DeviceControl1',
+    'DeviceControl2',
+    'DeviceControl3',
+    'DeviceControl4',
+    'NegativeAcknowledgement',
+    'SynchronousIdle',
+    'EndOfTransmitBlock',
+    'Cancel',
+    'EndOfMedium',
+    'Substitute',
+    'Escape',
+    'FileSeparator',
+    'GroupSeparator',
+    'RecordSeparator',
+    'UnitSeparator',
+]
+
+# Unicode prefix for 2 byte chars
+UNICODE_2_BYTE_PREFIX = b'\xc0'
+
+# Keys are bytes, values are number of bytes in a character starting with that byte
+UNICODE_PREFIX_BYTES = {
+    UNICODE_2_BYTE_PREFIX: 2,
+    b'\xe0': 3,
+    b'\xf0': 4
+}
+
+
 
 SymlinkRepresentation = namedtuple('SymlinkRepresentation', ['text', 'style'])
 
@@ -211,26 +263,45 @@ def get_type_string_style(klass) -> str:
         return f"{get_type_style(klass)} dim"
 
 
-def force_utf8_print(_bytes: bytes) -> str:
+def force_print_with_encoding(_bytes: bytes, encoding: str, highlight_at_idx=None, highlight_length=None) -> str:
     """Returns a string representing an attempt to force a UTF-8 encoding upon an array of bytes"""
-    skipped_bytes = []
-    output = ''
+    output = Text('', style='bytes_decoded')
+    skip_next = False
 
-    for b in _bytes:
+    for i, b in enumerate(_bytes):
+        if skip_next > 0:
+            skip_next -= 1
+            continue
+
+        style = None
+
+        if highlight_at_idx and i >= highlight_at_idx and i < (highlight_at_idx + highlight_length):
+            style = 'bytes_highlighted'
+
         try:
-            if b <= 127:
-                output += b.to_bytes(1, sys.byteorder).decode()
-            elif b <= 2047:
-                output += (b'\xc2' + b.to_bytes(1, sys.byteorder)).decode()
+            if b < len(UNPRINTABLE_ASCII):
+                output.append(f"[{UNPRINTABLE_ASCII[b].upper()}]", style=style or 'bytes')
+            elif b < 127:
+                output.append(b.to_bytes(1, sys.byteorder).decode(encoding), style=style or 'bytes_decoded')
+            elif b == 127:
+                output.append("DELETE", style=style or 'bytes')
+            elif encoding == 'utf-8':
+                _byte = b.to_bytes(1, sys.byteorder)
+
+                if _byte in UNICODE_PREFIX_BYTES:
+                    char_width = UNICODE_PREFIX_BYTES[_byte]
+                    output.append(_bytes[i:i + char_width].decode(), style=style or 'bytes_decoded')
+                    skip_next = char_width - 1  # Won't be set if there's a decoding exception
+                elif b <= 2047:
+                    output.append((UNICODE_2_BYTE_PREFIX + _byte).decode(), style=style or 'bytes_decoded')
+                else:
+                    output.append(clean_byte_string(_byte), style=style or 'ascii_unprintable')
+            else:
+                output.append(b.to_bytes(1, sys.byteorder).decode(encoding), style=style or 'bytes_decoded')
         except UnicodeDecodeError:
-            skipped_bytes.append(b)
+            output.append(clean_byte_string(b.to_bytes(1, sys.byteorder)), style=style or 'ascii_unprintable')
 
-    console.print(output, style='color(220)')
-
-    if len(skipped_bytes) > 0:
-        console.print(Text('Failed to decode: \n') + Text(str(skipped_bytes), style='grey'))
-
-    return output
+    console.print(output)
 
 
 def list_to_string(_list: list, sep=', ') -> str:

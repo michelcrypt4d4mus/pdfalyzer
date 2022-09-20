@@ -8,7 +8,7 @@ from rich.panel import Panel
 from rich.text import Text
 
 from lib.util.adobe_strings import CURRENTFILE_EEXEC, DANGEROUS_PDF_KEYS
-from lib.util.string_utils import (CONSOLE_PRINT_WIDTH, clean_byte_string, console, force_utf8_print,
+from lib.util.string_utils import (CONSOLE_PRINT_WIDTH, clean_byte_string, console, force_print_with_encoding,
      generate_hyphen_line, print_bytes)
 from lib.util.logging import log
 
@@ -44,7 +44,7 @@ class DataStreamHandler:
             while instruction in self.bytes[last_found_idx + len(instruction):]:
                 was_dangerous_instruction_found = True
                 last_found_idx = self.bytes.find(instruction, last_found_idx + len(instruction))
-                console.print(f"Found {instruction} at {last_found_idx} / {len(self.bytes)}!", style='bright_red bold')
+                console.print(f"Found {instruction} at {last_found_idx} / {len(self.bytes)}!", style='bytes_highlighted')
                 self._print_surrounding_bytes(last_found_idx, SURROUNDING_BYTES_LENGTH, instruction)
 
         if not was_dangerous_instruction_found:
@@ -120,7 +120,7 @@ class DataStreamHandler:
         start_idx = max(around_idx - SURROUNDING_BYTES_LENGTH, 0)
         end_idx = min(around_idx + SURROUNDING_BYTES_LENGTH + 2, len(self.bytes))
         surrounding_bytes = self.bytes[start_idx:end_idx]
-        
+
         if len(surrounding_bytes) == 0:
             import pdb;pdb.set_trace()
 
@@ -131,12 +131,14 @@ class DataStreamHandler:
         highlighted_bytes_strlen = len(highlighted_bytes_str)
 
         # Highlight the matched highlighted_bytes in the console output
-        section = Text(printable_bytes_str[:str_idx], style='bytes')
+        section = Text(printable_bytes_str[:str_idx], style='ascii_unprintable')
         section.append(printable_bytes_str[str_idx:str_idx + highlighted_bytes_strlen], style='fail')
-        section.append(printable_bytes_str[str_idx + highlighted_bytes_strlen:], style='bytes')
+        section.append(printable_bytes_str[str_idx + highlighted_bytes_strlen:], style='ascii_unprintable')
 
-        text = Text("Surrounding bytes: ", style='bright_white') + section
-        console.print(text)
-        console.print("Attempting UTF8 by force...")
-        force_utf8_print(surrounding_bytes)
+        # Print the output
+        console.print(Text("Surrounding bytes: ", style='bright_white') + section)
+        console.print("\nAttempting UTF-8 printout of surrounding bytes by force...")
+        force_print_with_encoding(surrounding_bytes, 'utf-8', around_idx - start_idx, len(highlighted_bytes))
+        console.print("\nAttempting latin-1 printout of surrounding bytes by force...")
+        force_print_with_encoding(surrounding_bytes, 'latin-1', around_idx - start_idx, len(highlighted_bytes))
         console.print("\n")

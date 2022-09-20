@@ -1,5 +1,7 @@
-# Next Release
-* Add `/Dest` to `NON_TREE_REFERENCES`
+# 1.1.0
+* Print unprintable ascii characters in the font binary forced decode attempt with a bracket notation. e.g. print the string `[BACKSPACE]` instead of deleting the previous character
+* Add an attempt to decode font binary as `latin-1` in addition to `utf-8`
+* Highlight the suspicious bytes in the font binary forced decode attempts
 * Fix printing of suspicious font bytes when suspicions are near start or end of stream
 * Only print font bytes that failed to decode if there are actually any such bytes
 
