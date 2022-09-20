@@ -11,7 +11,7 @@ from rich.text import Text
 
 from lib.data_stream_handler import DataStreamHandler
 from lib.util.adobe_strings import (FONT, FONT_DESCRIPTOR, FONT_FILE, FONT_LENGTHS, RESOURCES, SUBTYPE,
-     TO_UNICODE, TYPE)
+     TO_UNICODE, TYPE, W, WIDTHS)
 from lib.util.logging import log
 from lib.util.string_utils import SUBHEADING_WIDTH, console, get_type_style, pp, print_bytes
 
@@ -41,10 +41,10 @@ class FontInfo:
         if isinstance(resources, IndirectObject):
             resources = resources.get_object()
 
-        fonts = resources.get(FONT, None)
+        fonts = resources.get(FONT)
 
         if fonts is None:
-            log.warning(f'No fonts found in {obj_with_resources}')
+            log.info(f'No fonts found in {obj_with_resources}')
             return []
 
         fonts = fonts.get_object()
@@ -68,7 +68,7 @@ class FontInfo:
             if len(font_file_keys) > 1:
                 raise RuntimeError(f"Too many /FontFile keys in {font_descriptor}: {font_file_keys}")
             elif len(font_file_keys) == 0:
-                log.warning(f"No font_file found in {font_descriptor}")
+                log.info(f"No font_file found in {font_descriptor}")
             else:
                 font_file = font_descriptor[font_file_keys[0]].get_object()
 
@@ -83,7 +83,7 @@ class FontInfo:
         # /Font attributes
         self.font = font
         self.sub_type = font.get(SUBTYPE)
-        self.widths = font.get('/Widths')
+        self.widths = font.get(WIDTHS) or font.get(W)
 
         if isinstance(self.widths, IndirectObject):
             self.widths = self.widths.get_object()
@@ -244,8 +244,6 @@ class FontInfo:
             else:
                 add_table_row('char widths', self.widths)
                 add_table_row('char widths(sorted)', sorted(self.widths))
-                #table.add_row('char widths', list_to_string(self.widths))
-                #table.add_row('char widths (sorted)', list_to_string(sorted(self.widths)))
 
         col_0_width = max([len(entry) for entry in table.columns[0]._cells]) + 4
         table.columns[1].max_width = SUBHEADING_WIDTH - col_0_width - 3

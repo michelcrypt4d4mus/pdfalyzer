@@ -1,4 +1,3 @@
-from asyncio import subprocess
 from os import path
 from subprocess import check_call
 

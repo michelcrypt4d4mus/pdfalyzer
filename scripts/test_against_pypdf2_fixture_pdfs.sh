@@ -12,10 +12,16 @@ export FAILURE_LOG=log/failed_to_parse.txt
 pdfalyze() {
     pdf_full_path="$(readlink -f "$1")"
     pdf_basename=`basename "$pdf_full_path"`
+
+    if [[ $pdf_basename =~ postgresql.* ]]; then
+        echo Skipping $pdf_basename
+        return
+    fi
+
     cmd="$PDFALYZER_EXECUTABLE \"$pdf_full_path\""
     echo -e "\nCommand to run: $cmd"
 
-    if ask_yes_or_no "   pdfalyze \"$pdf_basename\"?"; then
+    #if ask_yes_or_no "   pdfalyze \"$pdf_basename\"?"; then
         eval $cmd
 
         if [ $? -eq 0 ]; then
@@ -23,7 +29,7 @@ pdfalyze() {
         else
             echo "$pdf_full_path" >> "$FAILURE_LOG"
         fi
-    fi
+    #fi
 }
 
 export -f pdfalyze

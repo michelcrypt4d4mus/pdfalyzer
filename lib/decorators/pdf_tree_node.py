@@ -17,11 +17,11 @@ from rich.table import Table
 from rich.text import Text
 from rich.tree import Tree
 
-from lib.util.adobe_strings import (DANGEROUS_PDF_KEYS, FONT, TYPE, NEXT, TYPE1_FONT, S, SUBTYPE, TRAILER, UNLABELED,
-     XREF, XREF_STREAM)
+from lib.util.adobe_strings import (DANGEROUS_PDF_KEYS, FIRST, FONT, LAST, NEXT, TYPE1_FONT, S, SUBTYPE, TRAILER,
+     TYPE, UNLABELED, XREF, XREF_STREAM)
 from lib.util.exceptions import PdfWalkError
 from lib.util.logging import log
-from lib.util.pdf_object_helper import PdfObjectRef, get_references, pdf_object_id
+from lib.util.pdf_object_helper import get_references
 from lib.util.string_utils import (NEWLINE_BYTE, clean_byte_string, console, get_label_style, get_node_type_style,
      get_symlink_representation, get_type_style, get_type_string_style, pypdf_class_name)
 
@@ -45,11 +45,14 @@ class PdfTreeNode(NodeMixin):
         self.all_references_processed = False
 
         if isinstance(obj, DictionaryObject):
-            self.type = obj.get(TYPE)
-            self.label = self.type or known_to_parent_as
+            self.type = obj.get(TYPE) or known_to_parent_as
+            self.label = obj.get(TYPE) or known_to_parent_as
             self.sub_type = obj.get(SUBTYPE) or obj.get(S)
+
+            if isinstance(self.type, str):
+                self.type = self.type.split('[')[0]
         else:
-            self.type = known_to_parent_as.split('[')[0]
+            self.type = known_to_parent_as.split('[')[0] if isinstance(known_to_parent_as, str) else known_to_parent_as
             self.label = known_to_parent_as
             self.sub_type = None
 
@@ -70,8 +73,9 @@ class PdfTreeNode(NodeMixin):
             raise PdfWalkError(f"Cannot set {parent} as parent of {self}, parent is already {self.parent}")
 
         self.parent = parent
+        self.remove_relationship(parent)
         # Adjust incorrect known_to_parent_as that can arise when adding non tree references to the walker
-        self.known_to_parent_as = self._find_reference_to_this_node(parent)
+        self.known_to_parent_as = self._find_address_of_this_node(parent)
         log.info(f"  Added {parent} as parent of {self}")
 
     def add_child(self, child: 'PdfTreeNode') -> None:
@@ -85,9 +89,10 @@ class PdfTreeNode(NodeMixin):
             else:
                 raise PdfWalkError(f"{self} already has child w/this ID: {child}")
 
-        self.children = self.children + (child,)
+        self.children += (child,)
+        child.remove_relationship(self)
         # Adjust incorrect known_to_parent_as that can arise when adding non tree references to the walker
-        child.known_to_parent_as = child._find_reference_to_this_node(self)
+        child.known_to_parent_as = child._find_address_of_this_node(self)
         log.info(f"  Added {child} as child of {self}")
 
     def add_relationship(self, from_node: 'PdfTreeNode', reference_key: str) -> None:
@@ -99,6 +104,19 @@ class PdfTreeNode(NodeMixin):
 
         log.info(f'Adding other relationship: {from_node} ref {reference_key} points to {self}')
         self.other_relationships.append(relationship)
+
+    def remove_relationship(self, from_node: 'PdfTreeNode') -> None:
+        """Remove all other_relationships from from_node to this node"""
+        relationships_to_remove = [r for r in self.other_relationships if r.from_node == from_node]
+
+        if len(relationships_to_remove) == 0:
+            return
+        elif len(relationships_to_remove) > 1 and not all(r.reference_key in [FIRST, LAST] for r in relationships_to_remove):
+            log.warning(f"> 1 relationships to remove from {from_node} to {self}: {relationships_to_remove}")
+
+        for relationship in relationships_to_remove:
+            log.debug(f"Removing relationship {relationship} from {self}")
+            self.other_relationships.remove(relationship)
 
     def other_relationnship_count(self):
         return len(self.other_relationships)
@@ -112,18 +130,15 @@ class PdfTreeNode(NodeMixin):
 
         return relationship.reference_key
 
+    # TODO: this doesn't include /Parent references
     def referenced_by_keys(self) -> list[str]:
         """All the PDF instruction strings that referred to this object"""
         return [r.reference_key for r in self.other_relationships] + [self.known_to_parent_as]
 
-    def properties(self) -> dict:
-        """Does not return references, only stuff like /Type, /Size, etc."""
-        return {k: v for (k, v) in self.obj.items() if not isinstance(v, IndirectObject)}
-
     def references(self):
         return get_references(self.obj)
 
-    def _find_reference_to_this_node(self, other_node: 'PdfTreeNode') -> str:
+    def _find_address_of_this_node(self, other_node: 'PdfTreeNode') -> str:
         """Find the address used in other_node to refer to this node"""
         refs_to_this_node = [ref for ref in other_node.references() if ref.pdf_obj.idnum == self.idnum]
 
@@ -136,9 +151,12 @@ class PdfTreeNode(NodeMixin):
             elif self.label != NEXT:
                 raise PdfWalkError(f"Could not find reference from {other_node} to {self}")
         else:
-            log.warning(f"Multiple references from {other_node} to {self}: {refs_to_this_node}")
-            return refs_to_this_node[0].reference_address
-            #raise PdfWalkError(f"Multiple references from {other_node} to {self}: {refs_to_this_node}")
+            reference_address = refs_to_this_node[0].reference_address
+
+            if not all(ref.reference_address in [FIRST, LAST] for ref in refs_to_this_node):
+                log.warning(f"Multiple refs from {other_node} to {self}: {refs_to_this_node}. Using {reference_address} as address")
+
+            return reference_address
 
     ######################################
     # BELOW HERE IS JUST TEXT FORMATTING #
@@ -207,7 +225,7 @@ class PdfTreeNode(NodeMixin):
             # Then it's a single element node like a URI, TextString, etc.
             table.add_row(*to_table_row('', self.obj, is_single_row_table=True))
 
-        # PDF objects can have properties and streams at the same time
+        # If it's a stream node (PDF objs can have properties and streams at the same time) add some fields
         if isinstance(self.obj, EncodedStreamObject):
             # TODO: Add a DataStreamHandler to all nodes with streams instead of using self.obj.get_data()
             stream_data = self.obj.get_data()
@@ -230,7 +248,6 @@ class PdfTreeNode(NodeMixin):
             else:
                 preview_row_label = f"StreamPreview\n  ({STREAM_PREVIEW_LENGTH_IN_TABLE} bytes)"
                 stream_preview_string += '...'
-
 
             table.add_row(
                 Text(preview_row_label, style='grey'),
@@ -275,33 +292,26 @@ class PdfTreeNode(NodeMixin):
         return self.__str__()
 
 
+# TODO: This should probably live in pdf_object_helper.py but the use of PdfTreeNode() makes that a circular reference
+def resolve_references(reference_key: str, obj: PdfObject):
+    """Recursively build the same data structure except IndirectObjects are resolved to nodes"""
+    if isinstance(obj, Number):
+        return obj.as_numeric()
+    elif isinstance(obj, IndirectObject):
+        return PdfTreeNode.from_reference(obj, reference_key)
+    elif isinstance(obj, list):
+        return [resolve_references(reference_key, item) for item in obj]
+    elif isinstance(obj, dict):
+        return {k: resolve_references(k, v) for k, v in obj.items()}
+    else:
+        return obj
+
+
 def to_table_row(reference_key, obj, is_single_row_table=False) -> [Text]:
     """Turns PDF object properties into a formatted 3-tuple for use in Rich tables representing PdfObjects"""
-    value_style = get_type_style(type(obj))
-    type_string = pypdf_class_name(obj)
-    # Type col is redundant if it's something like a TextString node
-    type_col_value = '' if is_single_row_table else Text(type_string, style=get_type_string_style(type(obj)))
-
-    if isinstance(reference_key, int):
-        reference_col = Text(f"[{reference_key}]", style='grey')
-    else:
-        reference_col = Text(reference_key)
-
-    if isinstance(obj, Number):
-        value = f"{obj.as_numeric()}"
-    elif isinstance(obj, IndirectObject):
-        value = f"{PdfTreeNode.from_reference(obj, reference_col.plain)}"
-    elif isinstance(obj, list):
-        value = [
-            f"{PdfTreeNode.from_reference(item, reference_col.plain)}" if isinstance(item, IndirectObject) else item
-            for item in obj
-        ]
-    elif isinstance(obj, dict):
-        value = {
-            k: f"{PdfTreeNode.from_reference(v, k)}" if isinstance(v, IndirectObject) else v
-            for k, v in obj.items()
-        }
-    else:
-        value = str(obj)
-
-    return [reference_col, Text(f"{escape(str(value))}", style=value_style), type_col_value]
+    # 3rd col (AKA type(value)) is redundant if it's something like a TextString or Number node so we set it to ''
+    return [
+        Text(f"{reference_key}", style = 'grey' if isinstance(reference_key, int) else None),
+        Text(f"{escape(str(resolve_references(reference_key, obj)))}", style=get_type_style(type(obj))),
+        '' if is_single_row_table else Text(pypdf_class_name(obj), style=get_type_string_style(type(obj)))
+    ]

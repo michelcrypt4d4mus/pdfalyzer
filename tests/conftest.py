@@ -6,13 +6,13 @@ from lib.pdf_parser_manager import PROJECT_DIR
 ANALYZING_MALICIOUS_DOCUMENTS_PDF = path.join(PROJECT_DIR, 'doc', 'analyzing-malicious-document-files.pdf')
 
 
-@pytest.fixture
+@pytest.fixture(scope='session')
 def pdfs_in_repo():
     return [
         ANALYZING_MALICIOUS_DOCUMENTS_PDF
     ]
 
 
-@pytest.fixture
+@pytest.fixture(scope='session')
 def analyzing_malicious_documents_pdf():
     return ANALYZING_MALICIOUS_DOCUMENTS_PDF

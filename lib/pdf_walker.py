@@ -18,7 +18,7 @@ from rich.text import Text
 from lib.decorators.document_model_printer import print_with_header
 from lib.decorators.pdf_tree_node import PdfTreeNode
 from lib.font_info import FontInfo
-from lib.util.adobe_strings import (COLOR_SPACE, DEST, EXT_G_STATE, FONT, K, KIDS, NON_TREE_REFERENCES, NUMS,
+from lib.util.adobe_strings import (COLOR_SPACE, D, DEST, EXT_G_STATE, FONT, K, KIDS, NON_TREE_REFERENCES, NUMS,
      OBJECT_STREAM, OPEN_ACTION, P, PARENT, PREV, RESOURCES, SIZE, STRUCT_ELEM, TRAILER, TYPE, UNLABELED, XOBJECT,
      XREF, XREF_STREAM)
 from lib.util.exceptions import PdfWalkError
@@ -38,6 +38,12 @@ INDETERMINATE_REFERENCES = [
     RESOURCES,
     XOBJECT,
     UNLABELED, # TODO: this might be wrong? maybe this is where the /Resources actually live?
+]
+
+# A node with this label is really just a non-tree link between nodes
+PURE_REFERENCE_NODE_LABELS = [
+    D,
+    DEST,
 ]
 
 
@@ -165,12 +171,12 @@ class PdfWalker:
         for i in sorted(self.traversed_nodes.keys()):
             console.print(f'{i}: {self.traversed_nodes[i]}')
 
-    def _process_reference(self, node: PdfTreeNode, key: str, k: str, reference: IndirectObject) -> [PdfTreeNode]:
+    def _process_reference(self, node: PdfTreeNode, key: str, address: str, reference: IndirectObject) -> [PdfTreeNode]:
         """Place the referenced node in the tree. Returns a list of nodes to walk next."""
         self.max_generation = max([self.max_generation, reference.generation or 0])
         seen_before = (reference.idnum in self.traversed_nodes)
-        referenced_node = self._build_or_find_node(reference, k)
-        reference_log_string = f"{node} reference at {k} to {referenced_node}"
+        referenced_node = self._build_or_find_node(reference, address)
+        reference_log_string = f"{node} reference at {address} to {referenced_node}"
         log.info(f'Assessing {reference_log_string}...')
         references_to_return = []
 
@@ -187,25 +193,25 @@ class PdfWalker:
                 node.add_child(referenced_node)
 
             if reference.idnum in self.indeterminate_ids:
-                log.info(f"  Found refefence {k} => {node} of previously indeterminate node {referenced_node}")
+                log.info(f"  Found refefence {address} => {node} of previously indeterminate node {referenced_node}")
                 self.indeterminate_ids.remove(reference.idnum)
 
             if not seen_before:
                 references_to_return = [referenced_node]
 
         # Non tree references are not children or parents.
-        # Checking startswith(NUMS) is a hack that probably will not cover all cases with /StructElem
-        elif key in NON_TREE_REFERENCES or node.label.startswith(NUMS) :
+        # TODO: Checking startswith(NUMS) is a hack that probably will not cover all cases with /StructElem
+        elif key in NON_TREE_REFERENCES or node.label.startswith(NUMS) or node.label in PURE_REFERENCE_NODE_LABELS:
             log.debug(f"{reference_log_string} is a non tree reference.")
-            referenced_node.add_relationship(node, k)
+            referenced_node.add_relationship(node, address)
 
             if not self.find_node_by_idnum(referenced_node.idnum):
                 references_to_return = [referenced_node]
 
         # Indeterminate references need to wait until everything has been scanned to be placed
-        elif key in INDETERMINATE_REFERENCES:
+        elif key in INDETERMINATE_REFERENCES and key == address:
             log.info(f'  Indeterminate {reference_log_string}')
-            referenced_node.add_relationship(node, k)
+            referenced_node.add_relationship(node, address)
             self.indeterminate_ids.add(referenced_node.idnum)
             return [referenced_node]
 
@@ -214,7 +220,7 @@ class PdfWalker:
             if reference.idnum not in self.indeterminate_ids and referenced_node.parent is None:
                 raise PdfWalkError(f"{reference_log_string} - ref has no parent and is not indeterminate")
 
-            referenced_node.add_relationship(node, k)
+            referenced_node.add_relationship(node, address)
 
         # If no other conditions are met, add the reference as a child
         else:
@@ -243,7 +249,7 @@ class PdfWalker:
         """
         indeterminate_nodes = [self.traversed_nodes[idnum] for idnum in self.indeterminate_ids]
         indeterminate_nodes_string = "\n   ".join([f"{node}" for node in indeterminate_nodes])
-        log.info(f"Resolving indeterminate nodes\n{indeterminate_nodes_string}")
+        log.info(f"Resolving {len(indeterminate_nodes)} indeterminate nodes: {indeterminate_nodes_string}")
 
         for idnum in self.indeterminate_ids:
             if self.find_node_by_idnum(idnum):
@@ -286,7 +292,6 @@ class PdfWalker:
                 lowest_id_relationship = next(r for r in node.other_relationships if r.from_node.idnum == lowest_idnum)
                 log.info(f"Setting parent of {node} to {lowest_id_relationship}")
                 node.set_parent(self.traversed_nodes[lowest_idnum])
-                node.other_relationships.remove(lowest_id_relationship)
                 continue
 
             self.print_tree()
@@ -298,7 +303,7 @@ class PdfWalker:
         """Extract information about fonts in the tree and place it in self.font_infos"""
         for node in LevelOrderIter(self.pdf_tree):
             if isinstance(node.obj, dict) and RESOURCES in node.obj:
-                log.debug(f"Extracting fonts from node with {RESOURCES}: {node}...")
+                log.debug(f"Extracting fonts from node with '{RESOURCES}' key: {node}...")
                 known_font_ids = [fi.idnum for fi in self.font_infos]
 
                 self.font_infos += [
@@ -321,7 +326,6 @@ class PdfWalker:
             if all(relationship[0] in r[0].ancestors for r in other_relationships):
                 log.info(f'{relationship[0]} is the common ancestor found while placing /Resources')
                 resources_node.set_parent(relationship[0])
-                resources_node.other_relationships.remove(relationship)
                 return
 
         log.error(f"Failed to place {resources_node}. {RESOURCES} relationship dump:")

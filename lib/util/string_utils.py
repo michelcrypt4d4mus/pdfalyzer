@@ -9,7 +9,7 @@ from shutil import get_terminal_size
 import re
 import sys
 
-from PyPDF2.generic import IndirectObject, PdfObject
+from PyPDF2.generic import ByteStringObject, IndirectObject, PdfObject
 from rich.console import Console
 from rich.markup import escape
 from rich.panel import Panel
@@ -76,6 +76,7 @@ TYPE_STYLES = {
     list: 'color(143)',
     str: 'bright_white bold',
     IndirectObject: 'color(157)',
+    ByteStringObject: 'bytes',
 }
 
 LABEL_STYLES = [
@@ -84,8 +85,12 @@ LABEL_STYLES = [
     [re.compile(f'^{adobe_strings.FONT_FILE}'),           'steel_blue1'],
     [re.compile(f'^{adobe_strings.FONT}'),                'deep_sky_blue4 bold'],
     [re.compile(f'^{adobe_strings.TO_UNICODE}'),          'grey30'],
+    [re.compile(f'^{adobe_strings.WIDTHS}'),              'color(67)'],
+    [re.compile(f'^{adobe_strings.W}'),                   'color(67)'],
     [re.compile(f'^{adobe_strings.RESOURCES}'),           'magenta'],
     [re.compile('/(Trailer|Root|Info|Outlines)'),         'bright_green'],
+    [re.compile('/Catalog'),                              'color(47)'],
+    [re.compile('/(Metadata|ViewerPreferences)'),         'color(35)'],
     [re.compile('^/Contents'),                            'medium_purple1'],
     [re.compile('^/Action'),                              'dark_red'],
     [re.compile('^/Annots'),                              'deep_sky_blue4'],

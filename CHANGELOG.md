@@ -1,8 +1,14 @@
 # Next Release
+* Color `/Widths` tables
+* Color `/Catalog` and other summary nodes with with green
+* Color `ByteStringObject` like bytes
+* Resolve types of `IndirectObject` refs appearing in `dict` and `list` value Rich Tree table rows
+* Remove redunant `/First` and `/Last` non tree refs when those relationships are part of the tree
+* Couple of edge case bug fixes
 
 # 1.0.1
 * Fix issue with directly embedded `/Resources` not being walked correctly (along with their fonts)
-* Introduce `PdfObjectRef` tuple to contain the root reference key, the actual reference address str, and the referenced obj
+* Introduce `PdfObjectRef` tuple to contain the root reference key, the actual reference address string, and the referenced obj
 * Add warnings if any PDF objects are missing from the tree
 
 # 1.0.0
