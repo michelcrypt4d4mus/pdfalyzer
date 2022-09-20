@@ -226,8 +226,10 @@ def force_utf8_print(_bytes: bytes) -> str:
             skipped_bytes.append(b)
 
     console.print(output, style='color(220)')
-    failed_to_decode = Text('Failed to decode: \n') + Text(str(skipped_bytes), style='grey')
-    console.print(failed_to_decode)
+
+    if len(skipped_bytes) > 0:
+        console.print(Text('Failed to decode: \n') + Text(str(skipped_bytes), style='grey'))
+
     return output
 
 

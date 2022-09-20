@@ -1,5 +1,7 @@
 # Next Release
 * Add `/Dest` to `NON_TREE_REFERENCES`
+* Fix printing of suspicious font bytes when suspicions are near start or end of stream
+* Only print font bytes that failed to decode if there are actually any such bytes
 
 # 1.0.2
 * Color `/Widths` tables

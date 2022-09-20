@@ -117,9 +117,12 @@ class DataStreamHandler:
 
     def _print_surrounding_bytes(self, around_idx: int, size: int, highlighted_bytes):
         """Print the bytes before and after a given location in the stream"""
-        start_idx = around_idx - SURROUNDING_BYTES_LENGTH
-        end_idx = around_idx + SURROUNDING_BYTES_LENGTH + 2
+        start_idx = max(around_idx - SURROUNDING_BYTES_LENGTH, 0)
+        end_idx = min(around_idx + SURROUNDING_BYTES_LENGTH + 2, len(self.bytes))
         surrounding_bytes = self.bytes[start_idx:end_idx]
+        
+        if len(surrounding_bytes) == 0:
+            import pdb;pdb.set_trace()
 
         # Strings are longer than the bytes they represent so we have to re-find
         highlighted_bytes_str = clean_byte_string(highlighted_bytes)
