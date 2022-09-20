@@ -29,6 +29,7 @@ parser.add_argument('pdf', metavar='file_to_analyze.pdf', help='PDF file to proc
 parser.add_argument('-d', '--docinfo', action='store_true', help='show embedded document info (author, title, timestamps, etc)')
 parser.add_argument('-t', '--tree', action='store_true', help='show condensed tree (one line per object)')
 parser.add_argument('-r', '--rich', action='store_true', help='show much more detailed tree (one panel per object, all properties of all objects)')
+# TODO: make -f take an integer to specify which font idnum to print: https://stackoverflow.com/questions/15301147/python-argparse-default-value-or-specified-value
 parser.add_argument('-f', '--fonts', action='store_true', help='show info about fonts / scan font binaries for dangerous content)')
 parser.add_argument('-c', '--counts', action='store_true', help='show counts of some of the properties of the objects in the PDF')
 

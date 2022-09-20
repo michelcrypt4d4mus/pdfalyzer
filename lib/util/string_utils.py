@@ -47,6 +47,7 @@ PDFALYZER_THEME = Theme({
     'font_title': 'reverse dark_blue on color(253)',
     'prepared_charmap': 'color(106) dim',
     'prepared_charmap_title': 'green',
+    'minor_header': 'bright_white bold',
     # events
     'attn': 'bold bright_cyan',
     'lowpriority': 'bright_black',
@@ -128,40 +129,41 @@ ENCODINGS = [
     'utf-16',
 ]
 
-UNPRINTABLE_ASCII = [
-    'Null',
-    'StartOfHeading',
-    'StartOfText',
-    'EndOfText',
-    'EndOfTransmission',
-    'Enquiry',
-    'Acknowledgement',
-    'Bell',
-    'BackSpace',
-    'HorizontalTab',
-    'LineFeed',
-    'VerticalTab',
-    'FormFeed',
-    'CarriageReturn',
-    'ShiftOut',
-    'ShiftIn',
-    'DataLineEscape',
-    'DeviceControl1',
-    'DeviceControl2',
-    'DeviceControl3',
-    'DeviceControl4',
-    'NegativeAcknowledgement',
-    'SynchronousIdle',
-    'EndOfTransmitBlock',
-    'Cancel',
-    'EndOfMedium',
-    'Substitute',
-    'Escape',
-    'FileSeparator',
-    'GroupSeparator',
-    'RecordSeparator',
-    'UnitSeparator',
-]
+UNPRINTABLE_ASCII = {
+    0: 'Null',
+    1: 'StartOfHeading',
+    2: 'StartOfText',
+    3: 'EndOfText',
+    4: 'EndOfTransmission',
+    5: 'Enquiry',
+    6: 'Acknowledgement',
+    7: 'Bell',
+    8: 'BackSpace',
+    9: 'HorizontalTab',
+    10: 'LineFeed',
+    11: 'VerticalTab',
+    12: 'FormFeed',
+    13: 'CarriageReturn',
+    14: 'ShiftOut',
+    15: 'ShiftIn',
+    16: 'DataLineEscape',
+    17: 'DeviceControl1',
+    18: 'DeviceControl2',
+    19: 'DeviceControl3',
+    20: 'DeviceControl4',
+    21: 'NegativeAcknowledgement',
+    22: 'SynchronousIdle',
+    23: 'EndOfTransmitBlock',
+    24: 'Cancel',
+    25: 'EndOfMedium',
+    26: 'Substitute',
+    27: 'Escape',
+    28: 'FileSeparator',
+    29: 'GroupSeparator',
+    30: 'RecordSeparator',
+    31: 'UnitSeparator',
+    127: 'Delete',
+}
 
 # Unicode prefix for 2 byte chars
 UNICODE_2_BYTE_PREFIX = b'\xc0'
@@ -172,8 +174,6 @@ UNICODE_PREFIX_BYTES = {
     b'\xe0': 3,
     b'\xf0': 4
 }
-
-
 
 SymlinkRepresentation = namedtuple('SymlinkRepresentation', ['text', 'style'])
 
@@ -279,12 +279,10 @@ def force_print_with_encoding(_bytes: bytes, encoding: str, highlight_at_idx=Non
             style = 'bytes_highlighted'
 
         try:
-            if b < len(UNPRINTABLE_ASCII):
+            if b in UNPRINTABLE_ASCII:
                 output.append(f"[{UNPRINTABLE_ASCII[b].upper()}]", style=style or 'bytes')
             elif b < 127:
                 output.append(b.to_bytes(1, sys.byteorder).decode(encoding), style=style or 'bytes_decoded')
-            elif b == 127:
-                output.append("DELETE", style=style or 'bytes')
             elif encoding == 'utf-8':
                 _byte = b.to_bytes(1, sys.byteorder)
 

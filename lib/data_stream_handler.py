@@ -24,17 +24,18 @@ ENCODINGS_TO_ATTEMPT = [
     'Windows-1252',
 ]
 
-BOMS = [
-    b'\xef\xbb\xbf',   # UTF-8 BOM
-    b'\xfe\xff',       # UTF-16 BOM
-    b'\x0e\xfe\xff',   # SCSU
-    b'\x2b\x2f\x76',    # UTF-7
-]
+# Byte order marks
+BOMS = {
+    b'\x2b\x2f\x76': 'UTF-7 BOM',
+    b'\xef\xbb\xbf': 'UTF-8 BOM',
+    b'\xfe\xff':     'UTF-16 BOM',
+    b'\x0e\xfe\xff': 'SCSU BOM',
+}
 
 # Remove the leading '/' from elements of DANGEROUS_PDF_KEYS and convert to bytes, except /F ("URL")
 DANGEROUS_BYTES = [instruction[1:].encode() for instruction in DANGEROUS_PDF_KEYS] + [b'/F']
 DANGEROUS_JAVASCRIPT_INSTRUCTIONS = [b'eval']
-DANGEROUS_INSTRUCTIONS = DANGEROUS_BYTES + DANGEROUS_JAVASCRIPT_INSTRUCTIONS + BOMS
+DANGEROUS_INSTRUCTIONS = DANGEROUS_BYTES + DANGEROUS_JAVASCRIPT_INSTRUCTIONS + list(BOMS.keys())
 
 
 class DataStreamHandler:
@@ -43,17 +44,18 @@ class DataStreamHandler:
 
     def check_for_dangerous_instructions(self):
         console.print(Panel('Scanning font binary for dangerous PDF instructions', style='dark_red', expand=False))
-        was_dangerous_instruction_found = False
 
         for instruction in DANGEROUS_INSTRUCTIONS:
             # Hacky way to ensure we start hunt at byte 0
             last_found_idx = -len(instruction)
+            explainer = f"({BOMS[instruction]}) " if instruction in BOMS else ''
 
             while instruction in self.bytes[last_found_idx + len(instruction):]:
                 last_found_idx = self.bytes.find(instruction, last_found_idx + len(instruction))
-                console.print(f"Found {instruction} at {last_found_idx} / {len(self.bytes)}!", style='bytes_highlighted')
+                console.print(f"Found {instruction} {explainer}at position {last_found_idx} of {len(self.bytes)}!", style='bytes_highlighted')
                 surrounding_bytes_length = int(environ.get(SURROUNDING_BYTES_ENV_VAR, SURROUNDING_BYTES_LENGTH_DEFAULT))
                 self._print_surrounding_bytes(last_found_idx, surrounding_bytes_length, instruction)
+                console.print('\n')
 
             if last_found_idx == -len(instruction):
                 console.print(f"{instruction} not found...", style='dim')
@@ -144,12 +146,12 @@ class DataStreamHandler:
         section.append(printable_bytes_str[str_idx + highlighted_bytes_strlen:], style='ascii_unprintable')
 
         # Print the output
-        size_str = f"({size} bytes before and {size} bytes after {highlighted_bytes} at position {around_idx})"
-        heading = Text(f"Surrounding bytes {size_str}: ", style='bright_white')
-        console.print(heading + section)
+        size_str = f"({size} bytes before and {size} bytes after [error]{clean_byte_string(highlighted_bytes)}[/error] at position {around_idx})"
+        console.print(f"Surrounding bytes {size_str}: ")
+        console.print(section)
 
         for encoding in ENCODINGS_TO_ATTEMPT:
-            console.print(f"\nAttempting {encoding} printout of surrounding bytes {size_str} by force...")
+            console.print(f"\nAttempting {encoding} printout of surrounding bytes {size_str} by force...", style='minor_header')
             force_print_with_encoding(surrounding_bytes, encoding, around_idx - start_idx, len(highlighted_bytes))
 
         console.print("")
