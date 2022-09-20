@@ -3,6 +3,7 @@ Class for handling binary data streams. Currently focused on font binaries.
 """
 import chardet
 import re
+from os import environ
 
 from rich.panel import Panel
 from rich.text import Text
@@ -14,13 +15,20 @@ from lib.util.logging import log
 
 
 BYTE_STREAM_PREVIEW_SIZE = 10 * int(CONSOLE_PRINT_WIDTH * 0.8)
-SURROUNDING_BYTES_LENGTH = 256
+SURROUNDING_BYTES_LENGTH_DEFAULT = 64
+SURROUNDING_BYTES_ENV_VAR = 'SURROUNDING_BYTES'
+
+ENCODINGS_TO_ATTEMPT = [
+    'utf-8',
+    'latin-1',
+    'Windows-1252',
+]
 
 BOMS = [
     b'\xef\xbb\xbf',   # UTF-8 BOM
-    b'\xfe\xff,'       # UTF-16 BOM
+    b'\xfe\xff',       # UTF-16 BOM
     b'\x0e\xfe\xff',   # SCSU
-    b'\x2b\x2f\x76'    # UTF-7
+    b'\x2b\x2f\x76',    # UTF-7
 ]
 
 # Remove the leading '/' from elements of DANGEROUS_PDF_KEYS and convert to bytes, except /F ("URL")
@@ -42,13 +50,13 @@ class DataStreamHandler:
             last_found_idx = -len(instruction)
 
             while instruction in self.bytes[last_found_idx + len(instruction):]:
-                was_dangerous_instruction_found = True
                 last_found_idx = self.bytes.find(instruction, last_found_idx + len(instruction))
                 console.print(f"Found {instruction} at {last_found_idx} / {len(self.bytes)}!", style='bytes_highlighted')
-                self._print_surrounding_bytes(last_found_idx, SURROUNDING_BYTES_LENGTH, instruction)
+                surrounding_bytes_length = int(environ.get(SURROUNDING_BYTES_ENV_VAR, SURROUNDING_BYTES_LENGTH_DEFAULT))
+                self._print_surrounding_bytes(last_found_idx, surrounding_bytes_length, instruction)
 
-        if not was_dangerous_instruction_found:
-            console.print('  No dangerous instructions found\n', style='dim')
+            if last_found_idx == -len(instruction):
+                console.print(f"{instruction} not found...", style='dim')
 
     def print_stream_preview(self, num_bytes=BYTE_STREAM_PREVIEW_SIZE, title_suffix=None) -> None:
         """Print a preview showing the beginning and end of the stream data"""
@@ -117,8 +125,8 @@ class DataStreamHandler:
 
     def _print_surrounding_bytes(self, around_idx: int, size: int, highlighted_bytes):
         """Print the bytes before and after a given location in the stream"""
-        start_idx = max(around_idx - SURROUNDING_BYTES_LENGTH, 0)
-        end_idx = min(around_idx + SURROUNDING_BYTES_LENGTH + 2, len(self.bytes))
+        start_idx = max(around_idx - size, 0)
+        end_idx = min(around_idx + size + 2, len(self.bytes))
         surrounding_bytes = self.bytes[start_idx:end_idx]
 
         if len(surrounding_bytes) == 0:
@@ -136,9 +144,12 @@ class DataStreamHandler:
         section.append(printable_bytes_str[str_idx + highlighted_bytes_strlen:], style='ascii_unprintable')
 
         # Print the output
-        console.print(Text("Surrounding bytes: ", style='bright_white') + section)
-        console.print("\nAttempting UTF-8 printout of surrounding bytes by force...")
-        force_print_with_encoding(surrounding_bytes, 'utf-8', around_idx - start_idx, len(highlighted_bytes))
-        console.print("\nAttempting latin-1 printout of surrounding bytes by force...")
-        force_print_with_encoding(surrounding_bytes, 'latin-1', around_idx - start_idx, len(highlighted_bytes))
-        console.print("\n")
+        size_str = f"({size} bytes before and {size} bytes after {highlighted_bytes} at position {around_idx})"
+        heading = Text(f"Surrounding bytes {size_str}: ", style='bright_white')
+        console.print(heading + section)
+
+        for encoding in ENCODINGS_TO_ATTEMPT:
+            console.print(f"\nAttempting {encoding} printout of surrounding bytes {size_str} by force...")
+            force_print_with_encoding(surrounding_bytes, encoding, around_idx - start_idx, len(highlighted_bytes))
+
+        console.print("")

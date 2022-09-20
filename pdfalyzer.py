@@ -1,17 +1,17 @@
 #!/usr/bin/env python
 from argparse import ArgumentError, ArgumentParser
 from collections import namedtuple
-from os import path
+from os import environ, path
 import code
+import importlib.metadata
 import logging
 import sys
 
+from lib.data_stream_handler import SURROUNDING_BYTES_ENV_VAR, SURROUNDING_BYTES_LENGTH_DEFAULT
 from lib.pdf_parser_manager import PdfParserManager
 from lib.pdf_walker import PdfWalker
 from lib.util.logging import log
 from lib.util.string_utils import console
-
-from rich.console import Console
 
 
 # Tuple to keep our argument selection orderly
@@ -31,7 +31,6 @@ parser.add_argument('-t', '--tree', action='store_true', help='show condensed tr
 parser.add_argument('-r', '--rich', action='store_true', help='show much more detailed tree (one panel per object, all properties of all objects)')
 parser.add_argument('-f', '--fonts', action='store_true', help='show info about fonts / scan font binaries for dangerous content)')
 parser.add_argument('-c', '--counts', action='store_true', help='show counts of some of the properties of the objects in the PDF')
-#parser.add_argument('--no-force-decode', action='store_true', help='skip attempting to force the decoding of binary font data')
 
 # Output options
 parser.add_argument('-txt', '--txt-output-to',
@@ -46,9 +45,17 @@ parser.add_argument('-x', '--extract-streams-to',
                     metavar='STREAM_DUMP_DIR',
                     help='extract all binary streams in the PDF to files in STREAM_DUMP_DIR then exit (requires pdf-parser.py)')
 
+# Fine tuning
+parser.add_argument('--surrounding',
+                    type=int,
+                    default=SURROUNDING_BYTES_LENGTH_DEFAULT,
+                    metavar='BYTES',
+                    help=f"number of bytes to display before and after suspicious strings in font binaries")
+
 # Debugging
 parser.add_argument('-I', '--interact', action='store_true', help='drop into interactive python REPL when parsing is complete')
 parser.add_argument('-D', '--debug', action='store_true', help='show extremely verbose debug log output')
+parser.add_argument('--version', action='version', version=f"pdfalyzer {importlib.metadata.version('pdfalyzer')}")
 
 
 # Handle the options
@@ -63,6 +70,9 @@ if args.txt_output_to and args.export_svgs:
 
 if not args.debug:
     log.setLevel(logging.WARNING)
+
+if args.surrounding and args.surrounding != SURROUNDING_BYTES_LENGTH_DEFAULT:
+    environ[SURROUNDING_BYTES_ENV_VAR] = str(args.surrounding)
 
 
 # Execute

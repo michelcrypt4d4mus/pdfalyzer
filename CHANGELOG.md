@@ -1,9 +1,14 @@
+# Next Release
+* Add `--version` option
+* Add `--surrounding` option to specify number of bytes to print/decode before and after suspicious bytes; decrease default number of surrounding bytes
+* Attempt Windows-1252 encoding for suspicious bytes
+* Fix scanning for several BOMs
+
 # 1.1.0
 * Print unprintable ascii characters in the font binary forced decode attempt with a bracket notation. e.g. print the string `[BACKSPACE]` instead of deleting the previous character
 * Add an attempt to decode font binary as `latin-1` in addition to `utf-8`
 * Highlight the suspicious bytes in the font binary forced decode attempts
 * Fix printing of suspicious font bytes when suspicions are near start or end of stream
-* Only print font bytes that failed to decode if there are actually any such bytes
 
 # 1.0.2
 * Color `/Widths` tables
