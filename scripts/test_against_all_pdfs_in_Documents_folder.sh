@@ -1,7 +1,6 @@
 #!/bin/bash
 SCRIPT_PATH=$(dirname -- "$(readlink -f -- "$0";)";)
 source "$SCRIPT_PATH/lib/project_paths.sh"
-source "$BASH_LIB_DIR/ask_yes_or_no_functions.sh"
 
 # Exporting makes these available to the 'find -exec bash -c' invocation
 export PDFALYZER_EXECUTABLE
@@ -20,16 +19,13 @@ pdfalyze() {
 
     cmd="$PDFALYZER_EXECUTABLE -f \"$pdf_full_path\""
     echo -e "\nCommand to run: $cmd"
+    eval $cmd
 
-    #if ask_yes_or_no "   pdfalyze \"$pdf_basename\"?"; then
-        eval $cmd
-
-        if [ $? -eq 0 ]; then
-            echo "$pdf_full_path" >> "$SUCCESS_LOG"
-        else
-            echo "$pdf_full_path" >> "$FAILURE_LOG"
-        fi
-    #fi
+    if [ $? -eq 0 ]; then
+        echo "$pdf_full_path" >> "$SUCCESS_LOG"
+    else
+        echo "$pdf_full_path" >> "$FAILURE_LOG"
+    fi
 }
 
 export -f pdfalyze
