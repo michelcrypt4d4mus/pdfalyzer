@@ -1,9 +1,12 @@
 # Next Release
+* Add `/Dest` to `NON_TREE_REFERENCES`
+
+# 1.0.2
 * Color `/Widths` tables
 * Color `/Catalog` and other summary nodes with with green
 * Color `ByteStringObject` like bytes
 * Resolve types of `IndirectObject` refs appearing in `dict` and `list` value Rich Tree table rows
-* Remove redunant `/First` and `/Last` non tree refs when those relationships are part of the tree
+* Remove redundant `/First` and `/Last` non tree refs when those relationships are part of the tree
 * Couple of edge case bug fixes
 
 # 1.0.1

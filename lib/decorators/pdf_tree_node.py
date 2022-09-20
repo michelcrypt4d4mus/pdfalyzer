@@ -75,7 +75,7 @@ class PdfTreeNode(NodeMixin):
         self.parent = parent
         self.remove_relationship(parent)
         # Adjust incorrect known_to_parent_as that can arise when adding non tree references to the walker
-        self.known_to_parent_as = self._find_address_of_this_node(parent)
+        self.known_to_parent_as = self._find_address_of_this_node(parent) or self.known_to_parent_as
         log.info(f"  Added {parent} as parent of {self}")
 
     def add_child(self, child: 'PdfTreeNode') -> None:
@@ -92,7 +92,7 @@ class PdfTreeNode(NodeMixin):
         self.children += (child,)
         child.remove_relationship(self)
         # Adjust incorrect known_to_parent_as that can arise when adding non tree references to the walker
-        child.known_to_parent_as = child._find_address_of_this_node(self)
+        child.known_to_parent_as = child._find_address_of_this_node(self) or child.known_to_parent_as
         log.info(f"  Added {child} as child of {self}")
 
     def add_relationship(self, from_node: 'PdfTreeNode', reference_key: str) -> None:
@@ -149,7 +149,8 @@ class PdfTreeNode(NodeMixin):
             if self.parent.label == TRAILER and self.type == XREF and XREF_STREAM in self.parent.obj:
                 return XREF_STREAM
             elif self.label != NEXT:
-                raise PdfWalkError(f"Could not find reference from {other_node} to {self}")
+                log.warning(f"Could not find expected reference from {other_node} to {self}")
+                return None
         else:
             reference_address = refs_to_this_node[0].reference_address
 
