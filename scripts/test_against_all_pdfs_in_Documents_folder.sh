@@ -18,7 +18,7 @@ pdfalyze() {
         return
     fi
 
-    cmd="$PDFALYZER_EXECUTABLE -f \"$pdf_full_path\""
+    cmd="$PDFALYZER_EXECUTABLE \"$pdf_full_path\""
     echo -e "\nCommand to run: $cmd"
 
     #if ask_yes_or_no "   pdfalyze \"$pdf_basename\"?"; then

@@ -2,6 +2,7 @@
 Unify font information spread across a bunch of PdfObjects (Font, FontDescriptor,
 and FontFile) into a single class.
 """
+from os import environ
 
 from PyPDF2._cmap import build_char_map, prepare_cm
 from PyPDF2.generic import IndirectObject, PdfObject
@@ -9,13 +10,15 @@ from rich.panel import Panel
 from rich.table import Table
 from rich.text import Text
 
+from lib.util.bytes_helper import print_bytes
 from lib.data_stream_handler import DataStreamHandler
 from lib.util.adobe_strings import (FONT, FONT_DESCRIPTOR, FONT_FILE, FONT_LENGTHS, RESOURCES, SUBTYPE,
      TO_UNICODE, TYPE, W, WIDTHS)
 from lib.util.logging import log
-from lib.util.string_utils import SUBHEADING_WIDTH, console, get_type_style, pp, print_bytes
+from lib.util.string_utils import SUBHEADING_WIDTH, console, get_type_style, pp
 
 
+SUPPRESS_QUOTED_ENV_VAR = 'SUPPRESS_DECODE_OF_QUOTED_STRINGS'
 CHARMAP_WIDTH = 8
 CHARMAP_DISPLAY_COLS = 5
 CHARMAP_COLUMN_WIDTH = int(CHARMAP_WIDTH * 2.5)
@@ -151,6 +154,9 @@ class FontInfo:
         if self.data_stream_handler is not None:
             self.data_stream_handler.print_stream_preview(title_suffix=f" of /FontFile for {self.display_title}")
             self.data_stream_handler.check_for_dangerous_instructions()
+
+            if environ.get(SUPPRESS_QUOTED_ENV_VAR) is None:
+                self.data_stream_handler.force_decode_all_quoted_bytes()
 
         console.print("\n\n")
 

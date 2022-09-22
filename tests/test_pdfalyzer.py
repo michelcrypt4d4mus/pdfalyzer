@@ -8,4 +8,4 @@ PDFALYZER_EXECUTABLE = path.join(PROJECT_DIR, 'pdfalyzer.py')
 
 def test_pdfalyzer_py_executable(pdfs_in_repo):
     for pdf in pdfs_in_repo:
-        check_call([PDFALYZER_EXECUTABLE, pdf])
+        check_call([PDFALYZER_EXECUTABLE, '--limit-decode', '128', pdf])

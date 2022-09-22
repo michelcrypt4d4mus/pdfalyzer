@@ -1,63 +1,65 @@
 """
 Class for handling binary data streams. Currently focused on font binaries.
 """
-import chardet
 import re
 from os import environ
 
 from rich.panel import Panel
 from rich.text import Text
 
-from lib.util.adobe_strings import CURRENTFILE_EEXEC, DANGEROUS_PDF_KEYS
-from lib.util.string_utils import (CONSOLE_PRINT_WIDTH, clean_byte_string, console, force_print_with_encoding,
-     generate_hyphen_line, print_bytes)
+from lib.util.adobe_strings import CURRENTFILE_EEXEC
+from lib.bytes_decoder import BytesDecoder
+from lib.util.bytes_helper import BOMS, DANGEROUS_INSTRUCTIONS, BytesSequence, print_bytes
+from lib.util.string_utils import CONSOLE_PRINT_WIDTH, SUBHEADING_WIDTH, console, generate_hyphen_line
 from lib.util.logging import log
 
 
+# Command line options
+LIMIT_DECODES_LARGER_THAN_ENV_VAR = 'LIMIT_DECODES_LARGER_THAN_ENV_VAR'
+LIMIT_DECODE_OF_QUOTED_BYTES_LONGER_THAN = 256
+# TODO: should be a command line option
 BYTE_STREAM_PREVIEW_SIZE = 10 * int(CONSOLE_PRINT_WIDTH * 0.8)
-SURROUNDING_BYTES_LENGTH_DEFAULT = 64
-SURROUNDING_BYTES_ENV_VAR = 'SURROUNDING_BYTES'
+SHORT_QUOTE_LENGTH = 128
 
-ENCODINGS_TO_ATTEMPT = [
-    'utf-8',
-    'latin-1',
-    'Windows-1252',
-]
+# Bytes
+ESCAPED_DOUBLE_QUOTE_BYTES = b'\\"'
+ESCAPED_SINGLE_QUOTE_BYTES = b"\\'"
+FRONT_SLASH_BYTE = b"/"
+CAPTURE_BYTES = b'(.*?)'
 
-# Byte order marks
-BOMS = {
-    b'\x2b\x2f\x76': 'UTF-7 BOM',
-    b'\xef\xbb\xbf': 'UTF-8 BOM',
-    b'\xfe\xff':     'UTF-16 BOM',
-    b'\x0e\xfe\xff': 'SCSU BOM',
+# Regexes used to create iterators to find quoted bytes/strings/etc of interest
+QUOTE_REGEXES = {
+    'backtick': re.compile(b'`(.*?)`', re.DOTALL),
+    'guillemet': re.compile(b'\xab(.*?)\xbb', re.DOTALL),
+    'escaped double quote': re.compile(ESCAPED_DOUBLE_QUOTE_BYTES + CAPTURE_BYTES + ESCAPED_DOUBLE_QUOTE_BYTES, re.DOTALL),
+    'escaped single quote': re.compile(ESCAPED_SINGLE_QUOTE_BYTES + CAPTURE_BYTES + ESCAPED_SINGLE_QUOTE_BYTES, re.DOTALL),
+    'front slash': re.compile(FRONT_SLASH_BYTE + CAPTURE_BYTES + FRONT_SLASH_BYTE, re.DOTALL),
 }
-
-# Remove the leading '/' from elements of DANGEROUS_PDF_KEYS and convert to bytes, except /F ("URL")
-DANGEROUS_BYTES = [instruction[1:].encode() for instruction in DANGEROUS_PDF_KEYS] + [b'/F']
-DANGEROUS_JAVASCRIPT_INSTRUCTIONS = [b'eval']
-DANGEROUS_INSTRUCTIONS = DANGEROUS_BYTES + DANGEROUS_JAVASCRIPT_INSTRUCTIONS + list(BOMS.keys())
 
 
 class DataStreamHandler:
     def __init__(self, _bytes: bytes):
         self.bytes = _bytes
+        limit_decode_value = int(environ.get(LIMIT_DECODES_LARGER_THAN_ENV_VAR, LIMIT_DECODE_OF_QUOTED_BYTES_LONGER_THAN))
+        self.limit_decodes_larger_than = limit_decode_value
 
-    def check_for_dangerous_instructions(self):
-        console.print(Panel('Scanning font binary for dangerous PDF instructions', style='dark_red', expand=False))
+    def check_for_dangerous_instructions(self) -> None:
+        console.print(Panel("Scanning font binary for 'mad sus' bytes", style='danger_header', width=SUBHEADING_WIDTH))
 
         for instruction in DANGEROUS_INSTRUCTIONS:
-            # Hacky way to ensure we start hunt at byte 0
-            last_found_idx = -len(instruction)
+            instruction_regex = re.compile(re.escape(instruction), re.DOTALL)
             explainer = f"({BOMS[instruction]}) " if instruction in BOMS else ''
+            instructions_instances_found = 0
 
-            while instruction in self.bytes[last_found_idx + len(instruction):]:
-                last_found_idx = self.bytes.find(instruction, last_found_idx + len(instruction))
-                console.print(f"Found {instruction} {explainer}at position {last_found_idx} of {len(self.bytes)}!", style='bytes_highlighted')
-                surrounding_bytes_length = int(environ.get(SURROUNDING_BYTES_ENV_VAR, SURROUNDING_BYTES_LENGTH_DEFAULT))
-                self._print_surrounding_bytes(last_found_idx, surrounding_bytes_length, instruction)
-                console.print('\n')
+            for byte_seq in self.extract_regex_capture_bytes(instruction_regex):
+                msg = f"Found {instruction} {explainer}at idx {byte_seq.start_position} of {len(self.bytes)}!"
+                console.print(msg,style='bytes_highlighted')
+                instructions_instances_found += 1
+                decoder = BytesDecoder(self.bytes, byte_seq)
+                decoder.force_print_with_all_encodings()
+                console.print("\n")
 
-            if last_found_idx == -len(instruction):
+            if instructions_instances_found == 0:
                 console.print(f"{instruction} not found...", style='dim')
 
     def print_stream_preview(self, num_bytes=BYTE_STREAM_PREVIEW_SIZE, title_suffix=None) -> None:
@@ -84,74 +86,87 @@ class DataStreamHandler:
         console.print(generate_hyphen_line(title='END BYTES'), style='dim')
         console.print('')
 
-    def attempt_encoding_detection(self, _bytes=None):
-        """Use the chardet library to try to figure out the encoding of _bytes (or entire stream if _bytes is None)"""
-        _bytes = self.bytes if _bytes is None else _bytes
-        console.print("Attempting encoding detection with chardet library...")
-        console.print(chardet.detect(_bytes))
+    def force_decode_all_quoted_bytes(self) -> None:
+        """Find all strings matching QUOTE_REGEXES (AKA between quote chars) and decode them with various encodings"""
+        for quote_type, regex in QUOTE_REGEXES.items():
+            console.print("\n\n")
+            msg = f"Force Decode All {quote_type.capitalize()} Quoted Strings"
+            console.print(Panel(msg, style='decode_section', width=SUBHEADING_WIDTH))
+            quoted_byte_seqs_found = 0
 
-    def extract_guillemet_quoted_strings(self):
-        """Print out strings surrounded by Guillemet quotes, e.g. «string» would give 'string'"""
-        self._extract_quoted_strings(rb'\xab(.*?)\xbb', 'guillemet')
+            for quoted_bytes in self.extract_regex_capture_bytes(regex):
+                if quoted_bytes.length > self.limit_decodes_larger_than or quoted_bytes.length == 0:
+                    self._print_suppressed_decode(quoted_bytes, quote_type)
+                    continue
 
-    def extract_backtick_quoted_strings(self):
-        """Print strings surrounded by backticks"""
-        self._extract_quoted_strings(rb'`(.*?)`', 'backtick')
+                quoted_byte_seqs_found += 1
+                console.print(self._decode_attempt_subheading_panel(quoted_bytes, quote_type))
+                decoder = BytesDecoder(self.bytes, quoted_bytes)
+                decoder.force_print_with_all_encodings()
+                console.print("")
 
-    def attempt_decode(self, chars, encoding):
-        try:
-            console.print(f"Decoded {encoding}: {chars.decode(encoding)}")
+            if quoted_byte_seqs_found == 0:
+                console.print(f"No {quote_type} quoted byte sequences found in binary data...", style='grey')
 
-            if encoding != 'utf-16':
-                input('decoded!')
-        except UnicodeDecodeError:
-            console.print(f"fail attempting decode of {len(chars)} chars in {encoding}:", style='grey')
+    # These iterators will iterate over all the first capture groups of all the matches they find for the
+    # regex they pass to extract_regex_capture_bytes() as an argument. It's very easy to build a similar
+    # iterator if you find a pattern you want to dig for.
+    def extract_guillemet_quoted_bytes(self):
+        """Iterate on all strings surrounded by Guillemet quotes, e.g. «string»"""
+        return self.extract_regex_capture_bytes(QUOTE_REGEXES['guillemet'])
 
-    def bytes_after_eexec_statement(self):
-        """Get the bytes after the 'eexec' (if it appears)"""
-        if CURRENTFILE_EEXEC in self.bytes:
-            return self.bytes.split(CURRENTFILE_EEXEC)[1]
-        else:
-            return self.bytes
+    def extract_backtick_quoted_bytes(self):
+        """Returns an interator over all strings surrounded by backticks"""
+        return self.extract_regex_capture_bytes(QUOTE_REGEXES['backtick'])
 
-    def stream_length(self):
+    def extract_front_slash_quoted_bytes(self):
+        """Returns an interator over all strings surrounded by front_slashes (hint: regular expressions)"""
+        return self.extract_regex_capture_bytes(QUOTE_REGEXES['front_slaash'])
+
+    def extract_regex_capture_bytes(self, regex_with_one_capture: re) -> BytesSequence:
+        """Finds all matches of regex_with_one_capture in self.bytes and calls yield() with BytesSequence tuples"""
+        for match in regex_with_one_capture.finditer(self.bytes, self._eexec_idx()):
+            try:
+                match_bytes = match[1]
+            except IndexError:
+                log.debug(f"No capture group for {regex_with_one_capture}")
+                match_bytes = regex_with_one_capture.pattern
+
+            yield(BytesSequence(match_bytes, match.start(), match.end(), len(match_bytes)))
+
+    def bytes_after_eexec_statement(self) -> bytes:
+        """Get the bytes after the 'eexec' demarcation line (if it appears). See Adobe docs for details."""
+        return self.bytes.split(CURRENTFILE_EEXEC)[1] if CURRENTFILE_EEXEC in self.bytes else self.bytes
+
+    def stream_length(self) -> int:
         """Returns the number of bytes in the stream"""
         return len(self.bytes)
 
-    def _extract_quoted_strings(self, quote_regex, label=None):
-        """Generic method for use with quote regexes"""
-        for match in re.finditer(quote_regex, self.bytes_after_eexec_statement(), re.S):
-            match_bytes = match[1]
-            label = '' if label is None else f'{label} '
-            console.print(f"{label}quoted ({len(match_bytes)} bytes):\n {match_bytes}\n\n")
+    def _decode_attempt_subheading_panel(self, quoted_bytes: bytes, quote_type: str) -> Panel:
+        """Generate a Rich panel for decode attempts"""
+        headline = Text('Found ', style='decode_subheading')
+        headline.append(str(quoted_bytes.length), style='number')
+        headline.append(f" bytes between {quote_type.lower()} quotes ")
+        headline.append(f"(start idx: ", style='off_white')
+        headline.append(str(quoted_bytes.start_position), style='number')
+        headline.append(', end idx: ', style='off_white')
+        headline.append(str(quoted_bytes.end_position), style='number')
+        headline.append(')', style='off_white')
+        return Panel(headline, style='decode_subheading', expand=False)
 
-    def _print_surrounding_bytes(self, around_idx: int, size: int, highlighted_bytes):
-        """Print the bytes before and after a given location in the stream"""
-        start_idx = max(around_idx - size, 0)
-        end_idx = min(around_idx + size + 2, len(self.bytes))
-        surrounding_bytes = self.bytes[start_idx:end_idx]
+    def _print_suppressed_decode(self, quoted_bytes: bytes, quote_type: str) -> None:
+        """Print a message indicating that we are not going to decode a given block of bytes"""
+        if quoted_bytes.length == 0:
+            msg = f"  Skipping zero length {quote_type} quoted bytes at {quoted_bytes.start_position}...\n"
+            console.print(msg, style='dark_grey_italic')
+            return
 
-        if len(surrounding_bytes) == 0:
-            import pdb;pdb.set_trace()
+        msg = f"Suppressing decode of {quoted_bytes.length} byte {quote_type} at "
+        txt = Text(msg + f"position {quoted_bytes.start_position} (", style='bytes_title')
+        txt.append(f"--limit-decodes is {self.limit_decodes_larger_than} bytes", style='grey')
+        txt.append(')', style='bytes_title dim')
+        console.print(Panel(txt, style='bytes', expand=False))
 
-        # Strings are longer than the bytes they represent so we have to re-find
-        highlighted_bytes_str = clean_byte_string(highlighted_bytes)
-        printable_bytes_str = clean_byte_string(surrounding_bytes)
-        str_idx = printable_bytes_str.find(highlighted_bytes_str)
-        highlighted_bytes_strlen = len(highlighted_bytes_str)
-
-        # Highlight the matched highlighted_bytes in the console output
-        section = Text(printable_bytes_str[:str_idx], style='ascii_unprintable')
-        section.append(printable_bytes_str[str_idx:str_idx + highlighted_bytes_strlen], style='fail')
-        section.append(printable_bytes_str[str_idx + highlighted_bytes_strlen:], style='ascii_unprintable')
-
-        # Print the output
-        size_str = f"({size} bytes before and {size} bytes after [error]{clean_byte_string(highlighted_bytes)}[/error] at position {around_idx})"
-        console.print(f"Surrounding raw bytes {size_str}: ")
-        console.print(section)
-
-        for encoding in ENCODINGS_TO_ATTEMPT:
-            console.print(f"\nAttempting {encoding} printout of surrounding bytes {size_str} by force...", style='minor_header')
-            force_print_with_encoding(surrounding_bytes, encoding, around_idx - start_idx, len(highlighted_bytes))
-
-        console.print("")
+    def _eexec_idx(self) -> int:
+        """Returns the location of CURRENTFILES_EEXEC or 0"""
+        return self.bytes.find(CURRENTFILE_EEXEC) if CURRENTFILE_EEXEC in self.bytes else 0

@@ -5,7 +5,6 @@ searching the tree and printing out information.
 """
 from collections import defaultdict
 from os.path import basename
-from weakref import ref
 
 from anytree import LevelOrderIter, RenderTree, SymlinkNode
 from anytree.render import DoubleStyle
@@ -23,7 +22,8 @@ from lib.util.adobe_strings import (COLOR_SPACE, D, DEST, EXT_G_STATE, FONT, K, 
      XREF, XREF_STREAM)
 from lib.util.exceptions import PdfWalkError
 from lib.util.logging import log
-from lib.util.string_utils import console, get_symlink_representation, pp, print_section_header
+from lib.util.pdf_object_helper import get_symlink_representation
+from lib.util.string_utils import console, pp, print_section_header
 
 
 TRAILER_FALLBACK_ID = 10000000
@@ -147,10 +147,10 @@ class PdfWalker:
         print_section_header(f'PDF Node Summary for {self.pdf_basename}')
         console.print_json(data=self._analyze_tree(), sort_keys=True)
 
-    def print_font_info(self) -> None:
+    def print_font_info(self, font_idnum=None) -> None:
         print_section_header(f'{len(self.font_infos)} fonts found in {self.pdf_basename}')
 
-        for font_info in self.font_infos:
+        for font_info in [fi for fi in self.font_infos if font_idnum is None or font_idnum == fi.idnum]:
             font_info.print_summary()
 
     def print_other_relationships(self) -> None:
@@ -361,10 +361,10 @@ class PdfWalker:
                     keys_encountered[k] += 1
 
         return {
+            'keys_encountered': keys_encountered,
             'node_count': node_count,
-            'pdf_object_types': pdf_object_types,
             'node_labels': node_labels,
-            'keys_encountered': keys_encountered
+            'pdf_object_types': pdf_object_types,
         }
 
     def _verify_all_traversed_nodes_are_in_tree(self) -> None:
@@ -405,7 +405,7 @@ class PdfWalker:
             elif TYPE not in obj:
                 msg = f"Obj {idnum} has no {TYPE} and is not in tree. Either a loose node w/no data or an error in pdfalyzer."
                 msg += f"\nHere's the contents for you to assess:\n{obj}"
-                log.error(msg)
+                log.warning(msg)
                 continue
 
             obj_type = obj[TYPE]

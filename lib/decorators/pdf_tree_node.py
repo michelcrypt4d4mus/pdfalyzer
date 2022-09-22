@@ -17,13 +17,14 @@ from rich.table import Table
 from rich.text import Text
 from rich.tree import Tree
 
-from lib.util.adobe_strings import (DANGEROUS_PDF_KEYS, FIRST, FONT, LAST, NEXT, TYPE1_FONT, S, SUBTYPE, TRAILER,
-     TYPE, UNLABELED, XREF, XREF_STREAM)
+from lib.util.adobe_strings import (DANGEROUS_PDF_KEYS, FIRST, FONT, LAST, NEXT, TYPE1_FONT, S,
+     SUBTYPE, TRAILER, TYPE, UNLABELED, XREF, XREF_STREAM)
+from lib.util.bytes_helper import NEWLINE_BYTE, clean_byte_string
 from lib.util.exceptions import PdfWalkError
 from lib.util.logging import log
-from lib.util.pdf_object_helper import get_references
-from lib.util.string_utils import (NEWLINE_BYTE, clean_byte_string, console, get_label_style, get_node_type_style,
-     get_symlink_representation, get_type_style, get_type_string_style, pypdf_class_name)
+from lib.util.pdf_object_helper import get_references, get_symlink_representation
+from lib.util.string_utils import (console, get_label_style, get_node_type_style,
+     get_type_style, get_type_string_style, pypdf_class_name)
 
 
 DEFAULT_MAX_ADDRESS_LENGTH = 90

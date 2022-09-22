@@ -89,20 +89,26 @@ scripts/install_t1utils.sh
 As of right now these are the options:
 
 ```sh
-usage: pdfalyzer.py [-h] [-d] [-t] [-r] [-f] [-c] [-txt OUTPUT_DIR] [-svg SVG_OUTPUT_DIR] [-x STREAM_DUMP_DIR] [-I] [-D] file_to_analyze.pdf
+usage: pdfalyzer.py [-h] [--version] [-d] [-t] [-r] [-f [ID]] [-c] [--suppress-decodes] [--limit-decodes MAX] [--surrounding BYTES] [-txt OUTPUT_DIR] [-svg SVG_OUTPUT_DIR]
+                    [-x STREAM_DUMP_DIR] [-I] [-D]
+                    file_to_analyze.pdf
 
-Build and print trees, font binary summaries, and other things describing the logical structure of a PDF. If no output sections are specified all sections will be printed to STDOUT in the order they are listed as command line options.
+Build and print trees, font binary summaries, and other things describing the logical structure of a PDF.If no output sections are specified all sections will be printed to STDOUT in the order they are listed as command line options.
 
 positional arguments:
   file_to_analyze.pdf   PDF file to process
 
 options:
   -h, --help            show this help message and exit
+  --version             show program's version number and exit
   -d, --docinfo         show embedded document info (author, title, timestamps, etc)
   -t, --tree            show condensed tree (one line per object)
   -r, --rich            show much more detailed tree (one panel per object, all properties of all objects)
-  -f, --fonts           show info about fonts / scan font binaries for dangerous content)
+  -f [ID], --font [ID]  scan font binaries for dangerous content (limited to font with PDF ID=[ID] if [ID] given)
   -c, --counts          show counts of some of the properties of the objects in the PDF
+  --suppress-decodes    suppress ALL decode attempts for quoted bytes found in font binaries
+  --limit-decodes MAX   suppress decode attempts for quoted byte sequences longer than MAX (default: 1024)
+  --surrounding BYTES   number of bytes to display before and after suspicious strings in font binaries (default: 64)
   -txt OUTPUT_DIR, --txt-output-to OUTPUT_DIR
                         write analysis to uncolored text files in OUTPUT_DIR (in addition to STDOUT)
   -svg SVG_OUTPUT_DIR, --export-svgs SVG_OUTPUT_DIR
@@ -110,7 +116,7 @@ options:
   -x STREAM_DUMP_DIR, --extract-streams-to STREAM_DUMP_DIR
                         extract all binary streams in the PDF to files in STREAM_DUMP_DIR then exit (requires pdf-parser.py)
   -I, --interact        drop into interactive python REPL when parsing is complete
-  -D, --debug           show debug log output
+  -D, --debug           show extremely verbose debug log output
 ```
 
 Beyond that there's [a few scripts](scripts/) in the repo that may be of interest.
@@ -135,8 +141,9 @@ page_nodes = findall_by_attr(walker.pdf_tree, name='type', value='/Page')
 # Get the fonts
 fonts = walker.font_infos
 
-# Extract all backtick quoted strings from a font binary
-fonts[0].data_stream_handler.extract_backtick_quoted_strings()
+# Extract backtick quoted strings from a font binary and process them
+for backtick_quoted_string in fonts[0].data_stream_handler.extract_backtick_quoted_bytes():
+    process(backtick_quoted_string)
 ```
 
 The representation of the PDF objects (e.g. `pdf_object` in the example above) is handled by [PyPDF2](https://github.com/py-pdf/PyPDF2) so for more details on what's going on there check out its documentation.
@@ -189,6 +196,13 @@ Things like, say, a hidden binary `/F` (PDF instruction meaning "URL") followed 
 [^3]: At least they weren't catching it as of September 2022.
 
 ![Node Summary](doc/svgs/svgs_rendered_as_png/font29.js.1.png)
+
+#### Now There's Even A Fancy Table To Tell You What The `chardet` Library Would Rank As The Most Likely Encoding For A Chunk Of Binary Data
+Behold the beauty:
+![Basic Tree](doc/svgs/svgs_rendered_as_png/decoding_and_chardet_table_1.png)
+
+In the chaos at the heart of our digital lives:
+![Basic Tree](doc/svgs/svgs_rendered_as_png/decoding_and_chardet_table_2.png)
 
 ## Compute Summary Statistics About A PDF's Inner Structure
 Some simple counts of some properties of the internal PDF objects. Not the most exciting but sometimes helpful. `pdfid.py` also does something much like this.

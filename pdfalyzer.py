@@ -1,15 +1,19 @@
 #!/usr/bin/env python
-from argparse import ArgumentError, ArgumentParser
+from argparse import ArgumentDefaultsHelpFormatter, ArgumentError, ArgumentParser
 from collections import namedtuple
+from functools import partial
 from os import environ, path
 import code
 import importlib.metadata
 import logging
 import sys
 
-from lib.data_stream_handler import SURROUNDING_BYTES_ENV_VAR, SURROUNDING_BYTES_LENGTH_DEFAULT
+from lib.data_stream_handler import (LIMIT_DECODES_LARGER_THAN_ENV_VAR,
+     LIMIT_DECODE_OF_QUOTED_BYTES_LONGER_THAN)
+from lib.font_info import SUPPRESS_QUOTED_ENV_VAR
 from lib.pdf_parser_manager import PdfParserManager
 from lib.pdf_walker import PdfWalker
+from lib.util.bytes_helper import SURROUNDING_BYTES_ENV_VAR, SURROUNDING_BYTES_LENGTH_DEFAULT
 from lib.util.logging import log
 from lib.util.string_utils import console
 
@@ -17,23 +21,55 @@ from lib.util.string_utils import console
 # Tuple to keep our argument selection orderly
 OutputSection = namedtuple('OutputSection', ['argument', 'method'])
 
+
+class ExplicitDefaultsHelpFormatter(ArgumentDefaultsHelpFormatter):
+    def _get_help_string(self, action):
+        if action.default in (None, False):
+            return action.help
+        return super()._get_help_string(action)
+
+
 # Parse arguments
 DESCRIPTION = 'Build and print trees, font binary summaries, and other things describing the logical structure of a PDF.' \
               'If no output sections are specified all sections will be printed to STDOUT in the order they are listed ' \
               'as command line options.'
 
-parser = ArgumentParser(description=DESCRIPTION)
+parser = ArgumentParser(description=DESCRIPTION, formatter_class=ExplicitDefaultsHelpFormatter)
+parser.add_argument('--version', action='version', version=f"pdfalyzer {importlib.metadata.version('pdfalyzer')}")
 parser.add_argument('pdf', metavar='file_to_analyze.pdf', help='PDF file to process')
 
 # Output sections
 parser.add_argument('-d', '--docinfo', action='store_true', help='show embedded document info (author, title, timestamps, etc)')
 parser.add_argument('-t', '--tree', action='store_true', help='show condensed tree (one line per object)')
 parser.add_argument('-r', '--rich', action='store_true', help='show much more detailed tree (one panel per object, all properties of all objects)')
-# TODO: make -f take an integer to specify which font idnum to print: https://stackoverflow.com/questions/15301147/python-argparse-default-value-or-specified-value
-parser.add_argument('-f', '--fonts', action='store_true', help='show info about fonts / scan font binaries for dangerous content)')
+
+parser.add_argument('-f', '--font',
+                    nargs='?',
+                    const=-1,
+                    metavar='ID',
+                    type=int,
+                    help="scan font binaries for 'sus' content, optionally limited to PDF objs w/[ID] (use '--' to avoid positional mixups)")
+
 parser.add_argument('-c', '--counts', action='store_true', help='show counts of some of the properties of the objects in the PDF')
 
-# Output options
+# Fine tuning
+parser.add_argument('--suppress-decodes',
+                    action='store_true',
+                    help='suppress ALL decode attempts for quoted bytes found in font binaries')
+
+parser.add_argument('--limit-decodes',
+                    metavar='MAX',
+                    type=int,
+                    default=LIMIT_DECODE_OF_QUOTED_BYTES_LONGER_THAN,
+                    help=f'suppress decode attempts for quoted byte sequences longer than MAX')
+
+parser.add_argument('--surrounding',
+                    metavar='BYTES',
+                    type=int,
+                    default=SURROUNDING_BYTES_LENGTH_DEFAULT,
+                    help=f"number of bytes to display before and after suspicious strings in font binaries")
+
+# Export options
 parser.add_argument('-txt', '--txt-output-to',
                     metavar='OUTPUT_DIR',
                     help='write analysis to uncolored text files in OUTPUT_DIR (in addition to STDOUT)')
@@ -46,17 +82,9 @@ parser.add_argument('-x', '--extract-streams-to',
                     metavar='STREAM_DUMP_DIR',
                     help='extract all binary streams in the PDF to files in STREAM_DUMP_DIR then exit (requires pdf-parser.py)')
 
-# Fine tuning
-parser.add_argument('--surrounding',
-                    type=int,
-                    default=SURROUNDING_BYTES_LENGTH_DEFAULT,
-                    metavar='BYTES',
-                    help=f"number of bytes to display before and after suspicious strings in font binaries")
-
 # Debugging
 parser.add_argument('-I', '--interact', action='store_true', help='drop into interactive python REPL when parsing is complete')
 parser.add_argument('-D', '--debug', action='store_true', help='show extremely verbose debug log output')
-parser.add_argument('--version', action='version', version=f"pdfalyzer {importlib.metadata.version('pdfalyzer')}")
 
 
 # Handle the options
@@ -75,6 +103,11 @@ if not args.debug:
 if args.surrounding and args.surrounding != SURROUNDING_BYTES_LENGTH_DEFAULT:
     environ[SURROUNDING_BYTES_ENV_VAR] = str(args.surrounding)
 
+if args.suppress_decodes:
+    environ[SUPPRESS_QUOTED_ENV_VAR] = 'True'
+
+environ[LIMIT_DECODES_LARGER_THAN_ENV_VAR] = str(args.limit_decodes)
+
 
 # Execute
 walker = PdfWalker(args.pdf)
@@ -84,7 +117,7 @@ OUTPUT_SECTIONS = [
     OutputSection('docinfo', walker.print_document_info),
     OutputSection('tree', walker.print_tree),
     OutputSection('rich', walker.print_rich_table_tree),
-    OutputSection('fonts', walker.print_font_info),
+    OutputSection('font', partial(walker.print_font_info, font_idnum=None if args.font == -1 else args.font)),
     OutputSection('counts', walker.print_summary),
 ]
 
