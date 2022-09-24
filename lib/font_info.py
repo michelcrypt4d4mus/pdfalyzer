@@ -10,15 +10,17 @@ from rich.panel import Panel
 from rich.table import Table
 from rich.text import Text
 
-from lib.util.bytes_helper import print_bytes
-from lib.data_stream_handler import DataStreamHandler
+from lib.binary.data_stream_handler import DataStreamHandler
+from lib.helpers.bytes_helper import print_bytes
+from lib.helpers.rich_text_helper import console, get_type_style, subheading_width
+from lib.helpers.string_helper import pp
 from lib.util.adobe_strings import (FONT, FONT_DESCRIPTOR, FONT_FILE, FONT_LENGTHS, RESOURCES, SUBTYPE,
      TO_UNICODE, TYPE, W, WIDTHS)
 from lib.util.logging import log
-from lib.util.string_utils import SUBHEADING_WIDTH, console, get_type_style, pp
 
 
-SUPPRESS_QUOTED_ENV_VAR = 'SUPPRESS_DECODE_OF_QUOTED_STRINGS'
+
+SUPPRESS_QUOTED_ENV_VAR = 'PDFALYZER_SUPPRESS_DECODE_OF_QUOTED_STRINGS'
 CHARMAP_WIDTH = 8
 CHARMAP_DISPLAY_COLS = 5
 CHARMAP_COLUMN_WIDTH = int(CHARMAP_WIDTH * 2.5)
@@ -114,7 +116,7 @@ class FontInfo:
             self.lengths = [font_file[k] for k in FONT_LENGTHS if k in font_file]
             self.stream_data = font_file.get_data()
             self.advertised_length = sum(self.lengths)
-            self.data_stream_handler = DataStreamHandler(self.stream_data)
+            self.data_stream_handler = DataStreamHandler(self.stream_data, self)
             self.prepared_char_map = prepare_cm(font) if TO_UNICODE in font else None
             # TODO: shouldn't we be passing ALL the widths?
             self._char_map = build_char_map(label, self.widths[0], obj_with_resources)
@@ -146,8 +148,7 @@ class FontInfo:
 
     def print_summary(self):
         """Prints a table of info about the font drawn from the various PDF objects"""
-        console.print(Panel(self.display_title, width=SUBHEADING_WIDTH, padding=(1, 1)), style='font_title')
-        console.print(self._summary_table())
+        self.print_header_panel()
         self.print_character_mapping()
         self.print_prepared_charmap()
 
@@ -158,7 +159,10 @@ class FontInfo:
             if environ.get(SUPPRESS_QUOTED_ENV_VAR) is None:
                 self.data_stream_handler.force_decode_all_quoted_bytes()
 
-        console.print("\n\n")
+            self.data_stream_handler.print_stats()
+
+        console.print(self._summary_table())
+        console.line(2)
 
     def print_character_mapping(self):
         """Prints the character mapping extracted by PyPDF2._charmap in tidy columns"""
@@ -213,6 +217,9 @@ class FontInfo:
 
         print(f"\nfinal bytes back from {f.lengths[2]} + 10: {f.stream_data[-10 - -f.lengths[2]:]}")
 
+    def print_header_panel(self):
+        console.print(Panel(self.display_title, width=subheading_width(), padding=(1, 1)), style='font_title')
+
     def _summary_table(self):
         """Build a Rich Table with important info about the font"""
         table = Table('', '', show_header=False)
@@ -252,7 +259,7 @@ class FontInfo:
                 add_table_row('char widths(sorted)', sorted(self.widths))
 
         col_0_width = max([len(entry) for entry in table.columns[0]._cells]) + 4
-        table.columns[1].max_width = SUBHEADING_WIDTH - col_0_width - 3
+        table.columns[1].max_width = subheading_width() - col_0_width - 3
         return table
 
     def __str__(self):

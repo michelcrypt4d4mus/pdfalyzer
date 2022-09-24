@@ -1,5 +1,7 @@
+# Local copy of .env.example with cusom settings
+.env
+
 # Python
-poetry.lock
 /.venv/*
 /__pycache__/
 *__pycache__*

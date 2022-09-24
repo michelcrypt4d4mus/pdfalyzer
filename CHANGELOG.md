@@ -1,4 +1,19 @@
-# Next Release
+# 1.3.0
+* Improved scanning of binaries for `UTF-X` encoded data, where X is not a prime number.
+* You can use `dotenv` to permanently turn on or off or change the value of some command line options; see  [`.env.example`](.env.example) for mdetails on what is configurable.
+* Invocations of the tool are now logged in a kind of history file - `pdfalyzer.invocation.log`
+* `--maximize-width` arg means you can set yr monitor to teeny tiny fonts and print out absolutely monstrous SVGs (yay!)
+* Default `TerminalTheme` colors kind of sucked when you went to export SVGs and HTML... like black was not black, or even close. Things are simpler now - black is black, blue is blue, etc. Makes exports look better.
+* Lots of summary data about what were the most and least successful encodings at extracting some meaning (or at least not failing) when sifting through binary sequences surrounded by quote chars, frong slashes, backticks, etc etc.
+* Will execute "by the book" decodes if the `chardet` library feels strongly enough about a given chunk of binary
+* Binary data highlighting now goes all the way to the end of the matched string in most cases (small bug had it falling 1-4 chars behind sometimes)
+* Fix bug with exporting font/binary details to SVGs
+* `--chardet-cutoff` option lets you control the the cutoff for adding untested encodings to the output based on what `chardet.detect()` thinks is the right encoding
+* `--suppress-chardet` command line option removes the chardet tables that are (mostly) duplicative of the decoded text tables
+* Use the shortest common abbreviations for unprintable ascii
+* Fix `Win-
+* `BytesMatch` class to keep track of binary regex matches
+* Group suppression notifications together
 
 # 1.2.0
 * Dramatic expansion in the `pdfalyzer`'s binary data scouring capabilities:
@@ -8,8 +23,7 @@
    * Add `--suppress-decodes` to suppress attempted decodes of quoted strings in font binaries
    * Cool art gets generated when you swarm a binaries quoted strings, which are mostly but not totally random
 * The `--font` option takes an optional argument to limit the output to a single font ID
-
-* Add `--limit-decodes` to suppress attempted decodes of quoted strings in font binaries over a certain length
+* Add `--max-decode-length` to suppress attempted decodes of quoted strings in font binaries over a certain length
 * Add `--surrounding` option to specify number of bytes to print/decode before and after suspicious bytes; decrease default number of surrounding bytes
 * Add `--version` option
 * `extract_guillemet_quoted_bytes()` and `extract_backtick_quoted_bytes()` are now iterators

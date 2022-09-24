@@ -4,7 +4,7 @@ def test_quote_regex_iterator(analyzing_malicious_documents_pdf_walker):
     quoted_sections_found = 0
 
     for quoted_bytes in font.data_stream_handler.extract_backtick_quoted_bytes():
-        quoted_bytes_found += quoted_bytes.length
+        quoted_bytes_found += quoted_bytes.capture_len
         quoted_sections_found += 1
 
     print(f"sections: {quoted_sections_found}, bytes: {quoted_bytes_found}")

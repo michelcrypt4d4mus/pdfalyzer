@@ -1,7 +1,6 @@
 import pytest
 
 from lib.pdf_parser_manager import PdfParserManager
-from lib.util.logging import log
 
 
 class TestPdfWalker:

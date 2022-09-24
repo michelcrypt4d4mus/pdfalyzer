@@ -1,6 +1,6 @@
 """
 PDF object decorator - wraps actual PDF objects to make them anytree nodes.
-Also adds decorators/generators for rich text representation.
+Also adds decorators/generators for Rich text representation.
 
 Child/parent relationships should be set using the add_child()/set_parent()
 methods and not set directly. (TODO: this could be done better with anytree
@@ -17,14 +17,15 @@ from rich.table import Table
 from rich.text import Text
 from rich.tree import Tree
 
+from lib.detection.character_encodings import NEWLINE_BYTE
+from lib.helpers.bytes_helper import clean_byte_string
+from lib.helpers.pdf_object_helper import get_references, get_symlink_representation
+from lib.helpers.rich_text_helper import console, get_label_style, get_type_style, get_type_string_style
+from lib.helpers.string_helper import (get_node_type_style, pypdf_class_name)
 from lib.util.adobe_strings import (DANGEROUS_PDF_KEYS, FIRST, FONT, LAST, NEXT, TYPE1_FONT, S,
      SUBTYPE, TRAILER, TYPE, UNLABELED, XREF, XREF_STREAM)
-from lib.util.bytes_helper import NEWLINE_BYTE, clean_byte_string
 from lib.util.exceptions import PdfWalkError
 from lib.util.logging import log
-from lib.util.pdf_object_helper import get_references, get_symlink_representation
-from lib.util.string_utils import (console, get_label_style, get_node_type_style,
-     get_type_style, get_type_string_style, pypdf_class_name)
 
 
 DEFAULT_MAX_ADDRESS_LENGTH = 90
@@ -273,7 +274,7 @@ class PdfTreeNode(NodeMixin):
 
         return tree
 
-    def _rich_text(self) -> Text:
+    def _node_label(self) -> Text:
         text = Text('<', style='white')
         text.append(f'{self.idnum}', style='bright_white')
         text.append(':', style='white')
@@ -285,10 +286,10 @@ class PdfTreeNode(NodeMixin):
         return text
 
     def __str_with_color__(self) -> Text:
-        return self._rich_text()[:-1] + self.colored_address(max_length=DEFAULT_MAX_ADDRESS_LENGTH) + Text('>')
+        return self._node_label()[:-1] + self.colored_address(max_length=DEFAULT_MAX_ADDRESS_LENGTH) + Text('>')
 
     def __str__(self) -> str:
-        return self._rich_text().plain
+        return self._node_label().plain
 
     def __repr__(self) -> str:
         return self.__str__()

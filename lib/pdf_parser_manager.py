@@ -1,19 +1,17 @@
 """
 Instances of this class manage external calls to Didier Stevens's pdf-parser.py for a given PDF.
 """
+import re
 from os import path, system
 from subprocess import check_output
-import pathlib
-import re
 
+from lib.util.filesystem_awareness import PROJECT_DIR
 from lib.util.logging import log
 
-
-PROJECT_DIR = path.join(pathlib.Path(__file__).parent.resolve(), '..')
-PDF_PARSER_EXECUTABLE = path.join(PROJECT_DIR, 'tools', 'pdf-parser.py')
-# Regexes
+# PDF Internal Data Regexes
 PDF_OBJECT_START_REGEX = re.compile('^obj (\d+) \d+$')
 CONTAINS_STREAM_REGEX = re.compile('\s+Contains stream$')
+PDF_PARSER_EXECUTABLE = path.join(PROJECT_DIR, 'tools', 'pdf-parser.py')
 
 
 class PdfParserManager:

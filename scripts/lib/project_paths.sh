@@ -2,6 +2,8 @@
 # From https://stackoverflow.com/questions/4774054/reliable-way-for-a-bash-script-to-get-the-full-path-to-itself
 
 PDFALYZER_SCRIPT_LIB_PATH="${BASH_SOURCE[0]}";
+
+
 pushd . > /dev/null
 
 while([ -h "${PDFALYZER_SCRIPT_LIB_PATH}" ]); do

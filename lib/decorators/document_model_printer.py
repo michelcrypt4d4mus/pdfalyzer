@@ -7,7 +7,7 @@ from PyPDF2.generic import ArrayObject, DictionaryObject, IndirectObject
 from rich.console import Console
 from rich.markup import escape
 
-from lib.util.string_utils import pp, pypdf_class_name, INDENT_DEPTH
+from lib.helpers.string_helper import pp, pypdf_class_name, INDENT_DEPTH
 
 
 INDENT_SPACES = ' ' * INDENT_DEPTH
@@ -15,7 +15,7 @@ INDENT_JOIN = "\n" + INDENT_SPACES
 VALUE_WIDTH = 30
 
 TRUNCATABLE_TYPES = (ArrayObject, DictionaryObject, list, dict)
-TRUNCATE_MULTILINE = 5
+TRUNCATE_MULTILINE = 25
 
 
 # Truncates large pretty print output

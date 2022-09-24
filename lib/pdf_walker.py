@@ -16,14 +16,15 @@ from rich.text import Text
 
 from lib.decorators.document_model_printer import print_with_header
 from lib.decorators.pdf_tree_node import PdfTreeNode
+from lib.helpers.pdf_object_helper import get_symlink_representation
+from lib.helpers.rich_text_helper import console
+from lib.helpers.string_helper import pp, print_section_header
 from lib.font_info import FontInfo
 from lib.util.adobe_strings import (COLOR_SPACE, D, DEST, EXT_G_STATE, FONT, K, KIDS, NON_TREE_REFERENCES, NUMS,
      OBJECT_STREAM, OPEN_ACTION, P, PARENT, PREV, RESOURCES, SIZE, STRUCT_ELEM, TRAILER, TYPE, UNLABELED, XOBJECT,
      XREF, XREF_STREAM)
 from lib.util.exceptions import PdfWalkError
 from lib.util.logging import log
-from lib.util.pdf_object_helper import get_symlink_representation
-from lib.util.string_utils import console, pp, print_section_header
 
 
 TRAILER_FALLBACK_ID = 10000000
@@ -422,12 +423,12 @@ class PdfWalker:
                         continue
                     elif k == SIZE:
                         if xref_val_for_key is None or v != (xref_val_for_key + 1):
-                            log.warning(f"{XREF} has {SIZE} of {xref_val_for_key}, trailer has {SIZE} of {v}")
+                            log.info(f"{XREF} has {SIZE} of {xref_val_for_key}, trailer has {SIZE} of {v}")
                             placeable = False
 
                         continue
                     elif k not in obj or v != obj.get(k):
-                        log.warning(f"Trailer has {k} -> {v} but {XREF} obj has {obj.get(k)} at that key")
+                        log.info(f"Trailer has {k} -> {v} but {XREF} obj has {obj.get(k)} at that key")
                         placeable = False
 
                 if placeable:
