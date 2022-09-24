@@ -36,7 +36,7 @@ ATTRIBUTES_TO_SHOW_IN_SUMMARY_TABLE = [
 
 class FontInfo:
     @classmethod
-    def extract_font_infos(cls, obj_with_resources: PdfObject) -> 'FontInfo':
+    def extract_font_infos(cls, obj_with_resources: PdfObject) -> ['FontInfo']:
         """
         Extract all the fonts from a given /Resources PdfObject node.
         obj_with_resources must have '/Resources' because that's what _cmap module expects
@@ -159,7 +159,7 @@ class FontInfo:
             if environ.get(SUPPRESS_QUOTED_ENV_VAR) is None:
                 self.data_stream_handler.force_decode_all_quoted_bytes()
 
-            self.data_stream_handler.print_stats()
+            self.data_stream_handler.print_decoding_stats_table()
 
         console.print(self._summary_table())
         console.line(2)
@@ -237,7 +237,7 @@ class FontInfo:
         add_table_row('total advertised length', self.advertised_length)
 
         if self.data_stream_handler is not None:
-            add_table_row('actual length', self.data_stream_handler.stream_length())
+            add_table_row('actual length', self.data_stream_handler.stream_length)
 
         if self.prepared_char_map is not None:
             add_table_row('prepared charmap length', len(self.prepared_char_map))

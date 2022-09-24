@@ -8,8 +8,8 @@ from os import environ
 
 from rich_argparse import RichHelpFormatter
 
-from lib.binary.data_stream_handler import (MAX_SIZE_TO_BE_WORTH_FORCE_DECODING_VALUES,
-     MAX_SIZE_TO_BE_WORTH_FORCE_DECODING_ENV_VAR)
+from lib.binary.data_stream_handler import (DEFAULT_MAX_DECODABLE_CHUNK_SIZE,
+     MAX_DECODABLE_CHUNK_SIZE_ENV_VAR)
 from lib.detection.encoding_detector import (CONFIDENCE_SCORE_RANGE, SUPPRESS_CHARDET_TABLE_ENV_VAR,
      EncodingDetector)
 from lib.font_info import SUPPRESS_QUOTED_ENV_VAR
@@ -91,7 +91,7 @@ tuning.add_argument('--suppress-decodes',
 
 tuning.add_argument('--max-decode-length',
                     help=f'suppress decode attempts for quoted byte sequences longer than MAX',
-                    default=MAX_SIZE_TO_BE_WORTH_FORCE_DECODING_VALUES,
+                    default=DEFAULT_MAX_DECODABLE_CHUNK_SIZE,
                     metavar='MAX',
                     type=int)
 
@@ -164,7 +164,7 @@ def parse_arguments():
         rich_text_helper.console.width = max(console_width_possibilities())
 
     # Suppressing/limiting output
-    environ[MAX_SIZE_TO_BE_WORTH_FORCE_DECODING_ENV_VAR] = str(args.max_decode_length)
+    environ[MAX_DECODABLE_CHUNK_SIZE_ENV_VAR] = str(args.max_decode_length)
 
     if args.surrounding_bytes and args.surrounding_bytes != SURROUNDING_BYTES_LENGTH_DEFAULT:
         environ[SURROUNDING_BYTES_ENV_VAR] = str(args.surrounding_bytes)

@@ -160,32 +160,8 @@ DECODE_NOT_ATTEMPTED_MSG = Text('(decode not attempted)', style='no_attempt')
 RAW_BYTES = Text('raw bytes', style=f"{GREY} italic")
 NO_DECODING_ERRORS_MSG = Text('No', style='good')
 DECODING_ERRORS_MSG = Text('Yes', style='dark_red')
+NOT_FOUND_MSG = Text('(not found)', style='dark_grey_italic')
 NA = Text('N/A', style='no_attempt')
-
-
-# Main interface to Rich package text formatting is Console class
-DEFAULT_CONSOLE_PRINT_WIDTH = 160
-
-# Subtract 2 from terminal cols just as a precaution in case things get weird
-def console_width_possibilities():
-    return [get_terminal_size().columns - 2, DEFAULT_CONSOLE_PRINT_WIDTH]
-
-# Maximize output width if PDFALYZER_MAX_WIDTH is set (also can changed with --maximize-width option)
-if is_env_var_set_and_not_false('PDFALYZER_MAX_WIDTH'):
-    CONSOLE_PRINT_WIDTH = max(console_width_possibilities())
-else:
-    CONSOLE_PRINT_WIDTH = min(console_width_possibilities())
-
-# Many bytes take 4 chars to print (e.g. '\xcc') so this is the max bytes we can safely print in a line
-CONSOLE_PRINT_BYTE_WIDTH = int(CONSOLE_PRINT_WIDTH / 4.0)
-
-
-console = Console(
-    theme=PDFALYZER_THEME,
-    color_system='256',
-    highlight=False,
-    width=CONSOLE_PRINT_WIDTH,
-    record=True)
 
 
 # TerminalThemes are used when saving SVGS. This one just swaps white for black in DEFAULT_TERMINAL_THEME
@@ -213,6 +189,25 @@ PDFALYZER_TERMINAL_THEME = TerminalTheme(
         (255, 255, 255),
     ],
 )
+
+
+# rich.console configuration (console is the main interface to Rich text formatting)
+DEFAULT_CONSOLE_WIDTH = 160
+
+# Subtract 2 from terminal cols just as a precaution in case things get weird
+def console_width_possibilities():
+    return [get_terminal_size().columns - 2, DEFAULT_CONSOLE_WIDTH]
+
+# Maximize output width if PDFALYZER_MAXIMIZE_WIDTH is set (also can changed with --maximize-width option)
+if is_env_var_set_and_not_false('PDFALYZER_MAXIMIZE_WIDTH'):
+    CONSOLE_WIDTH = max(console_width_possibilities())
+else:
+    CONSOLE_WIDTH = min(console_width_possibilities())
+
+# Many bytes take 4 chars to print (e.g. '\xcc') so this is the max bytes we can safely print in a line
+CONSOLE_PRINT_BYTE_WIDTH = int(CONSOLE_WIDTH / 4.0)
+
+console = Console(theme=PDFALYZER_THEME, color_system='256', highlight=False, width=CONSOLE_WIDTH)
 
 
 def console_width():
@@ -264,7 +259,7 @@ def to_rich_text(obj, style=None) -> Text:
     return Text(str(obj), style=style)
 
 
-def generate_subtable(cols=None, header_style=None):
+def generate_subtable(cols=None, header_style='subtable'):
     """Suited for lpacement in larger tables"""
     table = Table(
         box=box.SIMPLE,

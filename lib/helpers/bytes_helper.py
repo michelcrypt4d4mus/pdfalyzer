@@ -22,7 +22,7 @@ SURROUNDING_BYTES_LENGTH_DEFAULT = 64
 
 
 
-def get_bytes_before_and_after_sequence(_bytes: bytes, byte_seq: BytesMatch, num_before=None, num_after=None) -> bytes:
+def get_bytes_before_and_after_match(_bytes: bytes, byte_seq: BytesMatch, num_before=None, num_after=None) -> bytes:
     """
     Get all bytes from num_before the start of the sequence up until num_after the end of the sequence
     num_before and num_after will both default to the env var/CLI options having to do with surrounding

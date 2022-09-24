@@ -16,10 +16,12 @@ from lib.helpers.bytes_helper import (DANGEROUS_INSTRUCTIONS, clean_byte_string,
      build_rich_text_view_of_raw_bytes)
 from lib.helpers.dict_helper import get_dict_key_by_value
 from lib.helpers.rich_text_helper import (BYTES_BRIGHTER, BYTES_BRIGHTEST, BYTES_HIGHLIGHT,
-     DECODE_NOT_ATTEMPTED_MSG, NO_DECODING_ERRORS_MSG, GREY, GREY_ADDRESS, DECODING_ERRORS_MSG, NA, RAW_BYTES,
-     console, prefix_with_plain_text_obj, unprintable_byte_to_text)
+     DECODE_NOT_ATTEMPTED_MSG, NO_DECODING_ERRORS_MSG, GREY, GREY_ADDRESS, DECODING_ERRORS_MSG, NA,
+     RAW_BYTES, console, prefix_with_plain_text_obj, unprintable_byte_to_text)
 from lib.util.logging import log
 
+# Messages used in the table to show true vs. false (a two element array can be indexed by booleans)
+WAS_DECODABLE_MSGS = [NO_DECODING_ERRORS_MSG, DECODING_ERRORS_MSG]
 
 
 class BytesDecoder:
@@ -27,7 +29,7 @@ class BytesDecoder:
         """Instantiated with _bytes as the whole stream; :bytes_seq tells it how to pull the bytes it will decode"""
         self.bytes = _bytes
         self.bytes_len = len(_bytes)
-        self.label = label
+        self.label = label or clean_byte_string(bytes_match.regex.pattern)
         self.bytes_match = bytes_match
 
         # Note we send both the bytes in BytesMatch as well as the surrounding bytes used when presenting
@@ -47,13 +49,13 @@ class BytesDecoder:
         else:
             self.highlight_style = BYTES_HIGHLIGHT
 
-        # Metrics tracking variables
+        # Metrics tracking variables. self.decoded_strings has enconding for keys, decoded string as values
         self.were_matched_bytes_decodable = build_encodings_metric_dict()
-        self.decoded_strings = {}  # Keys are enconding names, vals are the result of Text().plain()
+        self.decoded_strings = {}
 
     def force_print_with_all_encodings(self) -> None:
         """Prints a table showing the result of forcefully decoding self.surrounding bytes in different encodings"""
-        console.print(self._decode_attempt_subheading_panel())
+        self._print_decode_attempt_subheading()
 
         for encoding in ENCODINGS_TO_ATTEMPT.keys():
             decoded_string = self._decode_bytes(encoding)
@@ -87,13 +89,13 @@ class BytesDecoder:
                 continue
             elif assessment.confidence >= EncodingDetector.force_decode_threshold:
                 self.were_matched_bytes_decodable[_encoding] = 0
-                log.info(f"chardet: {assessment.confidence}% confidence in {_encoding}... we'll try it")
+                log.info(f"chardet: {assessment.confidence}% HIGH confidence in {_encoding}... we'll try it")
 
                 try:
                     decoded_string = self._decode_bytes(_encoding)
                     log.info(f"  Successfully decoded with nonstandard encoding {_encoding}!")
                 except RuntimeError as e:
-                    decoded_string = Text(f"Tried nonstandard encoding bc chardet confidence. It failed: {e}", style='dark_red')
+                    decoded_string = Text(f"Tried {_encoding} bc of chardet's high. It failed: {e}", style='dark_red')
 
                 self._add_table_row(_encoding, decoded_string)
                 continue
@@ -108,7 +110,7 @@ class BytesDecoder:
         self.table_rows.append([
             prefix_with_plain_text_obj(encoding, style='encoding'),         # Encoding fancy Text
             self.chardet_manager.get_confidence_formatted_txt(encoding),    # Confidence metric fancy Text
-            DECODING_ERRORS_MSG if self.were_matched_bytes_decodable[encoding] > 0 else NO_DECODING_ERRORS_MSG, # easy vs. hard to decode
+            WAS_DECODABLE_MSGS[int(self.were_matched_bytes_decodable[encoding] > 0)],  # Were there errors decoding?
             decoded_string,
             self.chardet_manager.get_confidence_score(encoding),             # Numerical confidence metric
             self.chardet_manager.get_encoding_assessment(encoding)           # Full assessment
@@ -215,7 +217,7 @@ class BytesDecoder:
         txt.append(str(decoded_str[highlight_end_idx:]), style='dark_grey')
         return txt
 
-    def _decode_attempt_subheading_panel(self) -> Panel:
+    def _print_decode_attempt_subheading(self) -> Panel:
         """Generate a Rich panel for decode attempts"""
         headline = Text('Found ', style='decode_subheading')
         headline.append(str(self.bytes_match.capture_len), style='number')
@@ -227,37 +229,21 @@ class BytesDecoder:
         headline.append(', end idx: ', style='off_white')
         headline.append(str(self.bytes_match.end_idx), style='number')
         headline.append(')', style='off_white')
-        return Panel(headline, style='decode_subheading', expand=False)
+        panel = Panel(headline, style='decode_subheading', expand=False)
+        console.print(panel)
 
 
 def _build_decoded_bytes_table() -> Table:
-    decoded_table = Table(
-        'Encoding',
-        'How Likely Is It That This Is The Right Encoding? (chardet)',
-        'Decoding Errors?',
-        'Decoded Output',
-        show_lines=True,
-        border_style='bytes',
-        header_style=f"color(101) bold")
+    table = Table(show_lines=True, border_style='bytes', header_style=f"color(101) bold")
+    table.add_column('Encoding', style='white',       justify='right')
+    table.add_column("Odds Data Uses This Encoding",  justify='center', max_width=13, overflow='fold')
+    table.add_column('Decoding Errors?', style='dim', justify='center', max_width=9,  overflow='fold')
+    table.add_column('Decoded Output', overflow='fold')
 
-    # 1st Col (encoding)
-    decoded_table.columns[0].style = 'white'
-    decoded_table.columns[0].justify = 'right'
-    # 2nd col (chardet confidence/country)
-    decoded_table.columns[1].overflow = 'fold'
-    decoded_table.columns[1].justify = 'center'
-    decoded_table.columns[1].no_wrap = False
-    decoded_table.columns[1].max_width = 13
-    # 3rd col (forced decode?)
-    decoded_table.columns[2].max_width = 9
-    decoded_table.columns[2].justify = 'center'
-    # 4th col (decoded bytes)
-    decoded_table.columns[3].overflow = 'fold'
-
-    for i, col in enumerate(decoded_table.columns):
+    for i, col in enumerate(table.columns):
         col.vertical = 'middle'
 
-    return decoded_table
+    return table
 
 
 def _decoded_table_sorter(row: list) -> Number:
