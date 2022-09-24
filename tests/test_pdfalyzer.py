@@ -6,6 +6,7 @@ from math import isclose
 from os import path
 from subprocess import check_output
 
+from lib.helpers.rich_text_helper import console
 from lib.util.filesystem_awareness import PROJECT_DIR
 
 PDFALYZER_EXECUTABLE = path.join(PROJECT_DIR, 'pdfalyzer.py')
@@ -37,5 +38,8 @@ def _run_with_args(pdf, *args) -> str:
 
 
 def _assert_line_count_within_range(line_count, text):
-    assert isclose(line_count, len(text.split("\n")), rel_tol=0.1)
+    lines_in_text = len(text.split("\n"))
 
+    if not isclose(line_count, lines_in_text, rel_tol=0.1):
+        console.print(text)
+        raise AssertionError(f"Expected {line_count} but found {lines_in_text}")

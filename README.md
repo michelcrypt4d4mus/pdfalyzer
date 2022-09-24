@@ -286,7 +286,7 @@ Beyond that contributions are welcome, just make sure that before you open a pul
 If your pull request includes some `pytest` setup/unit testing you'll be my new favorite person.
 
 ### Testing
-Run tests by typing `pytest`. Test coverage is relatively spartan but should throw failures if you really mess something up.
+Run all tests by typing `pytest`. Test coverage is relatively spartan but should throw failures if you really mess something up. See [How To Invoke pytest](https://docs.pytest.org/en/7.1.x/how-to/usage.html) official docs for other options.
 
 
 # TODO

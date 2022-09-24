@@ -199,7 +199,9 @@ def console_width_possibilities():
     return [get_terminal_size().columns - 2, DEFAULT_CONSOLE_WIDTH]
 
 # Maximize output width if PDFALYZER_MAXIMIZE_WIDTH is set (also can changed with --maximize-width option)
-if is_env_var_set_and_not_false('PDFALYZER_MAXIMIZE_WIDTH'):
+if is_env_var_set_and_not_false('INVOKED_BY_PYTEST'):
+    CONSOLE_WIDTH = DEFAULT_CONSOLE_WIDTH
+elif is_env_var_set_and_not_false('PDFALYZER_MAXIMIZE_WIDTH'):
     CONSOLE_WIDTH = max(console_width_possibilities())
 else:
     CONSOLE_WIDTH = min(console_width_possibilities())
