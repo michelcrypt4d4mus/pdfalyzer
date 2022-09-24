@@ -3,9 +3,8 @@ Class for handling binary data streams. Currently focused on font binaries.
 """
 
 # TODO: rename BinaryStreamHandler
-from email.generator import Generator
 import re
-from collections import defaultdict, namedtuple
+from collections import defaultdict
 from numbers import Number
 from os import environ
 from typing import Iterator, Pattern
@@ -218,11 +217,12 @@ class DataStreamHandler:
         self.suppression_notice_queue = []
 
     def _eexec_idx(self) -> int:
-        """Returns the location of CURRENTFILES_EEXEC or 0"""
+        """Returns the location of CURRENTFILES_EEXEC within the binary stream dataor 0"""
         return self.bytes.find(CURRENTFILE_EEXEC) if CURRENTFILE_EEXEC in self.bytes else 0
 
 
 def build_suppression_notice_panel(txt):
+    """Just a panel"""
     return Panel(txt, style='bytes', expand=False)
 
 

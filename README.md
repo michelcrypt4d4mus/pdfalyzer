@@ -1,30 +1,30 @@
-# the pdfalyzer
-A PDF analysis tool geared towards visualizing the innards of possibly malicious PDFs in [spectacularly large and colorful diagrams](#example-output) as well as scanning the various kinds of binary data within the PDF for hidden potentially malicious content.
+# THE PDFALYZER
+A PDF analysis tool geared towards visualizing the inner tree-like data structure[^1] of a PDF in [spectacularly large and colorful diagrams](#example-output) as well as scanning the various kinds of binary data within the PDF for hidden potentially malicious content.
+
+[^1]: The official Adobe PDF specification calls this tree the PDF's "logical structure", which is a good example of nomenclature that does not help those who see it understand anything about what is being described. I can forgive them given that they named this thing back in the 80s, though it's a good example of why picking good names for things at the beginning is so important.
 
 ### What It Do
-1. Generate summary format as well as in depth visualizations of a PDF's logical tree structure and binary streams, all with nice colors. See [the examples below](#example-output) to get an idea.
-1. Scan for malicious content in the PDF, including in the font binaries where other tools don't look.
-  * A
-1. Be used as a library for your own PDF related code. All[^1] the inner PDF objects are guaranteed to be available in a searchable tree data structure.
-1. Ease the extraction of all the binary data in a PDF (fonts, images, etc) to separate files for further analysis.
+1. **Generate summary format as well as in depth visualizations of a PDF's tree structure**[^1] with helpful color themes that conceptually link objects of similar type. See [the examples below](#example-output) to get an idea.
+1. **Display text representations of the PDF's embedded binary data**. Adobe calls these "streams" and they hold things like images, fonts, etc.
+1. **Scan for malicious content in the PDF**, including in-depth scans of the embedded font binaries where other tools don't look. This is accomplished by iterating over all the matches for various predefined binary regexes (e.g. the binary representation of the string `/JavaScript`) but is extensible to digging through the PDF for any kind of binary data pattern.
+1. **Be used as a library for your own PDF related code.** All[^2] the inner PDF objects are guaranteed to be available in a searchable tree data structure.
+1. **Ease the extraction of all the binary data in a PDF** (fonts, images, etc) to separate files for further analysis. (The heavy lifting is actually done by [Didier Stevens's tools](#installing-didier-stevenss-pdf-analysis-tools) - the pdfalyzer automates what would otherwise be a lot of typing into a single command.)
 
 If you're looking for one of these things this may be the tool for you.
 
 An exception will be raised if there's any issue placing a node while parsing or if there are any nodes not reachable from the root of the tree at the end of parsing.
 
-[^1]: All internal PDF objects are guaranteed to exist in the tree except in these situations when warnings will be printed:
-  `/ObjStm` (object stream) objects which will be unrolled into the set of objects in the stream
-  `/XRef` Cross-reference stream objects which hold the same references as the `/Trailer` are presented as symlinks of the `/Trailer`
-
+[^2]: All internal PDF objects are guaranteed to exist in the tree except in these situations when warnings will be printed:
+  `/ObjStm` (object stream) is a collection of objects in a single stream that will be unrolled into its component objects.
+  `/XRef` Cross-reference stream objects which hold the same references as the `/Trailer` are hacked in as symlinks of the `/Trailer`
 
 ### What It Don't Do
-This tool is mostly about examining a PDF's logical structure and assisting with the discovery of malicious content. As such it doesn't have much to offer as far as extracting text from PDFs, rendering PDFs[^1], writing new PDFs, or many of the more conventional things one might do with a portable document.
+This tool is mostly about examining a PDF's logical structure and assisting with the discovery of malicious content. As such it doesn't have much to offer as far as extracting text from PDFs, rendering PDFs[^3], writing new PDFs, or many of the more conventional things one might do with a portable document.
 
-[^1]: Given the nature of the tool this function in particular is not offered.
-
+[^3]: Given the nature of the PDFs this tool is meant to be scan anything resembling "rendering" the document is pointedly NOT offered.
 
 ### Did The World Really Need Another PDF Tool?
-This tool was built to fill a gap in the PDF assessment landscape. Didier Stevens's [pdfid.py](https://github.com/DidierStevens/DidierStevensSuite/blob/master/pdfid.py) and [pdf-parser.py](https://github.com/DidierStevens/DidierStevensSuite/blob/master/pdf-parser.py) are still the best game in town when it comes to PDF analysis tools but they lack in the visualization department and also don't give you much to work with as far as giving you a data model you can write your own code around. [Peepdf](https://github.com/jesparza/peepdf) seemed promising but turned out to be in a buggy, out of date, and more or less unfixable state. And neither of them offered much in the way of tooling for embedded font analysis.
+This tool was built to fill a gap in the PDF assessment landscape following my . Didier Stevens's [pdfid.py](https://github.com/DidierStevens/DidierStevensSuite/blob/master/pdfid.py) and [pdf-parser.py](https://github.com/DidierStevens/DidierStevensSuite/blob/master/pdf-parser.py) are still the best game in town when it comes to PDF analysis tools but they lack in the visualization department and also don't give you much to work with as far as giving you a data model you can write your own code around. [Peepdf](https://github.com/jesparza/peepdf) seemed promising but turned out to be in a buggy, out of date, and more or less unfixable state. And neither of them offered much in the way of tooling for embedded font analysis.
 
 All those things being the case lead to a situation where I felt the world might be slightly improved if I strung together a couple of more stable/well known/actively maintained open source projects ([AnyTree](https://github.com/c0fec0de/anytree), [PyPDF2](https://github.com/py-pdf/PyPDF2), and [Rich](https://github.com/Textualize/rich)) into this tool.
 
@@ -38,13 +38,13 @@ All those things being the case lead to a situation where I felt the world might
 ### Basic Tree View
 As you can see the "mad sus" `/OpenAction` relationship is highlighted bright red, as would be a couple of other suspicious PDF instructions like `/JavaScript` that don't exist in the PDF but do exist in other documents.
 
-The dimmer (as in "harder to see") nodes[^2] marked with `Non Child Reference` give you a way to visualize the relationships between PDF objects that exist outside of the tree structure's parent/child relationships.
+The dimmer (as in "harder to see") nodes[^4] marked with `Non Child Reference` give you a way to visualize the relationships between PDF objects that exist outside of the tree structure's parent/child relationships.
 
 ![Basic Tree](doc/svgs/rendered_images/basic_tree.png)
 
 That's a pretty basic document. If you'd like to see the tree for a more complicated/longer PDF, [here's an example showing the `nmap` cheat sheet](doc/svgs/rendered_images/NMAP_Commands_Cheat_Sheet_and_Tutorial.pdf.tree.svg.png).
 
-[^2]: Technically they are `SymlinkNodes`, a really nice feature of [AnyTree](https://github.com/c0fec0de/anytree).
+[^4]: Technically they are `SymlinkNodes`, a really nice feature of [AnyTree](https://github.com/c0fec0de/anytree).
 
 ### Rich Tree View
 This image shows a more in-depth view of of the PDF tree for the same document shown above. This tree (AKA the "rich" tree) has almost everything - shows all PDF object properties, all relationships between objects. Even includes sizable previews of any binary data streams embedded or encrypted in the document.
@@ -62,10 +62,10 @@ It's actually `PyPDF2` doing the lifting here but we're happy to take the credit
 
 ![Node Summary](doc/svgs/rendered_images/font_character_mapping.png)
 
-#### Search Encrypted Binary Font Data for #MadSus Content No Malware Scanner Will Catch[^3]
+#### Search Encrypted Binary Font Data for #MadSus Content No Malware Scanner Will Catch[^5]
 Things like, say, a hidden binary `/F` (PDF instruction meaning "URL") followed by a `JS` (I'll let you guess what "JS" stands for) and then a binary `»` character (AKA "the character the PDF specification uses to close a section of the PDF's logical structure"). Put all that together and it says that you're looking at a secret JavaScript instruction embedded in the encrypted part of a font binary. A secret instruction that causes the PDF renderer to pop out of its frame prematurely as it renders the font.
 
-[^3]: At least they weren't catching it as of September 2022.
+[^5]: At least they weren't catching it as of September 2022.
 
 ![Node Summary](doc/svgs/rendered_images/font29.js.1.png)
 

@@ -1,8 +1,8 @@
 """
 There's two possible log sinks other than STDOUT:
 
-  * log - the application log (standard log, what goes to STDOUT with -D option)
-  * invocation_log - very minal log to track the command line options provided at used at invocation time
+  1. 'log' - the application log (standard log, what goes to STDOUT with -D option)
+  2. 'invocation_log' - very minal log to track the command line options provided at used at invocation time
 
 The regular log file at APPLICATION_LOG_PATH is where the quite verbose application logs
 will be written if things ever need to get that formal. For now those logs are only accessible
@@ -12,8 +12,7 @@ needs/wants that sort of thing.
 https://docs.python.org/3/library/logging.html#logging.basicConfig
 https://realpython.com/python-logging/
 
-Python log levels:
-
+Python log levels for reference:
     CRITICAL 50
     ERROR 40
     WARNING 30
