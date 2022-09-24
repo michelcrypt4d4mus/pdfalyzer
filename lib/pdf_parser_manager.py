@@ -51,7 +51,7 @@ class PdfParserManager:
     def extract_all_streams(self, output_dir):
         """Use pdf-parser.py to find binary data streams in the PDF and dump each of them to a separate file"""
         for object_id in self.object_ids_containing_stream_data:
-            stream_dump_file = path.join(output_dir, f'{path.basename(self.path_to_pdf)}.object_{object_id}.dump')
+            stream_dump_file = path.join(output_dir, f'{path.basename(self.path_to_pdf)}.object_{object_id}.bin')
             shell_cmd = self.base_shell_cmd + f' -f -o {object_id} -d "{stream_dump_file}"'
             log.debug(f'Dumping stream from object {object_id}: {shell_cmd}')
             system(shell_cmd)

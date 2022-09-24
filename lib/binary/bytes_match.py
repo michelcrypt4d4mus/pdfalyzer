@@ -5,9 +5,10 @@ pre and post_capture_lens refer to the regex sections before and after the captu
 '123(.*)x' would have pre_capture_len of 3 and post_capture_len of 2.
 """
 import re
+from rich.text import Text
 
+from lib.helpers.rich_text_helper import prefix_with_plain_text_obj
 from lib.util.logging import log
-
 
 # Regex Capture used with extracting quoted chunks of bytes
 CAPTURE_BYTES = b'(.*?)'
@@ -34,6 +35,20 @@ class BytesMatch:
     def total_length(self):
         """Include the length of the rest of the regex. Mostly works but sometimes we highly a few extra bytes"""
         return self.pre_capture_len + self.capture_len + self.post_capture_len
+
+    def match_idx_text(self) -> Text:
+        """Generate a Text object w/colors about the match location"""
+        if self.capture_len == 0:
+            style = 'dark_grey'
+            digit_style = 'zero_bytes'
+        else:
+            style = 'bytes'
+            digit_style = 'zero_bytes'
+
+        txt = prefix_with_plain_text_obj(f"{self.capture_len} byte ", style=digit_style, root_style=style)
+        txt.append('match found at ')
+        txt.append(f"idx {self.start_idx}", style='bright_cyan')
+        return txt
 
     def _compute_pre_and_post_capture_lens(self):
         """Deside which non capture chars in the regex are pre vs. post capture group"""

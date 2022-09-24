@@ -3,8 +3,9 @@ import logging
 import sys
 from argparse import ArgumentDefaultsHelpFormatter, ArgumentParser
 from collections import namedtuple
+from datetime import datetime
 from functools import partial, update_wrapper
-from os import environ
+from os import environ, getcwd, path
 
 from rich_argparse import RichHelpFormatter
 
@@ -14,10 +15,9 @@ from lib.detection.encoding_detector import (CONFIDENCE_SCORE_RANGE, SUPPRESS_CH
      EncodingDetector)
 from lib.font_info import SUPPRESS_QUOTED_ENV_VAR
 from lib.helpers.bytes_helper import SURROUNDING_BYTES_LENGTH_DEFAULT, SURROUNDING_BYTES_ENV_VAR
-from lib.helpers.rich_text_helper import console, console_width_possibilities
 from lib.helpers import rich_text_helper
-from lib.pdf_parser_manager import PdfParserManager
-from lib.util.logging import invocation_log, log
+from lib.helpers.rich_text_helper import console, console_width_possibilities
+from lib.util.logging import INVOCATION_LOG_PATH, invocation_log, log, log_and_print
 
 
 # Class to enable defaults to only be printed when they are not None or False
@@ -34,11 +34,14 @@ class ExplicitDefaultsHelpFormatter(ArgumentDefaultsHelpFormatter):
 OutputSection = namedtuple('OutputSection', ['argument', 'method'])
 
 
-DESCRIPTION = "Build and print trees, font binary summaries, and other things describing the logical structure" \
-              "of a PDF. If no output sections are specified all sections will be printed to STDOUT in the " \
-              "order they are listed as command line options."
+parser = ArgumentParser(
+    formatter_class=ExplicitDefaultsHelpFormatter,
+    description="Explore PDF's inner data structure with absurdly large and in depth visualizations, " + \
+                "track the control flow of her darker impulses, scan rivers of her binary data for " + \
+                "signs of evil sorcery, and generally peer deep into the dark heart of the Portable " + \
+                "Document Format. Just make sure you also forgive her - she knows not what she does.",
+    epilog=f"A registry of previous pdfalyzer invocations will be stored at '{INVOCATION_LOG_PATH}' should you need it.")
 
-parser = ArgumentParser(description=DESCRIPTION, formatter_class=ExplicitDefaultsHelpFormatter)
 
 
 # Positional args, version, help, etc
@@ -47,31 +50,39 @@ parser.add_argument('pdf', metavar='file_to_analyze.pdf', help='PDF file to proc
 
 
 # Output section selection
-select = parser.add_argument_group('OUTPUT SELECTION', 'If none of these chosen pdfalyzer will output them all')
+select = parser.add_argument_group(
+    'ANALYSIS SELECTION',
+    "Multiselect. Choosing nothing is choosing everything.")
 
 select.add_argument('-d', '--docinfo', action='store_true',
                     help='show embedded document info (author, title, timestamps, etc)')
 
 select.add_argument('-t', '--tree', action='store_true',
-                    help='show condensed tree (one line per object)')
+                    help='show condensed tree visualization (one line per PDF object)')
 
 select.add_argument('-r', '--rich', action='store_true',
-                    help='show much more detailed tree (one panel per object, all properties of all objects)')
+                    help='show much larger / more detailed tree visualization (one row per PDF object property)')
+
+select.add_argument('-c', '--counts', action='store_true',
+                    help='show counts of some of the properties of the objects in the PDF')
 
 select.add_argument('-f', '--font',
                     nargs='?',
                     const=-1,
                     metavar='ID',
                     type=int,
-                    help="scan font binaries for 'sus' content, optionally limited to PDF objs w/[ID] " + \
-                         "(use '--' to avoid positional mixups)")
-
-select.add_argument('-c', '--counts', action='store_true',
-                    help='show counts of some of the properties of the objects in the PDF')
+                    help="scan font binaries for sus content. brute force is involved. brutes are slow and so " + \
+                         "is slow. a single font can be optionally be selected by its internal PDF [ID]. " + \
+                         "not a multiselect but choosing nothing is still choosing everything. "
+                         "try '-f -- [the rest]' if you run into an argument position related piccadilly.")
 
 
 # Fine tuning
-tuning = parser.add_argument_group('FINE TUNING', 'Settings that affect aspects of the analyis and output')
+tuning = parser.add_argument_group(
+    'FINE TUNING',
+    "Tune various aspects of the analyses and visualizations to your needs. As an example setting " + \
+        "a low --max-decode-length (or suppressing brute force binary decode attempts altogether) can " + \
+        "dramatically improve run times and only rarely leads to a fatal lack of insight.")
 
 tuning.add_argument('--maximize-width', action='store_true',
                     help="maximize the display width to fill the terminal")
@@ -96,7 +107,8 @@ tuning.add_argument('--max-decode-length',
                     type=int)
 
 tuning.add_argument('--force-display-threshold',
-                    help="chardet.detect() scores encodings from 0-100 pct but only above this are displayed",
+                    help="chardet.detect() scores encodings from 0-100pct but encodings with scores below this number " + \
+                         "will not be displayed anywhere",
                     default=EncodingDetector.force_display_threshold,
                     metavar='PCT_CONFIDENCE',
                     type=int,
@@ -105,7 +117,7 @@ tuning.add_argument('--force-display-threshold',
 tuning.add_argument('--force-decode-threshold',
                     help="extremely high (AKA 'above this number') PCT_CONFIDENCE scores from chardet.detect() " + \
                          "as to the likelihood some binary data was written with a particular encoding will cause " + \
-                         " the pdfalyzer to do a force decode of that with that encoding. " + \
+                         "the pdfalyzer to do a force decode of that with that encoding. " + \
                          "(chardet is a sophisticated libary; this is pdfalyzer's way of harnessing that intelligence)",
                     default=EncodingDetector.force_decode_threshold,
                     metavar='PCT_CONFIDENCE',
@@ -114,23 +126,36 @@ tuning.add_argument('--force-decode-threshold',
 
 
 # Export options
-export = parser.add_argument_group('FILE EXPORT', 'Export to various kinds of files')
+export = parser.add_argument_group(
+    'FILE EXPORT',
+    "Multiselect. Sends what you see on the screen to various file formats in parallel. " + \
+        "Writes files to the current directory if --output-dir is not provided. " + \
+        "Filenames are expansion of the PDF filename though you can use --file-prefix " + \
+        "to make your filenames more unique and beautiful to their beholder.")
 
-export.add_argument('-txt', '--txt-output-to',
-                    metavar='OUTPUT_DIR',
-                    help='write analysis to uncolored text files in OUTPUT_DIR (in addition to STDOUT)')
+export.add_argument('-bin', '--extract-binary-streams',
+                    action='store_const',
+                    const='bin',
+                    help='extract all binary streams in the PDF to separate files (requires pdf-parser.py)')
 
-export.add_argument('-svg', '--export-svgs',
-                    metavar='OUTPUT_DIR',
-                    help='export SVG images of the analysis to OUTPUT_DIR (in addition to STDOUT)')
+export.add_argument('-svg', '--export-svg',
+                    action='store_const',
+                    const='svg',
+                    help='export analysis to SVG images')
+
+export.add_argument('-txt', '--export-txt',
+                    action='store_const',
+                    const='txt',
+                    help='export analysis to ANSI colored text files')
 
 export.add_argument('-html', '--export-html',
-                    metavar='OUTPUT_DIR',
-                    help='export SVG images of the analysis to OUTPUT_DIR (in addition to STDOUT)')
+                    action='store_const',
+                    const='html',
+                    help='export analysis to styled html files')
 
-export.add_argument('-str', '--extract-streams-to',
-                    metavar='STREAM_DUMP_DIR',
-                    help='extract all binary streams in the PDF to files in STREAM_DUMP_DIR then exit (requires pdf-parser.py)')
+export.add_argument('-out', '--output-dir',
+                    metavar='OUTPUT_DIR',
+                    help='write files to OUTPUT_DIR instead of current dir, does nothing if no exporting a file')
 
 export.add_argument('-pfx', '--file-prefix',
                     metavar='PREFIX',
@@ -138,29 +163,25 @@ export.add_argument('-pfx', '--file-prefix',
 
 
 # Debugging
-debug = parser.add_argument_group('DEBUG', 'Debugging/interactive options')
-debug.add_argument('-I', '--interact', action='store_true', help='drop into interactive python REPL when parsing is complete')
+debug = parser.add_argument_group('DEBUG', 'Debugging/interactive options.')
+debug.add_argument('-I', '--interact', action='store_true',
+    help='drop into interactive python REPL when parsing is complete')
 debug.add_argument('-D', '--debug', action='store_true', help='show extremely verbose debug log output')
 
 
-
+# The Parsening Begins
 def parse_arguments():
     """Parse command line args. Most settings are communicated to the app by setting env vars"""
-    _log_invocation()
+    if not '-h' in sys.argv and not '--help' in sys.argv:
+        _log_invocation()
+
     args = parser.parse_args()
+    args.invoked_at_str = datetime.now().strftime("%Y-%m-%dT%H.%M.%S")
 
     if not args.debug:
         log.setLevel(logging.WARNING)
 
-    # Use pdf-parser to extract binaries then exit
-    if args.extract_streams_to:
-        console.log("Extracting all the PDF's binary streams to files in STREAM_DUMP_DIR. Will exit on completion.")
-        PdfParserManager(args.pdf).extract_all_streams(args.extract_streams_to)
-        sys.exit()
-
     if args.maximize_width:
-        #import pdb;pdb.set_trace()
-        log.info(f"Console widened to {rich_text_helper.console.width} cols...")
         rich_text_helper.console.width = max(console_width_possibilities())
 
     # Suppressing/limiting output
@@ -172,9 +193,6 @@ def parse_arguments():
     if args.suppress_decodes:
         environ[SUPPRESS_QUOTED_ENV_VAR] = 'True'
 
-    if args.suppress_chardet:
-        environ[SUPPRESS_CHARDET_TABLE_ENV_VAR] = 'True'
-
     # chardet.detect() action thresholds
     if args.force_decode_threshold:
         EncodingDetector.force_decode_threshold = args.force_decode_threshold
@@ -182,23 +200,16 @@ def parse_arguments():
     if args.force_display_threshold:
         EncodingDetector.force_display_threshold = args.force_display_threshold
 
+    if args.suppress_chardet:
+        environ[SUPPRESS_CHARDET_TABLE_ENV_VAR] = 'True'
 
     # File export options
-    selected_exports = [arg for arg in [args.txt_output_to, args.export_svgs, args.export_html] if arg]
-
-    if len(selected_exports) > 1:
-        raise RuntimeError("Too many exports chosen. Only one export at a time please")
-    elif len(selected_exports) == 1:
-        if args.export_svgs:
-            args.output_file_extension = 'svg'
-        elif args.txt_output_to:
-            args.output_file_extension = 'txt'
-        elif args.export_html:
-            args.output_file_extension = 'html'
-
-        args.output_dir = args.export_svgs or args.txt_output_to or args.export_html
-    else:
-        args.output_dir = None
+    if args.export_svg or args.export_txt or args.export_html or args.extract_binary_streams:
+        args.output_dir = args.output_dir or getcwd()
+        file_prefix = (args.file_prefix + '__') if args.file_prefix else  ''
+        args.output_basename =  f"{file_prefix}{path.basename(args.pdf)}"
+    elif args.output_dir:
+        log.warning('--output-dir provided but no export option was chosen')
 
     _log_argparse_result(args)
     return args
@@ -226,25 +237,25 @@ def output_sections(args, pdf_walker) -> [OutputSection]:
     output_sections = [section for section in possible_output_sections if vars(args)[section.argument]]
 
     if len(output_sections) == 0:
-        log.info("No section specified; outputting everything...")
+        log_and_print("No output section specified so outputting all sections...")
         return possible_output_sections
     else:
         return output_sections
 
 
 def _log_invocation() -> None:
-    """Log argv to the invocation log"""
-    invocation_log.info(f"INVOCATION\n\n    {' '.join(sys.argv)}\n")
+    """Log the command used to launch the pdfalyzer to the invocation log"""
+    invocation_log.info(f"THE INVOCATION: '{' '.join(sys.argv)}'")
 
 
 def _log_argparse_result(args):
     """Logs the result of argparse"""
     args_dict = vars(args)
-    log_msg = 'RESULT OF PARSING THE INVOCATION\n'
+    log_msg = ' THE PARSENING:\n'
 
     for arg_var in sorted(args_dict.keys()):
         arg_val = args_dict[arg_var]
-        row = '{0: >30}    {2: <25} {1: >13}\n'.format(arg_var, type(arg_val).__name__, str(arg_val))
+        row = '{0: >30}    {1: ^17} {2: <}\n'.format(arg_var, type(arg_val).__name__, str(arg_val))
         log_msg += row
 
-    invocation_log.info(log_msg + "\n")
+    invocation_log.info(log_msg + "\n\n\n")

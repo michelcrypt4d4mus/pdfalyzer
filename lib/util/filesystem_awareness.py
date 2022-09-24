@@ -7,7 +7,8 @@ import pathlib
 
 
 PROJECT_DIR = path.realpath(path.join(pathlib.Path(__file__).parent.resolve(), '..', '..'))
+DEFAULT_LOG_DIR = path.join(PROJECT_DIR, 'log')
+
 DOCUMENTATION_DIR = path.join(PROJECT_DIR, 'doc')
 SVG_DIR = path.join(DOCUMENTATION_DIR, 'svgs')
 RENDERED_IMAGES_DIR = path.join(SVG_DIR, 'rendered_images')
-LOG_DIR = path.join(PROJECT_DIR, 'log')

@@ -194,16 +194,15 @@ class DataStreamHandler:
 
     def _queue_suppression_notice(self, bytes_match: BytesMatch, quote_type: str) -> None:
         """Print a message indicating that we are not going to decode a given block of bytes"""
-        if bytes_match.capture_len == 0:
-            msg = f"  Skipping zero length {quote_type} quoted bytes at {bytes_match.start_idx}...\n"
-            console.print(msg, style='dark_grey_italic')
-            self.regex_extraction_stats[bytes_match.regex].matches_skipped_for_being_empty += 1
-            return
+        txt = bytes_match.match_idx_text()
+        console.log(txt)
 
-        msg = f"Suppressing decode of {bytes_match.capture_len} byte {quote_type} at "
-        txt = Text(msg + f"position {bytes_match.start_idx} (", style='bytes_title')
-        txt.append(f"--max-decode-length option is set to {self.limit_decodes_larger_than} bytes", style='grey')
-        txt.append(')', style='bytes_title dim')
+        if bytes_match.capture_len == 0:
+            txt.append(' has no bytes to decode')
+        else:
+            txt = Text(f"Not decoding ", style='bytes') + txt + Text(': ')
+            txt.append(f"--max-decode-length option is set to {self.limit_decodes_larger_than} bytes", style='grey')
+
         log.debug(Text('Queueing suppression notice: ') + txt)
         self.suppression_notice_queue.append(txt)
         self.regex_extraction_stats[bytes_match.regex].matches_skipped_for_being_too_big += 1

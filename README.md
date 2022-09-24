@@ -142,15 +142,16 @@ scripts/install_t1utils.sh
 As of right now these are the options:
 
 ```sh
-usage: pdfalyzer.py [-h] [--version] [-d] [-t] [-r] [-f [ID]] [-c] [--maximize-width] [--suppress-chardet]
-                    [--surrounding-bytes BYTES] [--suppress-decodes] [--max-decode-length MAX]
-                    [--force-display-threshold PCT_CONFIDENCE] [--force-decode-threshold PCT_CONFIDENCE]
-                    [-txt OUTPUT_DIR] [-svg OUTPUT_DIR] [-html OUTPUT_DIR] [-str STREAM_DUMP_DIR] [-pfx PREFIX] [-I]
-                    [-D]
+usage: pdfalyzer.py [-h] [--version] [-d] [-t] [-r] [-c] [-f [ID]] [--maximize-width]
+                    [--suppress-chardet] [--surrounding-bytes BYTES] [--suppress-decodes]
+                    [--max-decode-length MAX] [--force-display-threshold PCT_CONFIDENCE]
+                    [--force-decode-threshold PCT_CONFIDENCE] [-bin] [-svg] [-txt] [-html]
+                    [-dir OUTPUT_DIR] [-pfx PREFIX] [-I] [-D]
                     file_to_analyze.pdf
 
-Build and print trees, font binary summaries, and other things describing the logical structureof a PDF. If no output
-sections are specified all sections will be printed to STDOUT in the order they are listed as command line options.
+Build and print trees, font binary summaries, and other things describing the logical structure of a
+PDF. If no output sections are specified all sections will be printed to STDOUT in the order they are
+listed as command line options.
 
 positional arguments:
   file_to_analyze.pdf   PDF file to process
@@ -160,59 +161,70 @@ options:
   --version             show program's version number and exit
 
 OUTPUT SELECTION:
-  If none of these chosen pdfalyzer will output them all
+  If none of these are specified pdfalyzer will output them all.
 
   -d, --docinfo         show embedded document info (author, title, timestamps, etc)
   -t, --tree            show condensed tree (one line per object)
-  -r, --rich            show much more detailed tree (one panel per object, all properties of all objects)
-  -f [ID], --font [ID]  scan font binaries for 'sus' content, optionally limited to PDF objs w/[ID] (use '--' to avoid
-                        positional mixups)
+  -r, --rich            show much more detailed tree (one panel per object, all properties of all
+                        objects)
   -c, --counts          show counts of some of the properties of the objects in the PDF
+  -f [ID], --font [ID]  scan font binaries for 'sus' content, optionally limited to PDF objs w/[ID]
+                        (use '--' to avoid positional mixups)
 
 FINE TUNING:
-  Settings that affect aspects of the analyis and output
+  Settings that affect various aspects of the analyis and visualization.
 
   --maximize-width      maximize the display width to fill the terminal
   --suppress-chardet    suppress the display of the full table of chardet's encoding likelihood scores
   --surrounding-bytes BYTES
-                        number of bytes to display before and after suspicious strings in font binaries (default: 64)
+                        number of bytes to display before and after suspicious strings in font binaries
+                        (default: 64)
   --suppress-decodes    suppress decode attempts for quoted bytes found in font binaries
   --max-decode-length MAX
-                        suppress decode attempts for quoted byte sequences longer than MAX (default: 256)
+                        suppress decode attempts for quoted byte sequences longer than MAX (default:
+                        256)
   --force-display-threshold PCT_CONFIDENCE
-                        chardet.detect() scores encodings from 0-100 pct but only above this are displayed (default:
-                        20.0)
+                        chardet.detect() scores encodings from 0-100pct but encodings with scores below
+                        this number will not be displayed anywhere (default: 20.0)
   --force-decode-threshold PCT_CONFIDENCE
-                        extremely high (AKA 'above this number') PCT_CONFIDENCE scores from chardet.detect() as to the
-                        likelihood some binary data was written with a particular encoding will cause the pdfalyzer to
-                        do a force decode of that with that encoding. (chardet is a sophisticated libary; this is
-                        pdfalyzer's way of harnessing that intelligence) (default: 50.0)
+                        extremely high (AKA 'above this number') PCT_CONFIDENCE scores from
+                        chardet.detect() as to the likelihood some binary data was written with a
+                        particular encoding will cause the pdfalyzer to do a force decode of that with
+                        that encoding. (chardet is a sophisticated libary; this is pdfalyzer's way of
+                        harnessing that intelligence) (default: 50.0)
 
 FILE EXPORT:
-  Export to various kinds of files
+  Write to various kinds of files in addition to STDOUT. Exports will land in the current directory
+  unless --output-dir is specified. Filenames will be patterned on the PDF's filename plus a
+  timestamp though you can use the --file-prefix option to specify a custom prefix to prepend to
+  them.
 
-  -txt OUTPUT_DIR, --txt-output-to OUTPUT_DIR
-                        write analysis to uncolored text files in OUTPUT_DIR (in addition to STDOUT)
-  -svg OUTPUT_DIR, --export-svgs OUTPUT_DIR
-                        export SVG images of the analysis to OUTPUT_DIR (in addition to STDOUT)
-  -html OUTPUT_DIR, --export-html OUTPUT_DIR
-                        export SVG images of the analysis to OUTPUT_DIR (in addition to STDOUT)
-  -str STREAM_DUMP_DIR, --extract-streams-to STREAM_DUMP_DIR
-                        extract all binary streams in the PDF to files in STREAM_DUMP_DIR then exit (requires pdf-
+  -bin, --extract-binary-streams
+                        extract all binary streams in the PDF to separate files (requires pdf-
                         parser.py)
+  -svg, --export-svg    export analysis to SVG images
+  -txt, --export-txt    export analysis to ANSI colored text files
+  -html, --export-html  export analysis to styled html files
+  -dir OUTPUT_DIR, --output-dir OUTPUT_DIR
+                        write files to OUTPUT_DIR instead of current dir, does nothing if no exporting
+                        a file
   -pfx PREFIX, --file-prefix PREFIX
                         optional string to use as the prefix for exported files of any kind
 
 DEBUG:
-  Debugging/interactive options
+  Debugging/interactive options.
 
   -I, --interact        drop into interactive python REPL when parsing is complete
   -D, --debug           show extremely verbose debug log output
+
 ```
+
+**There's some further exposition on the particulars of what these options mean in [the sample `.env` file](.env.example).** Even if don't configure your own `env` you may still glean some insight from reading the descriptions of the various environment variables.
 
 Beyond that there's [a few scripts](scripts/) in the repo that may be of interest.
 
 ### Setting Command Line Options Permanently With A `.env` File
+PDFALYZER_LOG_DIR
 If you find yourself specificying the same options over and over you may be able to automate that with a [dotenv](https://pypi.org/project/python-dotenv/) setup. Start by copying the example `.env` file into place:
 
 ```sh

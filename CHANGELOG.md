@@ -1,16 +1,30 @@
 # 1.3.0
-* Improved scanning of binaries for `UTF-X` encoded data, where X is not a prime number.
-* You can use `dotenv` to permanently turn on or off or change the value of some command line options; see  [`.env.example`](.env.example) for mdetails on what is configurable.
-* Invocations of the tool are now logged in a kind of history file - `pdfalyzer.invocation.log`
+
+### General
+* Improved scanning of binaries for `UTF-X` encoded data where X is not a prime number.
+* Lots of summary data is now displayed about what were the most and least successful encodings at extracting some meaning (or at least not failing) from binary sequences surrounded by quote chars, frong slashes, backticks, etc etc.
+* Will execute "by the book" decodes using normally untested encodings if the `chardet.detect()` library feels strongly enough about it.
+* Exporting SVGs, HTML, and colored text can be done in a single invocation.
+
+
+### Logging
+* Invocations of the tool are now logged in a history file `log/pdfalyzer.invocation.log`
+* Logging to a file can be enabled by setting a `PDFALYZER_LOG_DIR` environment variable but see comments in `.env.example` about side effects.
+
+### Command line options
 * `--maximize-width` arg means you can set yr monitor to teeny tiny fonts and print out absolutely monstrous SVGs (yay!)
-* Default `TerminalTheme` colors kind of sucked when you went to export SVGs and HTML... like black was not black, or even close. Things are simpler now - black is black, blue is blue, etc. Makes exports look better.
-* Lots of summary data about what were the most and least successful encodings at extracting some meaning (or at least not failing) when sifting through binary sequences surrounded by quote chars, frong slashes, backticks, etc etc.
-* Will execute "by the book" decodes if the `chardet` library feels strongly enough about a given chunk of binary
-* Binary data highlighting now goes all the way to the end of the matched string in most cases (small bug had it falling 1-4 chars behind sometimes)
-* Fix bug with exporting font/binary details to SVGs
 * `--chardet-cutoff` option lets you control the the cutoff for adding untested encodings to the output based on what `chardet.detect()` thinks is the right encoding
 * `--suppress-chardet` command line option removes the chardet tables that are (mostly) duplicative of the decoded text tables
-* Use the shortest common abbreviations for unprintable ascii
+* `--output-dir` and `--file-prefix` are now shared by all the export modes
+* You can use `dotenv` to permanently turn on or off or change the value of some command line options; see  [`.env.example`](.env.example) for mdetails on what is configurable.
+
+
+### Visualizations
+* Default `TerminalTheme` colors kind of sucked when you went to export SVGs and HTML... like black was not black, or even close. Things are simpler now - black is black, blue is blue, etc. Makes exports look better.
+
+### Bugfixes
+* Binary data highlighting now goes all the way to the end of the matched string in most cases (small bug had it falling 1-4 chars behind sometimes)
+* Fix small bug with exporting font/binary details to SVGs
 * Fix `Win-
 * `BytesMatch` class to keep track of binary regex matches
 * Group suppression notifications together

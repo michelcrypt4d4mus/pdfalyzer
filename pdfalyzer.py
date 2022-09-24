@@ -1,38 +1,50 @@
 #!/usr/bin/env python
 import code
+import sys
+from functools import partial
 from os import path
 
 # load_dotenv() should be called before parsing local libary
 from dotenv import load_dotenv; load_dotenv()
 
-from lib.helpers.rich_text_helper import PDFALYZER_TERMINAL_THEME, console
+from lib.helpers.rich_text_helper import console, invoke_rich_export
+from lib.pdf_parser_manager import PdfParserManager
 from lib.pdf_walker import PdfWalker
 from lib.util.argument_parser import output_sections, parse_arguments
-from lib.util.logging import log
+from lib.util.logging import log, log_and_print
 
 
 args = parse_arguments()
 walker = PdfWalker(args.pdf)
 
+# Binary stream extraction is a special case
+if args.extract_binary_streams:
+    log_and_print(f"Extracting all binary streams in '{args.pdf}' to files in '{args.output_dir}'...")
+    PdfParserManager(args.pdf).extract_all_streams(args.output_dir)
+    log_and_print(f"Binary stream extraction complete, files written to '{args.output_dir}'.\nExiting.\n")
+    sys.exit()
+
+
+# Analysis exports wrap themselves around the methods that actually generate the analyses
 for (arg, method) in output_sections(args, walker):
     if args.output_dir:
         console.record = True
-        file_prefix = (args.file_prefix + '_') if args.file_prefix else  ''
-        output_file_basename = f"{file_prefix}{path.basename(args.pdf)}.{method.__name__.removeprefix('print_')}."
-        output_file = path.join(args.output_dir, f"{output_file_basename}{args.output_file_extension}")
-        print(f'Exporting {arg} data to {output_file}...')
+        export_type = method.__name__.removeprefix('print_')
+        output_basename = f"{args.output_basename}.{export_type}  (PDFALYZED at {args.invoked_at_str})"
+        output_basepath = path.join(args.output_dir, output_basename)
+        print(f'Exporting {arg} data to {output_basepath}...')
 
     method()
 
-    if args.output_dir:
-        if args.export_svgs:
-            console.save_svg(output_file, theme=PDFALYZER_TERMINAL_THEME, title=output_file_basename)
-        if args.export_html:
-            console.save_html(output_file, theme=PDFALYZER_TERMINAL_THEME, inline_styles=True)
-        elif args.txt_output_to:
-            console.save_text(output_file, styles=True)
+    if args.export_txt:
+        invoke_rich_export(console.save_text, output_basepath)
 
-        print(f'Exported {arg} data to {output_file}.')
+    if args.export_html:
+        invoke_rich_export(console.save_html, output_basepath)
+
+    if args.export_svg:
+        invoke_rich_export(console.save_svg, output_basepath)
+
 
 
 # Drop into interactive shell if requested
