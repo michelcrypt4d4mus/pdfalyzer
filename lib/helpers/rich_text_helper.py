@@ -18,8 +18,8 @@ from rich.terminal_theme import TerminalTheme
 from rich.text import Text
 from rich.theme import Theme
 
-from lib.util import adobe_strings
 from lib.helpers.dict_helper import is_env_var_set_and_not_false
+from lib.util import adobe_strings
 from lib.util.logging import log
 
 
@@ -34,6 +34,7 @@ FONT_OBJ_BLUE = 'deep_sky_blue4 bold'
 DARK_GREY = 'color(236)'
 GREY = 'color(241)'
 GREY_ADDRESS = 'color(238)'
+
 
 # Theme used by main console
 PDFALYZER_THEME = Theme({

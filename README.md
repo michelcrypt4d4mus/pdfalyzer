@@ -65,9 +65,9 @@ It's actually `PyPDF2` doing the lifting here but we're happy to take the credit
 #### Search Encrypted Binary Font Data for #MadSus Content No Malware Scanner Will Catch[^5]
 Things like, say, a hidden binary `/F` (PDF instruction meaning "URL") followed by a `JS` (I'll let you guess what "JS" stands for) and then a binary `»` character (AKA "the character the PDF specification uses to close a section of the PDF's logical structure"). Put all that together and it says that you're looking at a secret JavaScript instruction embedded in the encrypted part of a font binary. A secret instruction that causes the PDF renderer to pop out of its frame prematurely as it renders the font.
 
-[^5]: At least they weren't catching it as of September 2022.
-
 ![Node Summary](doc/svgs/rendered_images/font29.js.1.png)
+
+[^5]: At least they weren't catching it as of September 2022.
 
 #### Now There's Even A Fancy Table To Tell You What The `chardet` Library Would Rank As The Most Likely Encoding For A Chunk Of Binary Data
 Behold the beauty:
