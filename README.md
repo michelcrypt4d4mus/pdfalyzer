@@ -303,6 +303,7 @@ Run all tests by typing `pytest`. Test coverage is relatively spartan but should
 
 # TODO
 * highlight decodes done at `chardet`s behest
+* Highlight decodes with a lot of Javascript keywords
 * seeems like a stray control char is leaking on latin1/iso-8859
 * deal with repetitive matches
 * minimum length?

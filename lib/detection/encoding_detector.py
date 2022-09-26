@@ -3,116 +3,100 @@ Manager class to ease dealing with the chardet encoding detection library 'chard
 Each instance of this classes managed a chardet.detect_all() scan on a single set of bytes.
 """
 from collections import namedtuple
-from os import environ
+from numbers import Number
+from operator import attrgetter
+from typing import List
 
 import chardet
 from rich import box
+from rich.padding import Padding
 from rich.table import Table
 from rich.text import Text
 
-from lib.helpers.dict_helper import get_lowercase_value
-from lib.helpers.rich_text_helper import (DIM_COUNTRY_THRESHOLD, NA, console, meter_style,
-     prefix_with_plain_text_obj, to_rich_text)
+from lib.detection.chardet_encoding_assessment import ENCODING, ChardetEncodingAssessment
+from lib.helpers.rich_text_helper import console
 from lib.util.logging import log
 
 
+# TODO: move to config.py?
 MIN_BYTES_FOR_ENCODING_DETECTION = 9
-SUPPRESS_CHARDET_TABLE_ENV_VAR = 'PDFALYZER_SUPPRESS_CHARDET_TABLE'
 CONFIDENCE_SCORE_RANGE = range(0, 100)
 
 
 class EncodingDetector:
     # 10 as in 10%, 0.02, etc.  Encodings w/confidences below this will not be displayed in the decoded table
     force_display_threshold = 20.0
+
     # At what chardet.detect() confidence % should we force a decode with an obscure encoding?
     force_decode_threshold = 50.0
 
     def __init__(self, _bytes: bytes) -> None:
         self.bytes = _bytes
         self.bytes_len = len(_bytes)
-        self.unique_results = []  # Unique by encoding
-        self.table = build_chardet_table()
-        self.attempt_encoding_detection()
+        self.table = _empty_chardet_results_table()
 
-    def attempt_encoding_detection(self) -> None:
-        """Use the chardet library to try to figure out the encoding of self.bytes"""
-        if self.bytes_len < MIN_BYTES_FOR_ENCODING_DETECTION:
-            log.info(f"{self.bytes_len} is not enough bytes to run chardet.detect()")
-            return []
+        if not self.has_enough_bytes():
+            log.debug(f"{self.bytes_len} is not enough bytes to run chardet.detect()")
+            self._set_empty_results()
+            self.has_any_idea = None  # not false!
+            return
 
-        detection_results = chardet.detect_all(self.bytes, ignore_threshold=True)
+        # Unique by encoding, ignoring language.  Ordered from highest to lowest confidence
+        self.unique_assessments = []
+        self.raw_chardet_assessments = chardet.detect_all(self.bytes, ignore_threshold=True)
+
+        if len(self.raw_chardet_assessments) == 1 and self.raw_chardet_assessments[0][ENCODING] is None:
+            log.info(f"chardet.detect() has no idea what the encoding is, result: {self.raw_chardet_assessments}")
+            self._set_empty_results()
+            self.has_any_idea = False
+            return
+
+        self.has_any_idea = True
+        self.assessments = [ChardetEncodingAssessment(a) for a in self.raw_chardet_assessments]
+        self._uniquify_results_and_build_table()
+        self.force_decode_assessments = self.assessments_above_confidence(type(self).force_decode_threshold)
+        self.force_display_assessments = self.assessments_above_confidence(type(self).force_display_threshold)
+
+    def get_encoding_assessment(self, encoding) -> ChardetEncodingAssessment:
+        """If chardet produced one, return it, otherwise return a dummy node with confidence of 0"""
+        assessment = next((r for r in self.unique_assessments if r.encoding == encoding), None)
+        return assessment or ChardetEncodingAssessment.dummy_encoding_assessment(encoding)
+
+    def has_enough_bytes(self) -> bool:
+        return self.bytes_len >= MIN_BYTES_FOR_ENCODING_DETECTION
+
+    def assessments_above_confidence(self, cutoff: float) -> List[ChardetEncodingAssessment]:
+        return [a for a in self.unique_assessments if a.confidence >= cutoff]
+
+    def __rich__(self) -> Padding:
+        return Padding(self.table, (0, 0, 0, 20))
+
+    def _uniquify_results_and_build_table(self) -> None:
+        """Keep the highest result per encoding, ignoring the language chardet has indicated"""
         already_seen_encodings = {}
 
-        if len(detection_results) == 1 and detection_results[0]['encoding'] is None:
-            console.print("\n (chardet.detect() has no idea what the encoding is)\n", style='grey')
-            return []
+        for i, result in enumerate(self.assessments):
+            self.table.add_row(f"{i + 1}", result.encoding_text, result.confidence_text)
 
-        for i, detection_result in enumerate(detection_results):
-            result_tuple = build_chardet_encoding_assessment(detection_result)
-            self.table.add_row(f"{i + 1}", result_tuple[0], result_tuple[3])
-
-            # Only retain one result per encoding possibility (the highest confidence one)
-            if result_tuple.encoding.plain not in already_seen_encodings:
-                self.unique_results.append(result_tuple)
-                already_seen_encodings[result_tuple.encoding.plain] = result_tuple
+            # self.unique_assessments retains one result per encoding possibility (the highest confidence one)
+            # Some encodings are not language specific and for those we don't care about the language
+            if result.encoding not in already_seen_encodings:
+                self.unique_assessments.append(result)
+                already_seen_encodings[result.encoding] = result
             else:
-                same_encoding = already_seen_encodings.get(result_tuple.encoding.plain)
-                log.debug(f"Discarding chardet result {result_tuple} (we already saw {same_encoding})")
+                log.debug(f"Skipping chardet result {result}: we already saw {already_seen_encodings[result.encoding]})")
 
-        if environ.get(SUPPRESS_CHARDET_TABLE_ENV_VAR) is None:
-            console.print(self.table, justify='right', width=50)
-            console.print('')
+        self.unique_assessments.sort(key=attrgetter('confidence'), reverse=True)
 
-    def get_encoding_assessment(self, encoding):
-        """If chardet produced one, return it, otherwise return a dummy node with confidence of 0"""
-        assessment = next((r for r in self.unique_results if r.encoding.plain == encoding), None)
-        return assessment or empty_encoding_assessment()  # TODO: this could be a constant
-
-    def get_confidence_formatted_txt(self, encoding):
-        assessment = self.get_encoding_assessment(encoding)
-        return NA if assessment.encoding is None else assessment.confidence_str
-
-    def get_confidence_score(self, encoding):
-        assessment = self.get_encoding_assessment(encoding)
-        return -1 if assessment.encoding is None else assessment.confidence
+    def _set_empty_results(self) -> None:
+        self.assessments = []
+        self.unique_assessments = []
+        self.raw_chardet_assessments = []
+        self.force_decode_assessments = []
+        self.force_display_assessments = []
 
 
-# chardet detects encodings but the return values are messy; this is for tidying them up
-ChardetEncodingAssessment = namedtuple(
-    'ChardetEncodingAssessment',
-    [
-        'encoding',
-        'language',
-        'confidence',
-        'confidence_str',
-    ])
-
-
-def empty_encoding_assessment():
-    return ChardetEncodingAssessment(None, None, confidence=-1, confidence_str=NA)
-
-
-def build_chardet_encoding_assessment(chardet_result: dict) -> ChardetEncodingAssessment:
-    """Build a ChardetEncodingAssessment namedtuple"""
-    def get_text_for(field, style):
-        value = get_lowercase_value(chardet_result, field)
-        return to_rich_text(value, style=style)
-
-    encoding = get_text_for('encoding', 'encoding_header')
-    language = get_text_for('language', 'dark_green')
-    confidence = 100 * (get_lowercase_value(chardet_result, 'confidence') or 0.0)
-    confidence_str = prefix_with_plain_text_obj(f"{round(confidence, 1)}%", style=meter_style(confidence))
-
-    # Pair the language info with the confidence level into one Text obj
-    if language is not None:
-        dim = 'dim' if confidence < DIM_COUNTRY_THRESHOLD else ''
-        language_capitalized = Text(' '.join([word.capitalize() for word in language._text]))
-        confidence_str.append(f" ({language_capitalized})", style=f"color(23) {dim}")
-
-    return ChardetEncodingAssessment(encoding, language, confidence, confidence_str)
-
-
-def build_chardet_table():
+def _empty_chardet_results_table():
     """Returns a fresh table"""
     table = Table(
         'Rank', 'Encoding', 'Confidence',

@@ -3,7 +3,6 @@ import logging
 import sys
 from argparse import ArgumentDefaultsHelpFormatter, ArgumentParser
 from collections import namedtuple
-from datetime import datetime
 from functools import partial, update_wrapper
 from os import environ, getcwd, path
 
@@ -11,13 +10,17 @@ from rich_argparse import RichHelpFormatter
 
 from lib.binary.data_stream_handler import (DEFAULT_MAX_DECODABLE_CHUNK_SIZE,
      MAX_DECODABLE_CHUNK_SIZE_ENV_VAR)
-from lib.detection.encoding_detector import (CONFIDENCE_SCORE_RANGE, SUPPRESS_CHARDET_TABLE_ENV_VAR,
-     EncodingDetector)
+from lib.config import SURROUNDING_BYTES_LENGTH_DEFAULT, SURROUNDING_BYTES_ENV_VAR, PdfalyzerConfig
+from lib.detection.encoding_detector import (CONFIDENCE_SCORE_RANGE, EncodingDetector)
+from lib.helpers.file_helper import timestamp_for_filename
 from lib.font_info import SUPPRESS_QUOTED_ENV_VAR
-from lib.helpers.bytes_helper import SURROUNDING_BYTES_LENGTH_DEFAULT, SURROUNDING_BYTES_ENV_VAR
 from lib.helpers import rich_text_helper
 from lib.helpers.rich_text_helper import console, console_width_possibilities
 from lib.util.logging import INVOCATION_LOG_PATH, invocation_log, log, log_and_print
+
+
+# NamedTuple to keep our argument selection orderly
+OutputSection = namedtuple('OutputSection', ['argument', 'method'])
 
 
 # Class to enable defaults to only be printed when they are not None or False
@@ -30,18 +33,22 @@ class ExplicitDefaultsHelpFormatter(ArgumentDefaultsHelpFormatter):
             return super()._get_help_string(action)
 
 
-# NamedTuple to keep our argument selection orderly
-OutputSection = namedtuple('OutputSection', ['argument', 'method'])
+DESCRIPTION = """
+    Explore PDF's inner data structure with absurdly large and in depth visualizations.
+    Track the control flow of her darker impulses, scan rivers of her binary data for
+    signs of evil sorcery, and generally peer deep into the dark heart of the Portable
+    Document Format. Just make sure you also forgive her - she knows not what she does.
+"""
 
+EPILOG = f"""
+    A registry of previous pdfalyzer invocations will be stored at '{INVOCATION_LOG_PATH}'
+    should you need it.
+"""
 
 parser = ArgumentParser(
     formatter_class=ExplicitDefaultsHelpFormatter,
-    description="Explore PDF's inner data structure with absurdly large and in depth visualizations, " + \
-                "track the control flow of her darker impulses, scan rivers of her binary data for " + \
-                "signs of evil sorcery, and generally peer deep into the dark heart of the Portable " + \
-                "Document Format. Just make sure you also forgive her - she knows not what she does.",
-    epilog=f"A registry of previous pdfalyzer invocations will be stored at '{INVOCATION_LOG_PATH}' should you need it.")
-
+    description=DESCRIPTION,
+    epilog=EPILOG)
 
 
 # Positional args, version, help, etc
@@ -128,10 +135,10 @@ tuning.add_argument('--force-decode-threshold',
 # Export options
 export = parser.add_argument_group(
     'FILE EXPORT',
-    "Multiselect. Sends what you see on the screen to various file formats in parallel. " + \
-        "Writes files to the current directory if --output-dir is not provided. " + \
-        "Filenames are expansion of the PDF filename though you can use --file-prefix " + \
-        "to make your filenames more unique and beautiful to their beholder.")
+    "Multiselect. Choosing nothing is choosing nothing. Sends what you see on the screen to various file " + \
+        "formats in parallel. Writes files to the current directory if --output-dir is not provided. " + \
+        "Filenames are expansion of the PDF filename though you can use --file-prefix to make your " +
+        "filenames more unique and beautiful to their beholder.")
 
 export.add_argument('-bin', '--extract-binary-streams',
                     action='store_const',
@@ -164,9 +171,12 @@ export.add_argument('-pfx', '--file-prefix',
 
 # Debugging
 debug = parser.add_argument_group('DEBUG', 'Debugging/interactive options.')
+
 debug.add_argument('-I', '--interact', action='store_true',
-    help='drop into interactive python REPL when parsing is complete')
-debug.add_argument('-D', '--debug', action='store_true', help='show extremely verbose debug log output')
+                    help='drop into interactive python REPL when parsing is complete')
+
+debug.add_argument('-D', '--debug', action='store_true',
+                    help='show extremely verbose debug log output')
 
 
 # The Parsening Begins
@@ -176,7 +186,7 @@ def parse_arguments():
         _log_invocation()
 
     args = parser.parse_args()
-    args.invoked_at_str = datetime.now().strftime("%Y-%m-%dT%H.%M.%S")
+    args.invoked_at_str = timestamp_for_filename()
 
     if not args.debug:
         log.setLevel(logging.WARNING)
@@ -201,7 +211,7 @@ def parse_arguments():
         EncodingDetector.force_display_threshold = args.force_display_threshold
 
     if args.suppress_chardet:
-        environ[SUPPRESS_CHARDET_TABLE_ENV_VAR] = 'True'
+        PdfalyzerConfig.suppress_chardet_output = True
 
     # File export options
     if args.export_svg or args.export_txt or args.export_html or args.extract_binary_streams:

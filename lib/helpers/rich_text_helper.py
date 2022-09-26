@@ -5,7 +5,7 @@ TODO: interesting colors # row_styles[0] = 'reverse bold on color(144)' <-
 import re
 import time
 from numbers import Number
-from os import environ, path
+from os import path
 from shutil import get_terminal_size
 
 from PyPDF2.generic import ByteStringObject, IndirectObject
@@ -18,7 +18,7 @@ from rich.terminal_theme import TerminalTheme
 from rich.text import Text
 from rich.theme import Theme
 
-from lib.helpers.dict_helper import is_env_var_set_and_not_false
+from lib.config import is_env_var_set_and_not_false
 from lib.util import adobe_strings
 from lib.util.logging import log, log_and_print
 
@@ -103,6 +103,7 @@ PDFALYZER_THEME = Theme({
     'red_alert': 'blink bold red reverse',
 })
 
+
 TYPE_STYLES = {
     Number: 'bright_cyan bold',
     dict: 'color(64)',
@@ -111,6 +112,7 @@ TYPE_STYLES = {
     IndirectObject: 'color(157)',
     ByteStringObject: 'bytes',
 }
+
 
 LABEL_STYLES = [
     [re.compile('JavaScript|JS|OpenAction', re.I | re.M), 'blink bold red'],
@@ -137,6 +139,7 @@ LABEL_STYLES = [
     [re.compile(f'^{adobe_strings.XREF}'),                'color(148)'],
 ]
 
+
 LABEL_STYLES += [
     [re.compile(f'^{key}'), 'color(243)']
     for key in adobe_strings.NON_TREE_REFERENCES
@@ -154,16 +157,21 @@ DIM_COUNTRY_THRESHOLD = 25
 
 # Table stuff
 DEFAULT_SUBTABLE_COL_STYLES = ['white', 'bright_white']
-HEADER_PADDING = [1, 1]
+HEADER_PADDING = (1, 1)
+CENTER = 'center'
+FOLD = 'fold'
+LEFT = 'left'
+MIDDLE = 'middle'
+RIGHT = 'right'
 
 
 # Text object defaults mostly for table entries
 DECODE_NOT_ATTEMPTED_MSG = Text('(decode not attempted)', style='no_attempt')
-RAW_BYTES = Text('raw bytes', style=f"{GREY} italic")
-NO_DECODING_ERRORS_MSG = Text('No', style='good')
-DECODING_ERRORS_MSG = Text('Yes', style='dark_red')
+RAW_BYTES = Text('RAW BYTES', style=f"bytes_title")
+NO_DECODING_ERRORS_MSG = Text('No', style='green4 dim')
+DECODING_ERRORS_MSG = Text('Yes', style='dark_red dim')
 NOT_FOUND_MSG = Text('(not found)', style='dark_grey_italic')
-NA = Text('N/A', style='no_attempt')
+NA = Text('N/A', style=f"white")
 
 
 # TerminalThemes are used when saving SVGS. This one just swaps white for black in DEFAULT_TERMINAL_THEME
@@ -208,33 +216,6 @@ _EXPORT_KWARGS = {
     },
 }
 
-def invoke_rich_export(export_method, output_file_basepath) -> str:
-    """
-    Announce the export, perform the export, announce completion.
-    export_method is a Rich.console.save_blah() method, output_file_path is file path w/no extname.
-    Returns the path to path data was exported to.
-    """
-    method_name = export_method.__name__
-    extname = 'txt' if method_name == 'save_text' else method_name.split('_')[-1]
-    output_file_path = f"{output_file_basepath}.{extname}"
-
-    if method_name not in _EXPORT_KWARGS:
-        raise RuntimeError(f"{method_name} is not a valid Rich.console export method!")
-
-    kwargs = _EXPORT_KWARGS[method_name].copy()
-    kwargs.update({'clear': False})
-
-    if 'svg' in method_name:
-        kwargs.update({'title': path.basename(output_file_path) })
-
-    # Invoke it
-    log_and_print(f"Invoking Rich.console.{method_name}('{output_file_path}') with kwargs: '{kwargs}'...")
-    start_time = time.perf_counter()
-    export_method(output_file_path, **kwargs)
-    elapsed_time = time.perf_counter() - start_time
-    log_and_print(f"'{output_file_path}' written in {elapsed_time:02f} seconds")
-    return output_file_path
-
 
 # rich.console configuration (console is the main interface to Rich text formatting)
 DEFAULT_CONSOLE_WIDTH = 160
@@ -257,7 +238,7 @@ CONSOLE_PRINT_BYTE_WIDTH = int(CONSOLE_WIDTH / 4.0)
 console = Console(theme=PDFALYZER_THEME, color_system='256', highlight=False, width=CONSOLE_WIDTH)
 
 
-def console_width():
+def console_width() -> int:
     """Current width set in console obj"""
     return console._width
 
@@ -266,7 +247,7 @@ def subheading_width():
     return int(console_width() * 0.75)
 
 
-def console_print_with_fallback(_string, style=None):
+def console_print_with_fallback(_string, style=None) -> None:
     """Fallback to regular print() if there's a Markup issue"""
     try:
         console.print(_string, style=style)
@@ -298,7 +279,7 @@ def prefix_with_plain_text_obj(_str: str, style: str, root_style=None) -> Text:
     return Text('', style=root_style or 'white') + Text(_str, style)
 
 
-def to_rich_text(obj, style=None) -> Text:
+def to_rich_text(obj, style='') -> Text:
     """Nones become empty Text() objects, other things are __str__()ed"""
     if obj is None:
         return None
@@ -306,7 +287,7 @@ def to_rich_text(obj, style=None) -> Text:
     return Text(str(obj), style=style)
 
 
-def generate_subtable(cols=None, header_style='subtable'):
+def generate_subtable(cols, header_style='subtable') -> Table:
     """Suited for lpacement in larger tables"""
     table = Table(
         box=box.SIMPLE,
@@ -348,8 +329,37 @@ def meter_style(meter_pct):
 
 
 def unprintable_byte_to_text(code: str, style='') -> Text:
-    """Used with ASCII escape codes and the like"""
+    """Used with ASCII escape codes and the like, gives colored results like '[NBSP]'."""
+    style = BYTES_HIGHLIGHT if style == BYTES_BRIGHTEST else style
     txt = Text('[', style=style)
     txt.append(code.upper(), style=f"{style} italic dim")
     txt.append(Text(']', style=style))
     return txt
+
+
+def invoke_rich_export(export_method, output_file_basepath) -> str:
+    """
+    Announce the export, perform the export, announce completion.
+    export_method is a Rich.console.save_blah() method, output_file_path is file path w/no extname.
+    Returns the path to path data was exported to.
+    """
+    method_name = export_method.__name__
+    extname = 'txt' if method_name == 'save_text' else method_name.split('_')[-1]
+    output_file_path = f"{output_file_basepath}.{extname}"
+
+    if method_name not in _EXPORT_KWARGS:
+        raise RuntimeError(f"{method_name} is not a valid Rich.console export method!")
+
+    kwargs = _EXPORT_KWARGS[method_name].copy()
+    kwargs.update({'clear': False})
+
+    if 'svg' in method_name:
+        kwargs.update({'title': path.basename(output_file_path) })
+
+    # Invoke it
+    log_and_print(f"Invoking Rich.console.{method_name}('{output_file_path}') with kwargs: '{kwargs}'...")
+    start_time = time.perf_counter()
+    export_method(output_file_path, **kwargs)
+    elapsed_time = time.perf_counter() - start_time
+    log_and_print(f"'{output_file_path}' written in {elapsed_time:02f} seconds")
+    return output_file_path

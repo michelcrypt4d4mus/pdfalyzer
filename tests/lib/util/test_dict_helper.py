@@ -1,5 +1,7 @@
 from os import environ
-from lib.helpers.dict_helper import get_dict_key_by_value, is_env_var_set_and_not_false
+
+from lib.config import is_env_var_set_and_not_false
+from lib.helpers.dict_helper import get_dict_key_by_value
 
 ENV_VAR_NAME = 'THE_WORLD_IS_YOURS'
 

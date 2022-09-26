@@ -1,11 +1,12 @@
 from numbers import Number
+from typing import Union
+
 from lib.util.logging import log
 
 
+def is_divisible_by(n: Union[Number, int], divisor: Union[Number, int]) -> bool:
+    return divmod(n, divisor)[1] == 0
+
+
 def is_even(n: Number) -> bool:
-    if not isinstance(int):
-        log.warning(f"Non ints like {n} are never even")
-        return False
-
-    return divmod(n, 2)[1] == 0
-
+    return is_divisible_by(n, 2)

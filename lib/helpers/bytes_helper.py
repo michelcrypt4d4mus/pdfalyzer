@@ -1,28 +1,18 @@
+import re
 from io import StringIO
-from os import environ
 
 from rich.console import Console
 from rich.text import Text
 
 from lib.binary.bytes_match import BytesMatch
-from lib.detection.character_encodings import BOMS, NEWLINE_BYTE
+from lib.config import num_surrounding_bytes
+from lib.detection.constants.dangerous_instructions import DANGEROUS_INSTRUCTIONS
+from lib.detection.constants.character_encodings import NEWLINE_BYTE
 from lib.helpers.rich_text_helper import BYTES_HIGHLIGHT, console
-from lib.util.adobe_strings import DANGEROUS_PDF_KEYS
 from lib.util.logging import log
 
 
-# Remove the leading '/' from elements of DANGEROUS_PDF_KEYS and convert to bytes, except /F ("URL")
-DANGEROUS_BYTES = [instruction[1:].encode() for instruction in DANGEROUS_PDF_KEYS] + [b'/F']
-DANGEROUS_JAVASCRIPT_INSTRUCTIONS = [b'eval']
-DANGEROUS_INSTRUCTIONS = DANGEROUS_BYTES + DANGEROUS_JAVASCRIPT_INSTRUCTIONS + list(BOMS.keys())
-
-# Surrounding bytes
-SURROUNDING_BYTES_ENV_VAR = 'PDFALYZER_SURROUNDING_BYTES'
-SURROUNDING_BYTES_LENGTH_DEFAULT = 64
-
-
-
-def get_bytes_before_and_after_match(_bytes: bytes, byte_seq: BytesMatch, num_before=None, num_after=None) -> bytes:
+def get_bytes_before_and_after_match(_bytes: bytes, match: re.Match, num_before=None, num_after=None) -> bytes:
     """
     Get all bytes from num_before the start of the sequence up until num_after the end of the sequence
     num_before and num_after will both default to the env var/CLI options having to do with surrounding
@@ -30,14 +20,9 @@ def get_bytes_before_and_after_match(_bytes: bytes, byte_seq: BytesMatch, num_be
     """
     num_after = num_after or num_before or num_surrounding_bytes()
     num_before = num_before or num_surrounding_bytes()
-    start_idx = max(byte_seq.start_idx - num_before, 0)
-    end_idx = min(byte_seq.end_idx + num_after, len(_bytes))
+    start_idx = max(match.start() - num_before, 0)
+    end_idx = min(match.end() + num_after, len(_bytes))
     return _bytes[start_idx:end_idx]
-
-
-def num_surrounding_bytes():
-    """Number of bytes to show before/after byte previews and decodes. Configured by command line or env var"""
-    return int(environ.get(SURROUNDING_BYTES_ENV_VAR, SURROUNDING_BYTES_LENGTH_DEFAULT))
 
 
 def clean_byte_string(bytes_array: bytes) -> str:
@@ -56,7 +41,7 @@ def clean_byte_string(bytes_array: bytes) -> str:
     return bytestr
 
 
-def build_rich_text_view_of_raw_bytes(surrounding_bytes: bytes, highlighted_bytes: BytesMatch) -> Text:
+def rich_text_view_of_raw_bytes(surrounding_bytes: bytes, highlighted_bytes: BytesMatch) -> Text:
     """Print raw bytes to a Text object, highlighing the bytes in the highlighted_bytes BytesMatch"""
     surrounding_bytes_str = clean_byte_string(surrounding_bytes)
     highlighted_bytes_str = clean_byte_string(highlighted_bytes.bytes)
@@ -88,16 +73,11 @@ def _find_str_rep_of_bytes(surrounding_bytes_str: str, highlighted_bytes_str: st
     Because strings are longer than bytes (stuff like '\xcc' are 4 chars when printed are one byte and the ANSI unprintables
     include stuff like 'NegativeAcknowledgement' which is over 20 chars) they represent so we have to re-find the location to highlight the bytes
     correctly.
-    Start a few chars in to avoid errors: sometimes we're searching for 1 or 2 bytes and there's a false positive in the extra bytes
-    Note that this isn't perfect - it's starting us at the first index into the *bytes* that's safe to check but this is
-    almost certainly far too soon given the large % of bytes that take 4 chars to print ('\x02' etc)
     """
-    if highlighted_bytes.start_idx > num_surrounding_bytes():
-        start_search_idx = (num_surrounding_bytes() - 1)
-    else:
-        start_search_idx = highlighted_bytes.start_idx
-
-    highlight_idx = surrounding_bytes_str.find(highlighted_bytes_str, start_search_idx)
+    # Start a few chars in to avoid errors: sometimes we're searching for 1 or 2 bytes and there's a false positive
+    # in the extra bytes. Tthis isn't perfect - it's starting us at the first index into the *bytes* that's safe to
+    # check but this is almost certainly far too soon given the large % of bytes that take 4 chars to print ('\x02' etc)
+    highlight_idx = surrounding_bytes_str.find(highlighted_bytes_str, highlighted_bytes.highlight_start_idx)
 
     # TODO: Somehow \' and ' don't always come out the same :(
     if highlight_idx == -1:

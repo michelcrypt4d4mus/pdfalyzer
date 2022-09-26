@@ -29,6 +29,7 @@ import logging
 from os import environ, path
 from rich.logging import RichHandler
 
+from lib.config import LOG_LEVEL_ENV_VAR, is_env_var_set_and_not_false
 from lib.util.filesystem_awareness import DEFAULT_LOG_DIR
 
 
@@ -40,13 +41,21 @@ def logfile_basename(label):
 PDFALYZER_LOG_DIR = environ.get('PDFALYZER_LOG_DIR')
 LOG_DIR = PDFALYZER_LOG_DIR or DEFAULT_LOG_DIR
 
-
-# 'log' (the application log)
 APPLICATION_LOG_NAME = logfile_basename('run')
 APPLICATION_LOG_PATH = path.join(LOG_DIR, APPLICATION_LOG_NAME)
+INVOCATION_LOG_NAME = logfile_basename('invocation')
+INVOCATION_LOG_PATH = path.join(LOG_DIR, INVOCATION_LOG_NAME)
 
+
+if is_env_var_set_and_not_false(LOG_LEVEL_ENV_VAR):
+    log_level = getattr(logging, environ[LOG_LEVEL_ENV_VAR])
+else:
+    log_level = logging.DEBUG
+
+
+# 'log' (the application log)
 log = logging.getLogger(APPLICATION_LOG_NAME)
-log.setLevel(logging.DEBUG)
+log.setLevel(log_level)
 
 # Write logs to a file if PDFALYZER_LOG_DIR is configured otherwise have Rich style logs and send them to STDOUT.
 if PDFALYZER_LOG_DIR is None:
@@ -57,31 +66,36 @@ else:
 
     log_formatter = logging.Formatter('%(asctime)s %(levelname)s %(message)s')
     log_file_handler = logging.FileHandler(APPLICATION_LOG_PATH)
-    log_file_handler.setLevel(logging.DEBUG)
+    log_file_handler.setLevel(log_level)
     log_file_handler.setFormatter(log_formatter)
     log.addHandler(log_file_handler)
     log.info('File logging triggered by setting of PDFALYZER_LOG_DIR')
 
 
 # 'invocation_log' (a history of pdfalyzer runs containing previous commands you can cut and paste to re-run)
-INVOCATION_LOG_NAME = logfile_basename('invocation')
-INVOCATION_LOG_PATH = path.join(LOG_DIR, INVOCATION_LOG_NAME)
 
 invocation_log = logging.getLogger(INVOCATION_LOG_NAME)
 invocation_log_formatter = logging.Formatter('[%(asctime)s] %(message)s')
 invocation_log_file_handler = logging.FileHandler(INVOCATION_LOG_PATH)
-invocation_log_file_handler.setLevel(logging.DEBUG)
+invocation_log_file_handler.setLevel(log_level)
 invocation_log_file_handler.setFormatter(invocation_log_formatter)
 invocation_log.addHandler(invocation_log_file_handler)
-invocation_log.setLevel(logging.DEBUG)
-
-
-# Suppress annoying chardet library logs
-for submodule in ['universaldetector', 'charsetprober', 'codingstatemachine']:
-    logging.getLogger(f"chardet.{submodule}").setLevel(logging.WARNING)
+invocation_log.setLevel(log_level)
 
 
 def log_and_print(msg: str):
     """Both print and log (at INFO level) a string"""
     log.info(msg)
     print(msg)
+
+
+def print_loggers():
+    """Debug method to try to get some window into WTF Is Up in the loggerhood"""
+    loggers = [logging.getLogger(name) for name in logging.root.manager.loggerDict]
+    console.print("LOGGERS!")
+    console.print(loggers)
+
+
+# Suppress annoying chardet library logs
+for submodule in ['universaldetector', 'charsetprober', 'codingstatemachine']:
+    logging.getLogger(f"chardet.{submodule}").setLevel(logging.WARNING)

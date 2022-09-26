@@ -6,7 +6,9 @@ Things like how much many of our matched bytes were we able to decode easily vs.
 were some encodings have a higher pct of success than others (indicating part of our mystery data might be encoded
 that way?
 """
-from lib.detection.character_encodings import ENCODINGS_TO_ATTEMPT
+from collections import defaultdict
+
+from lib.detection.constants.character_encodings import ENCODINGS_TO_ATTEMPT
 
 
 class RegexMatchMetrics:
@@ -14,14 +16,21 @@ class RegexMatchMetrics:
         self.match_count = 0
         self.bytes_matched = 0
         self.matches_decoded = 0
-        self.matches_skipped_for_being_too_big = 0
-        self.matches_skipped_for_being_empty = 0
         self.easy_decode_count = 0
         self.forced_decode_count = 0
-        self.were_matched_bytes_decodable = {k: 0 for k in ENCODINGS_TO_ATTEMPT.keys()}
+        self.skipped_matches_lengths = defaultdict(lambda: 0)
+        self.were_matched_bytes_decodable = defaultdict(lambda: 0)
         self.bytes_match_objs = []
 
-    def __str__(self):
-        return f"<matches: {self.match_count}, bytes: {self.bytes_matched}, decoded: {self.matches_decoded} " + \
-               f"too_big: {self.matches_skipped_for_being_too_big}, empty: {self.matches_skipped_for_being_empty}>"
+    def num_matches_skipped_for_being_empty(self) -> int:
+        return self.skipped_matches_lengths[0]
 
+    def num_matches_skipped_for_being_too_big(self) -> int:
+        return sum({k: v for k, v in self.skipped_matches_lengths.items() if k > 0}.values())
+
+    def __str__(self):
+        return f"<matches: {self.match_count}, " + \
+               f"bytes: {self.bytes_matched}, " + \
+               f"decoded: {self.matches_decoded} " + \
+               f"too_big: {self.num_matches_skipped_for_being_too_big()}, " + \
+               f"empty: {self.num_matches_skipped_for_being_empty()}>"

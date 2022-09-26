@@ -6,7 +6,7 @@ import re
 from collections import defaultdict
 from numbers import Number
 from os import environ
-from typing import Any, Iterator, Pattern
+from typing import Any, Iterator, Pattern, Union
 
 from rich.panel import Panel
 from rich.table import Table
@@ -14,12 +14,12 @@ from rich.text import Text
 
 from lib.binary.bytes_decoder import BytesDecoder
 from lib.binary.bytes_match import CAPTURE_BYTES, BytesMatch
-from lib.detection.character_encodings import BOMS, CHAR_ENCODING_1ST_COLOR_NUMBER
+from lib.detection.constants.character_encodings import BOMS
+from lib.detection.constants.dangerous_instructions import DANGEROUS_INSTRUCTIONS
 from lib.detection.regex_match_metrics import RegexMatchMetrics
-from lib.helpers.bytes_helper import (DANGEROUS_INSTRUCTIONS, clean_byte_string,
-     get_bytes_before_and_after_match, print_bytes)
-from lib.helpers.rich_text_helper import (DANGER_HEADER, NA, NOT_FOUND_MSG, console, console_width,
-     generate_subtable, pad_header, subheading_width)
+from lib.helpers.bytes_helper import clean_byte_string, get_bytes_before_and_after_match, print_bytes
+from lib.helpers.rich_text_helper import (CENTER, DANGER_HEADER, NA, NOT_FOUND_MSG, console, console_width,
+     generate_subtable, pad_header, prefix_with_plain_text_obj, subheading_width)
 from lib.helpers.string_helper import generate_hyphen_line, print_section_header
 from lib.util.adobe_strings import CURRENTFILE_EEXEC
 from lib.util.logging import log
@@ -38,8 +38,12 @@ FRONT_SLASH_BYTE = b"/"
 ESCAPED_DOUBLE_QUOTE_BYTES = b'\\"'
 ESCAPED_SINGLE_QUOTE_BYTES = b"\\'"
 
+# For rainbow colors
+CHAR_ENCODING_1ST_COLOR_NUMBER = 203
+
+
 # Quote regexes used to hunt for particular binary patterns of interest
-def build_quote_capture_group(open_quote: bytes, close_quote: bytes=None):
+def build_quote_capture_group(open_quote: bytes, close_quote: Union[bytes, None]=None):
     """Regex that captures everything between open and close quote (close_quote defaults to open_quote)"""
     return re.compile(open_quote + CAPTURE_BYTES + (close_quote or open_quote), re.DOTALL)
 
@@ -74,12 +78,13 @@ class DataStreamHandler:
         """Find all strings matching QUOTE_REGEXES (AKA between quote chars) and decode them with various encodings"""
         for quote_type, quote_regex in QUOTE_REGEXES.items():
             print_section_header(f"Forcing Decode of {quote_type.capitalize()} Quoted Strings", style='color(100)')
-            self._process_regex_matches(quote_regex, label=quote_type)
+            self._process_regex_matches(quote_regex, label=f"{quote_type} quoted")
 
     def extract_regex_capture_bytes(self, regex: Pattern[bytes]) -> Iterator[BytesMatch]:
         """Finds all matches of regex_with_one_capture in self.bytes and calls yield() with BytesMatch tuples"""
         for i, match in enumerate(regex.finditer(self.bytes, self._eexec_idx())):
-            yield(BytesMatch(match, ordinal=i))
+            surrounding_bytes = get_bytes_before_and_after_match(self.bytes, match)
+            yield(BytesMatch(match, surrounding_bytes, i))
 
 
     # -------------------------------------------------------------------------------
@@ -180,9 +185,8 @@ class DataStreamHandler:
 
     def _attempt_binary_decodes(self, bytes_match: BytesMatch, label: str) -> None:
         """Attempt to decode _bytes with all configured encodings and print a table of the results"""
-        surrounding_bytes = get_bytes_before_and_after_match(self.bytes, bytes_match)
-        decoder = BytesDecoder(surrounding_bytes, bytes_match, label)
-        decoder.force_print_with_all_encodings()
+        decoder = BytesDecoder(bytes_match, label)
+        decoder.print_decode_attempts()
         console.line()
 
         # Track stats on whether the bytes were decodable or not w/a given encoding
@@ -194,25 +198,23 @@ class DataStreamHandler:
 
     def _queue_suppression_notice(self, bytes_match: BytesMatch, quote_type: str) -> None:
         """Print a message indicating that we are not going to decode a given block of bytes"""
+        self.regex_extraction_stats[bytes_match.regex].skipped_matches_lengths[bytes_match.capture_len] += 1
         txt = bytes_match.match_idx_text()
-        console.log(txt)
 
         if bytes_match.capture_len == 0:
-            txt.append(' has no bytes to decode')
+            txt = Text('Nothing to actually attempt decoding at ', style='grey') + txt
         else:
-            txt = Text(f"Not decoding ", style='bytes') + txt + Text(': ')
-            txt.append(f"--max-decode-length option is set to {self.limit_decodes_larger_than} bytes", style='grey')
+            txt.append(" is too large to decode ")
+            txt.append(f"(--max-decode-length is {self.limit_decodes_larger_than} bytes)", style='grey')
 
         log.debug(Text('Queueing suppression notice: ') + txt)
         self.suppression_notice_queue.append(txt)
-        self.regex_extraction_stats[bytes_match.regex].matches_skipped_for_being_too_big += 1
 
     def _print_suppression_notices(self) -> None:
         """Print notices in queue in a single panel; empty queue"""
         if len(self.suppression_notice_queue) == 0:
             return
 
-        log.debug(f"pPinting {len(self.suppression_notice_queue)} suppression notices")
         suppression_notices_txt = Text("\n").join([notice for notice in self.suppression_notice_queue])
         panel = Panel(suppression_notices_txt, style='bytes', expand=False)
         console.print(panel)
@@ -226,7 +228,7 @@ class DataStreamHandler:
 def new_decoding_stats_table(title) -> Table:
     """Build an empty table for displaying decoding stats"""
     table = Table(
-        title=f"[{title}] Decoding Attempts Summary Statistics",
+        title=prefix_with_plain_text_obj(title, style='blue underline') + Text(f": Decoding Attempts Summary Statistics"),
         min_width=subheading_width(),
         show_lines=True,
         padding=[0, 1],
@@ -239,6 +241,6 @@ def new_decoding_stats_table(title) -> Table:
         table.add_column(pad_header(header.upper()), **kwargs)
 
     add_column('Byte Pattern', vertical='middle', style='color(25) bold reverse', justify='right')
-    add_column('Aggregate Metrics', overflow='fold', justify='center')
-    add_column('Per Encoding Metrics', justify='center')
+    add_column('Aggregate Metrics', overflow='fold', justify=CENTER)
+    add_column('Per Encoding Metrics', justify=CENTER)
     return table

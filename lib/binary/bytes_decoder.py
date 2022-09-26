@@ -1,266 +1,180 @@
 """
-Class to handle attempt various turning bytes into strings via various encoding options
+Class to handle attempting to decode a chunk of bytes into strings with various possible encodings.
+Leverages the chardet library to both guide what encodings are attempted as well as to rank decodings
+in the results.
+
+Final output is a set of deoding attempts that are represented in a Rich.table, sorted like this:
+
+    1. String representation of undecoded bytes is always the first row
+    2. Encodings which chardet.detect() ranked as > 0% likelihood are sorted based on that confidence
+    3. Then the unchardetectable:
+        1. Decodings that were successful, unforced, and new
+        2. Decodings that 'successful' but forced
+        3. Decodings that were the same as other decodings
+        4. Failed decodings
 """
-from numbers import Number
-from sys import byteorder
+from collections import defaultdict, namedtuple
+from operator import attrgetter
+from typing import List
 
 from rich.panel import Panel
 from rich.table import Table
 from rich.text import Text
 
 from lib.binary.bytes_match import BytesMatch
-from lib.detection.character_encodings import (ENCODINGS_TO_ATTEMPT, UTF_8, UTF_16, UTF_32,
-     build_encodings_metric_dict)
-from lib.detection.encoding_detector import EncodingDetector
-from lib.helpers.bytes_helper import (DANGEROUS_INSTRUCTIONS, clean_byte_string, num_surrounding_bytes,
-     build_rich_text_view_of_raw_bytes)
+from lib.binary.decoding_attempt import DecodingAttempt
+from lib.config import PdfalyzerConfig
+from lib.detection.constants.character_encodings import ENCODING, ENCODINGS_TO_ATTEMPT
+from lib.detection.encoding_detector import ChardetEncodingAssessment, EncodingDetector
+from lib.helpers.bytes_helper import clean_byte_string, rich_text_view_of_raw_bytes
 from lib.helpers.dict_helper import get_dict_key_by_value
-from lib.helpers.rich_text_helper import (BYTES_BRIGHTER, BYTES_BRIGHTEST, BYTES_HIGHLIGHT,
-     DECODE_NOT_ATTEMPTED_MSG, NO_DECODING_ERRORS_MSG, GREY, GREY_ADDRESS, DECODING_ERRORS_MSG, NA,
-     RAW_BYTES, console, prefix_with_plain_text_obj, unprintable_byte_to_text)
+from lib.helpers.rich_text_helper import (CENTER, DECODE_NOT_ATTEMPTED_MSG, FOLD, MIDDLE, NO_DECODING_ERRORS_MSG,
+     DECODING_ERRORS_MSG, NA, RAW_BYTES, RIGHT, console)
 from lib.util.logging import log
 
+
 # Messages used in the table to show true vs. false (a two element array can be indexed by booleans)
-WAS_DECODABLE_MSGS = [NO_DECODING_ERRORS_MSG, DECODING_ERRORS_MSG]
+WAS_DECODABLE_YES_NO = [NO_DECODING_ERRORS_MSG, DECODING_ERRORS_MSG]
+# Multiply chardet scores by 100 (again) to make sorting the table easy
+SCORE_SCALER = 100.0
 
 
 class BytesDecoder:
-    def __init__(self, _bytes: bytes, bytes_match: BytesMatch, label=None) -> None:
+    def __init__(self, bytes_match: BytesMatch, label=None) -> None:
         """Instantiated with _bytes as the whole stream; :bytes_seq tells it how to pull the bytes it will decode"""
-        self.bytes = _bytes
-        self.bytes_len = len(_bytes)
-        self.label = label or clean_byte_string(bytes_match.regex.pattern)
         self.bytes_match = bytes_match
+        self.bytes = bytes_match.surrounding_bytes
+        self.label = label or clean_byte_string(bytes_match.regex.pattern)
+        self.were_matched_bytes_decodable = _build_encodings_metric_dict()
+        self.undecoded_rows = []
 
         # Note we send both the bytes in BytesMatch as well as the surrounding bytes used when presenting
-        self.chardet_manager = EncodingDetector(self.bytes)
+        self.encoding_detector = EncodingDetector(self.bytes)
+        self.decodings = [DecodingAttempt(self.bytes_match, encoding) for encoding in ENCODINGS_TO_ATTEMPT.keys()]
+        self.decoded_strings = {}  # dict[encoding: decoded string]
 
-        # Adjust the highlighting start point in case this bytes_seq is very early in the stream
-        self.highlight_start_idx = min(self.bytes_match.start_idx, num_surrounding_bytes())
+        # Attempt decodings we don't usually attempt if chardet is insistent enough
+        forced_decodes = self._undecoded_assessments(self.encoding_detector.force_decode_assessments)
+        self.decodings += [DecodingAttempt(self.bytes_match, a.encoding) for a in forced_decodes]
 
-        # Build table with raw byte representation in the first row. Rows are collected in self.table_rows to
-        # be sorted before actually inserted them in to the table.
-        self.table_rows = []
-        self.decoded_table = _build_decoded_bytes_table()
-        self.decoded_table.add_row(RAW_BYTES, NA, NA, build_rich_text_view_of_raw_bytes(self.bytes, self.bytes_match))
+        # If we still haven't decoded chardets top choice, decode it
+        if len(self._forced_displays()) > 0 and not self._was_decoded(self._forced_displays()[0].encoding):
+            chardet_top_encoding = self._forced_displays()[0].encoding
+            log.debug(f"Decoding {chardet_top_encoding} because it's chardet top choice...")
+            self.decodings.append(DecodingAttempt(self.bytes_match, chardet_top_encoding))
 
-        if self.bytes_match.bytes in DANGEROUS_INSTRUCTIONS:
-            self.highlight_style = 'error'
-        else:
-            self.highlight_style = BYTES_HIGHLIGHT
+    def generate_decodings_table(self) -> Table:
+        table = _empty_decodings_table()
+        table.add_row(RAW_BYTES, NA, NA, rich_text_view_of_raw_bytes(self.bytes, self.bytes_match))
+        rows = [self._row_from_decoding_attempt(decoding) for decoding in self.decodings]
+        rows += [_row_from_chardet_assessment(assessment) for assessment in self._forced_displays()]
 
-        # Metrics tracking variables. self.decoded_strings has enconding for keys, decoded string as values
-        self.were_matched_bytes_decodable = build_encodings_metric_dict()
-        self.decoded_strings = {}
+        for row in sorted(rows, key=attrgetter('sort_score'), reverse=True):
+            table.add_row(*row[0:4])
 
-    def force_print_with_all_encodings(self) -> None:
-        """Prints a table showing the result of forcefully decoding self.surrounding bytes in different encodings"""
+        return table
+
+    def print_decode_attempts(self) -> None:
+        if not PdfalyzerConfig.suppress_chardet_output:
+            console.print(self.encoding_detector)
+
         self._print_decode_attempt_subheading()
+        console.print(self.generate_decodings_table())
 
-        for encoding in ENCODINGS_TO_ATTEMPT.keys():
-            decoded_string = self._decode_bytes(encoding)
-            plain_decoded_string = decoded_string.plain
+    def _forced_displays(self) -> List[ChardetEncodingAssessment]:
+        """Returns assessments over the display threshold that are not yet decoded"""
+        return self._undecoded_assessments(self.encoding_detector.force_display_assessments)
 
-            if plain_decoded_string in self.decoded_strings.values():
-                encoding_with_same_output = get_dict_key_by_value(self.decoded_strings, plain_decoded_string)
-                decoded_string = Text('same output as ', style='color(66) dim italic')
-                decoded_string.append(encoding_with_same_output, style='encoding')
-                decoded_string.append('...', style='white')
-            else:
-                self.decoded_strings[encoding] = plain_decoded_string
+    def _undecoded_assessments(self, assessments: List[ChardetEncodingAssessment]) -> List[ChardetEncodingAssessment]:
+        """Fiter out the already decoded assessments from a set of assessments"""
+        return [a for a in assessments if not self._was_decoded(a.encoding)]
 
-            self._add_table_row(encoding, decoded_string)
-
-        # Add table rows for encodings chardet thinks are high likelihood"""
-        self._add_unscanned_encodings_chardet_has_confidence_in()
-
-        # Sort the rows top to bottom based on chardet's reported confidence in a given encoding.
-        for row in sorted(self.table_rows, key=_decoded_table_sorter, reverse=True):
-            self.decoded_table.add_row(*row[0:4])
-
-        console.print(self.decoded_table)
-
-    def _add_unscanned_encodings_chardet_has_confidence_in(self):
-        """Add table rows for encodings chardet thinks are high likelihood even if we didn't"""
-        for assessment in self.chardet_manager.unique_results:
-            _encoding = assessment.encoding.plain
-
-            if self._is_in_table(_encoding) or assessment.confidence <= EncodingDetector.force_display_threshold:
-                continue
-            elif assessment.confidence >= EncodingDetector.force_decode_threshold:
-                self.were_matched_bytes_decodable[_encoding] = 0
-                log.info(f"chardet: {assessment.confidence}% HIGH confidence in {_encoding}... we'll try it")
-
-                try:
-                    decoded_string = self._decode_bytes(_encoding)
-                    log.info(f"  Successfully decoded with nonstandard encoding {_encoding}!")
-                except RuntimeError as e:
-                    decoded_string = Text(f"Tried {_encoding} bc of chardet's high. It failed: {e}", style='dark_red')
-
-                self._add_table_row(_encoding, decoded_string)
-                continue
-            else:
-                self.table_rows.append(_build_no_decode_attempt_row(assessment))
-
-    def _is_in_table(self, encoding) -> bool:
+    def _was_decoded(self, encoding: str) -> bool:
         """Check whether a given encoding is in the table already"""
-        return any(row[0].plain == encoding for row in self.table_rows)
+        return any(row.encoding == encoding for row in self.decodings)
 
-    def _add_table_row(self, encoding, decoded_string) -> None:
-        self.table_rows.append([
-            prefix_with_plain_text_obj(encoding, style='encoding'),         # Encoding fancy Text
-            self.chardet_manager.get_confidence_formatted_txt(encoding),    # Confidence metric fancy Text
-            WAS_DECODABLE_MSGS[int(self.were_matched_bytes_decodable[encoding] > 0)],  # Were there errors decoding?
-            decoded_string,
-            self.chardet_manager.get_confidence_score(encoding),             # Numerical confidence metric
-            self.chardet_manager.get_encoding_assessment(encoding)           # Full assessment
-        ])
-
-    def _decode_bytes(self, encoding: str) -> Text:
-        """
-        Tries builtin decode, hands off to other methods for harsher treatement
-        (Byte shifting for UTF-16/32 and custom decode for the rest) if that fails
-        """
-        decoded_string = None
-
-        try:
-            decoded_string = self.bytes.decode(encoding)
-            log.info(f"Auto-decoded {self.bytes_match} with {encoding}")
-            self.were_matched_bytes_decodable[encoding] += 1
-            return Text(decoded_string, style='bytes')
-        except UnicodeDecodeError:
-            log.info(f"1st pass decoding {self.bytes_match} capture with {encoding} failed; custom decoding...")
-
-        if encoding in [UTF_16, UTF_32]:
-            return self._decode_utf_multibyte(encoding)
-
-        # If all that fails... custom decode
-        return self._custom_decode(encoding)
-
-    def _custom_decode(self, encoding: str) -> Text:
-        """Returns a Text obj representing an attempt to force a UTF-8 encoding upon an array of bytes"""
-        log.info(f"Custom decoding {self.bytes_match} with {encoding}")
-        unprintable_char_map = ENCODINGS_TO_ATTEMPT.get(encoding)
-        output = Text('', style='bytes_decoded')
-        # We use this to skip over bytes consumed by multi-byte UTF-8 chars
-        skip_next = 0
-
-        for i, b in enumerate(self.bytes):
-            if skip_next > 0:
-                skip_next -= 1
-                continue
-
-            _byte = b.to_bytes(1, byteorder)
-
-            # Color the before and after bytes grey
-            if i < self.highlight_start_idx or i >= (self.highlight_start_idx + self.bytes_match.total_length()):
-                style = GREY_ADDRESS
-            else:
-                style = self.highlight_style
-
-            try:
-                if unprintable_char_map is not None and b in unprintable_char_map:
-                    output.append(unprintable_byte_to_text(unprintable_char_map[b], style=style))
-                elif b < 127:
-                    output.append(_byte.decode(encoding), style=style)
-                elif encoding != UTF_8:
-                    output.append(_byte.decode(encoding), style=style)
-                elif b <= 192:
-                    # At this point we know it's UTF_8, so it must be a continuation byte
-                    output.append(unprintable_byte_to_text(f"NC{b}", style=style))
-                else:
-                    # Now it must be UTF-8: https://en.wikipedia.org/wiki/UTF-8
-                    if b <= 223:
-                        char_width = 2
-                    elif b <= 239:
-                        char_width = 3
-                    else:
-                        char_width = 4
-
-                    wide_char = self.bytes[i:i + char_width].decode(encoding)
-                    output.append(wide_char, style=style or BYTES_BRIGHTEST)
-                    skip_next = char_width - 1  # Won't be set if there's a decoding exception
-                    log.info(f"Skipping next {skip_next} bytes because UTF-8 multibyte char '{wide_char}' used them")
-            except UnicodeDecodeError:
-                output.append(clean_byte_string(_byte), style=style or BYTES_BRIGHTER)
-
-        return output
-
-    def _decode_utf_multibyte(self, encoding: str) -> Text:
-        """# UTF-16/32 are fixed width (and wide)"""
-        divisor = 2 if encoding == UTF_16 else 4
-        log.debug(f"Decoding {encoding}, divisor is {divisor}...")
-
-        # NOTE! This is only a way to check valid byte start for UTF-16 as long as the surrounding bytes count is even
-        #start_idx = 0 if is_even(self.bytes_match.start_idx) else 1
-        # in UTF-16/32 everything is halved/quartered bc using more bytes
-        highlight_start_idx = int(self.highlight_start_idx / divisor)
-        highlight_end_idx = int((self.highlight_start_idx + self.bytes_match.total_length()) / divisor)
-        decoded_str = None
-
-        try:
-            decoded_str = self.bytes.decode(encoding)
-            log.info(f"... Decoded {len(decoded_str)} with {encoding}!")
-        except UnicodeDecodeError as e:
-            log.info(f"Exception while trying to parse in {encoding}: {e}\nTrying offset by 1 byte")
-
-            try:
-                decoded_str = self.bytes[1:].decode(encoding)
-            except UnicodeDecodeError as e2:
-                log.info(f"Failed to decode when offset by 1; giving up on {encoding}")
-                return prefix_with_plain_text_obj('(failed to decode)', style='red dim italic')
-
-        log.debug(f"Decoded with {encoding}: {decoded_str}")
-        txt = prefix_with_plain_text_obj('', style='white')
-        txt = Text(str(decoded_str[0:highlight_start_idx]), style='dark_grey')
-        txt.append(str(decoded_str[highlight_start_idx:highlight_end_idx]), style=self.highlight_style)
-        txt.append(str(decoded_str[highlight_end_idx:]), style='dark_grey')
-        return txt
-
-    def _print_decode_attempt_subheading(self) -> Panel:
-        """Generate a Rich panel for decode attempts"""
-        headline = Text('Found ', style='decode_subheading')
-        headline.append(str(self.bytes_match.capture_len), style='number')
-        headline.append(f" bytes matching ")
-        headline.append(f"{self.bytes_match.regex.pattern} ", style=self.highlight_style or 'regex')
-        headline.append(f"between {self.label.lower()} ")
-        headline.append(f"(start idx: ", style='off_white')
-        headline.append(str(self.bytes_match.start_idx), style='number')
-        headline.append(', end idx: ', style='off_white')
-        headline.append(str(self.bytes_match.end_idx), style='number')
-        headline.append(')', style='off_white')
+    def _print_decode_attempt_subheading(self) -> None:
+        """Generate a rich.Panel for decode attempts"""
+        headline = Text(f"Found {self.label.lower()} ", style='decode_subheading') + self.bytes_match.__rich__()
         panel = Panel(headline, style='decode_subheading', expand=False)
-        console.print(panel)
+        console.print(panel, justify=CENTER)
+
+    def _row_from_decoding_attempt(self, decoding: DecodingAttempt) -> 'DecodingTableRow':
+        assessment = self.encoding_detector.get_encoding_assessment(decoding.encoding)
+        plain_decoded_string = decoding.decoded_string.plain
+        sort_score = assessment.confidence * SCORE_SCALER
+
+        # Replace the decoded text with a "same output as X" where X is the encoding that gave the same result
+        if plain_decoded_string in self.decoded_strings.values():
+            encoding_with_same_output = get_dict_key_by_value(self.decoded_strings, plain_decoded_string)
+            display_text = Text('same output as ', style='color(66) dim italic')
+            display_text.append(encoding_with_same_output, style='encoding').append('...', style='white')
+        else:
+            self.decoded_strings[decoding.encoding] = plain_decoded_string
+            display_text = decoding.decoded_string
+
+        # Set failures negative, shave off a little for forced decodes
+        if decoding.failed_to_decode:
+            sort_score = sort_score * -1 - 100
+        elif decoding.was_force_decoded:
+            sort_score -= 10
+
+        return DecodingTableRow(
+            assessment.encoding_text,
+            assessment.confidence_text,
+            WAS_DECODABLE_YES_NO[int(decoding.was_force_decoded)],
+            display_text,
+            assessment.confidence,
+            assessment.encoding,
+            sort_score=sort_score)
 
 
-def _build_decoded_bytes_table() -> Table:
-    table = Table(show_lines=True, border_style='bytes', header_style=f"color(101) bold")
-    table.add_column('Encoding', style='white',       justify='right')
-    table.add_column("Odds Data Uses This Encoding",  justify='center', max_width=13, overflow='fold')
-    table.add_column('Decoding Errors?', style='dim', justify='center', max_width=9,  overflow='fold')
-    table.add_column('Decoded Output', overflow='fold')
+def _empty_decodings_table() -> Table:
+    """Empty table for decoding attempt presentation"""
+    table = Table(show_lines=True, border_style='bytes', header_style='color(101) bold')
 
-    for i, col in enumerate(table.columns):
-        col.vertical = 'middle'
+    def add_col(title, **kwargs):
+        kwargs['justify'] = kwargs.get('justify', CENTER)
+        table.add_column(title, overflow=FOLD, vertical=MIDDLE, **kwargs)
 
+    add_col('Encoding', justify=RIGHT, width=12)
+    add_col('Encoding Odds', max_width=len(ENCODING))
+    add_col('Forced?', max_width=9)
+    add_col('Decoded Output', justify='left')
     return table
 
 
-def _decoded_table_sorter(row: list) -> Number:
-    """
-    Sorts the decoded strings by chardet's returned confidence (raw number is hiding in column we do not show)
-    with the alphabet breaking ties
-    """
-    return row[4] + (0.01 * ord(row[0].plain[0]))
+# The confidence and encoding will not be shown in the final display - instead their Text versions are shown
+DecodingTableRow = namedtuple(
+    'DecodingTableRow',
+    [
+        'encoding_text',
+        'confidence_text',
+        'errors_while_decoded',
+        'decoded_string',
+        'confidence',
+        'encoding',
+        'sort_score'
+    ])
 
 
-def _build_no_decode_attempt_row(assessment):
+def _row_from_chardet_assessment(assessment: ChardetEncodingAssessment) -> DecodingTableRow:
     """Build a row with just chardet assessment data and no actual decoded string"""
-    return [
-        assessment.encoding,
-        assessment.confidence_str,
+    return DecodingTableRow(
+        assessment.encoding_text,
+        assessment.confidence_text,
         NA,
         DECODE_NOT_ATTEMPTED_MSG,
         assessment.confidence,
-        assessment
-    ]
+        assessment.encoding,
+        assessment.confidence * SCORE_SCALER)
+
+
+def _build_encodings_metric_dict():
+    """One key for each key in ENCODINGS_TO_ATTEMPT, values are all 0"""
+    metrics_dict = defaultdict(lambda: 0)
+
+    for encoding in ENCODINGS_TO_ATTEMPT.keys():
+        metrics_dict[encoding] = 0
+
+    return metrics_dict

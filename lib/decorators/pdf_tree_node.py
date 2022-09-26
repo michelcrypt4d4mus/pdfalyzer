@@ -17,7 +17,7 @@ from rich.table import Table
 from rich.text import Text
 from rich.tree import Tree
 
-from lib.detection.character_encodings import NEWLINE_BYTE
+from lib.detection.constants.character_encodings import NEWLINE_BYTE
 from lib.helpers.bytes_helper import clean_byte_string
 from lib.helpers.pdf_object_helper import get_references, get_symlink_representation
 from lib.helpers.rich_text_helper import console, get_label_style, get_type_style, get_type_string_style
