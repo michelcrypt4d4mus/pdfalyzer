@@ -25,10 +25,6 @@ from lib.util.adobe_strings import CURRENTFILE_EEXEC
 from lib.util.logging import log
 
 
-# Tables
-STATS_TABLE_HEADERS = ['Metric', 'Value']
-EASY_DECODES_HEADERS = ['Encoding', 'Successful Unforced Decodes']
-
 # Command line options
 MAX_DECODABLE_CHUNK_SIZE_ENV_VAR = 'PDFALYZER_MAX_DECODABLE_CHUNK_SIZE'
 DEFAULT_MAX_DECODABLE_CHUNK_SIZE = 256
@@ -140,16 +136,22 @@ class DataStreamHandler:
                 regexes_not_found_in_stream.append([str(regex.pattern), NOT_FOUND_MSG, NA])
                 continue
 
-            regex_subtable = generate_subtable(cols=STATS_TABLE_HEADERS)
-            decodes_subtable = generate_subtable(cols=EASY_DECODES_HEADERS)
-
+            regex_subtable = generate_subtable(cols=['Metric', 'Value'])
+            decodes_subtable = generate_subtable(cols=['Encoding', 'Decoded', 'Forced', 'Failed'])
+        # self.was_match_decodable = defaultdict(lambda: 0)
+        # self.was_match_force_decoded = defaultdict(lambda: 0)
+        # self.was_match_undecodable = defaultdict(lambda: 0)
             for metric, measure in vars(stats).items():
                 if isinstance(measure, Number):
                     regex_subtable.add_row(metric, str(measure))
 
-            for i, (encoding, easy_count) in enumerate(stats.were_matched_bytes_decodable.items()):
+            for i, (encoding, count) in enumerate(stats.was_match_decodable.items()):
                 style = f"color({CHAR_ENCODING_1ST_COLOR_NUMBER + 2 * i})"
-                decodes_subtable.add_row(Text(encoding, style=style), str(easy_count))
+                decodes_subtable.add_row(
+                    Text(encoding, style=style),
+                    str(count),
+                    str(self.regex_extraction_stats[regex].was_match_force_decoded[encoding]),
+                    str(self.regex_extraction_stats[regex].was_match_undecodable[encoding]))
 
             stats_table.add_row(str(regex.pattern), regex_subtable, decodes_subtable)
 
@@ -192,9 +194,17 @@ class DataStreamHandler:
         # Track stats on whether the bytes were decodable or not w/a given encoding
         self.regex_extraction_stats[bytes_match.regex].matches_decoded += 1
 
-        for encoding, count in decoder.were_matched_bytes_decodable.items():
-            stats_dict = self.regex_extraction_stats[bytes_match.regex].were_matched_bytes_decodable
-            stats_dict[encoding] = stats_dict.get(encoding, 0) + count
+        for encoding, count in decoder.was_match_decodable.items():
+            decode_stats = self.regex_extraction_stats[bytes_match.regex].was_match_decodable
+            decode_stats[encoding] = decode_stats.get(encoding, 0) + count
+
+        for encoding, count in decoder.was_match_undecodable.items():
+            failure_stats = self.regex_extraction_stats[bytes_match.regex].was_match_undecodable
+            failure_stats[encoding] = failure_stats.get(encoding, 0) + count
+
+        for encoding, count in decoder.was_match_force_decoded.items():
+            forced_stats = self.regex_extraction_stats[bytes_match.regex].was_match_force_decoded
+            forced_stats[encoding] = forced_stats.get(encoding, 0) + count
 
     def _queue_suppression_notice(self, bytes_match: BytesMatch, quote_type: str) -> None:
         """Print a message indicating that we are not going to decode a given block of bytes"""

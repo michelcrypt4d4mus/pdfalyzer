@@ -19,7 +19,9 @@ class RegexMatchMetrics:
         self.easy_decode_count = 0
         self.forced_decode_count = 0
         self.skipped_matches_lengths = defaultdict(lambda: 0)
-        self.were_matched_bytes_decodable = defaultdict(lambda: 0)
+        self.was_match_decodable = defaultdict(lambda: 0)
+        self.was_match_force_decoded = defaultdict(lambda: 0)
+        self.was_match_undecodable = defaultdict(lambda: 0)
         self.bytes_match_objs = []
 
     def num_matches_skipped_for_being_empty(self) -> int:

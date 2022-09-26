@@ -45,7 +45,9 @@ class BytesDecoder:
         self.bytes_match = bytes_match
         self.bytes = bytes_match.surrounding_bytes
         self.label = label or clean_byte_string(bytes_match.regex.pattern)
-        self.were_matched_bytes_decodable = _build_encodings_metric_dict()
+        self.was_match_decodable = _build_encodings_metric_dict()
+        self.was_match_force_decoded = _build_encodings_metric_dict()
+        self.was_match_undecodable = _build_encodings_metric_dict()
         self.undecoded_rows = []
 
         # Note we send both the bytes in BytesMatch as well as the surrounding bytes used when presenting
@@ -62,6 +64,17 @@ class BytesDecoder:
             chardet_top_encoding = self._forced_displays()[0].encoding
             log.debug(f"Decoding {chardet_top_encoding} because it's chardet top choice...")
             self.decodings.append(DecodingAttempt(self.bytes_match, chardet_top_encoding))
+
+        # Track the stats
+        for decoding in self.decodings:
+            if decoding.failed_to_decode:
+                self.was_match_undecodable[decoding.encoding] += 1
+                continue
+
+            self.was_match_decodable[decoding.encoding] += 1
+
+            if decoding.was_force_decoded:
+                self.was_match_force_decoded[decoding.encoding] += 1
 
     def generate_decodings_table(self) -> Table:
         table = _empty_decodings_table()

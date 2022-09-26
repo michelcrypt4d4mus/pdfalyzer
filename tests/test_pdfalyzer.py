@@ -42,4 +42,4 @@ def _assert_line_count_within_range(line_count, text):
 
     if not isclose(line_count, lines_in_text, rel_tol=0.1):
         console.print(text)
-        raise AssertionError(f"Expected {line_count} but found {lines_in_text}")
+        raise AssertionError(f"Expected {line_count} +/- but found {lines_in_text}")

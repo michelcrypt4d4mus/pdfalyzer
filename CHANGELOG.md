@@ -6,7 +6,6 @@
 * Will execute "by the book" decodes using normally untested encodings if the `chardet.detect()` library feels strongly enough about it.
 * Exporting SVGs, HTML, and colored text can be done in a single invocation.
 
-
 ### Logging
 * Invocations of the tool are now logged in a history file `log/pdfalyzer.invocation.log`
 * Logging to a file can be enabled by setting a `PDFALYZER_LOG_DIR` environment variable but see comments in `.env.example` about side effects.
@@ -18,7 +17,6 @@
 * `--output-dir` and `--file-prefix` are now shared by all the export modes
 * You can use `dotenv` to permanently turn on or off or change the value of some command line options; see  [`.env.example`](.env.example) for mdetails on what is configurable.
 
-
 ### Visualizations
 * Default `TerminalTheme` colors kind of sucked when you went to export SVGs and HTML... like black was not black, or even close. Things are simpler now - black is black, blue is blue, etc. Makes exports look better.
 
@@ -28,6 +26,8 @@
 * Fix `Win-
 * `BytesMatch` class to keep track of binary regex matches
 * Group suppression notifications together
+
+
 
 # 1.2.0
 * Dramatic expansion in the `pdfalyzer`'s binary data scouring capabilities:
