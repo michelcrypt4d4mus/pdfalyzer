@@ -150,14 +150,12 @@ As of right now these are the options:
 Beyond that there's [a few scripts](scripts/) in the repo that may be of interest.
 
 ### Setting Command Line Options Permanently With A `.env` File
-PDFALYZER_LOG_DIR
-If you find yourself specificying the same options over and over you may be able to automate that with a [dotenv](https://pypi.org/project/python-dotenv/) setup. Start by copying the example `.env` file into place:
+If you find yourself specificying the same options over and over you may be able to automate that with a [dotenv](https://pypi.org/project/python-dotenv/) setup. Documentation on the available configuration options lives in [`.env.example`](.env.example) which doubles as a file you can copy into place and edit to your heart's content.
 
 ```sh
 cp .env.example .env
 ```
 
-This is a dummy file that hows you which environment variables are available and explains how to set them; uncomment and modif to your heart's content.
 
 ### As A Code Library
 The `PdfWalker` class is the core of the operation as it holds both the PDF's logical tree as well as a couple of other data structures that have been pre-processed to make them easier to work with. Chief among these is the `FontInfo` class which pulls together various properties of a font strewn across 3 or 4 different PDF objects.

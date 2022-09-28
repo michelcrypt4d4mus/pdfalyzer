@@ -41,7 +41,7 @@ class BytesMatch:
 
         self.capture_len = len(self.bytes)
         # Adjust the highlighting start point in case this match is very early in the stream
-        self.highlight_start_idx = min(match.start(), PdfalyzerConfig.num_surrounding_bytes)
+        self.highlight_start_idx = min(match.start(), PdfalyzerConfig.NUM_SURROUNDING_BYTES)
         self.highlight_end_idx = self.highlight_start_idx + self.capture_len
         self._compute_pre_and_post_capture_lengths()
 

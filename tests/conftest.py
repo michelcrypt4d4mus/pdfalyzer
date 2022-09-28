@@ -1,4 +1,5 @@
 from os import environ, path
+
 import pytest
 
 from lib.config import MAX_DECODABLE_CHUNK_SIZE_ENV_VAR

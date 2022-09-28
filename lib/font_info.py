@@ -2,8 +2,6 @@
 Unify font information spread across a bunch of PdfObjects (Font, FontDescriptor,
 and FontFile) into a single class.
 """
-from os import environ
-
 from PyPDF2._cmap import build_char_map, prepare_cm
 from PyPDF2.generic import IndirectObject, PdfObject
 from rich.panel import Panel
@@ -155,7 +153,7 @@ class FontInfo:
             self.data_stream_handler.print_stream_preview(title_suffix=f" of /FontFile for {self.display_title}")
             self.data_stream_handler.check_for_dangerous_instructions()
 
-            if not PdfalyzerConfig.suppress_decodes:
+            if not PdfalyzerConfig.SUPPRESS_DECODES:
                 self.data_stream_handler.force_decode_all_quoted_bytes()
 
             self.data_stream_handler.print_decoding_stats_table()

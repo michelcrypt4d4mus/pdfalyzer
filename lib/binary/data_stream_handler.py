@@ -168,7 +168,7 @@ class DataStreamHandler:
             self.regex_extraction_stats[regex].bytes_match_objs.append(bytes_match)
 
             # Send suppressed decodes to a queue and track the reason for the suppression in the stats
-            if bytes_match.capture_len > PdfalyzerConfig.max_decodable_chunk_size or bytes_match.capture_len == 0:
+            if bytes_match.capture_len > PdfalyzerConfig.MAX_DECODABLE_CHUNK_SIZE or bytes_match.capture_len == 0:
                 self._queue_suppression_notice(bytes_match, label)
                 continue
 
@@ -209,7 +209,7 @@ class DataStreamHandler:
             txt = Text('Nothing to actually attempt decoding at ', style='grey') + txt
         else:
             txt.append(" is too large to decode ")
-            txt.append(f"(--max-decode-length is {PdfalyzerConfig.max_decodable_chunk_size} bytes)", style='grey')
+            txt.append(f"(--max-decode-length is {PdfalyzerConfig.MAX_DECODABLE_CHUNK_SIZE} bytes)", style='grey')
 
         log.debug(Text('Queueing suppression notice: ') + txt)
         self.suppression_notice_queue.append(txt)

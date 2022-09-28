@@ -83,7 +83,7 @@ class BytesDecoder:
         return table
 
     def print_decode_attempts(self) -> None:
-        if not PdfalyzerConfig.suppress_chardet_output:
+        if not PdfalyzerConfig.SUPPRESS_CHARDET_OUTPUT:
             console.print(self.encoding_detector)
 
         self._print_decode_attempt_subheading()

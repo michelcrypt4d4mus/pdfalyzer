@@ -12,11 +12,10 @@ from lib.helpers.rich_text_helper import console, invoke_rich_export
 from lib.pdf_parser_manager import PdfParserManager
 from lib.pdf_walker import PdfWalker
 from lib.util.argument_parser import output_sections, parse_arguments
-from lib.util.logging import log, log_and_print, log_current_config
+from lib.util.logging import log, log_and_print
 
 
 args = parse_arguments()
-log_current_config()
 walker = PdfWalker(args.pdf)
 
 # Binary stream extraction is a special case

@@ -15,7 +15,7 @@ from lib.detection.encoding_detector import (CONFIDENCE_SCORE_RANGE, EncodingDet
 from lib.helpers import rich_text_helper
 from lib.helpers.file_helper import timestamp_for_filename
 from lib.helpers.rich_text_helper import console, console_width_possibilities
-from lib.util.logging import INVOCATION_LOG_PATH, invocation_log, log, log_and_print
+from lib.util.logging import INVOCATION_LOG_PATH, invocation_log, log, log_and_print, log_current_config
 
 
 # NamedTuple to keep our argument selection orderly
@@ -185,18 +185,18 @@ def parse_arguments():
     args = parser.parse_args()
     args.invoked_at_str = timestamp_for_filename()
 
-    if not args.debug:
+    if not args.debug and not PdfalyzerConfig.WAS_LOG_LEVEL_CONFIGURED:
         log.setLevel(logging.WARNING)
 
     if args.maximize_width:
         rich_text_helper.console.width = max(console_width_possibilities())
 
     # Suppressing/limiting output
-    PdfalyzerConfig.max_decodable_chunk_size = args.max_decode_length
-    PdfalyzerConfig.num_surrounding_bytes = args.surrounding_bytes
+    PdfalyzerConfig.MAX_DECODABLE_CHUNK_SIZE = args.max_decode_length
+    PdfalyzerConfig.NUM_SURROUNDING_BYTES = args.surrounding_bytes
 
     if args.suppress_decodes:
-        PdfalyzerConfig.suppress_decodes = args.suppress_decodes
+        PdfalyzerConfig.SUPPRESS_DECODES = args.suppress_decodes
 
     # chardet.detect() action thresholds
     if args.force_decode_threshold:
@@ -206,7 +206,7 @@ def parse_arguments():
         EncodingDetector.force_display_threshold = args.force_display_threshold
 
     if args.suppress_chardet:
-        PdfalyzerConfig.suppress_chardet_output = True
+        PdfalyzerConfig.SUPPRESS_CHARDET_OUTPUT = True
 
     # File export options
     if args.export_svg or args.export_txt or args.export_html or args.extract_binary_streams:
@@ -217,6 +217,7 @@ def parse_arguments():
         log.warning('--output-dir provided but no export option was chosen')
 
     _log_argparse_result(args)
+    log_current_config()
     return args
 
 
@@ -256,11 +257,11 @@ def _log_invocation() -> None:
 def _log_argparse_result(args):
     """Logs the result of argparse"""
     args_dict = vars(args)
-    log_msg = ' THE PARSENING:\n'
+    log_msg = 'THE PARSENING:\n\n' + '{0: >30}    {1: <17} {2: <}\n'.format('OPTION', 'TYPE', 'VALUE')
 
     for arg_var in sorted(args_dict.keys()):
         arg_val = args_dict[arg_var]
-        row = '{0: >30}    {1: ^17} {2: <}\n'.format(arg_var, type(arg_val).__name__, str(arg_val))
+        row = '{0: >30}    {1: <17} {2: <}\n'.format(arg_var, type(arg_val).__name__, str(arg_val))
         log_msg += row
 
     invocation_log.info(log_msg + "\n\n\n")
