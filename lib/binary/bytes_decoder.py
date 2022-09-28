@@ -13,6 +13,7 @@ Final output is a set of deoding attempts that are represented in a Rich.table, 
         3. Decodings that were the same as other decodings
         4. Failed decodings
 """
+
 from collections import defaultdict, namedtuple
 from operator import attrgetter
 from typing import List
@@ -24,17 +25,20 @@ from rich.text import Text
 from lib.binary.bytes_match import BytesMatch
 from lib.binary.decoding_attempt import DecodingAttempt
 from lib.config import PdfalyzerConfig
+
+from lib.detection.encoding_assessment import EncodingAssessment
 from lib.detection.constants.character_encodings import ENCODING, ENCODINGS_TO_ATTEMPT
-from lib.detection.encoding_detector import ChardetEncodingAssessment, EncodingDetector
+from lib.detection.encoding_detector import EncodingDetector
 from lib.helpers.bytes_helper import clean_byte_string, rich_text_view_of_raw_bytes
 from lib.helpers.dict_helper import get_dict_key_by_value
-from lib.helpers.rich_text_helper import (CENTER, DECODE_NOT_ATTEMPTED_MSG, FOLD, MIDDLE, NO_DECODING_ERRORS_MSG,
-     DECODING_ERRORS_MSG, NA, RAW_BYTES, RIGHT, console)
+from lib.helpers.rich_text_helper import (CENTER, DECODE_NOT_ATTEMPTED_MSG, DECODING_ERRORS_MSG, FOLD,
+     MIDDLE, NO_DECODING_ERRORS_MSG, NA, RAW_BYTES, RIGHT, console)
 from lib.util.logging import log
 
 
 # Messages used in the table to show true vs. false (a two element array can be indexed by booleans)
 WAS_DECODABLE_YES_NO = [NO_DECODING_ERRORS_MSG, DECODING_ERRORS_MSG]
+
 # Multiply chardet scores by 100 (again) to make sorting the table easy
 SCORE_SCALER = 100.0
 
@@ -65,16 +69,7 @@ class BytesDecoder:
             log.debug(f"Decoding {chardet_top_encoding} because it's chardet top choice...")
             self.decodings.append(DecodingAttempt(self.bytes_match, chardet_top_encoding))
 
-        # Track the stats
-        for decoding in self.decodings:
-            if decoding.failed_to_decode:
-                self.was_match_undecodable[decoding.encoding] += 1
-                continue
-
-            self.was_match_decodable[decoding.encoding] += 1
-
-            if decoding.was_force_decoded:
-                self.was_match_force_decoded[decoding.encoding] += 1
+        self._track_decode_stats()
 
     def generate_decodings_table(self) -> Table:
         table = _empty_decodings_table()
@@ -94,11 +89,11 @@ class BytesDecoder:
         self._print_decode_attempt_subheading()
         console.print(self.generate_decodings_table())
 
-    def _forced_displays(self) -> List[ChardetEncodingAssessment]:
+    def _forced_displays(self) -> List[EncodingAssessment]:
         """Returns assessments over the display threshold that are not yet decoded"""
         return self._undecoded_assessments(self.encoding_detector.force_display_assessments)
 
-    def _undecoded_assessments(self, assessments: List[ChardetEncodingAssessment]) -> List[ChardetEncodingAssessment]:
+    def _undecoded_assessments(self, assessments: List[EncodingAssessment]) -> List[EncodingAssessment]:
         """Fiter out the already decoded assessments from a set of assessments"""
         return [a for a in assessments if not self._was_decoded(a.encoding)]
 
@@ -111,6 +106,18 @@ class BytesDecoder:
         headline = Text(f"Found {self.label.lower()} ", style='decode_subheading') + self.bytes_match.__rich__()
         panel = Panel(headline, style='decode_subheading', expand=False)
         console.print(panel, justify=CENTER)
+
+    def _track_decode_stats(self):
+        "Track stats about successful vs. forced vs. failed decode attempts"
+        for decoding in self.decodings:
+            if decoding.failed_to_decode:
+                self.was_match_undecodable[decoding.encoding] += 1
+                continue
+
+            self.was_match_decodable[decoding.encoding] += 1
+
+            if decoding.was_force_decoded:
+                self.was_match_force_decoded[decoding.encoding] += 1
 
     def _row_from_decoding_attempt(self, decoding: DecodingAttempt) -> 'DecodingTableRow':
         assessment = self.encoding_detector.get_encoding_assessment(decoding.encoding)
@@ -132,29 +139,8 @@ class BytesDecoder:
         elif decoding.was_force_decoded:
             sort_score -= 10
 
-        return DecodingTableRow(
-            assessment.encoding_text,
-            assessment.confidence_text,
-            WAS_DECODABLE_YES_NO[int(decoding.was_force_decoded)],
-            display_text,
-            assessment.confidence,
-            assessment.encoding,
-            sort_score=sort_score)
-
-
-def _empty_decodings_table() -> Table:
-    """Empty table for decoding attempt presentation"""
-    table = Table(show_lines=True, border_style='bytes', header_style='color(101) bold')
-
-    def add_col(title, **kwargs):
-        kwargs['justify'] = kwargs.get('justify', CENTER)
-        table.add_column(title, overflow=FOLD, vertical=MIDDLE, **kwargs)
-
-    add_col('Encoding', justify=RIGHT, width=12)
-    add_col('Encoding Odds', max_width=len(ENCODING))
-    add_col('Forced?', max_width=9)
-    add_col('Decoded Output', justify='left')
-    return table
+        was_forced = WAS_DECODABLE_YES_NO[int(decoding.was_force_decoded)]
+        return _decoding_table_row(assessment, was_forced, display_text, sort_score)
 
 
 # The confidence and encoding will not be shown in the final display - instead their Text versions are shown
@@ -171,16 +157,35 @@ DecodingTableRow = namedtuple(
     ])
 
 
-def _row_from_chardet_assessment(assessment: ChardetEncodingAssessment) -> DecodingTableRow:
-    """Build a row with just chardet assessment data and no actual decoded string"""
+def _decoding_table_row(assessment: EncodingAssessment, is_forced: Text, txt: Text, score: float) -> DecodingTableRow:
     return DecodingTableRow(
         assessment.encoding_text,
         assessment.confidence_text,
-        NA,
-        DECODE_NOT_ATTEMPTED_MSG,
+        is_forced,
+        txt,
         assessment.confidence,
         assessment.encoding,
-        assessment.confidence * SCORE_SCALER)
+        sort_score=score)
+
+
+def _row_from_chardet_assessment(assessment: EncodingAssessment) -> DecodingTableRow:
+    """Build a row with just chardet assessment data and no actual decoded string"""
+    return _decoding_table_row(assessment, NA, DECODE_NOT_ATTEMPTED_MSG, assessment.confidence * SCORE_SCALER)
+
+
+def _empty_decodings_table() -> Table:
+    """Empty table for decoding attempt presentation"""
+    table = Table(show_lines=True, border_style='bytes', header_style='color(101) bold')
+
+    def add_col(title, **kwargs):
+        kwargs['justify'] = kwargs.get('justify', CENTER)
+        table.add_column(title, overflow=FOLD, vertical=MIDDLE, **kwargs)
+
+    add_col('Encoding', justify=RIGHT, width=12)
+    add_col('Encoding Odds', max_width=len(ENCODING))
+    add_col('Forced?', max_width=9)
+    add_col('Decoded Output', justify='left')
+    return table
 
 
 def _build_encodings_metric_dict():

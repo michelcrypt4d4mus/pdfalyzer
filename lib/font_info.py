@@ -11,6 +11,7 @@ from rich.table import Table
 from rich.text import Text
 
 from lib.binary.data_stream_handler import DataStreamHandler
+from lib.config import PdfalyzerConfig
 from lib.helpers.bytes_helper import print_bytes
 from lib.helpers.rich_text_helper import console, get_type_style, subheading_width
 from lib.helpers.string_helper import pp
@@ -19,8 +20,6 @@ from lib.util.adobe_strings import (FONT, FONT_DESCRIPTOR, FONT_FILE, FONT_LENGT
 from lib.util.logging import log
 
 
-
-SUPPRESS_QUOTED_ENV_VAR = 'PDFALYZER_SUPPRESS_DECODE_OF_QUOTED_STRINGS'
 CHARMAP_WIDTH = 8
 CHARMAP_DISPLAY_COLS = 5
 CHARMAP_COLUMN_WIDTH = int(CHARMAP_WIDTH * 2.5)
@@ -156,7 +155,7 @@ class FontInfo:
             self.data_stream_handler.print_stream_preview(title_suffix=f" of /FontFile for {self.display_title}")
             self.data_stream_handler.check_for_dangerous_instructions()
 
-            if environ.get(SUPPRESS_QUOTED_ENV_VAR) is None:
+            if not PdfalyzerConfig.suppress_decodes:
                 self.data_stream_handler.force_decode_all_quoted_bytes()
 
             self.data_stream_handler.print_decoding_stats_table()

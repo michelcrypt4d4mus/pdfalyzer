@@ -53,7 +53,7 @@ This image shows a more in-depth view of of the PDF tree for the same document s
 
 ### Font Analysis (And Lots Of It)
 #### View the Properties of the Fonts in the PDF
-Comes with a preview of the beginning and end of the font's raw binary data stream (at least if it's that kind of font).
+Comes with a preview of the beginning and end of the font's raw binary data stream (at least if it's that kind of font). [Here's an even bigger example again showing the `nmap` cheat sheet](doc/svgs/rendered_images/NMAP_Commands_Cheat_Sheet_and_Tutorial.pdf.rich_table_tree__PDFALYZED at 2022-09-27T20.29.52.png)
 
 ![Node Summary](doc/svgs/rendered_images/font_summary_with_byte_preview.png)
 
@@ -141,83 +141,7 @@ scripts/install_t1utils.sh
 
 As of right now these are the options:
 
-```sh
-usage: pdfalyzer.py [-h] [--version] [-d] [-t] [-r] [-c] [-f [ID]] [--maximize-width]
-                    [--suppress-chardet] [--surrounding-bytes BYTES] [--suppress-decodes]
-                    [--max-decode-length MAX] [--force-display-threshold PCT_CONFIDENCE]
-                    [--force-decode-threshold PCT_CONFIDENCE] [-bin] [-svg] [-txt] [-html]
-                    [-dir OUTPUT_DIR] [-pfx PREFIX] [-I] [-D]
-                    file_to_analyze.pdf
-
-Build and print trees, font binary summaries, and other things describing the logical structure of a
-PDF. If no output sections are specified all sections will be printed to STDOUT in the order they are
-listed as command line options.
-
-positional arguments:
-  file_to_analyze.pdf   PDF file to process
-
-options:
-  -h, --help            show this help message and exit
-  --version             show program's version number and exit
-
-OUTPUT SELECTION:
-  If none of these are specified pdfalyzer will output them all.
-
-  -d, --docinfo         show embedded document info (author, title, timestamps, etc)
-  -t, --tree            show condensed tree (one line per object)
-  -r, --rich            show much more detailed tree (one panel per object, all properties of all
-                        objects)
-  -c, --counts          show counts of some of the properties of the objects in the PDF
-  -f [ID], --font [ID]  scan font binaries for 'sus' content, optionally limited to PDF objs w/[ID]
-                        (use '--' to avoid positional mixups)
-
-FINE TUNING:
-  Settings that affect various aspects of the analyis and visualization.
-
-  --maximize-width      maximize the display width to fill the terminal
-  --suppress-chardet    suppress the display of the full table of chardet's encoding likelihood scores
-  --surrounding-bytes BYTES
-                        number of bytes to display before and after suspicious strings in font binaries
-                        (default: 64)
-  --suppress-decodes    suppress decode attempts for quoted bytes found in font binaries
-  --max-decode-length MAX
-                        suppress decode attempts for quoted byte sequences longer than MAX (default:
-                        256)
-  --force-display-threshold PCT_CONFIDENCE
-                        chardet.detect() scores encodings from 0-100pct but encodings with scores below
-                        this number will not be displayed anywhere (default: 20.0)
-  --force-decode-threshold PCT_CONFIDENCE
-                        extremely high (AKA 'above this number') PCT_CONFIDENCE scores from
-                        chardet.detect() as to the likelihood some binary data was written with a
-                        particular encoding will cause the pdfalyzer to do a force decode of that with
-                        that encoding. (chardet is a sophisticated libary; this is pdfalyzer's way of
-                        harnessing that intelligence) (default: 50.0)
-
-FILE EXPORT:
-  Write to various kinds of files in addition to STDOUT. Exports will land in the current directory
-  unless --output-dir is specified. Filenames will be patterned on the PDF's filename plus a
-  timestamp though you can use the --file-prefix option to specify a custom prefix to prepend to
-  them.
-
-  -bin, --extract-binary-streams
-                        extract all binary streams in the PDF to separate files (requires pdf-
-                        parser.py)
-  -svg, --export-svg    export analysis to SVG images
-  -txt, --export-txt    export analysis to ANSI colored text files
-  -html, --export-html  export analysis to styled html files
-  -dir OUTPUT_DIR, --output-dir OUTPUT_DIR
-                        write files to OUTPUT_DIR instead of current dir, does nothing if no exporting
-                        a file
-  -pfx PREFIX, --file-prefix PREFIX
-                        optional string to use as the prefix for exported files of any kind
-
-DEBUG:
-  Debugging/interactive options.
-
-  -I, --interact        drop into interactive python REPL when parsing is complete
-  -D, --debug           show extremely verbose debug log output
-
-```
+![argparse_help](doc/screenshots/rich_help/full_text_of_help_orange_group.png)
 
 **There's some further exposition on the particulars of what these options mean in [the sample `.env` file](.env.example).** Even if don't configure your own `env` you may still glean some insight from reading the descriptions of the various environment variables.
 

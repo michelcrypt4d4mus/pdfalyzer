@@ -1,20 +1,22 @@
 #!/usr/bin/env python
 import code
 import sys
-from functools import partial
-from os import path
+from os import environ, path
 
-# load_dotenv() should be called before parsing local libary
-from dotenv import load_dotenv; load_dotenv()
+# load_dotenv() should be called as soon as possible (before parsing local classes)
+if not environ.get('INVOKED_BY_PYTEST', False):
+    from dotenv import load_dotenv
+    load_dotenv()
 
 from lib.helpers.rich_text_helper import console, invoke_rich_export
 from lib.pdf_parser_manager import PdfParserManager
 from lib.pdf_walker import PdfWalker
 from lib.util.argument_parser import output_sections, parse_arguments
-from lib.util.logging import log, log_and_print
+from lib.util.logging import log, log_and_print, log_current_config
 
 
 args = parse_arguments()
+log_current_config()
 walker = PdfWalker(args.pdf)
 
 # Binary stream extraction is a special case
@@ -44,7 +46,6 @@ for (arg, method) in output_sections(args, walker):
 
     if args.export_svg:
         invoke_rich_export(console.save_svg, output_basepath)
-
 
 
 # Drop into interactive shell if requested

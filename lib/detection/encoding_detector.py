@@ -13,7 +13,7 @@ from rich.padding import Padding
 from rich.table import Table
 from rich.text import Text
 
-from lib.detection.chardet_encoding_assessment import ENCODING, ChardetEncodingAssessment
+from lib.detection.encoding_assessment import ENCODING, EncodingAssessment
 from lib.helpers.rich_text_helper import console
 from lib.util.logging import log
 
@@ -52,20 +52,20 @@ class EncodingDetector:
             return
 
         self.has_any_idea = True
-        self.assessments = [ChardetEncodingAssessment(a) for a in self.raw_chardet_assessments]
+        self.assessments = [EncodingAssessment(a) for a in self.raw_chardet_assessments]
         self._uniquify_results_and_build_table()
         self.force_decode_assessments = self.assessments_above_confidence(type(self).force_decode_threshold)
         self.force_display_assessments = self.assessments_above_confidence(type(self).force_display_threshold)
 
-    def get_encoding_assessment(self, encoding) -> ChardetEncodingAssessment:
+    def get_encoding_assessment(self, encoding) -> EncodingAssessment:
         """If chardet produced one, return it, otherwise return a dummy node with confidence of 0"""
         assessment = next((r for r in self.unique_assessments if r.encoding == encoding), None)
-        return assessment or ChardetEncodingAssessment.dummy_encoding_assessment(encoding)
+        return assessment or EncodingAssessment.dummy_encoding_assessment(encoding)
 
     def has_enough_bytes(self) -> bool:
         return self.bytes_len >= MIN_BYTES_FOR_ENCODING_DETECTION
 
-    def assessments_above_confidence(self, cutoff: float) -> List[ChardetEncodingAssessment]:
+    def assessments_above_confidence(self, cutoff: float) -> List[EncodingAssessment]:
         return [a for a in self.unique_assessments if a.confidence >= cutoff]
 
     def __rich__(self) -> Padding:

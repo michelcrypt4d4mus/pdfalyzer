@@ -3,7 +3,7 @@ The tests in here are not super resilient - they will fail if a code changes res
 more or fewer lines of output.
 """
 from math import isclose
-from os import path
+from os import environ, path
 from subprocess import check_output
 
 from lib.helpers.rich_text_helper import console
@@ -34,7 +34,7 @@ def test_font_scan(adobe_type1_fonts_pdf_path):
 
 def _run_with_args(pdf, *args) -> str:
     """check_output() technically returns bytes so we decode before returning STDOUT output"""
-    return check_output([PDFALYZER_EXECUTABLE, pdf, *args]).decode()
+    return check_output([PDFALYZER_EXECUTABLE, pdf, *args], env=environ).decode()
 
 
 def _assert_line_count_within_range(line_count, text):

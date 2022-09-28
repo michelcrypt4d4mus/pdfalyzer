@@ -73,7 +73,7 @@ class DecodingAttempt:
                     output.append(_byte.decode(self.encoding), style=style)
                 elif self.encoding != UTF_8:
                     output.append(_byte.decode(self.encoding), style=style)
-                # At this point we know it's UTF_8, so it must be a continuation byte
+                # At this point we know it's UTF-8, so it must be a continuation byte
                 elif b <= 192:
                     # In UTF-8 bytes from 128 to 192 is a continuation byte
                     output.append(unprintable_byte_to_text(f"CHAR{b}", style=style))
@@ -95,7 +95,7 @@ class DecodingAttempt:
         return output
 
     def _decode_utf_multibyte_with_byte_offset(self) -> Text:
-        """# UTF-16/32 are fixed width (and wide)"""
+        """ UTF-16/32 are fixed width (and wide)"""
         char_width = 2 if self.encoding == UTF_16 else 4
         log.debug(f"Decoding {self.encoding}, char_width is {char_width}...")
         last_exception = None
@@ -121,12 +121,13 @@ class DecodingAttempt:
         return self._to_rich_text(decoded_str, bytes_offset, char_width)
 
     def _to_rich_text(self, _string: str, bytes_offset: int=0, char_width: int=1) -> Text:
+        """Convert a decoded string to highlighted Text representation"""
         # Adjust where we start the highlighting given the multibyte nature of the encodings
         highlight_byte_start_idx = self.bytes_match.highlight_start_idx + bytes_offset
         highlight_start_idx = int(highlight_byte_start_idx / char_width)
         highlight_end_idx = int((highlight_byte_start_idx + self.bytes_match.capture_len) / char_width)
 
-        # Prevent unprintable chars other than newline; they disfigure the terminal output permanently sometimes
+        # Prevent unprintable chars other than newline. Some of them disfigure the terminal output permanently
         if self.encoding in SINGLE_BYTE_ENCODINGS:
             log.debug(f"Stepping through {self.encoding} encoded string...")
             unprintable_chars = ENCODINGS_TO_ATTEMPT[self.encoding]

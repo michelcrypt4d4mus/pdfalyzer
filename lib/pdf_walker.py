@@ -10,6 +10,7 @@ from anytree import LevelOrderIter, RenderTree, SymlinkNode
 from anytree.render import DoubleStyle
 from anytree.search import findall_by_attr
 from PyPDF2 import PdfReader
+from PyPDF2.errors import PdfReadError
 from PyPDF2.generic import IndirectObject, NameObject, NumberObject
 from rich.panel import Panel
 from rich.text import Text
@@ -392,7 +393,17 @@ class PdfWalker:
                 continue
 
             ref = IndirectObject(idnum, self.max_generation, self.pdf)
-            obj = ref.get_object()
+            try:
+                obj = ref.get_object()
+            except PdfReadError as e:
+                if 'Invalid Elementary Object' in str(e):
+                    log.info(f"Couldn't verify elementary obj with id {idnum} is properly in tree")
+                    continue
+                else:
+                    log.error(str(e))
+                    console.print(str(e), style='error')
+                    console.print_exception()
+                    raise
 
             if obj is None:
                 log.error(f"Cannot find ref {ref} in PDF!")

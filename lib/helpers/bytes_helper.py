@@ -5,7 +5,7 @@ from rich.console import Console
 from rich.text import Text
 
 from lib.binary.bytes_match import BytesMatch
-from lib.config import num_surrounding_bytes
+from lib.config import PdfalyzerConfig
 from lib.detection.constants.dangerous_instructions import DANGEROUS_INSTRUCTIONS
 from lib.detection.constants.character_encodings import NEWLINE_BYTE
 from lib.helpers.rich_text_helper import BYTES_HIGHLIGHT, console
@@ -18,8 +18,8 @@ def get_bytes_before_and_after_match(_bytes: bytes, match: re.Match, num_before=
     num_before and num_after will both default to the env var/CLI options having to do with surrounding
     bytes. If only num_before is provided then num_after will use it as a default.
     """
-    num_after = num_after or num_before or num_surrounding_bytes()
-    num_before = num_before or num_surrounding_bytes()
+    num_after = num_after or num_before or PdfalyzerConfig.num_surrounding_bytes
+    num_before = num_before or PdfalyzerConfig.num_surrounding_bytes
     start_idx = max(match.start() - num_before, 0)
     end_idx = min(match.end() + num_after, len(_bytes))
     return _bytes[start_idx:end_idx]

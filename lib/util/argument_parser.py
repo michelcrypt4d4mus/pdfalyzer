@@ -5,16 +5,15 @@ from argparse import ArgumentDefaultsHelpFormatter, ArgumentParser
 from collections import namedtuple
 from functools import partial, update_wrapper
 from os import environ, getcwd, path
+from typing import List
 
 from rich_argparse import RichHelpFormatter
 
-from lib.binary.data_stream_handler import (DEFAULT_MAX_DECODABLE_CHUNK_SIZE,
-     MAX_DECODABLE_CHUNK_SIZE_ENV_VAR)
-from lib.config import SURROUNDING_BYTES_LENGTH_DEFAULT, SURROUNDING_BYTES_ENV_VAR, PdfalyzerConfig
+from lib.config import (DEFAULT_MAX_DECODABLE_CHUNK_SIZE, SURROUNDING_BYTES_LENGTH_DEFAULT,
+     PdfalyzerConfig)
 from lib.detection.encoding_detector import (CONFIDENCE_SCORE_RANGE, EncodingDetector)
-from lib.helpers.file_helper import timestamp_for_filename
-from lib.font_info import SUPPRESS_QUOTED_ENV_VAR
 from lib.helpers import rich_text_helper
+from lib.helpers.file_helper import timestamp_for_filename
 from lib.helpers.rich_text_helper import console, console_width_possibilities
 from lib.util.logging import INVOCATION_LOG_PATH, invocation_log, log, log_and_print
 
@@ -33,11 +32,9 @@ class ExplicitDefaultsHelpFormatter(ArgumentDefaultsHelpFormatter):
             return super()._get_help_string(action)
 
 
-DESCRIPTION = """
-    Explore PDF's inner data structure with absurdly large and in depth visualizations.
-    Track the control flow of her darker impulses, scan rivers of her binary data for
-    signs of evil sorcery, and generally peer deep into the dark heart of the Portable
-    Document Format. Just make sure you also forgive her - she knows not what she does.
+DESCRIPTION = """Explore PDF's inner data structure with absurdly large and in depth visualizations. Track the control
+flow of her darker impulses, scan rivers of her binary data for signs of evil sorcery, and generally peer deep into the
+dark heart of the Portable Document Format. Just make sure you also forgive her - she knows not what she does.
 """
 
 EPILOG = f"""
@@ -49,7 +46,6 @@ parser = ArgumentParser(
     formatter_class=ExplicitDefaultsHelpFormatter,
     description=DESCRIPTION,
     epilog=EPILOG)
-
 
 # Positional args, version, help, etc
 parser.add_argument('--version', action='version', version=f"pdfalyzer {importlib.metadata.version('pdfalyzer')}")
@@ -74,14 +70,14 @@ select.add_argument('-c', '--counts', action='store_true',
                     help='show counts of some of the properties of the objects in the PDF')
 
 select.add_argument('-f', '--font',
-                    nargs='?',
-                    const=-1,
-                    metavar='ID',
-                    type=int,
                     help="scan font binaries for sus content. brute force is involved. brutes are slow and so " + \
                          "is slow. a single font can be optionally be selected by its internal PDF [ID]. " + \
                          "not a multiselect but choosing nothing is still choosing everything. "
-                         "try '-f -- [the rest]' if you run into an argument position related piccadilly.")
+                         "try '-f -- [the rest]' if you run into an argument position related piccadilly.",
+                    nargs='?',
+                    const=-1,
+                    metavar='ID',
+                    type=int)
 
 
 # Fine tuning
@@ -103,12 +99,11 @@ tuning.add_argument('--surrounding-bytes',
                     metavar='BYTES',
                     type=int)
 
-tuning.add_argument('--suppress-decodes',
-                    action='store_true',
+tuning.add_argument('--suppress-decodes', action='store_true',
                     help='suppress decode attempts for quoted bytes found in font binaries')
 
 tuning.add_argument('--max-decode-length',
-                    help=f'suppress decode attempts for quoted byte sequences longer than MAX',
+                    help='suppress decode attempts for quoted byte sequences longer than MAX',
                     default=DEFAULT_MAX_DECODABLE_CHUNK_SIZE,
                     metavar='MAX',
                     type=int)
@@ -170,7 +165,9 @@ export.add_argument('-pfx', '--file-prefix',
 
 
 # Debugging
-debug = parser.add_argument_group('DEBUG', 'Debugging/interactive options.')
+debug = parser.add_argument_group(
+    'DEBUG',
+    'Debugging/interactive options.')
 
 debug.add_argument('-I', '--interact', action='store_true',
                     help='drop into interactive python REPL when parsing is complete')
@@ -195,13 +192,11 @@ def parse_arguments():
         rich_text_helper.console.width = max(console_width_possibilities())
 
     # Suppressing/limiting output
-    environ[MAX_DECODABLE_CHUNK_SIZE_ENV_VAR] = str(args.max_decode_length)
-
-    if args.surrounding_bytes and args.surrounding_bytes != SURROUNDING_BYTES_LENGTH_DEFAULT:
-        environ[SURROUNDING_BYTES_ENV_VAR] = str(args.surrounding_bytes)
+    PdfalyzerConfig.max_decodable_chunk_size = args.max_decode_length
+    PdfalyzerConfig.num_surrounding_bytes = args.surrounding_bytes
 
     if args.suppress_decodes:
-        environ[SUPPRESS_QUOTED_ENV_VAR] = 'True'
+        PdfalyzerConfig.suppress_decodes = args.suppress_decodes
 
     # chardet.detect() action thresholds
     if args.force_decode_threshold:
@@ -225,7 +220,7 @@ def parse_arguments():
     return args
 
 
-def output_sections(args, pdf_walker) -> [OutputSection]:
+def output_sections(args, pdf_walker) -> List[OutputSection]:
     """
     Determine which of the tree visualizations, font scans, etc were requested.
     If nothing was specified the default is to output all sections.

@@ -1,5 +1,9 @@
-# 1.3.0
+# Next Release
 
+# 1.3.1
+* Fix bug with validating directly embedded objects
+
+# 1.3.0
 ### General
 * Improved scanning of binaries for `UTF-X` encoded data where X is not a prime number.
 * Lots of summary data is now displayed about what were the most and least successful encodings at extracting some meaning (or at least not failing) from binary sequences surrounded by quote chars, frong slashes, backticks, etc etc.

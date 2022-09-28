@@ -14,6 +14,7 @@ from rich.text import Text
 
 from lib.binary.bytes_decoder import BytesDecoder
 from lib.binary.bytes_match import CAPTURE_BYTES, BytesMatch
+from lib.config import PdfalyzerConfig
 from lib.detection.constants.character_encodings import BOMS
 from lib.detection.constants.dangerous_instructions import DANGEROUS_INSTRUCTIONS
 from lib.detection.regex_match_metrics import RegexMatchMetrics
@@ -24,10 +25,6 @@ from lib.helpers.string_helper import generate_hyphen_line, print_section_header
 from lib.util.adobe_strings import CURRENTFILE_EEXEC
 from lib.util.logging import log
 
-
-# Command line options
-MAX_DECODABLE_CHUNK_SIZE_ENV_VAR = 'PDFALYZER_MAX_DECODABLE_CHUNK_SIZE'
-DEFAULT_MAX_DECODABLE_CHUNK_SIZE = 256
 
 # Bytes
 FRONT_SLASH_BYTE = b"/"
@@ -57,9 +54,8 @@ class DataStreamHandler:
         self.bytes = _bytes
         self.owner = owner
         self.stream_length = len(_bytes)
-        self.limit_decodes_larger_than = int(environ.get(MAX_DECODABLE_CHUNK_SIZE_ENV_VAR, DEFAULT_MAX_DECODABLE_CHUNK_SIZE))
-        self.suppression_notice_queue = []
         self.regex_extraction_stats = defaultdict(lambda: RegexMatchMetrics())
+        self.suppression_notice_queue = []
 
     def check_for_dangerous_instructions(self) -> None:
         """Scan for all the strings in DANGEROUS_INSTRUCTIONS list and decode bytes around them"""
@@ -138,9 +134,7 @@ class DataStreamHandler:
 
             regex_subtable = generate_subtable(cols=['Metric', 'Value'])
             decodes_subtable = generate_subtable(cols=['Encoding', 'Decoded', 'Forced', 'Failed'])
-        # self.was_match_decodable = defaultdict(lambda: 0)
-        # self.was_match_force_decoded = defaultdict(lambda: 0)
-        # self.was_match_undecodable = defaultdict(lambda: 0)
+
             for metric, measure in vars(stats).items():
                 if isinstance(measure, Number):
                     regex_subtable.add_row(metric, str(measure))
@@ -174,7 +168,7 @@ class DataStreamHandler:
             self.regex_extraction_stats[regex].bytes_match_objs.append(bytes_match)
 
             # Send suppressed decodes to a queue and track the reason for the suppression in the stats
-            if bytes_match.capture_len > self.limit_decodes_larger_than or bytes_match.capture_len == 0:
+            if bytes_match.capture_len > PdfalyzerConfig.max_decodable_chunk_size or bytes_match.capture_len == 0:
                 self._queue_suppression_notice(bytes_match, label)
                 continue
 
@@ -209,13 +203,13 @@ class DataStreamHandler:
     def _queue_suppression_notice(self, bytes_match: BytesMatch, quote_type: str) -> None:
         """Print a message indicating that we are not going to decode a given block of bytes"""
         self.regex_extraction_stats[bytes_match.regex].skipped_matches_lengths[bytes_match.capture_len] += 1
-        txt = bytes_match.match_idx_text()
+        txt = bytes_match.__rich__()
 
         if bytes_match.capture_len == 0:
             txt = Text('Nothing to actually attempt decoding at ', style='grey') + txt
         else:
             txt.append(" is too large to decode ")
-            txt.append(f"(--max-decode-length is {self.limit_decodes_larger_than} bytes)", style='grey')
+            txt.append(f"(--max-decode-length is {PdfalyzerConfig.max_decodable_chunk_size} bytes)", style='grey')
 
         log.debug(Text('Queueing suppression notice: ') + txt)
         self.suppression_notice_queue.append(txt)

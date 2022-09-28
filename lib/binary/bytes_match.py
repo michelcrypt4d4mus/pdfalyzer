@@ -9,9 +9,9 @@ import re
 
 from rich.text import Text
 
-from lib.config import num_surrounding_bytes
+from lib.config import PdfalyzerConfig
 from lib.detection.constants.dangerous_instructions import DANGEROUS_INSTRUCTIONS
-from lib.helpers.rich_text_helper import BYTES_BRIGHTEST, BYTES_HIGHLIGHT, GREY_ADDRESS, prefix_with_plain_text_obj
+from lib.helpers.rich_text_helper import BYTES_BRIGHTEST, GREY_ADDRESS, prefix_with_plain_text_obj
 from lib.util.logging import log
 
 
@@ -40,34 +40,23 @@ class BytesMatch:
             self.highlight_style = BYTES_BRIGHTEST
 
         self.capture_len = len(self.bytes)
-        # Adjust the highlighting start point in case these bytes_seq is very early in the stream
-        self.highlight_start_idx = min(match.start(), num_surrounding_bytes())
+        # Adjust the highlighting start point in case this match is very early in the stream
+        self.highlight_start_idx = min(match.start(), PdfalyzerConfig.num_surrounding_bytes)
         self.highlight_end_idx = self.highlight_start_idx + self.capture_len
         self._compute_pre_and_post_capture_lengths()
 
-    def total_length(self):
+    def total_length(self) -> int:
         """Include the length of the rest of the regex. Mostly works but sometimes we highly a few extra bytes"""
         return self.pre_capture_len + self.capture_len + self.post_capture_len
 
-    def match_idx_text(self) -> Text:
-        """Returns a colored Text object describing the location and size of the pattern match"""
-        if self.capture_len == 0:
-            style = 'grey'
-        else:
-            style = 'bytes'
-
-        txt = prefix_with_plain_text_obj(f"{self.capture_len} byte ", style='number', root_style=style)
-        txt.append('match found at ').append(f"idx {self.match.start()}", style='number')
-        return txt
-
-    def style_at_position(self, idx):
-        # Not entirely sure why we need the +1 but we somehow do...
+    def style_at_position(self, idx) -> str:
+        """Not entirely sure why we need the +1 but we somehow do"""
         if idx < self.highlight_start_idx or idx > self.highlight_end_idx + 1:
             return GREY_ADDRESS
         else:
             return self.highlight_style
 
-    def _compute_pre_and_post_capture_lengths(self):
+    def _compute_pre_and_post_capture_lengths(self) -> None:
         """Deside which non capture chars in the regex are pre vs. post capture group"""
         regex_len_divmod_2 = divmod(len(self.pattern), 2)
 
