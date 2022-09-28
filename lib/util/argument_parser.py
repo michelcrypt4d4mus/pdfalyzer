@@ -157,7 +157,7 @@ export.add_argument('-html', '--export-html',
 
 export.add_argument('-out', '--output-dir',
                     metavar='OUTPUT_DIR',
-                    help='write files to OUTPUT_DIR instead of current dir, does nothing if no exporting a file')
+                    help='write files to OUTPUT_DIR instead of current dir, does nothing if not exporting a file')
 
 export.add_argument('-pfx', '--file-prefix',
                     metavar='PREFIX',

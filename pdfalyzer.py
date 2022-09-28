@@ -32,7 +32,7 @@ for (arg, method) in output_sections(args, walker):
     if args.output_dir:
         console.record = True
         export_type = method.__name__.removeprefix('print_')
-        output_basename = f"{args.output_basename}.{export_type}  (PDFALYZED at {args.invoked_at_str})"
+        output_basename = f"{args.output_basename}.{export_type}___PDFALYZED_{args.invoked_at_str}"
         output_basepath = path.join(args.output_dir, output_basename)
         print(f'Exporting {arg} data to {output_basepath}...')
 

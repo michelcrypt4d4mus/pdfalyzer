@@ -1,5 +1,4 @@
 anytree~=2.8.0
-cairosvg
 chardet
 pdfid
 pypdf2~=2.10,>=2.10.5

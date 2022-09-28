@@ -31,7 +31,7 @@ All those things being the case lead to a situation where I felt the world might
 
 
 # Example Output
-`pdfalyzer` can export visualizations to HTML, ANSI colored text, and SVG images using the file export functionality that comes with [Rich](https://github.com/Textualize/rich). SVGs can be turned into `png` format images with a tool like `cairosvg`.
+`pdfalyzer` can export visualizations to HTML, ANSI colored text, and SVG images using the file export functionality that comes with [Rich](https://github.com/Textualize/rich). SVGs can be turned into `png` format images with a tool like `inkscape` or `cairosvg` (`inkscape` works a lot better in our experience).
 
 (This images are big so this section is long; if you're here to read about how to install or use `pdfalyzer` maybe use the table of contents Github auto generates (↖ top left of this section of the this page)).
 
