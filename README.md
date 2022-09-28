@@ -49,11 +49,13 @@ That's a pretty basic document. If you'd like to see the tree for a more complic
 ### Rich Tree View
 This image shows a more in-depth view of of the PDF tree for the same document shown above. This tree (AKA the "rich" tree) has almost everything - shows all PDF object properties, all relationships between objects. Even includes sizable previews of any binary data streams embedded or encrypted in the document.
 
+[Here's an even bigger example showing the same `nmap` cheat sheet](doc/svgs/rendered_images/NMAP_Commands_Cheat_Sheet_and_Tutorial.pdf.rich_table_tree.png).
+
 ![Rich Tree](doc/svgs/rendered_images/rich_table_tree.png)
 
 ### Font Analysis (And Lots Of It)
 #### View the Properties of the Fonts in the PDF
-Comes with a preview of the beginning and end of the font's raw binary data stream (at least if it's that kind of font). [Here's an even bigger example again showing the `nmap` cheat sheet](doc/svgs/rendered_images/NMAP_Commands_Cheat_Sheet_and_Tutorial.pdf.rich_table_tree__PDFALYZED at 2022-09-27T20.29.52.png)
+Comes with a preview of the beginning and end of the font's raw binary data stream (at least if it's that kind of font).
 
 ![Node Summary](doc/svgs/rendered_images/font_summary_with_byte_preview.png)
 
