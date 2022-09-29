@@ -4,7 +4,8 @@
 * `--min-decode-length` option to skip decode attempts on short matches
 * `--file-suffix` option
 * Output filenames will contain some of the options used to generate them
-* Add max decode setting to output filenames
+* Add runtime params to export filename where it is material to the output
+* Ensure `/OpenAction` etc are not subsumed by parent/child relationships in the condensed tree view
 * Tweak available configuration options for logging to file
 
 # 1.3.1
