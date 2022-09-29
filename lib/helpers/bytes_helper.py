@@ -6,10 +6,12 @@ from rich.text import Text
 
 from lib.binary.bytes_match import BytesMatch
 from lib.config import PdfalyzerConfig
-from lib.detection.constants.dangerous_instructions import DANGEROUS_INSTRUCTIONS
 from lib.detection.constants.character_encodings import NEWLINE_BYTE
 from lib.helpers.rich_text_helper import BYTES_HIGHLIGHT, console
 from lib.util.logging import log
+
+HEX_CHARS_PER_GROUP = 8
+HEX_GROUPS_PER_LINE = 4
 
 
 def get_bytes_before_and_after_match(_bytes: bytes, match: re.Match, num_before=None, num_after=None) -> bytes:
@@ -41,24 +43,27 @@ def clean_byte_string(bytes_array: bytes) -> str:
     return bytestr
 
 
-def rich_text_view_of_raw_bytes(surrounding_bytes: bytes, highlighted_bytes: BytesMatch) -> Text:
-    """Print raw bytes to a Text object, highlighing the bytes in the highlighted_bytes BytesMatch"""
-    surrounding_bytes_str = clean_byte_string(surrounding_bytes)
-    highlighted_bytes_str = clean_byte_string(highlighted_bytes.bytes)
+def rich_text_view_of_raw_bytes(_bytes: bytes, bytes_match: BytesMatch) -> Text:
+    """Print raw bytes to a Text object, highlighing the bytes in the bytes_match BytesMatch"""
+    surrounding_bytes_str = clean_byte_string(_bytes)
+    highlighted_bytes_str = clean_byte_string(bytes_match.bytes)
     highlighted_bytes_str_length = len(highlighted_bytes_str)
-    highlight_idx = _find_str_rep_of_bytes(surrounding_bytes_str, highlighted_bytes_str, highlighted_bytes)
+    highlight_idx = _find_str_rep_of_bytes(surrounding_bytes_str, highlighted_bytes_str, bytes_match)
 
-    # Highlight the matched highlighted_bytes in the console output
-    if highlighted_bytes.bytes in DANGEROUS_INSTRUCTIONS:
-        highlight_style = 'error'
-    else:
-        highlight_style = BYTES_HIGHLIGHT
+    txt = Text(surrounding_bytes_str[:highlight_idx], style='grey')
+    matched_bytes_str = surrounding_bytes_str[highlight_idx:highlight_idx + highlighted_bytes_str_length]
+    txt.append(matched_bytes_str, style=bytes_match.highlight_style)
+    txt.append(surrounding_bytes_str[highlight_idx + highlighted_bytes_str_length:], style='grey')
+    return txt
 
-    # Print bytes
-    section = Text(surrounding_bytes_str[:highlight_idx], style='grey')
-    section.append(surrounding_bytes_str[highlight_idx:highlight_idx + highlighted_bytes_str_length], style=highlight_style)
-    section.append(surrounding_bytes_str[highlight_idx + highlighted_bytes_str_length:], style='grey')
-    return section
+
+def hex_view_of_raw_bytes(_bytes: bytes, bytes_match: BytesMatch) -> Text:
+    hex_str = Text(' '.join([hex(b).removeprefix('0x').rjust(2, '0') for i, b in enumerate(_bytes)]), style='grey')
+    highlight_start_idx = bytes_match.highlight_start_idx * 3
+    highlight_end_idx = bytes_match.highlight_end_idx * 3
+    hex_str.stylize(bytes_match.highlight_style, highlight_start_idx, highlight_end_idx)
+    lines = hex_str.wrap(console, HEX_CHARS_PER_GROUP * HEX_GROUPS_PER_LINE * 3)
+    return Text("\n").join([Text('  ').join(line.wrap(console, HEX_CHARS_PER_GROUP * 3)) for line in lines])
 
 
 def print_bytes(bytes_array: bytes, style=None) -> None:

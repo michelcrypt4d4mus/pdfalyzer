@@ -25,6 +25,7 @@ from lib.util.logging import log, log_and_print
 
 # Colors
 BYTES = 'color(100) dim'
+BYTES_NO_DIM = 'color(100)'
 BYTES_BRIGHTEST = 'color(220)'
 BYTES_BRIGHTER = 'orange1'
 BYTES_HIGHLIGHT = 'color(136)'
@@ -166,8 +167,6 @@ RIGHT = 'right'
 
 
 # Text object defaults mostly for table entries
-DECODE_NOT_ATTEMPTED_MSG = Text('(decode not attempted)', style='no_attempt')
-RAW_BYTES = Text('RAW BYTES', style=f"bytes_title")
 NO_DECODING_ERRORS_MSG = Text('No', style='green4 dim')
 DECODING_ERRORS_MSG = Text('Yes', style='dark_red dim')
 NOT_FOUND_MSG = Text('(not found)', style='dark_grey_italic')

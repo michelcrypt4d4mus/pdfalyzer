@@ -1,4 +1,8 @@
 # Next Release
+# 1.4.0
+* Hex representation of matched bytes in decode attempts table
+* `--min-decode-length` option to skip decode attempts on short matches
+* Tweak available configuration options for logging to file
 
 # 1.3.1
 * Fix bug with validating directly embedded objects

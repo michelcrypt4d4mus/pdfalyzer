@@ -4,13 +4,13 @@ from rich.markup import escape
 from rich.panel import Panel
 from rich.text import Text
 
-from lib.binary.bytes_match import BytesMatch
+from lib.binary.bytes_match import ALERT_STYLE, BytesMatch
 from lib.detection.constants.character_encodings import (ENCODINGS_TO_ATTEMPT, SINGLE_BYTE_ENCODINGS,
      UTF_8, UTF_16, UTF_32)
 from lib.detection.javascript_hunter import JavascriptHunter
 from lib.helpers.bytes_helper import clean_byte_string
-from lib.helpers.rich_text_helper import (BYTES_BRIGHTER, BYTES_BRIGHTEST, GREY_ADDRESS, prefix_with_plain_text_obj,
-     unprintable_byte_to_text)
+from lib.helpers.rich_text_helper import (BYTES_BRIGHTER, BYTES_BRIGHTEST, BYTES_NO_DIM, GREY_ADDRESS,
+     prefix_with_plain_text_obj, unprintable_byte_to_text)
 from lib.util.logging import log
 
 
@@ -66,6 +66,14 @@ class DecodingAttempt:
             else:
                 style = self.bytes_match.highlight_style
 
+            if style not in [GREY_ADDRESS, ALERT_STYLE]:
+                if b <= 126:
+                    style = BYTES_NO_DIM
+                elif b <= 192:
+                    style = BYTES_BRIGHTER
+                else:
+                    style = BYTES_BRIGHTEST
+
             try:
                 if unprintable_char_map is not None and b in unprintable_char_map:
                     output.append(unprintable_byte_to_text(unprintable_char_map[b], style=style))
@@ -86,11 +94,11 @@ class DecodingAttempt:
                         char_width = 4
 
                     wide_char = self.bytes[i:i + char_width].decode(self.encoding)
-                    output.append(wide_char, style=style or BYTES_BRIGHTEST)
+                    output.append(wide_char, style=style)
                     skip_next = char_width - 1  # Won't be set if there's a decoding exception
                     log.info(f"Skipping next {skip_next} bytes because UTF-8 multibyte char '{wide_char}' used them")
             except UnicodeDecodeError:
-                output.append(clean_byte_string(_byte), style=style or BYTES_BRIGHTER)
+                output.append(clean_byte_string(_byte), style=style)
 
         return output
 

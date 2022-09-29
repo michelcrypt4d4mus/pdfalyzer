@@ -9,8 +9,8 @@ from typing import List
 
 from rich_argparse import RichHelpFormatter
 
-from lib.config import (DEFAULT_MAX_DECODABLE_CHUNK_SIZE, SURROUNDING_BYTES_LENGTH_DEFAULT,
-     PdfalyzerConfig)
+from lib.config import (DEFAULT_MIN_DECODE_LENGTH, DEFAULT_MAX_DECODE_LENGTH,
+     SURROUNDING_BYTES_LENGTH_DEFAULT, PdfalyzerConfig)
 from lib.detection.encoding_detector import (CONFIDENCE_SCORE_RANGE, EncodingDetector)
 from lib.helpers import rich_text_helper
 from lib.helpers.file_helper import timestamp_for_filename
@@ -102,10 +102,16 @@ tuning.add_argument('--surrounding-bytes',
 tuning.add_argument('--suppress-decodes', action='store_true',
                     help='suppress decode attempts for quoted bytes found in font binaries')
 
+tuning.add_argument('--min-decode-length',
+                    help='suppress decode attempts for quoted byte sequences shorter than N',
+                    default=DEFAULT_MIN_DECODE_LENGTH,
+                    metavar='N',
+                    type=int)
+
 tuning.add_argument('--max-decode-length',
-                    help='suppress decode attempts for quoted byte sequences longer than MAX',
-                    default=DEFAULT_MAX_DECODABLE_CHUNK_SIZE,
-                    metavar='MAX',
+                    help='suppress decode attempts for quoted byte sequences longer than N',
+                    default=DEFAULT_MAX_DECODE_LENGTH,
+                    metavar='N',
                     type=int)
 
 tuning.add_argument('--force-display-threshold',
@@ -192,7 +198,8 @@ def parse_arguments():
         rich_text_helper.console.width = max(console_width_possibilities())
 
     # Suppressing/limiting output
-    PdfalyzerConfig.MAX_DECODABLE_CHUNK_SIZE = args.max_decode_length
+    PdfalyzerConfig.MIN_DECODE_LENGTH = args.min_decode_length
+    PdfalyzerConfig.MAX_DECODE_LENGTH = args.max_decode_length
     PdfalyzerConfig.NUM_SURROUNDING_BYTES = args.surrounding_bytes
 
     if args.suppress_decodes:

@@ -64,7 +64,7 @@ class DataStreamHandler:
         for instruction in DANGEROUS_INSTRUCTIONS:
             instruction_regex = re.compile(re.escape(instruction), re.DOTALL)
             label = f"({BOMS[instruction]}) " if instruction in BOMS else clean_byte_string(instruction)
-            self._process_regex_matches(instruction_regex, label)
+            self._process_regex_matches(instruction_regex, label, force=True)
 
     def force_decode_all_quoted_bytes(self) -> None:
         """Find all strings matching QUOTE_REGEXES (AKA between quote chars) and decode them with various encodings"""
@@ -160,15 +160,15 @@ class DataStreamHandler:
         """Get the bytes after the 'eexec' demarcation line (if it appears). See Adobe docs for details."""
         return self.bytes.split(CURRENTFILE_EEXEC)[1] if CURRENTFILE_EEXEC in self.bytes else self.bytes
 
-    def _process_regex_matches(self, regex: Pattern[bytes], label: str) -> None:
-        """Decide whether to attempt to decode the matched bytes, track stats"""
+    def _process_regex_matches(self, regex: Pattern[bytes], label: str, force: bool=False) -> None:
+        """Decide whether to attempt to decode the matched bytes, track stats. force param ignores min/max length"""
         for bytes_match in self.extract_regex_capture_bytes(regex):
             self.regex_extraction_stats[regex].match_count += 1
             self.regex_extraction_stats[regex].bytes_matched += bytes_match.capture_len
             self.regex_extraction_stats[regex].bytes_match_objs.append(bytes_match)
 
             # Send suppressed decodes to a queue and track the reason for the suppression in the stats
-            if bytes_match.capture_len > PdfalyzerConfig.MAX_DECODABLE_CHUNK_SIZE or bytes_match.capture_len == 0:
+            if not (force or PdfalyzerConfig.MIN_DECODE_LENGTH < bytes_match.capture_len < PdfalyzerConfig.MAX_DECODE_LENGTH):
                 self._queue_suppression_notice(bytes_match, label)
                 continue
 
@@ -205,11 +205,11 @@ class DataStreamHandler:
         self.regex_extraction_stats[bytes_match.regex].skipped_matches_lengths[bytes_match.capture_len] += 1
         txt = bytes_match.__rich__()
 
-        if bytes_match.capture_len == 0:
-            txt = Text('Nothing to actually attempt decoding at ', style='grey') + txt
+        if bytes_match.capture_len < PdfalyzerConfig.MIN_DECODE_LENGTH:
+            txt = Text('Too little to actually attempt decode at ', style='grey') + txt
         else:
             txt.append(" is too large to decode ")
-            txt.append(f"(--max-decode-length is {PdfalyzerConfig.MAX_DECODABLE_CHUNK_SIZE} bytes)", style='grey')
+            txt.append(f"(--max-decode-length is {PdfalyzerConfig.MAX_DECODE_LENGTH} bytes)", style='grey')
 
         log.debug(Text('Queueing suppression notice: ') + txt)
         self.suppression_notice_queue.append(txt)

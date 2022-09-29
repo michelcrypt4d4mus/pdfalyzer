@@ -4,4 +4,3 @@ pdfid
 pypdf2~=2.10,>=2.10.5
 rich~=12.5,>=12.5.1
 rich-argparse~=0.2
-typing-extensions~=4.3

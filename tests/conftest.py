@@ -2,12 +2,12 @@ from os import environ, path
 
 import pytest
 
-from lib.config import MAX_DECODABLE_CHUNK_SIZE_ENV_VAR
+from lib.config import MAX_DECODE_LENGTH_ENV_VAR
 from lib.pdf_walker import PdfWalker
 from lib.util.filesystem_awareness import DOCUMENTATION_DIR
 
 # Env var option that may Speeds things up considerably
-environ[MAX_DECODABLE_CHUNK_SIZE_ENV_VAR] = '2'
+environ[MAX_DECODE_LENGTH_ENV_VAR] = '2'
 environ['INVOKED_BY_PYTEST'] = 'True'
 
 

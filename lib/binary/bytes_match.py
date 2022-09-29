@@ -11,7 +11,7 @@ from rich.text import Text
 
 from lib.config import PdfalyzerConfig
 from lib.detection.constants.dangerous_instructions import DANGEROUS_INSTRUCTIONS
-from lib.helpers.rich_text_helper import BYTES_BRIGHTEST, GREY_ADDRESS, prefix_with_plain_text_obj
+from lib.helpers.rich_text_helper import BYTES_BRIGHTER, BYTES_BRIGHTEST, GREY_ADDRESS, prefix_with_plain_text_obj
 from lib.util.logging import log
 
 
@@ -37,7 +37,7 @@ class BytesMatch:
         if self.bytes in DANGEROUS_INSTRUCTIONS:
             self.highlight_style = ALERT_STYLE
         else:
-            self.highlight_style = BYTES_BRIGHTEST
+            self.highlight_style = BYTES_BRIGHTER
 
         self.capture_len = len(self.bytes)
         # Adjust the highlighting start point in case this match is very early in the stream
