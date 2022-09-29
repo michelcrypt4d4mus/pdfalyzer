@@ -1,4 +1,7 @@
-# Next Release ( 1.4.0)
+# NEXT RELEASE
+
+
+# 1.4.0
 * Hexadecimal representation of matched bytes in decode attempts table
 * `--quote-type` option to limit binary scans
 * `--min-decode-length` option to skip decode attempts on short matches
@@ -6,7 +9,7 @@
 * Output filenames will contain some of the options used to generate them
 * Add runtime params to export filenames where it is material to the output
 * Ensure `/OpenAction` etc are not subsumed by parent/child relationships in the condensed tree view
-* Tweak available configuration options for logging to file
+* Tweak available configuration options for logging to file.
 
 # 1.3.1
 * Fix bug with validating directly embedded objects
