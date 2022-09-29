@@ -1,6 +1,5 @@
 # Local copy of .env.example with cusom settings
 .env
-.vscode/
 
 # Python
 /.venv/*

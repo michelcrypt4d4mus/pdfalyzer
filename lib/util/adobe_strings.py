@@ -67,6 +67,7 @@ DANGEROUS_PDF_KEYS = [
 
 # Some references are never part of a parent/child relationship in the tree
 NON_TREE_REFERENCES = [
+    OPEN_ACTION,
     D,
     FIRST,
     LAST,
