@@ -13,6 +13,7 @@ from rich import box
 from rich.console import Console
 from rich.errors import MarkupError
 from rich.padding import Padding
+from rich.style import Style
 from rich.table import Table
 from rich.terminal_theme import TerminalTheme
 from rich.text import Text
@@ -170,7 +171,10 @@ RIGHT = 'right'
 NO_DECODING_ERRORS_MSG = Text('No', style='green4 dim')
 DECODING_ERRORS_MSG = Text('Yes', style='dark_red dim')
 NOT_FOUND_MSG = Text('(not found)', style='dark_grey_italic')
-NA = Text('N/A', style=f"white")
+
+
+def na_txt(style: str | Style = 'white'):
+    return Text('N/A', style=f"white")
 
 
 # TerminalThemes are used when saving SVGS. This one just swaps white for black in DEFAULT_TERMINAL_THEME

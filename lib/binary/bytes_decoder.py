@@ -2,16 +2,6 @@
 Class to handle attempting to decode a chunk of bytes into strings with various possible encodings.
 Leverages the chardet library to both guide what encodings are attempted as well as to rank decodings
 in the results.
-
-Final output is a set of deoding attempts that are represented in a Rich.table, sorted like this:
-
-    1. String representation of undecoded bytes is always the first row
-    2. Encodings which chardet.detect() ranked as > 0% likelihood are sorted based on that confidence
-    3. Then the unchardetectable:
-        1. Decodings that were successful, unforced, and new
-        2. Decodings that 'successful' but forced
-        3. Decodings that were the same as other decodings
-        4. Failed decodings
 """
 
 from collections import defaultdict
@@ -56,14 +46,15 @@ class BytesDecoder:
         self.was_match_decodable = _build_encodings_metric_dict()
         self.was_match_force_decoded = _build_encodings_metric_dict()
         self.was_match_undecodable = _build_encodings_metric_dict()
+        self.decoded_strings = {}  # dict[encoding: decoded string]
         self.undecoded_rows = []
+
+        # Note we send both the match and surrounding bytes used when detecting the encoding
+        self.encoding_detector = EncodingDetector(self.bytes)
 
     def _generate_decodings_table(self) -> Table:
         """First rows are the raw / hex views of the bytes"""
-        # Note we send both the bytes in BytesMatch as well as the surrounding bytes used when presenting
-        self.encoding_detector = EncodingDetector(self.bytes)
         self.decodings = [DecodingAttempt(self.bytes_match, encoding) for encoding in ENCODINGS_TO_ATTEMPT.keys()]
-        self.decoded_strings = {}  # dict[encoding: decoded string]
 
         # Attempt decodings we don't usually attempt if chardet is insistent enough
         forced_decodes = self._undecoded_assessments(self.encoding_detector.force_decode_assessments)
@@ -75,10 +66,9 @@ class BytesDecoder:
             log.debug(f"Decoding {chardet_top_encoding} because it's chardet top choice...")
             self.decodings.append(DecodingAttempt(self.bytes_match, chardet_top_encoding))
 
-        self._track_decode_stats()
-
         rows = [self._row_from_decoding_attempt(decoding) for decoding in self.decodings]
         rows += [assessment_only_row(a, a.confidence * SCORE_SCALER) for a in self._forced_displays()]
+        self._track_decode_stats()
 
         for row in sorted(rows, key=attrgetter('sort_score'), reverse=True):
             self.table.add_row(*row[0:4])

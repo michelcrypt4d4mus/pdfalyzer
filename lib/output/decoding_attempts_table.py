@@ -1,5 +1,15 @@
 """
-Methods to build the rich.table used to display decoding attempts of a given bytes array
+Methods to build the rich.table used to display decoding attempts of a given bytes array.
+
+Final output should be rich.table of decoding attempts that are sorted like this:
+
+    1. String representation of undecoded bytes is always the first row
+    2. Encodings which chardet.detect() ranked as > 0% likelihood are sorted based on that confidence
+    3. Then the unchardetectable:
+        1. Decodings that were successful, unforced, and new
+        2. Decodings that 'successful' but forced
+        3. Decodings that were the same as other decodings
+        4. Failed decodings
 """
 
 from collections import namedtuple
@@ -10,7 +20,7 @@ from rich.text import Text
 from lib.binary.bytes_match import BytesMatch
 from lib.detection.encoding_assessment import EncodingAssessment
 from lib.helpers.bytes_helper import hex_view_of_raw_bytes, rich_text_view_of_raw_bytes
-from lib.helpers.rich_text_helper import CENTER, FOLD, MIDDLE, NA, RIGHT
+from lib.helpers.rich_text_helper import CENTER, FOLD, MIDDLE, RIGHT, na_txt
 
 
 DECODE_NOT_ATTEMPTED_MSG = Text('(decode not attempted)', style='no_attempt')
@@ -31,13 +41,10 @@ def empty_decoding_attempts_table(bytes_match: BytesMatch) -> Table:
     add_col('Force?', width=len('Force?'))
     add_col('Decoded Output', justify='left')
 
-    na = NA.copy()
-    na.style = HEX.style
-    table.add_row(HEX, na, na, hex_view_of_raw_bytes(bytes_match.bytes, bytes_match))
-
-    na = NA.copy()
-    na.style = RAW_BYTES.style
-    table.add_row(RAW_BYTES, na, na, rich_text_view_of_raw_bytes(bytes_match.bytes, bytes_match))
+    na = na_txt(style=HEX.style)
+    table.add_row(HEX, na, na, hex_view_of_raw_bytes(bytes_match.surrounding_bytes, bytes_match))
+    na = na_txt(style=RAW_BYTES.style)
+    table.add_row(RAW_BYTES, na, na, rich_text_view_of_raw_bytes(bytes_match.surrounding_bytes, bytes_match))
     return table
 
 
@@ -69,4 +76,4 @@ def decoding_table_row(assessment: EncodingAssessment, is_forced: Text, txt: Tex
 
 def assessment_only_row(assessment: EncodingAssessment, score) -> DecodingTableRow:
     """Build a row with just chardet assessment data and no actual decoded string"""
-    return decoding_table_row(assessment, NA, DECODE_NOT_ATTEMPTED_MSG, score)
+    return decoding_table_row(assessment, na_txt(), DECODE_NOT_ATTEMPTED_MSG, score)

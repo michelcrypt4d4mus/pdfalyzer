@@ -6,7 +6,7 @@ from typing import Any
 from rich.text import Text
 
 from lib.detection.constants.character_encodings import ENCODING
-from lib.helpers.rich_text_helper import (DIM_COUNTRY_THRESHOLD, NA, console, meter_style,
+from lib.helpers.rich_text_helper import (DIM_COUNTRY_THRESHOLD, console, meter_style,
      prefix_with_plain_text_obj)
 
 CONFIDENCE = 'confidence'

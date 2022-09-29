@@ -19,8 +19,8 @@ from lib.detection.constants.character_encodings import BOMS
 from lib.detection.constants.dangerous_instructions import DANGEROUS_INSTRUCTIONS
 from lib.detection.regex_match_metrics import RegexMatchMetrics
 from lib.helpers.bytes_helper import clean_byte_string, get_bytes_before_and_after_match, print_bytes
-from lib.helpers.rich_text_helper import (CENTER, DANGER_HEADER, NA, NOT_FOUND_MSG, console, console_width,
-     generate_subtable, pad_header, prefix_with_plain_text_obj, subheading_width)
+from lib.helpers.rich_text_helper import (CENTER, DANGER_HEADER, NOT_FOUND_MSG, console, console_width,
+     generate_subtable, na_txt, pad_header, prefix_with_plain_text_obj, subheading_width)
 from lib.helpers.string_helper import generate_hyphen_line, print_section_header
 from lib.util.adobe_strings import CURRENTFILE_EEXEC
 from lib.util.logging import log
@@ -129,7 +129,7 @@ class DataStreamHandler:
         for regex, stats in self.regex_extraction_stats.items():
             # Set aside the regexes we didn't find so that the ones we did find are at the top of the table
             if stats.match_count == 0:
-                regexes_not_found_in_stream.append([str(regex.pattern), NOT_FOUND_MSG, NA])
+                regexes_not_found_in_stream.append([str(regex.pattern), NOT_FOUND_MSG, na_txt()])
                 continue
 
             regex_subtable = generate_subtable(cols=['Metric', 'Value'])
