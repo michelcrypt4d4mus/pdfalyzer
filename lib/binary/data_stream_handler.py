@@ -13,10 +13,11 @@ from rich.table import Table
 from rich.text import Text
 
 from lib.binary.bytes_decoder import BytesDecoder
-from lib.binary.bytes_match import CAPTURE_BYTES, BytesMatch
+from lib.binary.bytes_match import BytesMatch
 from lib.config import PdfalyzerConfig
+from lib.detection.constants.binary_regexes import QUOTE_REGEXES
 from lib.detection.constants.character_encodings import BOMS
-from lib.detection.constants.dangerous_instructions import DANGEROUS_INSTRUCTIONS
+from lib.detection.constants.binary_regexes import DANGEROUS_INSTRUCTIONS
 from lib.detection.regex_match_metrics import RegexMatchMetrics
 from lib.helpers.bytes_helper import clean_byte_string, get_bytes_before_and_after_match, print_bytes
 from lib.helpers.rich_text_helper import (CENTER, DANGER_HEADER, NOT_FOUND_MSG, console, console_width,
@@ -26,27 +27,8 @@ from lib.util.adobe_strings import CURRENTFILE_EEXEC
 from lib.util.logging import log
 
 
-# Bytes
-FRONT_SLASH_BYTE = b"/"
-ESCAPED_DOUBLE_QUOTE_BYTES = b'\\"'
-ESCAPED_SINGLE_QUOTE_BYTES = b"\\'"
-
 # For rainbow colors
 CHAR_ENCODING_1ST_COLOR_NUMBER = 203
-
-
-# Quote regexes used to hunt for particular binary patterns of interest
-def build_quote_capture_group(open_quote: bytes, close_quote: Union[bytes, None]=None):
-    """Regex that captures everything between open and close quote (close_quote defaults to open_quote)"""
-    return re.compile(open_quote + CAPTURE_BYTES + (close_quote or open_quote), re.DOTALL)
-
-QUOTE_REGEXES = {
-    'backtick': build_quote_capture_group(b'`'),
-    'guillemet': build_quote_capture_group(b'\xab', b'\xbb'),
-    'escaped single': build_quote_capture_group(ESCAPED_SINGLE_QUOTE_BYTES),
-    'escaped double': build_quote_capture_group(ESCAPED_DOUBLE_QUOTE_BYTES),
-    'front slash': build_quote_capture_group(FRONT_SLASH_BYTE),
-}
 
 
 class DataStreamHandler:
@@ -68,7 +50,10 @@ class DataStreamHandler:
 
     def force_decode_all_quoted_bytes(self) -> None:
         """Find all strings matching QUOTE_REGEXES (AKA between quote chars) and decode them with various encodings"""
-        for quote_type, quote_regex in QUOTE_REGEXES.items():
+        quote_types = QUOTE_REGEXES.keys() if PdfalyzerConfig.QUOTE_TYPE is None else [PdfalyzerConfig.QUOTE_TYPE]
+
+        for quote_type in quote_types:
+            quote_regex = QUOTE_REGEXES[quote_type]
             print_section_header(f"Forcing Decode of {quote_type.capitalize()} Quoted Strings", style='color(100)')
             self._process_regex_matches(quote_regex, label=f"{quote_type} quoted")
 

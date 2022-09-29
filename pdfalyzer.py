@@ -2,6 +2,7 @@
 import code
 import sys
 from os import environ, path
+from lib.config import PdfalyzerConfig
 
 # load_dotenv() should be called as soon as possible (before parsing local classes)
 if not environ.get('INVOKED_BY_PYTEST', False):
@@ -11,7 +12,7 @@ if not environ.get('INVOKED_BY_PYTEST', False):
 from lib.helpers.rich_text_helper import console, invoke_rich_export
 from lib.pdf_parser_manager import PdfParserManager
 from lib.pdf_walker import PdfWalker
-from lib.util.argument_parser import output_sections, parse_arguments
+from lib.util.argument_parser import ALL_FONTS_OPTION, output_sections, parse_arguments
 from lib.util.logging import log, log_and_print
 
 
@@ -26,14 +27,32 @@ if args.extract_binary_streams:
     sys.exit()
 
 
+def get_output_basepath(export_method):
+    """Build the path to an output file - everything but the extension"""
+    export_type = export_method.__name__.removeprefix('print_')
+    output_basename = f"{args.output_basename}.{export_type}"
+
+    if export_type == 'font_info':
+        output_basename += '_'
+
+        if args.font != ALL_FONTS_OPTION:
+            output_basename += f"_id{args.font}"
+
+        output_basename += f"_maxdecode{PdfalyzerConfig.MAX_DECODE_LENGTH}"
+
+        if args.quote_type:
+            output_basename += f"_quote_{args.quote_type}"
+
+    output_basename += args.file_suffix
+    return path.join(args.output_dir, output_basename + f"___pdfalyzed_{args.invoked_at_str}")
+
+
 # Analysis exports wrap themselves around the methods that actually generate the analyses
 for (arg, method) in output_sections(args, walker):
     if args.output_dir:
-        console.record = True
-        export_type = method.__name__.removeprefix('print_')
-        output_basename = f"{args.output_basename}.{export_type}___PDFALYZED_{args.invoked_at_str}"
-        output_basepath = path.join(args.output_dir, output_basename)
+        output_basepath = get_output_basepath(method)
         print(f'Exporting {arg} data to {output_basepath}...')
+        console.record = True
 
     method()
 

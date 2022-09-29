@@ -1,7 +1,10 @@
-# Next Release
-# 1.4.0
-* Hex representation of matched bytes in decode attempts table
+# Next Release ( 1.4.0)
+* Hexadecimal representation of matched bytes in decode attempts table
+* `--quote-type` option to limit binary scans
 * `--min-decode-length` option to skip decode attempts on short matches
+* `--file-suffix` option
+* Output filenames will contain some of the options used to generate them
+* Add max decode setting to output filenames
 * Tweak available configuration options for logging to file
 
 # 1.3.1

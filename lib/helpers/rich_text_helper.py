@@ -7,6 +7,7 @@ import time
 from numbers import Number
 from os import path
 from shutil import get_terminal_size
+from typing import Union
 
 from PyPDF2.generic import ByteStringObject, IndirectObject
 from rich import box
@@ -172,9 +173,8 @@ NO_DECODING_ERRORS_MSG = Text('No', style='green4 dim')
 DECODING_ERRORS_MSG = Text('Yes', style='dark_red dim')
 NOT_FOUND_MSG = Text('(not found)', style='dark_grey_italic')
 
-
-def na_txt(style: str | Style = 'white'):
-    return Text('N/A', style=f"white")
+def na_txt(style: Union[str, Style] = 'white'):
+    return Text('N/A', style=style)
 
 
 # TerminalThemes are used when saving SVGS. This one just swaps white for black in DEFAULT_TERMINAL_THEME

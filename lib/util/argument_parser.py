@@ -11,6 +11,7 @@ from rich_argparse import RichHelpFormatter
 
 from lib.config import (DEFAULT_MIN_DECODE_LENGTH, DEFAULT_MAX_DECODE_LENGTH,
      SURROUNDING_BYTES_LENGTH_DEFAULT, PdfalyzerConfig)
+from lib.detection.constants.binary_regexes import QUOTE_REGEXES
 from lib.detection.encoding_detector import (CONFIDENCE_SCORE_RANGE, EncodingDetector)
 from lib.helpers import rich_text_helper
 from lib.helpers.file_helper import timestamp_for_filename
@@ -21,7 +22,6 @@ from lib.util.logging import INVOCATION_LOG_PATH, invocation_log, log, log_and_p
 # NamedTuple to keep our argument selection orderly
 OutputSection = namedtuple('OutputSection', ['argument', 'method'])
 
-
 # Class to enable defaults to only be printed when they are not None or False
 #class ExplicitDefaultsHelpFormatter(RichHelpFormatter):
 class ExplicitDefaultsHelpFormatter(ArgumentDefaultsHelpFormatter):
@@ -31,6 +31,8 @@ class ExplicitDefaultsHelpFormatter(ArgumentDefaultsHelpFormatter):
         else:
             return super()._get_help_string(action)
 
+
+ALL_FONTS_OPTION = -1
 
 DESCRIPTION = """Explore PDF's inner data structure with absurdly large and in depth visualizations. Track the control
 flow of her darker impulses, scan rivers of her binary data for signs of evil sorcery, and generally peer deep into the
@@ -75,7 +77,7 @@ select.add_argument('-f', '--font',
                          "not a multiselect but choosing nothing is still choosing everything. "
                          "try '-f -- [the rest]' if you run into an argument position related piccadilly.",
                     nargs='?',
-                    const=-1,
+                    const=ALL_FONTS_OPTION,
                     metavar='ID',
                     type=int)
 
@@ -89,6 +91,10 @@ tuning = parser.add_argument_group(
 
 tuning.add_argument('--maximize-width', action='store_true',
                     help="maximize the display width to fill the terminal")
+
+tuning.add_argument('--quote-type',
+                    help='scan binary data for quoted data of this type only or all types if not set',
+                    choices=list(QUOTE_REGEXES.keys()))
 
 tuning.add_argument('--suppress-chardet', action='store_true',
                     help="suppress the display of the full table of chardet's encoding likelihood scores")
@@ -169,6 +175,10 @@ export.add_argument('-pfx', '--file-prefix',
                     metavar='PREFIX',
                     help='optional string to use as the prefix for exported files of any kind')
 
+export.add_argument('-sfx', '--file-suffix',
+                    metavar='SUFFIX',
+                    help='optional string to use as the suffix for exported files of any kind')
+
 
 # Debugging
 debug = parser.add_argument_group(
@@ -202,6 +212,9 @@ def parse_arguments():
     PdfalyzerConfig.MAX_DECODE_LENGTH = args.max_decode_length
     PdfalyzerConfig.NUM_SURROUNDING_BYTES = args.surrounding_bytes
 
+    if args.quote_type:
+        PdfalyzerConfig.QUOTE_TYPE = args.quote_type
+
     if args.suppress_decodes:
         PdfalyzerConfig.SUPPRESS_DECODES = args.suppress_decodes
 
@@ -218,7 +231,8 @@ def parse_arguments():
     # File export options
     if args.export_svg or args.export_txt or args.export_html or args.extract_binary_streams:
         args.output_dir = args.output_dir or getcwd()
-        file_prefix = (args.file_prefix + '__') if args.file_prefix else  ''
+        file_prefix = (args.file_prefix + '__') if args.file_prefix else ''
+        args.file_suffix = ('_' + args.file_suffix) if args.file_suffix else ''
         args.output_basename =  f"{file_prefix}{path.basename(args.pdf)}"
     elif args.output_dir:
         log.warning('--output-dir provided but no export option was chosen')
@@ -235,7 +249,8 @@ def output_sections(args, pdf_walker) -> List[OutputSection]:
     """
     # Create a partial for print_font_info() because it's the only one that can take an argument
     # partials have no __name__ so update_wrapper() propagates the 'print_font_info' as this partial's name
-    font_info = partial(pdf_walker.print_font_info, font_idnum=None if args.font == -1 else args.font)
+    font_id = None if args.font == ALL_FONTS_OPTION else args.font
+    font_info = partial(pdf_walker.print_font_info, font_idnum=font_id)
     update_wrapper(font_info, pdf_walker.print_font_info)
 
     # Top to bottom is the default order of output

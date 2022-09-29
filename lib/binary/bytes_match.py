@@ -10,13 +10,11 @@ import re
 from rich.text import Text
 
 from lib.config import PdfalyzerConfig
-from lib.detection.constants.dangerous_instructions import DANGEROUS_INSTRUCTIONS
-from lib.helpers.rich_text_helper import BYTES_BRIGHTER, BYTES_BRIGHTEST, GREY_ADDRESS, prefix_with_plain_text_obj
+from lib.detection.constants.binary_regexes import DANGEROUS_INSTRUCTIONS, CAPTURE_BYTES
+from lib.helpers.rich_text_helper import BYTES_BRIGHTER, GREY_ADDRESS, prefix_with_plain_text_obj
 from lib.util.logging import log
 
-
 # Regex Capture used when extracting quoted chunks of bytes
-CAPTURE_BYTES = b'(.*?)'
 ALERT_STYLE = 'error'
 
 

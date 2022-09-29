@@ -144,8 +144,9 @@ class FontInfo:
         }
 
     def print_summary(self):
-        """Prints a table of info about the font drawn from the various PDF objects"""
+        """Prints a table of info about the font drawn from the various PDF objects. quote_type of None means all."""
         self.print_header_panel()
+        console.print(self._summary_table())
         self.print_character_mapping()
         self.print_prepared_charmap()
 
@@ -158,7 +159,6 @@ class FontInfo:
 
             self.data_stream_handler.print_decoding_stats_table()
 
-        console.print(self._summary_table())
         console.line(2)
 
     def print_character_mapping(self):
