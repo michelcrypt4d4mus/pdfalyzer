@@ -1,5 +1,6 @@
 # Local copy of .env.example with cusom settings
 .env
+.vscode/
 
 # Python
 /.venv/*
@@ -10,6 +11,7 @@
 /log/*
 /tools
 /tmp
+/output/export/
 
 # Other
 .DS_Store

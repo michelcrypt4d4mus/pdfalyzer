@@ -47,7 +47,7 @@ That's a pretty basic document. If you'd like to see the tree for a more complic
 [^4]: Technically they are `SymlinkNodes`, a really nice feature of [AnyTree](https://github.com/c0fec0de/anytree).
 
 ### Rich Tree View
-This image shows a more in-depth view of of the PDF tree for the same document shown above. This tree (AKA the "rich" tree) has almost everything - shows all PDF object properties, all relationships between objects. Even includes sizable previews of any binary data streams embedded or encrypted in the document.
+This image shows a more in-depth view of of the PDF tree for the same document shown above. This tree (AKA the "rich" tree) has almost everything - shows all PDF object properties, all relationships between objects. Even includes sizable previews of any binary data streams embedded or encrypted in the document. Note that the `/OpenAction` is highlighted in bright red, as is the Adobe Type1 font binary (Google's project zero regards any Adobe Type1 font as "mad sus").
 
 [Here's an even bigger example showing the same `nmap` cheat sheet](doc/svgs/rendered_images/NMAP_Commands_Cheat_Sheet_and_Tutorial.pdf.rich_table_tree.png).
 
@@ -57,31 +57,34 @@ This image shows a more in-depth view of of the PDF tree for the same document s
 #### View the Properties of the Fonts in the PDF
 Comes with a preview of the beginning and end of the font's raw binary data stream (at least if it's that kind of font).
 
-![Node Summary](doc/svgs/rendered_images/font_summary_with_byte_preview.png)
+![Font Properties](doc/svgs/rendered_images/font_summary_with_byte_preview.png)
 
 #### Extract Character Mappings from Ancient Adobe Font Formats
 It's actually `PyPDF2` doing the lifting here but we're happy to take the credit.
 
-![Node Summary](doc/svgs/rendered_images/font_character_mapping.png)
+![Font Charmap](doc/svgs/rendered_images/font_character_mapping.png)
 
 #### Search Encrypted Binary Font Data for #MadSus Content No Malware Scanner Will Catch[^5]
+
+doc/svgs/rendered_images/font_24_binary_scan.png
+
 Things like, say, a hidden binary `/F` (PDF instruction meaning "URL") followed by a `JS` (I'll let you guess what "JS" stands for) and then a binary `»` character (AKA "the character the PDF specification uses to close a section of the PDF's logical structure"). Put all that together and it says that you're looking at a secret JavaScript instruction embedded in the encrypted part of a font binary. A secret instruction that causes the PDF renderer to pop out of its frame prematurely as it renders the font.
 
-![Node Summary](doc/svgs/rendered_images/font29.js.1.png)
+![Font with JS](doc/svgs/rendered_images/font29.js.1.png)
+
+#### Extract And Decode Binary Patterns
+Like, say, bytes between common regular expression markers that you migth want to force a decode of in a lot of different encodingss.
+![Font Scan Regex](doc/svgs//rendered_images/font_34_frontslash_scan.png)
+
 
 [^5]: At least they weren't catching it as of September 2022.
 
 #### Now There's Even A Fancy Table To Tell You What The `chardet` Library Would Rank As The Most Likely Encoding For A Chunk Of Binary Data
 Behold the beauty:
-![Basic Tree](doc/svgs/rendered_images/decoding_and_chardet_table_1.png)
-
-In the chaos at the heart of our digital lives:
 ![Basic Tree](doc/svgs/rendered_images/decoding_and_chardet_table_2.png)
 
 ### Compute Summary Statistics About A PDF's Inner Structure
-Some simple counts of some properties of the internal PDF objects. Not the most exciting but sometimes helpful. `pdfid.py` also does something much like this.
-
-![Node Summary](doc/svgs/rendered_images/node_summary.png)
+Some simple counts of some properties of the internal PDF objects. Not the most exciting but sometimes helpful. `pdfid.py` also does something much like this. Not exciting enough to show a screenshot.
 
 
 
