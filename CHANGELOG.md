@@ -1,8 +1,8 @@
 # NEXT RELEASE
-
+* Make `README` more PyPi friendly
 
 # 1.5.0
-Bunch of small changes to support releasing on pypi:
+Bunch of small changes to support releasing on [pypi](https://pypi.org/project/pdfalyzer/)
 * Invoke with shell command `pdfalyze` instead of local python file `./pdfalyzer.py` (options are the same)
 * Core class renames: `PdfWalker` -> `Pdfalyzer`, `DataStreamHandler` -> `BinaryScanner`
 * Permanent env var configuration moved from a file called `.env` to a file called `.pdfalyzer`
