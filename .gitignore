@@ -1,4 +1,5 @@
 private_repo_scripts/*
+.vscode/
 # Local copy of .pdfalyzer.example with cusom settings
 .pdfalyzer
 

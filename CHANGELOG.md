@@ -1,5 +1,6 @@
 # NEXT RELEASE
 
+
 # 1.5.0
 Bunch of small changes to support releasing on pypi:
 * Invoke with shell command `pdfalyze` instead of local python file `./pdfalyzer.py` (options are the same)
