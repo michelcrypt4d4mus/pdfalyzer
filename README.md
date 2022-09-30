@@ -1,7 +1,7 @@
 # THE PDFALYZER
 A PDF analysis tool geared towards visualizing the inner tree-like data structure[^1] of a PDF in [spectacularly large and colorful diagrams](#example-output) as well as scanning the various kinds of binary data within the PDF for hidden potentially malicious content.
 
-**PyPi Users:** If you are reading this `README` on PyPi be aware that it renders a lot better - with footnotes, images, etc. - [over on GitHub](https://github.com/michelcrypt4d4mus/pdfalyzer)).
+**PyPi Users:** If you are reading this document [on PyPi](https://pypi.org/project/pdfalyzer/) be aware that it renders a lot better [over on GitHub](https://github.com/michelcrypt4d4mus/pdfalyzer). Lots of pretty pictures, footnotes that work, etc.
 
 [^1]: The official Adobe PDF specification calls this tree the PDF's "logical structure", which is a good example of nomenclature that does not help those who see it understand anything about what is being described. I can forgive them given that they named this thing back in the 80s, though it's a good example of why picking good names for things at the beginning is so important.
 
