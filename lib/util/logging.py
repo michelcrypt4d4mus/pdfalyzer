@@ -32,42 +32,34 @@ from rich.logging import RichHandler
 from lib.config import PdfalyzerConfig
 
 
-def logfile_basename(label):
-    return f"pdfalyzer.{label}.log"
+def configure_logger(log_label: str) -> logging.Logger:
+    """Set up a file or stream logger depending on the configuration"""
+    log_name = f"pdfalyzer.{log_label}"
+    logger = logging.getLogger(log_name)
 
-APPLICATION_LOG_NAME = logfile_basename('run')
-APPLICATION_LOG_PATH = path.join(PdfalyzerConfig.LOG_DIR, APPLICATION_LOG_NAME)
-INVOCATION_LOG_NAME = logfile_basename('invocation')
-INVOCATION_LOG_PATH = path.join(PdfalyzerConfig.LOG_DIR, INVOCATION_LOG_NAME)
+    if PdfalyzerConfig.IS_LOGGING_TO_FILE:
+        if not path.isdir(PdfalyzerConfig.LOG_DIR) or not path.isabs(PdfalyzerConfig.LOG_DIR):
+            raise RuntimeError(f"PDFALYZER_LOG_DIR '{PdfalyzerConfig.LOG_DIR}' doesn't exist or is not absolute")
+
+        log_file_path = path.join(PdfalyzerConfig.LOG_DIR, f"{log_name}.log")
+        log_formatter = logging.Formatter('%(asctime)s %(levelname)s %(message)s')
+        log_file_handler = logging.FileHandler(log_file_path)
+        #log_file_handler.setLevel(PdfalyzerConfig.LOG_LEVEL)
+        log_file_handler.setFormatter(log_formatter)
+        logger.addHandler(log_file_handler)
+        logger.info('File logging triggered by setting of PDFALYZER_LOG_DIR')
+    else:
+        logger.addHandler(RichHandler(rich_tracebacks=True))
+
+    logger.setLevel(PdfalyzerConfig.LOG_LEVEL)
+    return logger
 
 
-# 'log' (the application log)
-log = logging.getLogger(APPLICATION_LOG_NAME)
-log.setLevel(PdfalyzerConfig.LOG_LEVEL)
-
-# Write logs to a file if PDFALYZER_LOG_DIR is configured otherwise have Rich style logs and send them to STDOUT.
-if PdfalyzerConfig.IS_LOGGING_TO_FILE:
-    if not path.isdir(PdfalyzerConfig.LOG_DIR):
-        raise RuntimeError(f"PDFALYZER_LOG_DIR '{PdfalyzerConfig.LOG_DIR}' doesn't exist or is not absolute")
-
-    log_formatter = logging.Formatter('%(asctime)s %(levelname)s %(message)s')
-    log_file_handler = logging.FileHandler(APPLICATION_LOG_PATH)
-    log_file_handler.setLevel(PdfalyzerConfig.LOG_LEVEL)
-    log_file_handler.setFormatter(log_formatter)
-    log.addHandler(log_file_handler)
-    log.info('File logging triggered by setting of PDFALYZER_LOG_DIR')
-else:
-    log.addHandler(RichHandler(rich_tracebacks=True))
-
+# 'log' (standard application log)
+log = configure_logger('run')
 
 # 'invocation_log' (a history of pdfalyzer runs containing previous commands you can cut and paste to re-run)
-invocation_log = logging.getLogger(INVOCATION_LOG_NAME)
-invocation_log_formatter = logging.Formatter('[%(asctime)s] %(message)s')
-invocation_log_file_handler = logging.FileHandler(INVOCATION_LOG_PATH)
-invocation_log_file_handler.setLevel(PdfalyzerConfig.LOG_LEVEL)
-invocation_log_file_handler.setFormatter(invocation_log_formatter)
-invocation_log.addHandler(invocation_log_file_handler)
-invocation_log.setLevel(PdfalyzerConfig.LOG_LEVEL)
+invocation_log = configure_logger('invocation')
 
 
 def log_and_print(msg: str, log_level='INFO'):
@@ -78,11 +70,11 @@ def log_and_print(msg: str, log_level='INFO'):
 
 def log_current_config():
     """Write current state of PdfalyzerConfig object to the logs"""
-    msg = f"{PdfalyzerConfig.__name__} attributes:\n"
+    msg = f"{PdfalyzerConfig.__name__} current attributes:\n"
     config_dict = {k: v for k, v in vars(PdfalyzerConfig).items() if not k.startswith('__')}
 
     for k in sorted(config_dict.keys()):
-        msg += f"   {k: >40}  {config_dict[k]}\n"
+        msg += f"   {k: >35}  {config_dict[k]}\n"
 
     log.info(msg)
 

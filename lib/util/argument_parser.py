@@ -7,16 +7,16 @@ from functools import partial, update_wrapper
 from os import environ, getcwd, path
 from typing import List
 
-from rich_argparse import RichHelpFormatter
+#from rich_argparse import RichHelpFormatter
 
 from lib.config import (DEFAULT_MIN_DECODE_LENGTH, DEFAULT_MAX_DECODE_LENGTH,
-     SURROUNDING_BYTES_LENGTH_DEFAULT, PdfalyzerConfig)
+     SURROUNDING_BYTES_LENGTH_DEFAULT, LOG_DIR_ENV_VAR, PdfalyzerConfig)
 from lib.detection.constants.binary_regexes import QUOTE_REGEXES
 from lib.detection.encoding_detector import (CONFIDENCE_SCORE_RANGE, EncodingDetector)
 from lib.helpers import rich_text_helper
 from lib.helpers.file_helper import timestamp_for_filename
 from lib.helpers.rich_text_helper import console, console_width_possibilities
-from lib.util.logging import INVOCATION_LOG_PATH, invocation_log, log, log_and_print, log_current_config
+from lib.util.logging import invocation_log, log, log_and_print, log_current_config
 
 
 # NamedTuple to keep our argument selection orderly
@@ -32,24 +32,22 @@ class ExplicitDefaultsHelpFormatter(ArgumentDefaultsHelpFormatter):
             return super()._get_help_string(action)
 
 
+ARGPARSE_LOG_FORMAT = '{0: >30}    {1: <17} {2: <}\n'
 ALL_FONTS_OPTION = -1
 
-DESCRIPTION = """Explore PDF's inner data structure with absurdly large and in depth visualizations. Track the control
-flow of her darker impulses, scan rivers of her binary data for signs of evil sorcery, and generally peer deep into the
-dark heart of the Portable Document Format. Just make sure you also forgive her - she knows not what she does.
-"""
+DESCRIPTION = "Explore PDF's inner data structure with absurdly large and in depth visualizations. " + \
+              "Track the control flow of her darker impulses, scan rivers of her binary data for signs " + \
+              "of evil sorcery, and generally peer deep into the dark heart of the Portable Document Format. " + \
+              "Just make sure you also forgive her - she knows not what she does."
 
-EPILOG = f"""
-    A registry of previous pdfalyzer invocations will be stored at '{INVOCATION_LOG_PATH}'
-    should you need it.
-"""
+EPILOG = "Values for various config options can be set permanently by a .pdfalyzer file in your home directory; " + \
+         "see the documentation for details. " + \
+         f"A registry of previous pdfalyzer invocations will be incribed to a file if the '{LOG_DIR_ENV_VAR}' " + \
+         "environment variable is configured."
 
-parser = ArgumentParser(
-    formatter_class=ExplicitDefaultsHelpFormatter,
-    description=DESCRIPTION,
-    epilog=EPILOG)
 
 # Positional args, version, help, etc
+parser = ArgumentParser(formatter_class=ExplicitDefaultsHelpFormatter, description=DESCRIPTION, epilog=EPILOG)
 parser.add_argument('--version', action='version', version=f"pdfalyzer {importlib.metadata.version('pdfalyzer')}")
 parser.add_argument('pdf', metavar='file_to_analyze.pdf', help='PDF file to process')
 
@@ -195,14 +193,18 @@ debug.add_argument('-D', '--debug', action='store_true',
 # The Parsening Begins
 def parse_arguments():
     """Parse command line args. Most settings are communicated to the app by setting env vars"""
-    if not '-h' in sys.argv and not '--help' in sys.argv:
-        _log_invocation()
-
     args = parser.parse_args()
-    args.invoked_at_str = timestamp_for_filename()
 
-    if not args.debug and not PdfalyzerConfig.WAS_LOG_LEVEL_CONFIGURED:
-        log.setLevel(logging.WARNING)
+    # If --debug is specified set all loggers to debug level.
+    # Set invocation_log to INFO if we are writing to any kind of file.
+    if args.debug:
+        invocation_log.setLevel(logging.DEBUG)
+        log.setLevel(logging.DEBUG)
+    elif PdfalyzerConfig.IS_LOGGING_TO_FILE:
+        invocation_log.setLevel(logging.INFO)
+
+    _log_invocation()
+    args.invoked_at_str = timestamp_for_filename()
 
     if args.maximize_width:
         rich_text_helper.console.width = max(console_width_possibilities())
@@ -279,11 +281,12 @@ def _log_invocation() -> None:
 def _log_argparse_result(args):
     """Logs the result of argparse"""
     args_dict = vars(args)
-    log_msg = 'THE PARSENING:\n\n' + '{0: >30}    {1: <17} {2: <}\n'.format('OPTION', 'TYPE', 'VALUE')
+    log_msg = 'argparse results:\n' + ARGPARSE_LOG_FORMAT.format('OPTION', 'TYPE', 'VALUE')
 
     for arg_var in sorted(args_dict.keys()):
         arg_val = args_dict[arg_var]
-        row = '{0: >30}    {1: <17} {2: <}\n'.format(arg_var, type(arg_val).__name__, str(arg_val))
+        row = ARGPARSE_LOG_FORMAT.format(arg_var, type(arg_val).__name__, str(arg_val))
         log_msg += row
 
-    invocation_log.info(log_msg + "\n\n\n")
+    log_msg += "\n"
+    invocation_log.info(log_msg)

@@ -5,16 +5,14 @@ from os import path
 import re
 
 from lib.config import PdfalyzerConfig
+from lib.detection.constants.javascript_reserved_keywords import JAVASCRIPT_RESERVED_KEYWORDS
 from lib.helpers.file_helper import load_word_list, timestamp_for_filename
 from lib.helpers.string_helper import count_regex_matches_in_text
 from lib.util.filesystem_awareness import PROJECT_DIR
 
 
-JS_KEYWORDS_FILE = path.join(PROJECT_DIR, 'config', 'javascript_reserved_keywords.txt')
-JS_KEYWORDS_LIST = load_word_list(JS_KEYWORDS_FILE)
-JS_KEYWORDS_3_OR_MORE_LETTERS = [kw for kw in JS_KEYWORDS_LIST if len(kw) > 2]
+JS_KEYWORDS_3_OR_MORE_LETTERS = [kw for kw in JAVASCRIPT_RESERVED_KEYWORDS if len(kw) > 2]
 JS_KEYWORD_REGEX = re.compile('|'.join(JS_KEYWORDS_3_OR_MORE_LETTERS))
-JS_KEYWORD_ALERT_THRESHOLD = 2
 
 
 class JavascriptHunter:

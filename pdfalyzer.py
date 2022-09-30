@@ -1,14 +1,18 @@
 #!/usr/bin/env python
 import code
 import sys
-from os import environ, path
-from lib.config import PdfalyzerConfig
+from os import environ, getcwd, path
 
-# load_dotenv() should be called as soon as possible (before parsing local classes)
+# load_dotenv() should be called as soon as possible (before parsing local classes) but not for pytest
 if not environ.get('INVOKED_BY_PYTEST', False):
-    from dotenv import load_dotenv
-    load_dotenv()
+    for dotenv_file in [path.join(dir, '.pdfalyzer') for dir in [getcwd(), path.expanduser('~')]]:
+        if path.exists(dotenv_file):
+            from dotenv import load_dotenv
+            print(f"Loading config: {dotenv_file}")
+            load_dotenv(dotenv_path=dotenv_file)
+            break
 
+from lib.config import PdfalyzerConfig
 from lib.helpers.rich_text_helper import console, invoke_rich_export
 from lib.pdf_parser_manager import PdfParserManager
 from lib.pdf_walker import PdfWalker

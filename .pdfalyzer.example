@@ -46,4 +46,7 @@
 #     PDFALYZER_LOG_DIR=/path/to/pdfalyzer/log_dir/
 
 # Log level
-#     PDFALYZER_LOG_LEVEL = 'INFO'
+#     PDFALYZER_LOG_LEVEL='INFO'
+
+# Path to directory containing Didier Stevens's pdf-parser.py. Only required for extracting binary streams to files.
+#     PDFALYZER_PDF_PARSER_PY_PATH=/path/to/pdfparserdotpy/

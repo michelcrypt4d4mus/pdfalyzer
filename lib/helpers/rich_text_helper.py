@@ -20,7 +20,7 @@ from rich.terminal_theme import TerminalTheme
 from rich.text import Text
 from rich.theme import Theme
 
-from lib.config import is_env_var_set_and_not_false
+from lib.config import is_env_var_set_and_not_false, is_invoked_by_pytest
 from lib.util import adobe_strings
 from lib.util.logging import log, log_and_print
 
@@ -228,7 +228,7 @@ def console_width_possibilities():
     return [get_terminal_size().columns - 2, DEFAULT_CONSOLE_WIDTH]
 
 # Maximize output width if PDFALYZER_MAXIMIZE_WIDTH is set (also can changed with --maximize-width option)
-if is_env_var_set_and_not_false('INVOKED_BY_PYTEST'):
+if is_invoked_by_pytest():
     CONSOLE_WIDTH = DEFAULT_CONSOLE_WIDTH
 elif is_env_var_set_and_not_false('PDFALYZER_MAXIMIZE_WIDTH'):
     CONSOLE_WIDTH = max(console_width_possibilities())

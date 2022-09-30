@@ -1,5 +1,5 @@
 from os import environ
-from lib.config import is_env_var_set_and_not_false
+from lib.config import PYTEST_FLAG, is_env_var_set_and_not_false
 
 ENV_VAR_NAME = 'THE_WORLD_IS_YOURS'
 
@@ -9,7 +9,7 @@ def test_is_env_var_set_and_not_false():
     assert is_env_var_set_and_not_false(ENV_VAR_NAME) == False
 
     # Should be set by conftest
-    assert is_env_var_set_and_not_false('INVOKED_BY_PYTEST') == True
+    assert is_env_var_set_and_not_false(PYTEST_FLAG) == True
 
     # Set to empty string
     environ[ENV_VAR_NAME] = ''

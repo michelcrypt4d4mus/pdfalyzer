@@ -1,8 +1,10 @@
 import logging
-from os import environ
+from os import environ, path
 
-from lib.util.filesystem_awareness import DEFAULT_LOG_DIR
+from lib.util.filesystem_awareness import DEFAULT_LOG_DIR, PROJECT_DIR
 
+
+PYTEST_FLAG = 'INVOKED_BY_PYTEST'
 
 # Configuring PDFALYZER_LOG_DIR has side effects; see .env.example in repo for specifics.
 LOG_LEVEL_ENV_VAR = 'PDFALYZER_LOG_LEVEL'
@@ -22,6 +24,9 @@ MAX_DECODE_LENGTH_ENV_VAR = 'PDFALYZER_MAX_DECODE_LENGTH'
 SURROUNDING_BYTES_LENGTH_DEFAULT = 64
 SURROUNDING_BYTES_ENV_VAR = 'PDFALYZER_SURROUNDING_BYTES'
 
+# 3rd part pdf-parser.py
+PDF_PARSER_EXECUTABLE_ENV_VAR = 'PDFALYZER_PDF_PARSER_PY_PATH'
+
 
 def is_env_var_set_and_not_false(var_name):
     """Returns True if var_name is not empty and set to anything other than 'false' (capitalization agnostic)"""
@@ -32,10 +37,15 @@ def is_env_var_set_and_not_false(var_name):
         return False
 
 
+def is_invoked_by_pytest():
+    """Return true if pytest is running"""
+    return is_env_var_set_and_not_false(PYTEST_FLAG)
+
+
 class PdfalyzerConfig:
     LOG_DIR = environ.get(LOG_DIR_ENV_VAR, DEFAULT_LOG_DIR)
-    LOG_LEVEL = getattr(logging, environ.get(LOG_LEVEL_ENV_VAR, 'DEBUG'))
     IS_LOGGING_TO_FILE = is_env_var_set_and_not_false(LOG_DIR_ENV_VAR)
+    LOG_LEVEL = getattr(logging, environ.get(LOG_LEVEL_ENV_VAR, 'WARN'))
     WAS_LOG_LEVEL_CONFIGURED = is_env_var_set_and_not_false(LOG_LEVEL_ENV_VAR)
 
     MIN_DECODE_LENGTH = int(environ.get(MIN_DECODE_LENGTH_ENV_VAR, DEFAULT_MIN_DECODE_LENGTH))
@@ -44,4 +54,13 @@ class PdfalyzerConfig:
     SUPPRESS_CHARDET_OUTPUT = is_env_var_set_and_not_false(SUPPRESS_CHARDET_TABLE_ENV_VAR)
     SUPPRESS_DECODES = is_env_var_set_and_not_false(SUPPRESS_DECODES_ENV_VAR)
 
+    JAVSCRIPT_KEYWORD_ALERT_THRESHOLD = 2
     QUOTE_TYPE = None
+
+    # Path to Didier Stevens's pdf-parser.py
+    if is_env_var_set_and_not_false(PDF_PARSER_EXECUTABLE_ENV_VAR):
+        PDF_PARSER_EXECUTABLE = path.join(environ[PDF_PARSER_EXECUTABLE_ENV_VAR], 'pdf-parser.py')
+    elif is_invoked_by_pytest():
+        PDF_PARSER_EXECUTABLE = path.join(PROJECT_DIR, 'tools', 'pdf-parser.py')
+    else:
+        PDF_PARSER_EXECUTABLE = None

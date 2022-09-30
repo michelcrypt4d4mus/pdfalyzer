@@ -5,22 +5,33 @@ import re
 from os import path, system
 from subprocess import check_output
 
+from lib.config import PDF_PARSER_EXECUTABLE_ENV_VAR, PdfalyzerConfig, is_env_var_set_and_not_false
 from lib.util.filesystem_awareness import PROJECT_DIR
-from lib.util.logging import log
+from lib.util.logging import log, log_and_print
 
 # PDF Internal Data Regexes
 PDF_OBJECT_START_REGEX = re.compile('^obj (\d+) \d+$')
 CONTAINS_STREAM_REGEX = re.compile('\s+Contains stream$')
-PDF_PARSER_EXECUTABLE = path.join(PROJECT_DIR, 'tools', 'pdf-parser.py')
+
+# Install info
+DIDIER_STEVENS_RAW_GITHUB_URL = 'https://raw.githubusercontent.com/DidierStevens/DidierStevensSuite/master/'
+PDF_PARSER_GITHUB_URL = DIDIER_STEVENS_RAW_GITHUB_URL + 'pdf-parser.py'
+PDF_PARSER_INSTALL_MSG = f"If you need to install pdf-parser.py, it's a single .py file that can be " + \
+                          "found at '{PDF_PARSER_GITHUB_URL}'."
 
 
 class PdfParserManager:
     def __init__(self, path_to_pdf):
-        if not path.exists(PDF_PARSER_EXECUTABLE):
-            raise RuntimeError(f"pdf-parser.py not found. Install it with 'scripts/install_didier_stevens_pdf_tools.sh'")
+        if PdfalyzerConfig.PDF_PARSER_EXECUTABLE is None:
+            raise RuntimeError(f"{PDF_PARSER_EXECUTABLE_ENV_VAR} not configured.\n\n{PDF_PARSER_INSTALL_MSG}")
+
+        if not path.exists(PdfalyzerConfig.PDF_PARSER_EXECUTABLE):
+            msg = f"pdf-parser.py not found at configured location '{PdfalyzerConfig.PDF_PARSER_EXECUTABLE}'\n\n"
+            msg += PDF_PARSER_INSTALL_MSG
+            raise RuntimeError(msg)
 
         self.path_to_pdf = path_to_pdf
-        self.base_shell_cmd = f'{PDF_PARSER_EXECUTABLE} -O "{path_to_pdf}"'
+        self.base_shell_cmd = f'{PdfalyzerConfig.PDF_PARSER_EXECUTABLE} -O "{path_to_pdf}"'
         self.object_ids = []
         self.object_ids_containing_stream_data = []
         self.extract_object_ids()
