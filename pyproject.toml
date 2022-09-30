@@ -1,14 +1,24 @@
 [tool.poetry]
 name = "pdfalyzer"
-version = "1.4.0"
+version = "1.5.0"
 description = "A PDF analysis tool geared towards visualizing the inner tree-like data structure of a portable document with an eye towards detecting malicious instructions."
-authors = ["Michel <michel@cryptadamus.com>"]
+authors = ["Michel C. <michel@cryptadamus.com>"]
 license = "GPL-3.0-or-later"
 readme = "README.md"
 homepage = "https://github.com/michelcrypt4d4mus/pdfalyzer"
 repository = "https://github.com/michelcrypt4d4mus/pdfalyzer"
 documentation = "https://github.com/michelcrypt4d4mus/pdfalyzer"
-keywords = ["pdf", "visualization", "malware-analysis", "malware", "font", "binary-visualization", "encoding"]
+
+keywords = [
+    "pdf",
+    "visualization",
+    "malicious-pdf",
+    "malware-analysis",
+    "malware",
+    "font",
+    "binary-visualization",
+    "encoding"
+]
 
 classifiers = [
     "Topic :: Artistic Software",
@@ -16,9 +26,10 @@ classifiers = [
     "Topic :: Scientific/Engineering :: Visualization",
 ]
 
-packages = [
-    { include = "my_package", from = "lib" },
-]
+
+[tool.poetry.scripts]
+pdfalyze = 'pdfalyzer:pdfalyze'
+
 
 [tool.poetry.dependencies]
 python = "^3.9"

@@ -1,4 +1,4 @@
-from lib.detection.javascript_hunter import JavascriptHunter
+from pdfalyzer.detection.javascript_hunter import JavascriptHunter
 
 TEST_STRING = 'export then gracefully exit before finally rising to the moon'
 

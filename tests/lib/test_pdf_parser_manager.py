@@ -1,4 +1,4 @@
-from lib.pdf_parser_manager import PdfParserManager
+from pdfalyzer.util.pdf_parser_manager import PdfParserManager
 
 
 def test_pdf_parser_manager(analyzing_malicious_documents_pdf_path):

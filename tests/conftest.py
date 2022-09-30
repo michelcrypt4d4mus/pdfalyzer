@@ -5,9 +5,9 @@ environ['INVOKED_BY_PYTEST'] = 'True'
 
 import pytest
 
-from lib.config import MAX_DECODE_LENGTH_ENV_VAR, PYTEST_FLAG
-from lib.pdf_walker import PdfWalker
-from lib.util.filesystem_awareness import DOCUMENTATION_DIR
+from pdfalyzer.config import MAX_DECODE_LENGTH_ENV_VAR, PYTEST_FLAG
+from pdfalyzer.pdfalyzer import Pdfalyzer
+from pdfalyzer.util.filesystem_awareness import DOCUMENTATION_DIR
 
 
 # Env var option that may Speeds things up considerably
@@ -31,12 +31,12 @@ def font_obj_ids_in_analyzing_malicious_docs_pdf():
 
 # PDF walkers to parse them
 @pytest.fixture(scope="session")
-def analyzing_malicious_documents_pdf_walker(analyzing_malicious_documents_pdf_path):
-    return PdfWalker(analyzing_malicious_documents_pdf_path)
+def analyzing_malicious_documents_pdfalyzer(analyzing_malicious_documents_pdf_path):
+    return Pdfalyzer(analyzing_malicious_documents_pdf_path)
 
 @pytest.fixture(scope="session")
-def adobe_type1_fonts_pdf_walker(adobe_type1_fonts_pdf_path):
-    return PdfWalker(adobe_type1_fonts_pdf_path)
+def adobe_type1_fonts_pdfalyzer(adobe_type1_fonts_pdf_path):
+    return Pdfalyzer(adobe_type1_fonts_pdf_path)
 
 
 # Handy iterator

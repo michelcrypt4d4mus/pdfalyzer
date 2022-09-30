@@ -1,5 +1,5 @@
 from os import environ
-from lib.config import PYTEST_FLAG, is_env_var_set_and_not_false
+from pdfalyzer.config import PYTEST_FLAG, is_env_var_set_and_not_false
 
 ENV_VAR_NAME = 'THE_WORLD_IS_YOURS'
 

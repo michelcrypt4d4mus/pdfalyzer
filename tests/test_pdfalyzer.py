@@ -6,10 +6,9 @@ from math import isclose
 from os import environ, path
 from subprocess import check_output
 
-from lib.helpers.rich_text_helper import console
-from lib.util.filesystem_awareness import PROJECT_DIR
-
-PDFALYZER_EXECUTABLE = path.join(PROJECT_DIR, 'pdfalyzer.py')
+from pdfalyzer.config import PDFALYZE
+from pdfalyzer.helpers.rich_text_helper import console
+from pdfalyzer.util.filesystem_awareness import PROJECT_DIR
 
 
 # Asking for help screen is a good canary test... proves code compiles, at least.
@@ -34,7 +33,7 @@ def test_font_scan(adobe_type1_fonts_pdf_path):
 
 def _run_with_args(pdf, *args) -> str:
     """check_output() technically returns bytes so we decode before returning STDOUT output"""
-    return check_output([PDFALYZER_EXECUTABLE, pdf, *args], env=environ).decode()
+    return check_output([PDFALYZE, pdf, *args], env=environ).decode()
 
 
 def _assert_line_count_within_range(line_count, text):

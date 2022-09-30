@@ -1,6 +1,8 @@
 # THE PDFALYZER
 A PDF analysis tool geared towards visualizing the inner tree-like data structure[^1] of a PDF in [spectacularly large and colorful diagrams](#example-output) as well as scanning the various kinds of binary data within the PDF for hidden potentially malicious content.
 
+**PyPi Users:** If you are reading this `README` on PyPi be aware that it renders a lot better - with footnotes, images, etc. - [over on GitHub](https://github.com/michelcrypt4d4mus/pdfalyzer)).
+
 [^1]: The official Adobe PDF specification calls this tree the PDF's "logical structure", which is a good example of nomenclature that does not help those who see it understand anything about what is being described. I can forgive them given that they named this thing back in the 80s, though it's a good example of why picking good names for things at the beginning is so important.
 
 ### What It Do
@@ -28,12 +30,14 @@ This tool was built to fill a gap in the PDF assessment landscape following my .
 
 All those things being the case lead to a situation where I felt the world might be slightly improved if I strung together a couple of more stable/well known/actively maintained open source projects ([AnyTree](https://github.com/c0fec0de/anytree), [PyPDF2](https://github.com/py-pdf/PyPDF2), and [Rich](https://github.com/Textualize/rich)) into this tool.
 
+### OK Let's Do This
+See [Installation](#installation) and [Usage](#usage) below (past the enormous images showing example output).
+
 
 
 # Example Output
-`pdfalyzer` can export visualizations to HTML, ANSI colored text, and SVG images using the file export functionality that comes with [Rich](https://github.com/Textualize/rich). SVGs can be turned into `png` format images with a tool like `inkscape` or `cairosvg` (`inkscape` works a lot better in our experience).
+`pdfalyzer` can export visualizations to HTML, ANSI colored text, and SVG images using the file export functionality that comes with [Rich](https://github.com/Textualize/rich). SVGs can be turned into `png` format images with a tool like `inkscape` or `cairosvg` (Inkscape works a lot better in our experience).
 
-(This images are big so this section is long; if you're here to read about how to install or use `pdfalyzer` maybe use the table of contents Github auto generates (↖ top left of this section of the this page)).
 
 ### Basic Tree View
 As you can see the "mad sus" `/OpenAction` relationship is highlighted bright red, as would be a couple of other suspicious PDF instructions like `/JavaScript` that don't exist in the PDF but do exist in other documents.
@@ -73,8 +77,11 @@ Things like, say, a hidden binary `/F` (PDF instruction meaning "URL") followed 
 ![Font with JS](doc/svgs/rendered_images/font29.js.1.png)
 
 #### Extract And Decode Binary Patterns
-Like, say, bytes between common regular expression markers that you migth want to force a decode of in a lot of different encodingss.
-![Font Scan Regex](doc/svgs//rendered_images/font_34_frontslash_scan.png)
+Like, say, bytes between common regular expression markers that you might want to force a decode of in a lot of different encodings.
+![Font Scan Regex](doc/svgs/rendered_images/font_34_frontslash_scan.png)
+
+When all is said and done you can see some stats that may help you figure out what the character encoding may or may not be for the bytes matched by those patterns:
+![Font Decode Summary](doc/svgs/rendered_images/font29_summary_stats.png)
 
 
 [^5]: At least they weren't catching it as of September 2022.
@@ -87,30 +94,11 @@ Behold the beauty:
 Some simple counts of some properties of the internal PDF objects. Not the most exciting but sometimes helpful. `pdfid.py` also does something much like this. Not exciting enough to show a screenshot.
 
 
-
 # Installation
-1. `git clone https://github.com/michelcrypt4d4mus/pdfalyzer.git`
-1. `cd pdfalyzer`
-
-After that there's a forking path depending on whether or not you use [poetry](https://python-poetry.org) to manage your python lifestyle.
-
-Note that the minimum versions for each package were chosen because that's what worked on my machine and not because that version had some critical bug fix or feature so it's entirely possible that using earlier versions than are specified in [pyproject.toml](pyproject.toml) or [requirements.txt](requirements.txt) will work just fine. Feel free to experiment if there's some kind of version conflict for you.
-
-### With Python Poetry
-These commands are the `poetry` equivalent of the traditional virtualenv installation followed by `source venv/bin/activate` but there's a lot of ways to run a python script in a virtualenv with `poetry` so you do you if you prefer another approach.
-
-```sh
-poetry install
-source $(poetry env info --path)/bin/activate
 ```
-
-
-### With A Manual `venv`
-```sh
-python -m venv .venv              # Create a virtualenv in .venv
-. .venv/bin/activate              # Activate the virtualenv
-pip install -r requirements.txt   # Install packages
+pip install pdfalyzer
 ```
+For info on how to setup a dev environment, see [Contributing](#contributing) section at the end of this file.
 
 ### Troubleshooting The Installation
 1. If you encounter an error building the python `cryptography` package check your `pip` version (`pip --version`). If it's less than 22.0, upgrade `pip` with `pip install --upgrade pip`.
@@ -141,33 +129,35 @@ scripts/install_t1utils.sh
 
 
 # Usage
-1. Activate the virtualenv via your preferred method.
-2. Run `./pdfalyzer.py -h` to see usage instructions.
+2. Run `pdfalyze -h` to see usage instructions.
 
 As of right now these are the options:
 
 ![argparse_help](doc/screenshots/rich_help/full_text_of_help_orange_group.png)
 
-**There's some further exposition on the particulars of what these options mean in [the sample `.env` file](.env.example).** Even if don't configure your own `env` you may still glean some insight from reading the descriptions of the various environment variables.
+**There's some further exposition on the particulars of what these options mean in [the sample `.pdfalyzer` file](.pdfalyzer.example).** Even if don't configure your own `env` you may still glean some insight from reading the descriptions of the various environment variables.
 
 Beyond that there's [a few scripts](scripts/) in the repo that may be of interest.
 
-### Setting Command Line Options Permanently With A `.env` File
-If you find yourself specificying the same options over and over you may be able to automate that with a [dotenv](https://pypi.org/project/python-dotenv/) setup. Documentation on the available configuration options lives in [`.env.example`](.env.example) which doubles as a file you can copy into place and edit to your heart's content.
+### Setting Command Line Options Permanently With A `.pdfalyzer` File
+If you find yourself specificying the same options over and over you may be able to automate that with a [dotenv](https://pypi.org/project/python-dotenv/) setup. Documentation on the available configuration options lives in [`.pdfalyzer.example`](.pdfalyzer.example) which doubles as a file you can copy into place and edit to your heart's content.
 
 ```sh
-cp .env.example .env
+cp .pdfalyzer.example .pdfalyzer
 ```
 
 
 ### As A Code Library
-The `PdfWalker` class is the core of the operation as it holds both the PDF's logical tree as well as a couple of other data structures that have been pre-processed to make them easier to work with. Chief among these is the `FontInfo` class which pulls together various properties of a font strewn across 3 or 4 different PDF objects.
+The `Pdfalyzer` class is the core of the operation as it holds both the PDF's logical tree as well as a couple of other data structures that have been pre-processed to make them easier to work with. Chief among these is the `FontInfo` class which pulls together various properties of a font strewn across 3 or 4 different PDF objects.
+
 
 Here's how to get at these objects:
 
 ```python
+from pdfalyzer.pdfalyzer import Pdfalyzer
+
 # Load a PDF and parse its nodes into the tree.
-walker = PdfWalker("/path/to/the/evil.pdf")
+walker = Pdfalyzer("/path/to/the/evil.pdf")
 actual_pdf_tree = walker.pdf_tree
 
 # Find a PDF object by its ID in the PDF
@@ -175,14 +165,35 @@ node = walker.find_node_by_idnum(44)
 pdf_object = node.obj
 
 # Use anytree's findall_by_attr to find nodes with a given property
+from anytree.search import findall_by_attr
 page_nodes = findall_by_attr(walker.pdf_tree, name='type', value='/Page')
 
 # Get the fonts
-fonts = walker.font_infos
+font1 = walker.font_infos[0]
 
-# Extract backtick quoted strings from a font binary and process them
-for backtick_quoted_string in fonts[0].data_stream_handler.extract_backtick_quoted_bytes():
+# Iterate over backtick quoted strings from a font binary and process them
+for backtick_quoted_string in font1.binary_scanner.extract_backtick_quoted_bytes():
     process(backtick_quoted_string)
+
+# Try to decode - by force if necessary - everything in the font binary that looks like a quoted string
+# or regex (meaning bytes between single quotes, double quotes, front slashes, backticks, or guillemet quotes)
+font1.force_decode_all_quoted_bytes()
+```
+
+The binary stream data search and forced decoding options are not limited to font binaries and indeed can work with any binary data in the form of a `bytes` or `bytearray` primitive.
+
+```python
+from pdfalyzer.binary.binary_scanner import BinaryScanner
+
+binary_scanner = BinaryScanner(some_bytes: bytes)
+
+# Iterate over regions around bytes that match an arbitrary byte pattern (returned object includes surrounding bytes)
+for regex_match in binary_scanner.extract_regex_capture_bytes(re.compile(b'\xa0\xcc\xdd\xfa')):
+    process_(regex_match)
+
+# If you provide a capture group you will be returned an object that separates the capture group from the region
+for regex_match in binary_scanner.extract_regex_capture_bytes(re.compile(b'\xcc(.*)\xdd')):
+    process_(regex_match)
 ```
 
 The representation of the PDF objects (e.g. `pdf_object` in the example above) is handled by [PyPDF2](https://github.com/py-pdf/PyPDF2) so for more details on what's going on there check out its documentation.
@@ -224,16 +235,40 @@ Beyond that contributions are welcome, just make sure that before you open a pul
 
 If your pull request includes some `pytest` setup/unit testing you'll be my new favorite person.
 
-### Testing
+## Development Environment Setup
+1. `git clone https://github.com/michelcrypt4d4mus/pdfalyzer.git`
+1. `cd pdfalyzer`
+
+After that there's a forking path depending on whether or not you use [poetry](https://python-poetry.org) to manage your python lifestyle.
+
+Note that the minimum versions for each package were chosen because that's what worked on my machine and not because that version had some critical bug fix or feature so it's entirely possible that using earlier versions than are specified in [pyproject.toml](pyproject.toml) or [requirements.txt](requirements.txt) will work just fine. Feel free to experiment if there's some kind of version conflict for you.
+
+#### With Python Poetry
+These commands are the `poetry` equivalent of the traditional virtualenv installation followed by `source venv/bin/activate` but there's a lot of ways to run a python script in a virtualenv with `poetry` so you do you if you prefer another approach.
+
+```sh
+poetry install
+source $(poetry env info --path)/bin/activate
+```
+
+#### With A Manual `venv`
+```sh
+python -m venv .venv              # Create a virtualenv in .venv
+. .venv/bin/activate              # Activate the virtualenv
+pip install -r requirements.txt   # Install packages
+```
+
+Note that I'm not sure exactly how to get the `pdfalyze` command installed when developing outside of a `poetry` env, but creating a simple `run_pdfalyzer.py` file with these contents would do the same thing:
+```python
+from pdfalyzer import pdfalyzer
+pdfalyzer()
+```
+
+## Testing
 Run all tests by typing `pytest`. Test coverage is relatively spartan but should throw failures if you really mess something up. See [How To Invoke pytest](https://docs.pytest.org/en/7.1.x/how-to/usage.html) official docs for other options.
 
 
 # TODO
 * highlight decodes done at `chardet`s behest
 * Highlight decodes with a lot of Javascript keywords
-* seeems like a stray control char is leaking on latin1/iso-8859
 * deal with repetitive matches
-* minimum length?
-* one SVG per font
-* remove empty rows from binary stats
-* rename `PdfWalker` class to `Pdfalyzer`

@@ -1,17 +1,21 @@
-# Local copy of .env.example with cusom settings
-.env
+# Local copy of .pdfalyzer.example with cusom settings
+.pdfalyzer
 
 # Python
 /.venv/*
 /__pycache__/
 *__pycache__*
+*.pyc
 
 # Project subdirs
-/log/*
-/tools
-/tmp
-/output/export/
+dist/
+log/
+tools/
+tmp/
+output/export/
+scripts/one_timers/
 
 # Other
 .DS_Store
 LICENSE
+parse_it.sh

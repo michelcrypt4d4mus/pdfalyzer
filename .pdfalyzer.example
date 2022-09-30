@@ -1,10 +1,9 @@
-# If you place a filed called '.env' in pdfalyzer's project dir then environment variables specified
-# in that .env file will be added to the environment each time pdfalyzer is invoked. (See the `dotenv`
-# package for more details.) This file contains environment variables you can place in .env to configure
+# If you place a filed called '.pdfalyzer' in your home dir or the current dir environment variables specified
+# in that .pdfalyzer file will be added to the environment each time pdfalyzer is invoked. (See the `dotenv`
+# package for more details.) This file contains environment variables you can place in .pdfalyzer to configure
 # the application above and beyond providing command line options.  Useful if you want to permanently
 # configure options you tend to reuse (e.g. '--maximize-width') so you can stop remembering to type them.
-# Easiest way to do this is usually to just copy this file over to one called .env (cp .env.example .env)
-# and then customize it.
+# Easiest way to do this is probably to just copy this file to one in your home or working directory and customize.
 
 
 # Expand the width of the output to the fit the display window (same as the --maximize-width options)

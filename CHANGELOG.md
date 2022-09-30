@@ -1,5 +1,12 @@
 # NEXT RELEASE
 
+# 1.5.0
+Bunch of small changes to support releasing on pypi:
+* Invoke with shell command `pdfalyze` instead of local python file `./pdfalyzer.py` (options are the same)
+* Core class renames: `PdfWalker` -> `Pdfalyzer`, `DataStreamHandler` -> `BinaryScanner`
+* Permanent env var configuration moved from a file called `.env` to a file called `.pdfalyzer`
+* Logging to a file is off unless configured by env var
+* To use Didier Stevens's `pdf-parser.py` you must provide the `PDFALYZER_PDF_PARSER_PY_PATH` env var
 
 # 1.4.0
 * Hexadecimal representation of matched bytes in decode attempts table
@@ -23,14 +30,14 @@
 
 ### Logging
 * Invocations of the tool are now logged in a history file `log/pdfalyzer.invocation.log`
-* Logging to a file can be enabled by setting a `PDFALYZER_LOG_DIR` environment variable but see comments in `.env.example` about side effects.
+* Logging to a file can be enabled by setting a `PDFALYZER_LOG_DIR` environment variable but see comments in `.pdfalyzer.example` about side effects.
 
 ### Command line options
 * `--maximize-width` arg means you can set yr monitor to teeny tiny fonts and print out absolutely monstrous SVGs (yay!)
 * `--chardet-cutoff` option lets you control the the cutoff for adding untested encodings to the output based on what `chardet.detect()` thinks is the right encoding
 * `--suppress-chardet` command line option removes the chardet tables that are (mostly) duplicative of the decoded text tables
 * `--output-dir` and `--file-prefix` are now shared by all the export modes
-* You can use `dotenv` to permanently turn on or off or change the value of some command line options; see  [`.env.example`](.env.example) for mdetails on what is configurable.
+* You can use `dotenv` to permanently turn on or off or change the value of some command line options; see  [`.pdfalyzer.example`](.pdfalyzer.example) for mdetails on what is configurable.
 
 ### Visualizations
 * Default `TerminalTheme` colors kind of sucked when you went to export SVGs and HTML... like black was not black, or even close. Things are simpler now - black is black, blue is blue, etc. Makes exports look better.

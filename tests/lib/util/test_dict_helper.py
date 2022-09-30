@@ -1,4 +1,4 @@
-from lib.helpers.dict_helper import get_dict_key_by_value
+from pdfalyzer.helpers.dict_helper import get_dict_key_by_value
 
 
 def test_get_dict_key_by_value():

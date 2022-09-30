@@ -1,4 +1,4 @@
-from lib.detection.regex_match_metrics import RegexMatchMetrics
+from pdfalyzer.detection.regex_match_metrics import RegexMatchMetrics
 
 
 def test_matches_too_big_or_small_calculation():
