@@ -1,3 +1,4 @@
+private_repo_scripts/*
 # Local copy of .pdfalyzer.example with cusom settings
 .pdfalyzer
 
@@ -9,11 +10,10 @@
 
 # Project subdirs
 dist/
-log/
-tools/
-tmp/
-output/export/
-scripts/one_timers/
+/log/
+/tools/
+/tmp/
+/output/export/
 
 # Other
 .DS_Store
