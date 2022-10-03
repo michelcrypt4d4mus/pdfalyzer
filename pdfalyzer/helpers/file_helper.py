@@ -6,7 +6,12 @@ def timestamp_for_filename() -> str:
     return datetime.now().strftime("%Y-%m-%dT%H.%M.%S")
 
 
-def load_word_list(file):
+def load_word_list(file_path):
     """For very simple files (1 col CSVs, if you wll)"""
-    with open(file, 'r') as f:
+    with open(file_path, 'r') as f:
         return [line.rstrip().lstrip() for line in f.readlines()]
+
+
+def load_binary_data(file_path):
+    with open(file_path, 'rb') as f:
+        return f.read()

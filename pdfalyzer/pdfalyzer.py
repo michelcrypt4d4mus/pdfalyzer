@@ -3,6 +3,7 @@ Walks the PDF objects, wrapping each in a PdfTreeNode and putting them into a tr
 managed by the anytree library. Once the PDF is parsed this class manages things like
 searching the tree and printing out information.
 """
+import hashlib
 from collections import defaultdict
 from os.path import basename
 
@@ -13,12 +14,16 @@ from PyPDF2 import PdfReader
 from PyPDF2.errors import PdfReadError
 from PyPDF2.generic import IndirectObject, NameObject, NumberObject
 from rich.panel import Panel
+from rich.table import Column, Table
 from rich.text import Text
 
 from pdfalyzer.decorators.document_model_printer import print_with_header
 from pdfalyzer.decorators.pdf_tree_node import PdfTreeNode
+from pdfalyzer.detection.yara_scanner import YaraScanner
+from pdfalyzer.helpers.file_helper import load_binary_data
+from pdfalyzer.helpers.number_helper import size_string
 from pdfalyzer.helpers.pdf_object_helper import get_symlink_representation
-from pdfalyzer.helpers.rich_text_helper import console
+from pdfalyzer.helpers.rich_text_helper import console, theme_colors_with_prefix
 from pdfalyzer.helpers.string_helper import pp, print_section_header
 from pdfalyzer.font_info import FontInfo
 from pdfalyzer.util.adobe_strings import (COLOR_SPACE, D, DEST, EXT_G_STATE, FONT, K, KIDS, NON_TREE_REFERENCES, NUMS,
@@ -53,8 +58,14 @@ class Pdfalyzer:
     def __init__(self, pdf_path: str):
         self.pdf_path = pdf_path
         self.pdf_basename = basename(pdf_path)
+        self.pdf_bytes = load_binary_data(pdf_path)
+        self.md5 = hashlib.md5(self.pdf_bytes ).hexdigest().upper()
+        self.sha1 = hashlib.sha1(self.pdf_bytes ).hexdigest().upper()
+        self.sha256 = hashlib.sha256(self.pdf_bytes ).hexdigest().upper()
+
         pdf_file = open(pdf_path, 'rb')  # Filehandle must be left open for PyPDF2 to perform seeks
         self.pdf = PdfReader(pdf_file)
+        self.yara_scanner = YaraScanner.for_file(pdf_path)
 
         # Initialize tracking variables
         self.indeterminate_ids = set()  # See INDETERMINATE_REFERENCES comment
@@ -129,6 +140,14 @@ class Pdfalyzer:
         print_section_header(f'Document Info for {self.pdf_basename}')
         console.print(pp.pformat(self.pdf.getDocumentInfo()))
 
+        table = Table('File Size', Column(size_string(len(self.pdf_bytes))))
+        table.add_row('MD5', self.md5)
+        table.add_row('SHA1', self.sha1)
+        table.add_row('SHA256', self.sha256)
+        table.columns[1].style = 'orange3'
+        table.columns[1].header_style = 'bright_cyan'
+        console.print(table)
+
     def print_tree(self):
         print_section_header(f'Simple tree view of {self.pdf_basename}')
 
@@ -154,6 +173,16 @@ class Pdfalyzer:
 
         for font_info in [fi for fi in self.font_infos if font_idnum is None or font_idnum == fi.idnum]:
             font_info.print_summary()
+
+    def print_yara_results(self, font_idnum=None) -> None:
+        print_section_header(f'YARA Scan for {self.pdf_basename}')
+        theme_colors = [color[len('yara') + 1:] for color in theme_colors_with_prefix('yara')]
+        color_key = Text('Color Code: ') + Text(' ').join(theme_colors) + Text('\n')
+        console.print(color_key, justify='center')
+        self.yara_scanner.scan()
+
+        for font_info in [fi for fi in self.font_infos if font_idnum is None or font_idnum == fi.idnum]:
+            font_info.yara_scan()
 
     def print_other_relationships(self) -> None:
         """Print the inter-node, non-tree relationships for all nodes in the tree"""

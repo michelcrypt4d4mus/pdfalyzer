@@ -17,9 +17,9 @@ class EncodingAssessment:
     def __init__(self, assessment: dict) -> None:
         self.assessment = assessment
         self.encoding = assessment[ENCODING].lower()
-        self.encoding_text = Text(self.encoding, 'encoding_header')
+        self.encoding_text = Text(self.encoding, 'encoding.header')
         self.language = self._get_dict_empty_value_as_None(LANGUAGE)
-        self.language_text = None if self.language is None else Text(self.language, 'dark_green')
+        self.language_text = None if self.language is None else Text(self.language, 'encoding.language')
 
         # Shift confidence from 0-1.0 scale to 0-100.0 scale
         confidence = self._get_dict_empty_value_as_None(CONFIDENCE) or 0.0

@@ -7,12 +7,12 @@ from functools import partial, update_wrapper
 from os import environ, getcwd, path
 from typing import List
 
-#from rich_argparse import RichHelpFormatter
+from rich_argparse import RichHelpFormatter
 
 from pdfalyzer.config import (DEFAULT_MIN_DECODE_LENGTH, DEFAULT_MAX_DECODE_LENGTH,
      SURROUNDING_BYTES_LENGTH_DEFAULT, LOG_DIR_ENV_VAR, PdfalyzerConfig)
 from pdfalyzer.detection.constants.binary_regexes import QUOTE_REGEXES
-from pdfalyzer.detection.encoding_detector import (CONFIDENCE_SCORE_RANGE, EncodingDetector)
+from pdfalyzer.detection.encoding_detector import CONFIDENCE_SCORE_RANGE, EncodingDetector
 from pdfalyzer.helpers import rich_text_helper
 from pdfalyzer.helpers.file_helper import timestamp_for_filename
 from pdfalyzer.helpers.rich_text_helper import console, console_width_possibilities
@@ -78,6 +78,9 @@ select.add_argument('-f', '--font',
                     const=ALL_FONTS_OPTION,
                     metavar='ID',
                     type=int)
+
+select.add_argument('-y', '--yara', action='store_true',
+                    help="scan the PDF and all its decoded/decrypted binary streams with YARA rules")
 
 
 # Fine tuning
@@ -257,6 +260,7 @@ def output_sections(args, pdfalyzer) -> List[OutputSection]:
         OutputSection('rich', pdfalyzer.print_rich_table_tree),
         OutputSection('font', font_info),
         OutputSection('counts', pdfalyzer.print_summary),
+        OutputSection('yara', pdfalyzer.print_yara_results)
     ]
 
     output_sections = [section for section in possible_output_sections if vars(args)[section.argument]]

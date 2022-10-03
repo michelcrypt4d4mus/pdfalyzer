@@ -8,6 +8,7 @@ hooks)
 """
 from collections import namedtuple
 from numbers import Number
+from typing import List, Union
 
 from anytree import NodeMixin, SymlinkNode
 from PyPDF2.generic import DictionaryObject, EncodedStreamObject, IndirectObject, NumberObject, PdfObject
@@ -19,8 +20,9 @@ from rich.tree import Tree
 
 from pdfalyzer.detection.constants.character_encodings import NEWLINE_BYTE
 from pdfalyzer.helpers.bytes_helper import clean_byte_string
+from pdfalyzer.helpers.number_helper import size_string
 from pdfalyzer.helpers.pdf_object_helper import get_references, get_symlink_representation
-from pdfalyzer.helpers.rich_text_helper import (TYPE_STYLES, PDFALYZER_THEME, console, get_label_style,
+from pdfalyzer.helpers.rich_text_helper import (PDF_ARRAY, TYPE_STYLES, PDFALYZER_THEME, console, get_label_style,
      get_type_style, get_type_string_style)
 from pdfalyzer.helpers.string_helper import pypdf_class_name
 from pdfalyzer.util.adobe_strings import (DANGEROUS_PDF_KEYS, FIRST, FONT, LAST, NEXT, TYPE1_FONT, S,
@@ -173,7 +175,7 @@ class PdfTreeNode(NodeMixin):
         for r in self.other_relationships:
             console.print(f"  Referenced as {escape(str(r.reference_key))} by {escape(str(r.from_node))}")
 
-    def tree_address(self, max_length=None) -> str:
+    def tree_address(self, max_length: Union[int, None]  = None) -> str:
         """Creates a string like '/Catalog/Pages/Resources/Font' truncated to max_length (if given)"""
         if self.label == TRAILER:
             return '/'
@@ -186,7 +188,7 @@ class PdfTreeNode(NodeMixin):
 
         return '...' + address[-max_length:][3:]
 
-    def colored_address(self, max_length=None) -> Text:
+    def colored_address(self, max_length: Union[int, None] = None) -> Text:
         """Rich text version of tree_address()"""
         text = Text('@', style='bright_white')
         text.append(self.tree_address(max_length), style='address')
@@ -242,10 +244,7 @@ class PdfTreeNode(NodeMixin):
             else:
                 stream_preview_string = stream_preview
 
-            table.add_row(
-                Text('StreamLength', style='grey'),
-                Text(f"{len(stream_data)} bytes", style=get_type_style(Number)),
-                Text(f''))
+            table.add_row(Text('StreamLength', style='grey'), size_string(len(stream_data)), '')
 
             if stream_preview_length < STREAM_PREVIEW_LENGTH_IN_TABLE:
                 preview_row_label = f"StreamData\n  ({stream_preview_length} bytes)"
@@ -311,7 +310,7 @@ def resolve_references(reference_key: str, obj: PdfObject):
         return obj
 
 
-def to_table_row(reference_key, obj, is_single_row_table=False) -> [Text]:
+def to_table_row(reference_key: str, obj: PdfObject, is_single_row_table=False) -> List[Union[Text, str]]:
     """Turns PDF object properties into a formatted 3-tuple for use in Rich tables representing PdfObjects"""
     # 3rd col (AKA type(value)) is redundant if it's something like a TextString or Number node so we set it to ''
     return [
@@ -329,11 +328,11 @@ def get_node_type_style(obj):
     elif 'EncodedStream' in klass_string:
         style = PDFALYZER_THEME.styles['bytes']
     elif 'Stream' in klass_string:
-        style = PDFALYZER_THEME.styles['bytes_title']
+        style = PDFALYZER_THEME.styles['bytes.title']
     elif 'Text' in klass_string:
-        style = PDFALYZER_THEME.styles['light_grey']
+        style = PDFALYZER_THEME.styles['grey.light']
     elif 'Array' in klass_string:
-        style = 'color(120)'
+        style = PDF_ARRAY
     else:
         style = 'bright_yellow'
 

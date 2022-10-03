@@ -1,4 +1,10 @@
 # NEXT RELEASE
+
+
+# 1.6.0
+* Integrate YARA scanning - all the rules I could dig up relating to PDFs
+* Add MD5, SHA1, SHA256 to document info section
+* `print_pdfalyzer_theme_colors` script shows the theme
 * Make `README` more PyPi friendly
 
 # 1.5.0

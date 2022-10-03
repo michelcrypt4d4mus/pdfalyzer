@@ -20,10 +20,14 @@ def get_bytes_before_and_after_match(_bytes: bytes, match: re.Match, num_before=
     num_before and num_after will both default to the env var/CLI options having to do with surrounding
     bytes. If only num_before is provided then num_after will use it as a default.
     """
+    return get_bytes_surrounding_range(_bytes, match.start(), match.end(), num_before, num_after)
+
+
+def get_bytes_surrounding_range(_bytes: bytes, start_idx: int, end_idx: int, num_before=None, num_after=None) -> bytes:
     num_after = num_after or num_before or PdfalyzerConfig.NUM_SURROUNDING_BYTES
     num_before = num_before or PdfalyzerConfig.NUM_SURROUNDING_BYTES
-    start_idx = max(match.start() - num_before, 0)
-    end_idx = min(match.end() + num_after, len(_bytes))
+    start_idx = max(start_idx - num_before, 0)
+    end_idx = min(end_idx + num_after, len(_bytes))
     return _bytes[start_idx:end_idx]
 
 

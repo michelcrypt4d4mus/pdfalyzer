@@ -5,15 +5,16 @@ A PDF analysis tool geared towards visualizing the inner tree-like data structur
 
 #### Quick Start
 ```sh
-pip install pdfalyzer
+pipx install pdfalyzer
 pdfalyze the_heidiggerian_themes_expressed_in_illmatic.pdf
 ```
-See [Installation](#installation) and [Usage](#usage) for more details.
+`pip install pdfalyzer` also works. See [Installation](#installation) and [Usage](#usage) for more details.
 
 ### What It Do
 1. **Generate summary format as well as in depth visualizations of a PDF's tree structure**[^1] with helpful color themes that conceptually link objects of similar type. See [the examples below](#example-output) to get an idea.
 1. **Display text representations of the PDF's embedded binary data**. Adobe calls these "streams" and they hold things like images, fonts, etc.
-1. **Scan for malicious content in the PDF**, including in-depth scans of the embedded font binaries where other tools don't look. This is accomplished by iterating over all the matches for various predefined binary regexes (e.g. the binary representation of the string `/JavaScript`) but is extensible to digging through the PDF for any kind of binary data pattern.
+1. **Scan for malicious content in the PDF** both with PDF related [YARA](https://github.com/VirusTotal/yara-python) rules collected from around the internet as well as custom in-depth scans of the embedded font binaries where other tools don't look. These scans will be done both to the overall finay binary as well as to each of the PDF's embedded binary streams _post decode/decrypt_. Most PDFs have many such streams.
+1. **Show the results of attempting to decode suspicious byte patterns with many differente character encodings.** In particular quoted bytes - those between things like front slashes (hint: think regexes) in addition to regular quote characters. Several encodings are configured as defaults to try but [the `chardet` library](https://github.com/chardet/chardet) is also leveraged to attempt to detect if the binary could be in an unconfigured encoding.
 1. **Be used as a library for your own PDF related code.** All[^2] the inner PDF objects are guaranteed to be available in a searchable tree data structure.
 1. **Ease the extraction of all the binary data in a PDF** (fonts, images, etc) to separate files for further analysis. (The heavy lifting is actually done by [Didier Stevens's tools](#installing-didier-stevenss-pdf-analysis-tools) - the pdfalyzer automates what would otherwise be a lot of typing into a single command.)
 
@@ -87,9 +88,13 @@ Some simple counts of some properties of the internal PDF objects. Not the most 
 
 
 # Installation
+
 ```
-pip install pdfalyzer
+pipx install pdfalyzer
 ```
+
+[pipx](https://pypa.github.io/pipx/) is a tool that basically runs `pip install` for a python package but in such a way that the installed package's requirements are isolated from your system's python packages. If you  don't feel like installing `pipx` then `pip install` should work fine as long as there are no conflicts between The Pdfalyzer's required packages and those on your system already. (If you aren't using other python based command line tools then your odds of a conflict are basically 0%.)
+
 For info on how to setup a dev environment, see [Contributing](#contributing) section at the end of this file.
 
 ### Troubleshooting The Installation

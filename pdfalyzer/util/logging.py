@@ -44,9 +44,12 @@ def configure_logger(log_label: str) -> logging.Logger:
         log_file_path = path.join(PdfalyzerConfig.LOG_DIR, f"{log_name}.log")
         log_formatter = logging.Formatter('%(asctime)s %(levelname)s %(message)s')
         log_file_handler = logging.FileHandler(log_file_path)
-        #log_file_handler.setLevel(PdfalyzerConfig.LOG_LEVEL)
         log_file_handler.setFormatter(log_formatter)
         logger.addHandler(log_file_handler)
+        # rich_stream_handler is for printing warnings
+        rich_stream_handler = RichHandler(rich_tracebacks=True)
+        rich_stream_handler.setLevel('WARN')
+        logger.addHandler(rich_stream_handler)
         logger.info('File logging triggered by setting of PDFALYZER_LOG_DIR')
     else:
         logger.addHandler(RichHandler(rich_tracebacks=True))

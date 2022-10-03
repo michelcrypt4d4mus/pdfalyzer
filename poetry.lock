@@ -94,6 +94,25 @@ dev = ["pre-commit", "tox"]
 testing = ["pytest", "pytest-benchmark"]
 
 [[package]]
+name = "ply"
+version = "3.11"
+description = "Python Lex & Yacc"
+category = "main"
+optional = false
+python-versions = "*"
+
+[[package]]
+name = "plyara"
+version = "2.1.1"
+description = "Parse YARA rules."
+category = "main"
+optional = false
+python-versions = "*"
+
+[package.dependencies]
+ply = ">=3.11"
+
+[[package]]
 name = "py"
 version = "1.11.0"
 description = "library with cross-python path, ini-parsing, io, code, log facilities"
@@ -185,7 +204,7 @@ jupyter = ["ipywidgets (>=7.5.1,<8.0.0)"]
 
 [[package]]
 name = "rich-argparse"
-version = "0.2.1"
+version = "0.3.0"
 description = "A rich help formatter for argparse"
 category = "main"
 optional = false
@@ -218,10 +237,18 @@ category = "main"
 optional = false
 python-versions = ">=3.7"
 
+[[package]]
+name = "yara-python"
+version = "4.2.3"
+description = "Python interface for YARA"
+category = "main"
+optional = false
+python-versions = "*"
+
 [metadata]
 lock-version = "1.1"
 python-versions = "^3.9"
-content-hash = "7932002faff72f663e4850f669c66fe3dabb65b8ece8fc01216ddbdd53de7ffe"
+content-hash = "950c54ff684623bfd19be22736dbcd762c28db160333eb078a9472baafcd60e1"
 
 [metadata.files]
 anytree = [
@@ -260,6 +287,14 @@ pluggy = [
     {file = "pluggy-1.0.0-py2.py3-none-any.whl", hash = "sha256:74134bbf457f031a36d68416e1509f34bd5ccc019f0bcc952c7b909d06b37bd3"},
     {file = "pluggy-1.0.0.tar.gz", hash = "sha256:4224373bacce55f955a878bf9cfa763c1e360858e330072059e10bad68531159"},
 ]
+ply = [
+    {file = "ply-3.11-py2.py3-none-any.whl", hash = "sha256:096f9b8350b65ebd2fd1346b12452efe5b9607f7482813ffca50c22722a807ce"},
+    {file = "ply-3.11.tar.gz", hash = "sha256:00c7c1aaa88358b9c765b6d3000c6eec0ba42abca5351b095321aef446081da3"},
+]
+plyara = [
+    {file = "plyara-2.1.1-py3-none-any.whl", hash = "sha256:d6d65380e39c7afb83dd55f885063235622cee168eb45e79d87f002641a95b7c"},
+    {file = "plyara-2.1.1.tar.gz", hash = "sha256:9f5fcb4fc6b944a92ec2979dcc54d9cf3a02b166c99bfef9e72d534c7ab91e6d"},
+]
 py = [
     {file = "py-1.11.0-py2.py3-none-any.whl", hash = "sha256:607c53218732647dff4acdfcd50cb62615cedf612e72d1724fb1a0cc6405b378"},
     {file = "py-1.11.0.tar.gz", hash = "sha256:51c75c4126074b472f746a24399ad32f6053d1b34b68d2fa41e558e6f4a98719"},
@@ -289,8 +324,8 @@ rich = [
     {file = "rich-12.5.1.tar.gz", hash = "sha256:63a5c5ce3673d3d5fbbf23cd87e11ab84b6b451436f1b7f19ec54b6bc36ed7ca"},
 ]
 rich-argparse = [
-    {file = "rich_argparse-0.2.1-py3-none-any.whl", hash = "sha256:ab34f53f8777aba2426d3a7c5af415f16cf56685af38c8c35e5f17c814faa38e"},
-    {file = "rich_argparse-0.2.1.tar.gz", hash = "sha256:512fbf907e06f778d9ac045140798838f091970890e10b60825802180617ac10"},
+    {file = "rich_argparse-0.3.0-py3-none-any.whl", hash = "sha256:082b90e0847af51a9d203b2fa29e30b2ae1f093c83a78d8ab7bd743be33db934"},
+    {file = "rich_argparse-0.3.0.tar.gz", hash = "sha256:ec8504f750e0f621d453ab719f0dffce3b1239c04e3ed93472734393c6b02b01"},
 ]
 six = [
     {file = "six-1.16.0-py2.py3-none-any.whl", hash = "sha256:8abb2f1d86890a2dfb989f9a77cfcfd3e47c2a354b01111771326f8aa26e0254"},
@@ -303,4 +338,19 @@ tomli = [
 typing-extensions = [
     {file = "typing_extensions-4.3.0-py3-none-any.whl", hash = "sha256:25642c956049920a5aa49edcdd6ab1e06d7e5d467fc00e0506c44ac86fbfca02"},
     {file = "typing_extensions-4.3.0.tar.gz", hash = "sha256:e6d2677a32f47fc7eb2795db1dd15c1f34eff616bcaf2cfb5e997f854fa1c4a6"},
+]
+yara-python = [
+    {file = "yara-python-4.2.3.tar.gz", hash = "sha256:31f6f6f2fdca4c5ddfeed7cc6d29afad6af7dc259dde284df2d7ea5ae15ee69a"},
+    {file = "yara_python-4.2.3-cp310-cp310-win32.whl", hash = "sha256:d7543ff7eb7e21a815d7bc1bf2fcca24cab3548184d3257c58916628f3c89b37"},
+    {file = "yara_python-4.2.3-cp310-cp310-win_amd64.whl", hash = "sha256:26ec1042017b3c4e12d2999ed6a33d7807013ae16c487048464b98dabfe3a7b0"},
+    {file = "yara_python-4.2.3-cp35-cp35m-win32.whl", hash = "sha256:47a7de4d7dae04e5e146b79f26b7f0b7e9430cb92459b85db7f4341843974aac"},
+    {file = "yara_python-4.2.3-cp35-cp35m-win_amd64.whl", hash = "sha256:113f430c5189519e13fc07d8493e3f29a1464a9be06eb7ba1b76451da620a391"},
+    {file = "yara_python-4.2.3-cp36-cp36m-win32.whl", hash = "sha256:98040aa88d242632c75be87ac3a9958eb407ca30e85b513b9e22807af82ab1c8"},
+    {file = "yara_python-4.2.3-cp36-cp36m-win_amd64.whl", hash = "sha256:aaad4cd4495b7605cb4e039473710ee87a151082171c4bb720086adbe548fb36"},
+    {file = "yara_python-4.2.3-cp37-cp37m-win32.whl", hash = "sha256:bef2f079acd459b852c0634f72cd41058766110d8900573b2d55be12d35d55db"},
+    {file = "yara_python-4.2.3-cp37-cp37m-win_amd64.whl", hash = "sha256:feac02291a584b846615aa9265f01fa458ec7e7087317ffa679bbb1a2baec85b"},
+    {file = "yara_python-4.2.3-cp38-cp38-win32.whl", hash = "sha256:90db22a471b512d1adb49cec97a1356a1cf7791beeb0acab74c3187f6e8679a6"},
+    {file = "yara_python-4.2.3-cp38-cp38-win_amd64.whl", hash = "sha256:9f17e0572c49906d0b2a8f6ac20fcb46f17820a7408a5511744a844df4b2ec61"},
+    {file = "yara_python-4.2.3-cp39-cp39-win32.whl", hash = "sha256:d6c2de71b368da053599d734c031389815a70df4b667d6dc386d1335689717d6"},
+    {file = "yara_python-4.2.3-cp39-cp39-win_amd64.whl", hash = "sha256:87125ede7fbc18ae65aab550f1a36f4ebf73bb828c5d7a3dd2bb99176f0faa15"},
 ]

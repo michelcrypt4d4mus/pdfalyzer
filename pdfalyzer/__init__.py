@@ -2,12 +2,12 @@ import code
 import sys
 from os import environ, getcwd, path
 
+from dotenv import load_dotenv
+
 # load_dotenv() should be called as soon as possible (before parsing local classes) but not for pytest
 if not environ.get('INVOKED_BY_PYTEST', False):
     for dotenv_file in [path.join(dir, '.pdfalyzer') for dir in [getcwd(), path.expanduser('~')]]:
         if path.exists(dotenv_file):
-            from dotenv import load_dotenv
-            print(f"Loading config: {dotenv_file}")
             load_dotenv(dotenv_path=dotenv_file)
             break
 
@@ -30,7 +30,6 @@ def pdfalyze():
         log_and_print(f"Binary stream extraction complete, files written to '{args.output_dir}'.\nExiting.\n")
         sys.exit()
 
-
     def get_output_basepath(export_method):
         """Build the path to an output file - everything but the extension"""
         export_type = export_method.__name__.removeprefix('print_')
@@ -49,7 +48,6 @@ def pdfalyze():
 
         output_basename += args.file_suffix
         return path.join(args.output_dir, output_basename + f"___pdfalyzed_{args.invoked_at_str}")
-
 
     # Analysis exports wrap themselves around the methods that actually generate the analyses
     for (arg, method) in output_sections(args, walker):

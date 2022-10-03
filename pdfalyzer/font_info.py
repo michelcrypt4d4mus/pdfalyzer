@@ -2,26 +2,30 @@
 Unify font information spread across a bunch of PdfObjects (Font, FontDescriptor,
 and FontFile) into a single class.
 """
+from typing import Union
+
 from PyPDF2._cmap import build_char_map, prepare_cm
 from PyPDF2.generic import IndirectObject, PdfObject
+from rich.columns import Columns
 from rich.panel import Panel
+from rich.padding import Padding
 from rich.table import Table
 from rich.text import Text
 
 from pdfalyzer.binary.binary_scanner import BinaryScanner
 from pdfalyzer.config import PdfalyzerConfig
 from pdfalyzer.helpers.bytes_helper import print_bytes
-from pdfalyzer.helpers.rich_text_helper import console, get_type_style, subheading_width
+from pdfalyzer.helpers.rich_text_helper import console, get_label_style, get_type_style, subheading_width
 from pdfalyzer.helpers.string_helper import pp
 from pdfalyzer.util.adobe_strings import (FONT, FONT_DESCRIPTOR, FONT_FILE, FONT_LENGTHS, RESOURCES, SUBTYPE,
      TO_UNICODE, TYPE, W, WIDTHS)
 from pdfalyzer.util.logging import log
 
 
-CHARMAP_WIDTH = 8
-CHARMAP_DISPLAY_COLS = 5
-CHARMAP_COLUMN_WIDTH = int(CHARMAP_WIDTH * 2.5)
+CHARMAP_TITLE_PADDING = (1, 0, 0, 2)
+CHARMAP_PADDING = (0, 2, 0, 10)
 CHARMAP_TITLE = 'Character Mapping (As Extracted By PyPDF2)'
+FONT_SECTION_PREVIEW_LEN = 30
 
 ATTRIBUTES_TO_SHOW_IN_SUMMARY_TABLE = [
     'sub_type',
@@ -113,7 +117,8 @@ class FontInfo:
             self.lengths = [font_file[k] for k in FONT_LENGTHS if k in font_file]
             self.stream_data = font_file.get_data()
             self.advertised_length = sum(self.lengths)
-            self.binary_scanner = BinaryScanner(self.stream_data, self)
+            scanner_label = Text(self.display_title, get_label_style(FONT_FILE))
+            self.binary_scanner = BinaryScanner(self.stream_data, self, scanner_label)
             self.prepared_char_map = prepare_cm(font) if TO_UNICODE in font else None
             # TODO: shouldn't we be passing ALL the widths?
             self._char_map = build_char_map(label, self.widths[0], obj_with_resources)
@@ -131,6 +136,12 @@ class FontInfo:
             self.prepared_char_map = None
             self._char_map = None
             self.character_mapping = None
+
+    def yara_scan(self) -> None:
+        if self.binary_scanner is not None:
+            self.binary_scanner.yara_scanner.scan()
+        else:
+            log.debug(f"No binary to scan for {self.display_title}")
 
     def width_stats(self):
         if self.widths is None:
@@ -167,30 +178,19 @@ class FontInfo:
             log.info(f"No character map found in {self}")
             return
 
-        console.print(Panel(f"{CHARMAP_TITLE} for {self.display_title}", style='charmap_title', expand=False))
-        charmap_keys = list(self.character_mapping.keys())
-        mappings_per_col, remainder = divmod(len(charmap_keys), CHARMAP_DISPLAY_COLS)
-        mappings_per_col = mappings_per_col if remainder == 0 else mappings_per_col + 1
+        header_panel = Panel(f"{CHARMAP_TITLE} for {self.display_title}", style='charmap.title', expand=False)
+        console.print(Padding(header_panel, CHARMAP_TITLE_PADDING))
+        charmap_entries = [_format_charmap_entry(k, v) for k, v in self.character_mapping.items()]
 
-        cols_of_keys = [
-            charmap_keys[(i * mappings_per_col):((i + 1) * mappings_per_col)]
-            for i in range(CHARMAP_DISPLAY_COLS)
-        ]
+        charmap_columns = Columns(
+            charmap_entries,
+            column_first=True,
+            padding=CHARMAP_PADDING,
+            equal=True,
+            align='right')
 
-        rows_of_keys = [
-            [col[i] for col in cols_of_keys if i < len(col)]
-            for i in range(mappings_per_col)
-        ]
-
-        rows_of_key_value = [
-            [type(self)._format_charmap_entry(k, self.character_mapping[k]) for k in row_of_keys]
-            for row_of_keys in rows_of_keys
-        ]
-
-        for row in rows_of_key_value:
-            row = row + [''] if len(row) < CHARMAP_DISPLAY_COLS else row  # Pad the shorthanded column(s)
-            format_str = ' '.join([f'{{{i}: >{{width}}}}' for i in range(len(row))])
-            console.print(format_str.format(*row, width=CHARMAP_COLUMN_WIDTH))
+        console.print(Padding(charmap_columns, CHARMAP_TITLE_PADDING), width=subheading_width())
+        console.line()
 
     def print_prepared_charmap(self):
         """Prints the prepared_charmap returned by PyPDF2"""
@@ -199,28 +199,31 @@ class FontInfo:
             return
 
         section_title = f"Adobe PostScript charmap prepared by PyPDF2 for {self.display_title}"
-        console.print(Panel(section_title, style='prepared_charmap_title', expand=False))
-        print_bytes(self.prepared_char_map, style='prepared_charmap')
+        console.print(Padding(Panel(section_title, style='charmap.prepared_title', expand=False), CHARMAP_TITLE_PADDING))
+        print_bytes(self.prepared_char_map, style='charmap.prepared')
         console.print('')
 
     def preview_bytes_at_advertised_lengths(self):
         """Show the bytes at the boundaries provided by /Length1, /Length2, and /Length3, if they exist"""
-        byte_addresses = [0]
+        lengths = self.lengths or []
 
-        for i in f.lengths[0:2]:
-            print(f"{f.descriptor} at length {i}:")
-            print(f"\n  Stream before: {f.stream_data[i-200:i+1]}")
-            print(f"\n  Stream after: {f.stream_data[i:i+200]}")
+        if self.lengths is None or len(lengths) <= 1:
+            console.print("No length demarcations to preview.", style='grey.dark')
 
-        print(f"\nfinal bytes back from {f.lengths[2]} + 10: {f.stream_data[-10 - -f.lengths[2]:]}")
+        for i, demarcation in enumerate(lengths[1:]):
+            console.print(f"{self.font_file} at /Length{i} ({demarcation}):")
+            print(f"\n  Stream before: {self.stream_data[demarcation - FONT_SECTION_PREVIEW_LEN:demarcation + 1]}")
+            print(f"\n  Stream after: {self.stream_data[demarcation:demarcation + FONT_SECTION_PREVIEW_LEN]}")
+
+        print(f"\nfinal bytes back from {self.stream_data.lengths[2]} + 10: {self.stream_data[-10 - -f.lengths[2]:]}")
 
     def print_header_panel(self):
-        console.print(Panel(self.display_title, width=subheading_width(), padding=(1, 1)), style='font_title')
+        console.print(Panel(self.display_title, width=subheading_width(), padding=(1, 1)), style='font.title')
 
     def _summary_table(self):
         """Build a Rich Table with important info about the font"""
         table = Table('', '', show_header=False)
-        table.columns[0].style = 'font_property'
+        table.columns[0].style = 'font.property'
         table.columns[0].justify = 'right'
 
         def add_table_row(name, value):
@@ -262,9 +265,19 @@ class FontInfo:
     def __str__(self):
         return self.display_title
 
-    @staticmethod
-    def _format_charmap_entry(k, v):
-        return '{0: >{width}} => {1: <{width}}'.format(
-            pp.pformat(k),
-            pp.pformat(v),
-            width=CHARMAP_WIDTH)
+
+def _format_charmap_entry(k, v):
+    key = pp.pformat(k)
+
+    for quote_char in ['"', "'"]:
+        if len(key) > 1 and key.startswith(quote_char) and key.endswith(quote_char):
+            key = key[1:-1]
+
+    return quoted_text(key, 'charmap.byte') + Text(' => ') + quoted_text(str(v), 'charmap.char')
+
+
+def quoted_text(_string, style: Union[str, None]=None, quote_char_style='white', quote_char="'") -> Text:
+    quote_char = Text(quote_char, style=quote_char_style)
+    txt = quote_char + Text(_string, style=style or '') + quote_char
+    txt.justify = 'center'
+    return txt

@@ -1,4 +1,12 @@
-JAVASCRIPT_RESERVED_KEYWORDS = [
+HIGH_VALUE_KEYWORDS = [
+    'this', # *
+    'require', # *
+    'const', # *
+    'eval',  # *
+]
+
+
+JAVASCRIPT_RESERVED_KEYWORDS = HIGH_VALUE_KEYWORDS + [
     'abstract',
     'arguments',
     'await',
@@ -9,7 +17,6 @@ JAVASCRIPT_RESERVED_KEYWORDS = [
     'catch',
     'char',
     'class',
-    'const',
     'continue',
     'debugger',
     'default',
@@ -18,7 +25,6 @@ JAVASCRIPT_RESERVED_KEYWORDS = [
     'double',
     'else',
     'enum',
-    'eval',
     'export',
     'extends',
     'false',
@@ -30,7 +36,7 @@ JAVASCRIPT_RESERVED_KEYWORDS = [
     'goto',
     'if',
     'implements',
-    'import',
+    'import', # *
     'in',
     'instanceof',
     'int',
@@ -50,7 +56,6 @@ JAVASCRIPT_RESERVED_KEYWORDS = [
     'super',
     'switch',
     'synchronized',
-    'this',
     'throw',
     'throws',
     'transient',

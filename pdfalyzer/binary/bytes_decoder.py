@@ -6,7 +6,7 @@ in the results.
 
 from collections import defaultdict
 from operator import attrgetter
-from typing import List
+from typing import List, Optional
 
 from rich.panel import Panel
 from rich.table import Table
@@ -35,11 +35,11 @@ SCORE_SCALER = 100.0
 
 
 class BytesDecoder:
-    def __init__(self, bytes_match: BytesMatch, label=None) -> None:
+    def __init__(self, bytes_match: BytesMatch, label: Optional[str] = None) -> None:
         """Instantiated with _bytes as the whole stream; :bytes_seq tells it how to pull the bytes it will decode"""
         self.bytes_match = bytes_match
         self.bytes = bytes_match.surrounding_bytes
-        self.label = label or clean_byte_string(bytes_match.regex.pattern)
+        self.label = label or bytes_match.label
 
         # Empty table/metrics/etc
         self.table = empty_decoding_attempts_table(bytes_match)
@@ -51,6 +51,13 @@ class BytesDecoder:
 
         # Note we send both the match and surrounding bytes used when detecting the encoding
         self.encoding_detector = EncodingDetector(self.bytes)
+
+    def print_decode_attempts(self) -> None:
+        if not PdfalyzerConfig.SUPPRESS_CHARDET_OUTPUT:
+            console.print(self.encoding_detector)
+
+        self._print_decode_attempt_subheading()
+        console.print(self._generate_decodings_table())
 
     def _generate_decodings_table(self) -> Table:
         """First rows are the raw / hex views of the bytes"""
@@ -75,13 +82,6 @@ class BytesDecoder:
 
         return self.table
 
-    def print_decode_attempts(self) -> None:
-        if not PdfalyzerConfig.SUPPRESS_CHARDET_OUTPUT:
-            console.print(self.encoding_detector)
-
-        self._print_decode_attempt_subheading()
-        console.print(self._generate_decodings_table())
-
     def _forced_displays(self) -> List[EncodingAssessment]:
         """Returns assessments over the display threshold that are not yet decoded"""
         return self._undecoded_assessments(self.encoding_detector.force_display_assessments)
@@ -96,8 +96,8 @@ class BytesDecoder:
 
     def _print_decode_attempt_subheading(self) -> None:
         """Generate a rich.Panel for decode attempts"""
-        headline = Text(f"Found {self.label.lower()} ", style='decode_subheading') + self.bytes_match.__rich__()
-        panel = Panel(headline, style='decode_subheading', expand=False)
+        headline = Text(f"Found {self.label.lower()} ", style='decode.subheading') + self.bytes_match.__rich__()
+        panel = Panel(headline, style='decode.subheading', expand=False)
         console.print(panel, justify=CENTER)
 
     def _track_decode_stats(self):

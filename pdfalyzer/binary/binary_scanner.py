@@ -18,9 +18,10 @@ from pdfalyzer.detection.constants.binary_regexes import QUOTE_REGEXES
 from pdfalyzer.detection.constants.character_encodings import BOMS
 from pdfalyzer.detection.constants.binary_regexes import DANGEROUS_INSTRUCTIONS
 from pdfalyzer.detection.regex_match_metrics import RegexMatchMetrics
-from pdfalyzer.helpers.bytes_helper import clean_byte_string, get_bytes_before_and_after_match, print_bytes
+from pdfalyzer.detection.yara_scanner import YaraScanner
+from pdfalyzer.helpers.bytes_helper import clean_byte_string, print_bytes
 from pdfalyzer.helpers.rich_text_helper import (CENTER, DANGER_HEADER, NOT_FOUND_MSG, console, console_width,
-     generate_subtable, na_txt, pad_header, prefix_with_plain_text_obj, subheading_width)
+     generate_subtable, get_label_style, na_txt, pad_header, prefix_with_plain_text_obj, subheading_width)
 from pdfalyzer.helpers.string_helper import generate_hyphen_line, print_section_header
 from pdfalyzer.util.adobe_strings import CURRENTFILE_EEXEC
 from pdfalyzer.util.logging import log
@@ -31,12 +32,19 @@ CHAR_ENCODING_1ST_COLOR_NUMBER = 203
 
 
 class BinaryScanner:
-    def __init__(self, _bytes: bytes, owner: Any = None):
+    def __init__(self, _bytes: bytes, owner: Any = None, label: Any = None):
+        """owner is an optional link back to the object containing this binary"""
         self.bytes = _bytes
+        self.label = label
         self.owner = owner
+
+        if label is None and owner is not None:
+             self.label = Text(owner.label, get_label_style(owner.label))
+
         self.stream_length = len(_bytes)
         self.regex_extraction_stats = defaultdict(lambda: RegexMatchMetrics())
         self.suppression_notice_queue = []
+        self.yara_scanner = YaraScanner(_bytes, label)
 
     def check_for_dangerous_instructions(self) -> None:
         """Scan for all the strings in DANGEROUS_INSTRUCTIONS list and decode bytes around them"""
@@ -59,8 +67,7 @@ class BinaryScanner:
     def extract_regex_capture_bytes(self, regex: Pattern[bytes]) -> Iterator[BytesMatch]:
         """Finds all matches of regex_with_one_capture in self.bytes and calls yield() with BytesMatch tuples"""
         for i, match in enumerate(regex.finditer(self.bytes, self._eexec_idx())):
-            surrounding_bytes = get_bytes_before_and_after_match(self.bytes, match)
-            yield(BytesMatch(match, surrounding_bytes, i))
+            yield(BytesMatch.from_regex_match(self.bytes, match, i + 1))
 
 
     # -------------------------------------------------------------------------------
@@ -92,7 +99,7 @@ class BinaryScanner:
             title = f"First and last {num_bytes} bytes of {self.stream_length} byte stream"
 
         title += title_suffix if title_suffix is not None else ''
-        console.print(Panel(title, style='bytes_title', expand=False))
+        console.print(Panel(title, style='bytes.title', expand=False))
         console.print(generate_hyphen_line(title='BEGIN BYTES'), style='dim')
 
         if snipped_byte_count < 0:
@@ -107,13 +114,13 @@ class BinaryScanner:
 
     def print_decoding_stats_table(self) -> None:
         """Diplay aggregate results on the decoding attempts we made on subsets of self.bytes"""
-        stats_table = new_decoding_stats_table(f"{self.owner or ''}")
+        stats_table = new_decoding_stats_table(self.label.plain if self.label else '')
         regexes_not_found_in_stream = []
 
-        for regex, stats in self.regex_extraction_stats.items():
+        for matcher, stats in self.regex_extraction_stats.items():
             # Set aside the regexes we didn't find so that the ones we did find are at the top of the table
             if stats.match_count == 0:
-                regexes_not_found_in_stream.append([str(regex.pattern), NOT_FOUND_MSG, na_txt()])
+                regexes_not_found_in_stream.append([str(matcher), NOT_FOUND_MSG, na_txt()])
                 continue
 
             regex_subtable = generate_subtable(cols=['Metric', 'Value'])
@@ -124,14 +131,13 @@ class BinaryScanner:
                     regex_subtable.add_row(metric, str(measure))
 
             for i, (encoding, count) in enumerate(stats.was_match_decodable.items()):
-                style = f"color({CHAR_ENCODING_1ST_COLOR_NUMBER + 2 * i})"
                 decodes_subtable.add_row(
-                    Text(encoding, style=style),
+                    Text(encoding, style=f"color({CHAR_ENCODING_1ST_COLOR_NUMBER + 2 * i})"),
                     str(count),
-                    str(self.regex_extraction_stats[regex].was_match_force_decoded[encoding]),
-                    str(self.regex_extraction_stats[regex].was_match_undecodable[encoding]))
+                    str(self.regex_extraction_stats[matcher].was_match_force_decoded[encoding]),
+                    str(self.regex_extraction_stats[matcher].was_match_undecodable[encoding]))
 
-            stats_table.add_row(str(regex.pattern), regex_subtable, decodes_subtable)
+            stats_table.add_row(str(matcher), regex_subtable, decodes_subtable)
 
         for row in regexes_not_found_in_stream:
             row[0] = Text(row[0], style='color(235)')
@@ -148,11 +154,11 @@ class BinaryScanner:
         """Decide whether to attempt to decode the matched bytes, track stats. force param ignores min/max length"""
         for bytes_match in self.extract_regex_capture_bytes(regex):
             self.regex_extraction_stats[regex].match_count += 1
-            self.regex_extraction_stats[regex].bytes_matched += bytes_match.capture_len
+            self.regex_extraction_stats[regex].bytes_matched += bytes_match.match_length
             self.regex_extraction_stats[regex].bytes_match_objs.append(bytes_match)
 
             # Send suppressed decodes to a queue and track the reason for the suppression in the stats
-            if not (force or PdfalyzerConfig.MIN_DECODE_LENGTH < bytes_match.capture_len < PdfalyzerConfig.MAX_DECODE_LENGTH):
+            if not (force or PdfalyzerConfig.MIN_DECODE_LENGTH < bytes_match.match_length < PdfalyzerConfig.MAX_DECODE_LENGTH):
                 self._queue_suppression_notice(bytes_match, label)
                 continue
 
@@ -170,26 +176,26 @@ class BinaryScanner:
         console.line()
 
         # Track stats on whether the bytes were decodable or not w/a given encoding
-        self.regex_extraction_stats[bytes_match.regex].matches_decoded += 1
+        self.regex_extraction_stats[bytes_match.label].matches_decoded += 1
 
         for encoding, count in decoder.was_match_decodable.items():
-            decode_stats = self.regex_extraction_stats[bytes_match.regex].was_match_decodable
+            decode_stats = self.regex_extraction_stats[bytes_match.label].was_match_decodable
             decode_stats[encoding] = decode_stats.get(encoding, 0) + count
 
         for encoding, count in decoder.was_match_undecodable.items():
-            failure_stats = self.regex_extraction_stats[bytes_match.regex].was_match_undecodable
+            failure_stats = self.regex_extraction_stats[bytes_match.label].was_match_undecodable
             failure_stats[encoding] = failure_stats.get(encoding, 0) + count
 
         for encoding, count in decoder.was_match_force_decoded.items():
-            forced_stats = self.regex_extraction_stats[bytes_match.regex].was_match_force_decoded
+            forced_stats = self.regex_extraction_stats[bytes_match.label].was_match_force_decoded
             forced_stats[encoding] = forced_stats.get(encoding, 0) + count
 
     def _queue_suppression_notice(self, bytes_match: BytesMatch, quote_type: str) -> None:
         """Print a message indicating that we are not going to decode a given block of bytes"""
-        self.regex_extraction_stats[bytes_match.regex].skipped_matches_lengths[bytes_match.capture_len] += 1
+        self.regex_extraction_stats[bytes_match.label].skipped_matches_lengths[bytes_match.match_length] += 1
         txt = bytes_match.__rich__()
 
-        if bytes_match.capture_len < PdfalyzerConfig.MIN_DECODE_LENGTH:
+        if bytes_match.match_length < PdfalyzerConfig.MIN_DECODE_LENGTH:
             txt = Text('Too little to actually attempt decode at ', style='grey') + txt
         else:
             txt.append(" is too large to decode ")
@@ -215,11 +221,14 @@ class BinaryScanner:
 
 def new_decoding_stats_table(title) -> Table:
     """Build an empty table for displaying decoding stats"""
+    title = prefix_with_plain_text_obj(title, style='blue underline')
+    title.append(": Decoding Attempts Summary Statistics", style='bright_white bold')
+
     table = Table(
-        title=prefix_with_plain_text_obj(title, style='blue underline') + Text(f": Decoding Attempts Summary Statistics"),
+        title=title,
         min_width=subheading_width(),
         show_lines=True,
-        padding=[0, 1],
+        padding=(0, 1),
         style='color(18)',
         border_style='color(111) dim',
         header_style='color(235) on color(249) reverse',
