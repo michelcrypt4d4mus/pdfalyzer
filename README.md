@@ -254,6 +254,9 @@ from pdfalyzer import pdfalyzer
 pdfalyzer()
 ```
 
+## Colors And Themes
+Run `pdfalyzer_show_color_theme` to see the color theme employed.
+
 ## Testing
 Run all tests by typing `pytest`. Test coverage is relatively spartan but should throw failures if you really mess something up. See [How To Invoke pytest](https://docs.pytest.org/en/7.1.x/how-to/usage.html) official docs for other options.
 
