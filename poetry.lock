@@ -239,29 +239,24 @@ python-versions = "*"
 
 [[package]]
 name = "yaralyzer"
-version = "0.1.1"
+version = "0.2.0"
 description = "Visualize and force decode YARA and regex matches found in a file or byte stream. With colors. Lots of colors."
 category = "main"
 optional = false
-python-versions = "^3.9"
-develop = true
+python-versions = ">=3.9,<4.0"
 
 [package.dependencies]
-chardet = "^5.0.0"
-plyara = "^2.1.1"
-python-dotenv = "^0.21.0"
-rich = "^12.5.1"
-rich-argparse = "^0.3.0"
-yara-python = "^4.2.3"
-
-[package.source]
-type = "directory"
-url = "../yaralyzer"
+chardet = ">=5.0.0,<6.0.0"
+plyara = ">=2.1.1,<3.0.0"
+python-dotenv = ">=0.21.0,<0.22.0"
+rich = ">=12.5.1,<13.0.0"
+rich-argparse = ">=0.3.0,<0.4.0"
+yara-python = ">=4.2.3,<5.0.0"
 
 [metadata]
 lock-version = "1.1"
 python-versions = "^3.9"
-content-hash = "66f9d1461b0b30281f657b03c83af51f470038d303832ec55f3323673ea11bd8"
+content-hash = "27ec5c6699ee170a0bc08424717f8112e2afc08c5a51030b7bafc34aa47c2d8c"
 
 [metadata.files]
 anytree = [
@@ -363,4 +358,7 @@ yara-python = [
     {file = "yara_python-4.2.3-cp39-cp39-win32.whl", hash = "sha256:d6c2de71b368da053599d734c031389815a70df4b667d6dc386d1335689717d6"},
     {file = "yara_python-4.2.3-cp39-cp39-win_amd64.whl", hash = "sha256:87125ede7fbc18ae65aab550f1a36f4ebf73bb828c5d7a3dd2bb99176f0faa15"},
 ]
-yaralyzer = []
+yaralyzer = [
+    {file = "yaralyzer-0.2.0-py3-none-any.whl", hash = "sha256:554768335c1ffab5376278aeedf92f594a6586070009095cd8b64e2c9f628233"},
+    {file = "yaralyzer-0.2.0.tar.gz", hash = "sha256:532da1c22037561528665afea7fd73520072c149b19f6bc64c4610e4e31f37c5"},
+]
