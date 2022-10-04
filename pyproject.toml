@@ -1,8 +1,8 @@
 [tool.poetry]
 name = "pdfalyzer"
 version = "1.6.0"
-description = "A PDF analysis tool geared towards visualizing the inner tree-like data structure of a portable document with an eye towards detecting malicious instructions."
-authors = ["Michel C. <michel@cryptadamus.com>"]
+description = "A PDF analysis toolkit. Scan a PDF with relevant YARA rules, visualize its inner tree-like data structure in living color (lots of colors), force decodes of suspicious font binaries, and more."
+authors = ["Michel de Cryptadamus <michel@cryptadamus.com>"]
 license = "GPL-3.0-or-later"
 readme = "README.md"
 homepage = "https://github.com/michelcrypt4d4mus/pdfalyzer"
@@ -12,6 +12,7 @@ documentation = "https://github.com/michelcrypt4d4mus/pdfalyzer"
 keywords = [
     "ascii art",
     "binary",
+    "color",
     "font",
     "encoding",
     "malicious pdf",
@@ -19,7 +20,8 @@ keywords = [
     "malware analysis",
     "pdf",
     "threat assessment",
-    "visualization"
+    "visualization",
+    "yara"
 ]
 
 classifiers = [
@@ -42,16 +44,13 @@ pdfalyzer_show_color_theme = 'pdfalyzer.helpers.rich_text_helper:pdfalyzer_show_
 [tool.poetry.dependencies]
 python = "^3.9"
 anytree = "~=2.8"
-chardet = "^5.0"
-pdfid = "^1.1"
 PyPDF2 = "^2.10"
 python-dotenv = "^0.21.0"
 rich = "^12.5.1"
 rich-argparse = "^0.3.0"
 #rich_argparse = {path = "../rich-argparse", develop = true}
-yara-python = "^4.2.3"
-plyara = "^2.1.1"
-#yaralizer, yaracodalizer
+yaralyzer = {path = "../yaralyzer", develop = true}
+#yaralyzer = "^0.2.0"
 
 [tool.poetry.dev-dependencies]
 pytest = "^7.1.2"

@@ -11,22 +11,25 @@ if not environ.get('INVOKED_BY_PYTEST', False):
             load_dotenv(dotenv_path=dotenv_file)
             break
 
+from yaralyzer.config import YaralyzerConfig
+from yaralyzer.helpers.rich_text_helper import console
+from yaralyzer.util.logging import log, log_and_print
+
 from pdfalyzer.config import PdfalyzerConfig
-from pdfalyzer.helpers.rich_text_helper import console, invoke_rich_export
-from pdfalyzer.util.pdf_parser_manager import PdfParserManager
+from pdfalyzer.helpers.rich_text_helper import invoke_rich_export
 from pdfalyzer.pdfalyzer import Pdfalyzer
+from pdfalyzer.util.pdf_parser_manager import PdfParserManager
 from pdfalyzer.util.argument_parser import ALL_FONTS_OPTION, output_sections, parse_arguments
-from pdfalyzer.util.logging import log, log_and_print
 
 
 def pdfalyze():
     args = parse_arguments()
-    walker = Pdfalyzer(args.pdf)
+    pdfalyzer = Pdfalyzer(args.file_to_scan_path)
 
     # Binary stream extraction is a special case
     if args.extract_binary_streams:
-        log_and_print(f"Extracting all binary streams in '{args.pdf}' to files in '{args.output_dir}'...")
-        PdfParserManager(args.pdf).extract_all_streams(args.output_dir)
+        log_and_print(f"Extracting all binary streams in '{args.file_to_scan_path}' to files in '{args.output_dir}'...")
+        PdfParserManager(args.file_to_scan_path).extract_all_streams(args.output_dir)
         log_and_print(f"Binary stream extraction complete, files written to '{args.output_dir}'.\nExiting.\n")
         sys.exit()
 
@@ -41,7 +44,7 @@ def pdfalyze():
             if args.font != ALL_FONTS_OPTION:
                 output_basename += f"_id{args.font}"
 
-            output_basename += f"_maxdecode{PdfalyzerConfig.MAX_DECODE_LENGTH}"
+            output_basename += f"_maxdecode{YaralyzerConfig.MAX_DECODE_LENGTH}"
 
             if args.quote_type:
                 output_basename += f"_quote_{args.quote_type}"
@@ -50,7 +53,7 @@ def pdfalyze():
         return path.join(args.output_dir, output_basename + f"___pdfalyzed_{args.invoked_at_str}")
 
     # Analysis exports wrap themselves around the methods that actually generate the analyses
-    for (arg, method) in output_sections(args, walker):
+    for (arg, method) in output_sections(args, pdfalyzer):
         if args.output_dir:
             output_basepath = get_output_basepath(method)
             print(f'Exporting {arg} data to {output_basepath}...')
@@ -66,7 +69,6 @@ def pdfalyze():
 
         if args.export_svg:
             invoke_rich_export(console.save_svg, output_basepath)
-
 
     # Drop into interactive shell if requested
     if args.interact:

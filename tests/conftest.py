@@ -1,17 +1,11 @@
-
-
 from os import environ, path
 environ['INVOKED_BY_PYTEST'] = 'True'
 
 import pytest
+from yaralyzer.config import MAX_DECODE_LENGTH_ENV_VAR, YaralyzerConfig
 
-from pdfalyzer.config import MAX_DECODE_LENGTH_ENV_VAR, PYTEST_FLAG
 from pdfalyzer.pdfalyzer import Pdfalyzer
 from pdfalyzer.util.filesystem_awareness import DOCUMENTATION_DIR
-
-
-# Env var option that may Speeds things up considerably
-environ[MAX_DECODE_LENGTH_ENV_VAR] = '2'
 
 
 # Full paths to PDF test fixtures

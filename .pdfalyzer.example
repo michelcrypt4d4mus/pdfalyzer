@@ -5,20 +5,23 @@
 # configure options you tend to reuse (e.g. '--maximize-width') so you can stop remembering to type them.
 # Easiest way to do this is probably to just copy this file to one in your home or working directory and customize.
 
+# Note that many of these options are actually configuring the yaralyzer, which is a separate tool leveraged
+# by the Pdfalyzer to actually do the work of finding patterns. More info can be found at
+# https://github.com/michelcrypt4d4mus/yaralyzer
 
 # Expand the width of the output to the fit the display window (same as the --maximize-width options)
-#    PDFALYZER_MAXIMIZE_WIDTH=True
+#    YARALYZER_MAXIMIZE_WIDTH=True
 
 # Suppress all PDF binary regex matching/scanning/etc
-#    PDFALYZER_SUPPRESS_DECODE = False
+#    YARALYZER_SUPPRESS_DECODE = False
 
 # Suppress the display of the table showing the the encoding assessments given by `chardet.detect()`
 # about a particular chunk of binary data. (The most important data in the chardet confidence table is
 # redunandant anyways. Only the low likelihood encodings are hidden from the usef)
-#    PDFALYZER_SUPPRESS_CHARDET_TABLE
+#    YARALYZER_SUPPRESS_CHARDET_TABLE
 
 # Configure how many bytes before and after any binary data should be included in scans and visualizations
-#    PDFAlYZER_SURROUNDING_BYTES=64
+#    YARAlYZER_SURROUNDING_BYTES=64
 
 # Size thresholds (in bytes) under/over which pdfalyzer will NOT make attempts to decode a match.
 # Longer byte sequences are for obvious reasons slower to decode by force.
@@ -29,8 +32,8 @@
 # Keeping the max value number low will do more to affect the speed of the app than ay anything else you
 # can easily configure..
 #
-#    PDFALYZER_MIN_DECODE_LENGTH=1
-#    PDFALYZER_MAX_DECODE_LENGTH=256
+#    YARALYZER_MIN_DECODE_LENGTH=1
+#    YARALYZER_MAX_DECODE_LENGTH=256
 
 # Directory to write application logs to. Must be an absolute path, not a relative one.
 # These logs are not normally written to a file and the default log level means that the standard behavior
@@ -42,10 +45,10 @@
 #      The -D option, which sets the log level to DEBUG, will be respected whether or not
 #      PDFALYZER_LOG_DIR is configured.
 #
-#     PDFALYZER_LOG_DIR=/path/to/pdfalyzer/log_dir/
+#     YARALYZER_LOG_DIR=/path/to/pdfalyzer/log_dir/
 
 # Log level
-#     PDFALYZER_LOG_LEVEL='INFO'
+#     YARALYZER_LOG_LEVEL='INFO'
 
 # Path to directory containing Didier Stevens's pdf-parser.py. Only required for extracting binary streams to files.
 #     PDFALYZER_PDF_PARSER_PY_PATH=/path/to/pdfparserdotpy/

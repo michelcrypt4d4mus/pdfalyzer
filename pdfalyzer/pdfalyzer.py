@@ -12,26 +12,27 @@ from anytree.render import DoubleStyle
 from anytree.search import findall_by_attr
 from PyPDF2 import PdfReader
 from PyPDF2.errors import PdfReadError
-from PyPDF2.generic import IndirectObject, NameObject, NumberObject
+from PyPDF2.generic import IndirectObject, NameObject, NumberObject, StreamObject
 from rich.panel import Panel
 from rich.table import Column, Table
 from rich.text import Text
+from pdfalyzer.detection.yaralyzer_helper import get_file_yaralyzer
+from yaralyzer.helpers.file_helper import load_binary_data
+from yaralyzer.helpers.rich_text_helper import console, theme_colors_with_prefix
+from yaralyzer.util.logging import log
+from yaralyzer.yaralyzer import Yaralyzer
 
 from pdfalyzer.decorators.document_model_printer import print_with_header
 from pdfalyzer.decorators.pdf_tree_node import PdfTreeNode
-from pdfalyzer.detection.yara_scanner import YaraScanner
-from pdfalyzer.helpers.file_helper import load_binary_data
 from pdfalyzer.helpers.number_helper import size_string
 from pdfalyzer.helpers.pdf_object_helper import get_symlink_representation
-from pdfalyzer.helpers.rich_text_helper import console, theme_colors_with_prefix
 from pdfalyzer.helpers.string_helper import pp, print_section_header
 from pdfalyzer.font_info import FontInfo
 from pdfalyzer.util.adobe_strings import (COLOR_SPACE, D, DEST, EXT_G_STATE, FONT, K, KIDS, NON_TREE_REFERENCES, NUMS,
      OBJECT_STREAM, OPEN_ACTION, P, PARENT, PREV, RESOURCES, SIZE, STRUCT_ELEM, TRAILER, TYPE, UNLABELED, XOBJECT,
      XREF, XREF_STREAM)
+from pdfalyzer.util.filesystem_awareness import PROJECT_DIR
 from pdfalyzer.util.exceptions import PdfWalkError
-from pdfalyzer.util.logging import log
-
 
 TRAILER_FALLBACK_ID = 10000000
 
@@ -62,10 +63,9 @@ class Pdfalyzer:
         self.md5 = hashlib.md5(self.pdf_bytes ).hexdigest().upper()
         self.sha1 = hashlib.sha1(self.pdf_bytes ).hexdigest().upper()
         self.sha256 = hashlib.sha256(self.pdf_bytes ).hexdigest().upper()
-
         pdf_file = open(pdf_path, 'rb')  # Filehandle must be left open for PyPDF2 to perform seeks
         self.pdf = PdfReader(pdf_file)
-        self.yara_scanner = YaraScanner.for_file(pdf_path)
+        self.yaralyzer = get_file_yaralyzer(pdf_path)
 
         # Initialize tracking variables
         self.indeterminate_ids = set()  # See INDETERMINATE_REFERENCES comment
@@ -179,8 +179,9 @@ class Pdfalyzer:
         theme_colors = [color[len('yara') + 1:] for color in theme_colors_with_prefix('yara')]
         color_key = Text('Color Code: ') + Text(' ').join(theme_colors) + Text('\n')
         console.print(color_key, justify='center')
-        self.yara_scanner.scan()
+        self.yaralyzer.yaralyze()
 
+        # TODO: we should really scan all the binary streams not just those in the fonts
         for font_info in [fi for fi in self.font_infos if font_idnum is None or font_idnum == fi.idnum]:
             font_info.yara_scan()
 
@@ -201,6 +202,11 @@ class Pdfalyzer:
         """Debug method that displays which nodes have already been walked"""
         for i in sorted(self.traversed_nodes.keys()):
             console.print(f'{i}: {self.traversed_nodes[i]}')
+
+    def print_stream_objects(self) -> None:
+        for node in LevelOrderIter(self.pdf_tree):
+            if isinstance(node.obj, StreamObject):
+                console.print(node)
 
     def _process_reference(self, node: PdfTreeNode, key: str, address: str, reference: IndirectObject) -> [PdfTreeNode]:
         """Place the referenced node in the tree. Returns a list of nodes to walk next."""
@@ -263,10 +269,10 @@ class Pdfalyzer:
     def _symlink_other_relationships(self):
         """Create SymlinkNodes for relationships between PDF objects that are not parent/child relationships"""
         for node in LevelOrderIter(self.pdf_tree):
-            if node.other_relationnship_count() == 0 or isinstance(node, SymlinkNode):
+            if node.other_relationship_count() == 0 or isinstance(node, SymlinkNode):
                 continue
 
-            log.info(f"Symlinking {node}'s {node.other_relationnship_count()} other relationships...")
+            log.info(f"Symlinking {node}'s {node.other_relationship_count()} other relationships...")
 
             for relationship in node.other_relationships:
                 log.debug(f"   * Linking {relationship}")

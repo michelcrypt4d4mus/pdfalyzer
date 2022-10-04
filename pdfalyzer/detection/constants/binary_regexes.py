@@ -7,13 +7,16 @@ import re
 from typing import Union
 
 from pdfalyzer.util.adobe_strings import DANGEROUS_PDF_KEYS
-from pdfalyzer.detection.constants.character_encodings import BOMS
+from yaralyzer.encoding_detection.character_encodings import BOMS
 
 
 # Potentially dangerous PDF instructions: Remove the leading '/' and convert to bytes except /F ("URL")
 DANGEROUS_BYTES = [instruction[1:].encode() for instruction in DANGEROUS_PDF_KEYS] + [b'/F']
 DANGEROUS_JAVASCRIPT_INSTRUCTIONS = [b'eval']
 DANGEROUS_INSTRUCTIONS = DANGEROUS_BYTES + DANGEROUS_JAVASCRIPT_INSTRUCTIONS + list(BOMS.keys())
+
+# Yaralyzer
+DANGEROUS_STRINGS = [instruction[1:] for instruction in DANGEROUS_PDF_KEYS] + ['/F', 'eval']
 
 # Quote capture regexes
 CAPTURE_BYTES = b'(.+?)'
@@ -34,4 +37,12 @@ QUOTE_REGEXES = {
     'escaped_single': build_quote_capture_group(ESCAPED_SINGLE_QUOTE_BYTES),
     'escaped_double': build_quote_capture_group(ESCAPED_DOUBLE_QUOTE_BYTES),
     'frontslash': build_quote_capture_group(FRONT_SLASH_BYTE),
+}
+
+QUOTE_PATTERNS = {
+    'backtick': '`.+`',
+    'escaped_single': "\\'.+\\'",
+    'escaped_double': '\\".+\\"',
+    'guillemet': '\\xab.+\\xbb',
+    'frontslash': '/.+/',
 }

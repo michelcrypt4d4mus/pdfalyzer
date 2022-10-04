@@ -5,13 +5,14 @@ import re
 from os import path, system
 from subprocess import check_output
 
-from pdfalyzer.config import PDF_PARSER_EXECUTABLE_ENV_VAR, PdfalyzerConfig, is_env_var_set_and_not_false
+from yaralyzer.util.logging import log
+
+from pdfalyzer.config import PDF_PARSER_EXECUTABLE_ENV_VAR, PdfalyzerConfig
 from pdfalyzer.util.filesystem_awareness import PROJECT_DIR
-from pdfalyzer.util.logging import log, log_and_print
 
 # PDF Internal Data Regexes
-PDF_OBJECT_START_REGEX = re.compile('^obj (\d+) \d+$')
-CONTAINS_STREAM_REGEX = re.compile('\s+Contains stream$')
+PDF_OBJECT_START_REGEX = re.compile('^obj (\\d+) \\d+$')
+CONTAINS_STREAM_REGEX = re.compile('\\s+Contains stream$')
 
 # Install info
 DIDIER_STEVENS_RAW_GITHUB_URL = 'https://raw.githubusercontent.com/DidierStevens/DidierStevensSuite/master/'

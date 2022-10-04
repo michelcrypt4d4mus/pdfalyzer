@@ -74,14 +74,6 @@ python-versions = ">=3.6"
 pyparsing = ">=2.0.2,<3.0.5 || >3.0.5"
 
 [[package]]
-name = "pdfid"
-version = "1.1.1"
-description = "PDFID simple tool to analyze PDF malicious files by DidierStevens. Customized by Matteo Lodi to be used as a library."
-category = "main"
-optional = false
-python-versions = ">=2.6, <4"
-
-[[package]]
 name = "pluggy"
 version = "1.0.0"
 description = "plugin and hook calling mechanisms for python"
@@ -189,7 +181,7 @@ cli = ["click (>=5.0)"]
 
 [[package]]
 name = "rich"
-version = "12.5.1"
+version = "12.6.0"
 description = "Render rich text, tables, progress bars, syntax highlighting, markdown and more to the terminal"
 category = "main"
 optional = false
@@ -245,10 +237,31 @@ category = "main"
 optional = false
 python-versions = "*"
 
+[[package]]
+name = "yaralyzer"
+version = "0.1.1"
+description = "Visualize and force decode YARA and regex matches found in a file or byte stream. With colors. Lots of colors."
+category = "main"
+optional = false
+python-versions = "^3.9"
+develop = true
+
+[package.dependencies]
+chardet = "^5.0.0"
+plyara = "^2.1.1"
+python-dotenv = "^0.21.0"
+rich = "^12.5.1"
+rich-argparse = "^0.3.0"
+yara-python = "^4.2.3"
+
+[package.source]
+type = "directory"
+url = "../yaralyzer"
+
 [metadata]
 lock-version = "1.1"
 python-versions = "^3.9"
-content-hash = "950c54ff684623bfd19be22736dbcd762c28db160333eb078a9472baafcd60e1"
+content-hash = "66f9d1461b0b30281f657b03c83af51f470038d303832ec55f3323673ea11bd8"
 
 [metadata.files]
 anytree = [
@@ -278,10 +291,6 @@ iniconfig = [
 packaging = [
     {file = "packaging-21.3-py3-none-any.whl", hash = "sha256:ef103e05f519cdc783ae24ea4e2e0f508a9c99b2d4969652eed6a2e1ea5bd522"},
     {file = "packaging-21.3.tar.gz", hash = "sha256:dd47c42927d89ab911e606518907cc2d3a1f38bbd026385970643f9c5b8ecfeb"},
-]
-pdfid = [
-    {file = "pdfid-1.1.1-py3-none-any.whl", hash = "sha256:382d58dd5681dd2e58ba0ba12fbc0104d5fcf66e6a26ece89c6ac404335c6975"},
-    {file = "pdfid-1.1.1.tar.gz", hash = "sha256:ba110c56464397d58cc757381f310693a60b7e82f3e0c71efeb8055a98993cbf"},
 ]
 pluggy = [
     {file = "pluggy-1.0.0-py2.py3-none-any.whl", hash = "sha256:74134bbf457f031a36d68416e1509f34bd5ccc019f0bcc952c7b909d06b37bd3"},
@@ -320,8 +329,8 @@ python-dotenv = [
     {file = "python_dotenv-0.21.0-py3-none-any.whl", hash = "sha256:1684eb44636dd462b66c3ee016599815514527ad99965de77f43e0944634a7e5"},
 ]
 rich = [
-    {file = "rich-12.5.1-py3-none-any.whl", hash = "sha256:2eb4e6894cde1e017976d2975ac210ef515d7548bc595ba20e195fb9628acdeb"},
-    {file = "rich-12.5.1.tar.gz", hash = "sha256:63a5c5ce3673d3d5fbbf23cd87e11ab84b6b451436f1b7f19ec54b6bc36ed7ca"},
+    {file = "rich-12.6.0-py3-none-any.whl", hash = "sha256:a4eb26484f2c82589bd9a17c73d32a010b1e29d89f1604cd9bf3a2097b81bb5e"},
+    {file = "rich-12.6.0.tar.gz", hash = "sha256:ba3a3775974105c221d31141f2c116f4fd65c5ceb0698657a11e9f295ec93fd0"},
 ]
 rich-argparse = [
     {file = "rich_argparse-0.3.0-py3-none-any.whl", hash = "sha256:082b90e0847af51a9d203b2fa29e30b2ae1f093c83a78d8ab7bd743be33db934"},
@@ -354,3 +363,4 @@ yara-python = [
     {file = "yara_python-4.2.3-cp39-cp39-win32.whl", hash = "sha256:d6c2de71b368da053599d734c031389815a70df4b667d6dc386d1335689717d6"},
     {file = "yara_python-4.2.3-cp39-cp39-win_amd64.whl", hash = "sha256:87125ede7fbc18ae65aab550f1a36f4ebf73bb828c5d7a3dd2bb99176f0faa15"},
 ]
+yaralyzer = []

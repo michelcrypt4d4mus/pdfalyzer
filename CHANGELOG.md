@@ -1,5 +1,6 @@
 # NEXT RELEASE
-
+* Use `yaralyzer` as the match engine
+* Scan all binary streams, not just the fonts
 
 # 1.6.0
 * Integrate YARA scanning - all the rules I could dig up relating to PDFs

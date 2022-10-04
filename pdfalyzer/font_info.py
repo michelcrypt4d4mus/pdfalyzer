@@ -11,15 +11,18 @@ from rich.panel import Panel
 from rich.padding import Padding
 from rich.table import Table
 from rich.text import Text
+from yaralyzer.config import YaralyzerConfig
+from yaralyzer.helpers.bytes_helper import print_bytes
+from yaralyzer.helpers.rich_text_helper import console, subheading_width
+from yaralyzer.util.logging import log
 
 from pdfalyzer.binary.binary_scanner import BinaryScanner
 from pdfalyzer.config import PdfalyzerConfig
-from pdfalyzer.helpers.bytes_helper import print_bytes
-from pdfalyzer.helpers.rich_text_helper import console, get_label_style, get_type_style, subheading_width
+from pdfalyzer.detection.yaralyzer_helper import get_bytes_yaralyzer
+from pdfalyzer.helpers.rich_text_helper import get_label_style, get_type_style
 from pdfalyzer.helpers.string_helper import pp
 from pdfalyzer.util.adobe_strings import (FONT, FONT_DESCRIPTOR, FONT_FILE, FONT_LENGTHS, RESOURCES, SUBTYPE,
      TO_UNICODE, TYPE, W, WIDTHS)
-from pdfalyzer.util.logging import log
 
 
 CHARMAP_TITLE_PADDING = (1, 0, 0, 2)
@@ -138,10 +141,11 @@ class FontInfo:
             self.character_mapping = None
 
     def yara_scan(self) -> None:
-        if self.binary_scanner is not None:
-            self.binary_scanner.yara_scanner.scan()
-        else:
+        if self.binary_scanner is None:
             log.debug(f"No binary to scan for {self.display_title}")
+            return
+
+        get_bytes_yaralyzer(self.stream_data, str(self)).yaralyze()
 
     def width_stats(self):
         if self.widths is None:
@@ -165,7 +169,7 @@ class FontInfo:
             self.binary_scanner.print_stream_preview(title_suffix=f" of /FontFile for {self.display_title}")
             self.binary_scanner.check_for_dangerous_instructions()
 
-            if not PdfalyzerConfig.SUPPRESS_DECODES:
+            if not YaralyzerConfig.SUPPRESS_DECODES:
                 self.binary_scanner.force_decode_all_quoted_bytes()
 
             self.binary_scanner.print_decoding_stats_table()
@@ -262,7 +266,7 @@ class FontInfo:
         table.columns[1].max_width = subheading_width() - col_0_width - 3
         return table
 
-    def __str__(self):
+    def __str__(self) -> str:
         return self.display_title
 
 

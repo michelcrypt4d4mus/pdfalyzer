@@ -3,12 +3,12 @@ The tests in here are not super resilient - they will fail if a code changes res
 more or fewer lines of output.
 """
 from math import isclose
-from os import environ, path
+from os import environ
 from subprocess import check_output
 
+from yaralyzer.config import MAX_DECODE_LENGTH_ENV_VAR
+
 from pdfalyzer.config import PDFALYZE
-from pdfalyzer.helpers.rich_text_helper import console
-from pdfalyzer.util.filesystem_awareness import PROJECT_DIR
 
 
 # Asking for help screen is a good canary test... proves code compiles, at least.
@@ -20,15 +20,23 @@ def test_help_option():
 
 
 def test_pdfalyzer_basic_tree(adobe_type1_fonts_pdf_path, analyzing_malicious_documents_pdf_path):
+    type1_tree = _run_with_args(adobe_type1_fonts_pdf_path, '-t')
+    _assert_line_count_within_range(88, type1_tree)
+    analyzing_malicious_tree = _run_with_args(analyzing_malicious_documents_pdf_path, '-t')
+    _assert_line_count_within_range(1004, analyzing_malicious_tree)
+
+
+def test_pdfalyzer_rich_tree(adobe_type1_fonts_pdf_path, analyzing_malicious_documents_pdf_path):
     type1_tree = _run_with_args(adobe_type1_fonts_pdf_path, '-r')
-    _assert_line_count_within_range(762, type1_tree)
+    _assert_line_count_within_range(952, type1_tree)
     analyzing_malicious_tree = _run_with_args(analyzing_malicious_documents_pdf_path, '-r')
     _assert_line_count_within_range(6970, analyzing_malicious_tree)
 
 
 def test_font_scan(adobe_type1_fonts_pdf_path):
+    environ[MAX_DECODE_LENGTH_ENV_VAR] = '2'
     font_scan_output = _run_with_args(adobe_type1_fonts_pdf_path, '-f')
-    _assert_line_count_within_range(4877, font_scan_output)
+    _assert_line_count_within_range(11037, font_scan_output)
 
 
 def _run_with_args(pdf, *args) -> str:
@@ -40,5 +48,7 @@ def _assert_line_count_within_range(line_count, text):
     lines_in_text = len(text.split("\n"))
 
     if not isclose(line_count, lines_in_text, rel_tol=0.1):
-        console.print(text)
+        for i, line in enumerate(text.split("\n")):
+            print(f"{i}: {line}")
+
         raise AssertionError(f"Expected {line_count} +/- but found {lines_in_text}")

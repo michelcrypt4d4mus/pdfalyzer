@@ -7,8 +7,7 @@ from typing import Pattern
 
 from PyPDF2.generic import PdfObject
 from rich.panel import Panel
-
-from pdfalyzer.helpers.rich_text_helper import console, console_width
+from yaralyzer.helpers.rich_text_helper import console, console_width
 
 
 # Style

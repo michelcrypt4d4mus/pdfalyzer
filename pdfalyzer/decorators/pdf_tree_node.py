@@ -11,28 +11,31 @@ from numbers import Number
 from typing import List, Union
 
 from anytree import NodeMixin, SymlinkNode
-from PyPDF2.generic import DictionaryObject, EncodedStreamObject, IndirectObject, NumberObject, PdfObject
+from PyPDF2.generic import (DictionaryObject, EncodedStreamObject, IndirectObject, NumberObject, PdfObject,
+     StreamObject)
 from rich.markup import escape
 from rich.panel import Panel
 from rich.table import Table
 from rich.text import Text
 from rich.tree import Tree
+from yaralyzer.helpers.bytes_helper import clean_byte_string, hex_string
+from yaralyzer.helpers.rich_text_helper import YARALYZER_THEME, console
+from yaralyzer.util.logging import log
 
-from pdfalyzer.detection.constants.character_encodings import NEWLINE_BYTE
-from pdfalyzer.helpers.bytes_helper import clean_byte_string
+from yaralyzer.encoding_detection.character_encodings import NEWLINE_BYTE
 from pdfalyzer.helpers.number_helper import size_string
 from pdfalyzer.helpers.pdf_object_helper import get_references, get_symlink_representation
-from pdfalyzer.helpers.rich_text_helper import (PDF_ARRAY, TYPE_STYLES, PDFALYZER_THEME, console, get_label_style,
+from pdfalyzer.helpers.rich_text_helper import (PDF_ARRAY, TYPE_STYLES, get_label_style,
      get_type_style, get_type_string_style)
 from pdfalyzer.helpers.string_helper import pypdf_class_name
 from pdfalyzer.util.adobe_strings import (DANGEROUS_PDF_KEYS, FIRST, FONT, LAST, NEXT, TYPE1_FONT, S,
      SUBTYPE, TRAILER, TYPE, UNLABELED, XREF, XREF_STREAM)
 from pdfalyzer.util.exceptions import PdfWalkError
-from pdfalyzer.util.logging import log
-
 
 DEFAULT_MAX_ADDRESS_LENGTH = 90
 STREAM_PREVIEW_LENGTH_IN_TABLE = 500
+HEX = 'Hex'
+STREAM = 'Stream'
 
 Relationship = namedtuple('Relationship', ['from_node', 'reference_key'])
 
@@ -123,7 +126,7 @@ class PdfTreeNode(NodeMixin):
             log.debug(f"Removing relationship {relationship} from {self}")
             self.other_relationships.remove(relationship)
 
-    def other_relationnship_count(self):
+    def other_relationship_count(self):
         return len(self.other_relationships)
 
     def get_reference_key_for_relationship(self, from_node: 'PdfTreeNode'):
@@ -231,33 +234,45 @@ class PdfTreeNode(NodeMixin):
             # Then it's a single element node like a URI, TextString, etc.
             table.add_row(*to_table_row('', self.obj, is_single_row_table=True))
 
-        # If it's a stream node (PDF objs can have properties and streams at the same time) add some fields
-        if isinstance(self.obj, EncodedStreamObject):
-            # TODO: Add a BinaryScanner to all nodes with streams instead of using self.obj.get_data()
-            stream_data = self.obj.get_data()
-            stream_preview = stream_data[:STREAM_PREVIEW_LENGTH_IN_TABLE]
-            stream_preview_length = len(stream_preview)
-
-            if isinstance(stream_preview, bytes):
-                stream_preview_lines = stream_preview.split(NEWLINE_BYTE)
-                stream_preview_string = "\n".join([clean_byte_string(line) for line in stream_preview_lines])
-            else:
-                stream_preview_string = stream_preview
-
-            table.add_row(Text('StreamLength', style='grey'), size_string(len(stream_data)), '')
-
-            if stream_preview_length < STREAM_PREVIEW_LENGTH_IN_TABLE:
-                preview_row_label = f"StreamData\n  ({stream_preview_length} bytes)"
-            else:
-                preview_row_label = f"StreamPreview\n  ({STREAM_PREVIEW_LENGTH_IN_TABLE} bytes)"
-                stream_preview_string += '...'
-
-            table.add_row(
-                Text(preview_row_label, style='grey'),
-                Text(stream_preview_string, style='bytes'),
-                Text(''))
+        for row in self._get_stream_preview_rows():
+            row.append(Text(''))
+            table.add_row(*row)
 
         return table
+
+    def _get_stream_preview_rows(self) -> List[List[Text]]:
+        """Get rows that preview the stream data"""
+        return_rows: List[List[Text]] = []
+
+        if not isinstance(self.obj, StreamObject):
+            return return_rows
+
+        stream_data = self.obj.get_data()
+        stream_preview = stream_data[:STREAM_PREVIEW_LENGTH_IN_TABLE]
+        stream_preview_length = len(stream_preview)
+        stream_preview_hex = hex_string(stream_preview).plain
+
+        if isinstance(stream_preview, bytes):
+            stream_preview_lines = stream_preview.split(NEWLINE_BYTE)
+            stream_preview_string = "\n".join([clean_byte_string(line) for line in stream_preview_lines])
+        else:
+            stream_preview_string = stream_preview
+
+        def add_preview_row(hex_or_stream: str, stream_string: str):
+            if stream_preview_length < STREAM_PREVIEW_LENGTH_IN_TABLE:
+                row_label = "Data" if hex_or_stream != HEX else ' View'
+            else:
+                row_label = "Preview" if hex_or_stream != HEX else ' Preview'
+                stream_string += '...'
+
+            row_label = f"{hex_or_stream}{row_label}\n  ({stream_preview_length} bytes)"
+            return_rows.append([Text(row_label, 'grey'), Text(stream_string, 'bytes')])
+
+        return_rows.append([Text('StreamLength', style='grey'), size_string(len(stream_data))])
+        add_preview_row(STREAM, stream_preview_string)
+        add_preview_row(HEX, stream_preview_hex)
+        return return_rows
+
 
     def generate_rich_tree(self, tree=None, depth=0):
         """Recursively generates a rich.tree.Tree object from this node"""
@@ -326,11 +341,11 @@ def get_node_type_style(obj):
     if 'Dictionary' in klass_string:
         style = TYPE_STYLES[dict]
     elif 'EncodedStream' in klass_string:
-        style = PDFALYZER_THEME.styles['bytes']
+        style = YARALYZER_THEME.styles['bytes']
     elif 'Stream' in klass_string:
-        style = PDFALYZER_THEME.styles['bytes.title']
+        style = YARALYZER_THEME.styles['bytes.title']
     elif 'Text' in klass_string:
-        style = PDFALYZER_THEME.styles['grey.light']
+        style = YARALYZER_THEME.styles['grey.light']
     elif 'Array' in klass_string:
         style = PDF_ARRAY
     else:
