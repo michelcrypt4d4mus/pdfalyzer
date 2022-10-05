@@ -38,7 +38,7 @@ TERMINAL_THEME = TerminalTheme(
 )
 
 
-def _render_help(program_name: str, export_format: str, output_dir: str) -> None:
+def _render_help(program_name: str, export_format: str, output_dir: str) -> str:
     """Render the contents of the help screen to an HTML, SVG, or colored text file"""
     console = Console(record=True, theme=Theme(RichHelpFormatter.styles))
     export_method_name = f"save_{export_format}"
@@ -54,8 +54,10 @@ def _render_help(program_name: str, export_format: str, output_dir: str) -> None
 
     console.print(Text.from_ansi(parser.format_help()))
     export_method(output_file, **export_kwargs[export_method_name])
-    console.print(f"\n\nInvoked Rich.console.{export_method_name}('{output_file}')", style='yellow')
-    console.print(f"   * kwargs: '{export_kwargs[export_method_name]}'...\n\n", style='yellow')
+    console.print(f"\n\nInvoked Rich.console.{export_method_name}('{output_file}')", style='cyan')
+    console.print(f"   * kwargs: '{export_kwargs[export_method_name]}'...\n", style='cyan')
+    console.print(f"Rendered help to '{output_file}'", style='cyan')
+    return output_file
 
 
 render_parser = ArgumentParser(
