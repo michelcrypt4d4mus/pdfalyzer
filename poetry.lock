@@ -86,25 +86,6 @@ dev = ["pre-commit", "tox"]
 testing = ["pytest", "pytest-benchmark"]
 
 [[package]]
-name = "ply"
-version = "3.11"
-description = "Python Lex & Yacc"
-category = "main"
-optional = false
-python-versions = "*"
-
-[[package]]
-name = "plyara"
-version = "2.1.1"
-description = "Parse YARA rules."
-category = "main"
-optional = false
-python-versions = "*"
-
-[package.dependencies]
-ply = ">=3.11"
-
-[[package]]
 name = "py"
 version = "1.11.0"
 description = "library with cross-python path, ini-parsing, io, code, log facilities"
@@ -239,29 +220,23 @@ python-versions = "*"
 
 [[package]]
 name = "yaralyzer"
-version = "0.1.1"
+version = "0.3.0"
 description = "Visualize and force decode YARA and regex matches found in a file or byte stream. With colors. Lots of colors."
 category = "main"
 optional = false
-python-versions = "^3.9"
-develop = true
+python-versions = ">=3.9,<4.0"
 
 [package.dependencies]
-chardet = "^5.0.0"
-plyara = "^2.1.1"
-python-dotenv = "^0.21.0"
-rich = "^12.5.1"
-rich-argparse = "^0.3.0"
-yara-python = "^4.2.3"
-
-[package.source]
-type = "directory"
-url = "../yaralyzer"
+chardet = ">=5.0.0,<6.0.0"
+python-dotenv = ">=0.21.0,<0.22.0"
+rich = ">=12.5.1,<13.0.0"
+rich-argparse = ">=0.3.0,<0.4.0"
+yara-python = ">=4.2.3,<5.0.0"
 
 [metadata]
 lock-version = "1.1"
 python-versions = "^3.9"
-content-hash = "66f9d1461b0b30281f657b03c83af51f470038d303832ec55f3323673ea11bd8"
+content-hash = "0121453ddb9cad410ab4d2a4e435173eda5cda73427ba6262649cfe88ca9fb6b"
 
 [metadata.files]
 anytree = [
@@ -295,14 +270,6 @@ packaging = [
 pluggy = [
     {file = "pluggy-1.0.0-py2.py3-none-any.whl", hash = "sha256:74134bbf457f031a36d68416e1509f34bd5ccc019f0bcc952c7b909d06b37bd3"},
     {file = "pluggy-1.0.0.tar.gz", hash = "sha256:4224373bacce55f955a878bf9cfa763c1e360858e330072059e10bad68531159"},
-]
-ply = [
-    {file = "ply-3.11-py2.py3-none-any.whl", hash = "sha256:096f9b8350b65ebd2fd1346b12452efe5b9607f7482813ffca50c22722a807ce"},
-    {file = "ply-3.11.tar.gz", hash = "sha256:00c7c1aaa88358b9c765b6d3000c6eec0ba42abca5351b095321aef446081da3"},
-]
-plyara = [
-    {file = "plyara-2.1.1-py3-none-any.whl", hash = "sha256:d6d65380e39c7afb83dd55f885063235622cee168eb45e79d87f002641a95b7c"},
-    {file = "plyara-2.1.1.tar.gz", hash = "sha256:9f5fcb4fc6b944a92ec2979dcc54d9cf3a02b166c99bfef9e72d534c7ab91e6d"},
 ]
 py = [
     {file = "py-1.11.0-py2.py3-none-any.whl", hash = "sha256:607c53218732647dff4acdfcd50cb62615cedf612e72d1724fb1a0cc6405b378"},
@@ -363,4 +330,7 @@ yara-python = [
     {file = "yara_python-4.2.3-cp39-cp39-win32.whl", hash = "sha256:d6c2de71b368da053599d734c031389815a70df4b667d6dc386d1335689717d6"},
     {file = "yara_python-4.2.3-cp39-cp39-win_amd64.whl", hash = "sha256:87125ede7fbc18ae65aab550f1a36f4ebf73bb828c5d7a3dd2bb99176f0faa15"},
 ]
-yaralyzer = []
+yaralyzer = [
+    {file = "yaralyzer-0.3.0-py3-none-any.whl", hash = "sha256:b99b5f9e18a7a5b230aad6f1173cfe98750cd16bd9753cfcb9b6217fb5c1cdce"},
+    {file = "yaralyzer-0.3.0.tar.gz", hash = "sha256:815dab100c6463df99b144670e8c271af9e15a4ca4eb0c430b3cf9be55460108"},
+]
