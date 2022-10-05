@@ -77,7 +77,7 @@ select.add_argument('-c', '--counts', action='store_true',
 select.add_argument('-f', '--font',
                     help="scan font binaries for sus content. brute force is involved. brutes are slow and so " + \
                          "is slow. a single font can be optionally be selected by its internal PDF [ID]. " + \
-                         "not a multiselect but choosing nothing is still choosing everything. "
+                         "not a multiselect but choosing nothing is still choosing everything. " + \
                          "try '-f -- [the rest]' if you run into an argument position related piccadilly.",
                     nargs='?',
                     const=ALL_FONTS_OPTION,
@@ -90,6 +90,9 @@ select.add_argument('-y', '--yara', action='store_true',
 select.add_argument('--quote-type',
                     help='scan binary data for quoted data of this type only or all types if not set',
                     choices=list(QUOTE_REGEXES.keys()))
+
+# Make sure the selection section is at the top
+parser._action_groups = parser._action_groups[:2] + [parser._action_groups[-1]] + parser._action_groups[2:-1]
 
 
 # The Parsening Begins

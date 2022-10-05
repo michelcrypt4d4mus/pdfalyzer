@@ -48,7 +48,6 @@ PyPDF2 = "^2.10"
 python-dotenv = "^0.21.0"
 rich = "^12.5.1"
 rich-argparse = "^0.3.0"
-#rich_argparse = {path = "../rich-argparse", develop = true}
 #yaralyzer = {path = "../yaralyzer", develop = true}
 yaralyzer = "^0.3.0"
 

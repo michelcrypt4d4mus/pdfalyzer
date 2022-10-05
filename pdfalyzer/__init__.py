@@ -15,7 +15,6 @@ from yaralyzer.config import YaralyzerConfig
 from yaralyzer.helpers.rich_text_helper import console
 from yaralyzer.util.logging import log, log_and_print
 
-from pdfalyzer.config import PdfalyzerConfig
 from pdfalyzer.helpers.rich_text_helper import invoke_rich_export
 from pdfalyzer.pdfalyzer import Pdfalyzer
 from pdfalyzer.util.pdf_parser_manager import PdfParserManager
