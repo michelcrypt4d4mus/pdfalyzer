@@ -6,8 +6,9 @@ searching the tree and printing out information.
 import hashlib
 from collections import defaultdict
 from os.path import basename
+from typing import Iterator
 
-from anytree import LevelOrderIter, RenderTree, SymlinkNode
+from anytree import LevelOrderIter, NodeMixin, RenderTree, SymlinkNode
 from anytree.render import DoubleStyle
 from anytree.search import findall_by_attr
 from PyPDF2 import PdfReader
@@ -147,6 +148,7 @@ class Pdfalyzer:
         table.columns[1].style = 'orange3'
         table.columns[1].header_style = 'bright_cyan'
         console.print(table)
+        self.print_stream_objects()
 
     def print_tree(self):
         print_section_header(f'Simple tree view of {self.pdf_basename}')
@@ -156,7 +158,7 @@ class Pdfalyzer:
                 symlink_rep = get_symlink_representation(node.parent, node)
                 console.print(pre + f"[{symlink_rep.style}]{symlink_rep.text}[/{symlink_rep.style}]")
             else:
-                console.print(Text(pre) + node.__str_with_color__())
+                console.print(Text(pre) + node.__rich__())
 
         console.print("\n\n")
 
@@ -204,9 +206,20 @@ class Pdfalyzer:
             console.print(f'{i}: {self.traversed_nodes[i]}')
 
     def print_stream_objects(self) -> None:
+        print_section_header(f'Stream Summary for {self.pdf_basename}')
+
+        table = Table('Stream Length', 'Node')
+        table.columns[0].justify = 'right'
+
+        for node in self.stream_node_iterator():
+            table.add_row(Text(str(node.stream_length), style='number'), node.__rich__())
+
+        console.print(table)
+
+    def stream_node_iterator(self) -> Iterator[PdfTreeNode]:
         for node in LevelOrderIter(self.pdf_tree):
             if isinstance(node.obj, StreamObject):
-                console.print(node)
+                yield node
 
     def _process_reference(self, node: PdfTreeNode, key: str, address: str, reference: IndirectObject) -> [PdfTreeNode]:
         """Place the referenced node in the tree. Returns a list of nodes to walk next."""

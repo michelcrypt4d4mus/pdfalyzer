@@ -1,6 +1,11 @@
 # NEXT RELEASE
 
 
+# 1.8.0
+* Add table of stream lengths for PDF objects containing streams to `--doc-info` output
+* Quote extraction API methods should use yara, not bespoke extraction
+* Fix bug with rich tree view of non binary streams
+
 # 1.7.0
 * Use `yaralyzer` as the match engine
 * Scan all binary streams, not just the fonts

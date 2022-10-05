@@ -39,6 +39,11 @@ def test_font_scan(adobe_type1_fonts_pdf_path):
     _assert_line_count_within_range(9843, font_scan_output)
 
 
+def test_yara_scan(adobe_type1_fonts_pdf_path):
+    font_scan_output = _run_with_args(adobe_type1_fonts_pdf_path, '-y')
+    _assert_line_count_within_range(508, font_scan_output)
+
+
 def _run_with_args(pdf, *args) -> str:
     """check_output() technically returns bytes so we decode before returning STDOUT output"""
     return check_output([PDFALYZE, pdf, *args], env=environ).decode()
@@ -47,7 +52,7 @@ def _run_with_args(pdf, *args) -> str:
 def _assert_line_count_within_range(line_count, text):
     lines_in_text = len(text.split("\n"))
 
-    if not isclose(line_count, lines_in_text, rel_tol=0.1):
+    if not isclose(line_count, lines_in_text, rel_tol=0.02):
         for i, line in enumerate(text.split("\n")):
             print(f"{i}: {line}")
 

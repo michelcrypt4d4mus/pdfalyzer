@@ -13,8 +13,6 @@ from yaralyzer.util.logging import log, log_and_print, log_argparse_result, log_
 
 from pdfalyzer.config import LOG_DIR_ENV_VAR, PdfalyzerConfig
 from pdfalyzer.detection.constants.binary_regexes import QUOTE_REGEXES
-from pdfalyzer.helpers import rich_text_helper
-
 
 # NamedTuple to keep our argument selection orderly
 OutputSection = namedtuple('OutputSection', ['argument', 'method'])

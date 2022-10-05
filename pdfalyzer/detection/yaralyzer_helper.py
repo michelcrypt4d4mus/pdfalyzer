@@ -1,3 +1,6 @@
+"""
+Class to help with the pre-configured YARA rules in /yara.
+"""
 from os import path
 from typing import Iterator, Union
 

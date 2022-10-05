@@ -343,10 +343,10 @@ rule multiple_versions : PDF
 		weight = 0
     strings:
         $magic = { 25 50 44 46 }
-        $s0 = "trailer"
-        $s1 = "%%EOF"
+        $trailer = "trailer"
+        $eof = "%%EOF"
     condition:
-        $magic at 0 and #s0 > 1 and #s1 > 1
+        $magic at 0 and #trailer > 1 and #eof > 1
 }
 
 

@@ -1,6 +1,8 @@
 # THE PDFALYZER
 A PDF analysis tool geared towards visualizing the inner tree-like data structure[^1] of a PDF in [spectacularly large and colorful diagrams](#example-output) as well as scanning the various kinds of binary data within the PDF for hidden potentially malicious content.
 
+The Pdfalyzer makes heavy use of YARA (via [The Yaralyzer](https://github.com/michelcrypt4d4mus/yaralyzer)) for matching/extracting byte patterns. [The Yaralyzer](https://github.com/michelcrypt4d4mus/yaralyzer) actually began its life as The Pdfalyzer's matching engine.
+
 **PyPi Users:** If you are reading this document [on PyPi](https://pypi.org/project/pdfalyzer/) be aware that it renders a lot better [over on GitHub](https://github.com/michelcrypt4d4mus/pdfalyzer). Lots of pretty pictures, footnotes that work, etc.
 
 #### Quick Start
@@ -170,22 +172,6 @@ for backtick_quoted_string in font1.binary_scanner.extract_backtick_quoted_bytes
 # Try to decode - by force if necessary - everything in the font binary that looks like a quoted string
 # or regex (meaning bytes between single quotes, double quotes, front slashes, backticks, or guillemet quotes)
 font1.force_decode_all_quoted_bytes()
-```
-
-The binary stream data search and forced decoding options are not limited to font binaries and indeed can work with any binary data in the form of a `bytes` or `bytearray` primitive.
-
-```python
-from pdfalyzer.binary.binary_scanner import BinaryScanner
-
-binary_scanner = BinaryScanner(some_bytes: bytes)
-
-# Iterate over regions around bytes that match an arbitrary byte pattern (returned object includes surrounding bytes)
-for regex_match in binary_scanner.extract_regex_capture_bytes(re.compile(b'\xa0\xcc\xdd\xfa')):
-    process_(regex_match)
-
-# If you provide a capture group you will be returned an object that separates the capture group from the region
-for regex_match in binary_scanner.extract_regex_capture_bytes(re.compile(b'\xcc(.*)\xdd')):
-    process_(regex_match)
 ```
 
 

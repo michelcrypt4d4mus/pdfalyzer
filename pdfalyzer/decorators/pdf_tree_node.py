@@ -53,6 +53,13 @@ class PdfTreeNode(NodeMixin):
         self.other_relationships = []
         self.all_references_processed = False
 
+        if isinstance(obj, StreamObject):
+            self.stream_data = self.obj.get_data()
+            self.stream_length = len(self.stream_data)
+        else:
+            self.stream_data = None
+            self.stream_length = 0
+
         if isinstance(obj, DictionaryObject):
             self.type = obj.get(TYPE) or known_to_parent_as
             self.label = obj.get(TYPE) or known_to_parent_as
@@ -247,11 +254,17 @@ class PdfTreeNode(NodeMixin):
 
         if not isinstance(self.obj, StreamObject):
             return return_rows
+        if self.stream_data is None or len(self.stream_data) == 0:
+            log.warning(self.__rich__().append(' is a stream object but had no stream data'))
+            return return_rows
 
-        stream_data = self.obj.get_data()
-        stream_preview = stream_data[:STREAM_PREVIEW_LENGTH_IN_TABLE]
+        stream_preview = self.stream_data[:STREAM_PREVIEW_LENGTH_IN_TABLE]
         stream_preview_length = len(stream_preview)
-        stream_preview_hex = hex_string(stream_preview).plain
+
+        if isinstance(self.stream_data, bytes):
+            stream_preview_hex = hex_string(stream_preview).plain
+        else:
+            stream_preview_hex = f"N/A (Stream data is type '{type(self.stream_data).__name__}', not bytes)"
 
         if isinstance(stream_preview, bytes):
             stream_preview_lines = stream_preview.split(NEWLINE_BYTE)
@@ -272,9 +285,8 @@ class PdfTreeNode(NodeMixin):
 
         add_preview_row(STREAM, stream_preview_string)
         add_preview_row(HEX, stream_preview_hex)
-        return_rows.append([Text('StreamLength', style='grey'), size_string(len(stream_data))])
+        return_rows.append([Text('StreamLength', style='grey'), size_string(len(self.stream_data))])
         return return_rows
-
 
     def generate_rich_tree(self, tree=None, depth=0):
         """Recursively generates a rich.tree.Tree object from this node"""
@@ -302,7 +314,7 @@ class PdfTreeNode(NodeMixin):
         text.append('>')
         return text
 
-    def __str_with_color__(self) -> Text:
+    def __rich__(self) -> Text:
         return self._node_label()[:-1] + self.colored_address(max_length=DEFAULT_MAX_ADDRESS_LENGTH) + Text('>')
 
     def __str__(self) -> str:

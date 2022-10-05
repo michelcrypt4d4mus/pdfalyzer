@@ -7,7 +7,7 @@ rule PDF_with_XORed_JS_keywords
         created_date       = "2022-10-01"
         updated_date       = "2022-10-01"
 	strings:
-        $this = "this" xor
+        $this = "this\\s*" xor
         $require = "require" xor
 		$const = "const" xor
         $eval = "eval" xor

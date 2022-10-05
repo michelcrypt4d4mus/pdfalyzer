@@ -20,7 +20,7 @@ def analyzing_malicious_documents_pdf_path():
 # Some obj ids for use with -f when you want to limit yourself to the font
 @pytest.fixture(scope="session")
 def font_obj_ids_in_analyzing_malicious_docs_pdf():
-    return [9, 11, 13, 15, 17]
+    return [5, 9, 11, 13, 15, 17]
 
 
 # PDF walkers to parse them
@@ -31,6 +31,12 @@ def analyzing_malicious_documents_pdfalyzer(analyzing_malicious_documents_pdf_pa
 @pytest.fixture(scope="session")
 def adobe_type1_fonts_pdfalyzer(adobe_type1_fonts_pdf_path):
     return Pdfalyzer(adobe_type1_fonts_pdf_path)
+
+
+# A font info object
+@pytest.fixture(scope="session")
+def font_info(analyzing_malicious_documents_pdfalyzer):
+    return next(fi for fi in analyzing_malicious_documents_pdfalyzer.font_infos if fi.idnum == 5)
 
 
 # Handy iterator

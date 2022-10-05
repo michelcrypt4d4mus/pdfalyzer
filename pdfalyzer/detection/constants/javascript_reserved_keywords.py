@@ -1,7 +1,7 @@
 HIGH_VALUE_KEYWORDS = [
     'this', # *
-    'require', # *
-    'const', # *
+    'require ', # *
+    'const ', # *
     'eval',  # *
 ]
 

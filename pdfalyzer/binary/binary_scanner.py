@@ -5,8 +5,9 @@ various character encodings upon it to see what comes out.
 import re
 from collections import defaultdict
 from numbers import Number
-from typing import Any, Iterator, Pattern
+from typing import Any, Iterator, Pattern, Tuple
 
+from deprecated import deprecated
 from rich.panel import Panel
 from rich.table import Table
 from rich.text import Text
@@ -53,37 +54,32 @@ class BinaryScanner:
 
         for instruction in DANGEROUS_STRINGS:
             label = f"({BOMS[instruction]}) " if instruction in BOMS else instruction
-            self._process_yara_matches(instruction, label, force=True)
+            self.process_yara_matches(instruction, label, force=True)
 
     def force_decode_all_quoted_bytes(self) -> None:
-        """Find all strings matching QUOTE_REGEXES (AKA between quote chars) and decode them with various encodings"""
+        """Find all strings matching QUOTE_PATTERNS (AKA between quote chars) and decode them with various encodings"""
         quote_types = QUOTE_PATTERNS.keys() if PdfalyzerConfig.QUOTE_TYPE is None else [PdfalyzerConfig.QUOTE_TYPE]
 
         for quote_type in quote_types:
             quote_regex = QUOTE_PATTERNS[quote_type]
             print_section_header(f"Forcing Decode of {quote_type.capitalize()} Quoted Strings", style='color(100)')
-            self._process_yara_matches(quote_regex, rules_label=f"{quote_type} quoted")
-
-    def extract_regex_capture_bytes(self, regex: Pattern[bytes]) -> Iterator[BytesMatch]:
-        """Finds all matches of regex_with_one_capture in self.bytes and calls yield() with BytesMatch tuples"""
-        for i, match in enumerate(regex.finditer(self.bytes, self._eexec_idx())):
-            yield(BytesMatch.from_regex_match(self.bytes, match, i + 1))
+            self.process_yara_matches(quote_regex, rules_label=f"{quote_type} quoted")
 
     # -------------------------------------------------------------------------------
     # These extraction iterators will iterate over all matches for a specific pattern.
     # extract_regex_capture_bytes() is the generalized method that acccepts any regex.
     # -------------------------------------------------------------------------------
-    def extract_guillemet_quoted_bytes(self) -> Iterator[BytesMatch]:
+    def extract_guillemet_quoted_bytes(self) -> Iterator[Tuple[BytesMatch, BytesDecoder]]:
         """Iterate on all strings surrounded by Guillemet quotes, e.g. «string»"""
-        return self.extract_regex_capture_bytes(QUOTE_REGEXES['guillemet'])
+        return self._pattern_yaralyzer(QUOTE_PATTERNS['guillemet'], 'guillemet').match_iterator()
 
-    def extract_backtick_quoted_bytes(self) -> Iterator[BytesMatch]:
+    def extract_backtick_quoted_bytes(self) -> Iterator[Tuple[BytesMatch, BytesDecoder]]:
         """Returns an interator over all strings surrounded by backticks"""
-        return self.extract_regex_capture_bytes(QUOTE_REGEXES['backtick'])
+        return self._pattern_yaralyzer(QUOTE_PATTERNS['backtick'], 'backtick').match_iterator()
 
-    def extract_front_slash_quoted_bytes(self) -> Iterator[BytesMatch]:
+    def extract_front_slash_quoted_bytes(self) -> Iterator[Tuple[BytesMatch, BytesDecoder]]:
         """Returns an interator over all strings surrounded by front_slashes (hint: regular expressions)"""
-        return self.extract_regex_capture_bytes(QUOTE_REGEXES['front_slaash'])
+        return self._pattern_yaralyzer(QUOTE_PATTERNS['frontslash'], 'frontslash').match_iterator()
 
     def print_stream_preview(self, num_bytes=None, title_suffix=None) -> None:
         """Print a preview showing the beginning and end of the stream data"""
@@ -144,15 +140,9 @@ class BinaryScanner:
         console.line(2)
         console.print(stats_table)
 
-    def bytes_after_eexec_statement(self) -> bytes:
-        """Get the bytes after the 'eexec' demarcation line (if it appears). See Adobe docs for details."""
-        return self.bytes.split(CURRENTFILE_EEXEC)[1] if CURRENTFILE_EEXEC in self.bytes else self.bytes
-
-    def _process_yara_matches(self, pattern: str, rules_label: str, force: bool = False) -> None:
+    def process_yara_matches(self, pattern: str, rules_label: str, force: bool = False) -> None:
         """Decide whether to attempt to decode the matched bytes, track stats. force param ignores min/max length"""
-        yaralyzer = Yaralyzer.for_patterns([escape_yara_pattern(pattern)], self.bytes, self.label.plain, rules_label)
-
-        for bytes_match, bytes_decoder in yaralyzer.match_iterator():
+        for bytes_match, bytes_decoder in self._pattern_yaralyzer(pattern, rules_label).match_iterator():
             self.regex_extraction_stats[pattern].match_count += 1
             self.regex_extraction_stats[pattern].bytes_matched += bytes_match.match_length
             self.regex_extraction_stats[pattern].bytes_match_objs.append(bytes_match)
@@ -168,6 +158,19 @@ class BinaryScanner:
 
             if self.regex_extraction_stats[pattern].match_count == 0:
                 console.print(f"{pattern} was not found for {self.label}...", style='dim')
+
+    def bytes_after_eexec_statement(self) -> bytes:
+        """Get the bytes after the 'eexec' demarcation line (if it appears). See Adobe docs for details."""
+        return self.bytes.split(CURRENTFILE_EEXEC)[1] if CURRENTFILE_EEXEC in self.bytes else self.bytes
+
+    @deprecated(version='1.7.0', reason="Use process_yara_matches() instead")
+    def extract_regex_capture_bytes(self, regex: Pattern[bytes]) -> Iterator[BytesMatch]:
+        """Finds all matches of regex_with_one_capture in self.bytes and calls yield() with BytesMatch tuples"""
+        for i, match in enumerate(regex.finditer(self.bytes, self._eexec_idx())):
+            yield(BytesMatch.from_regex_match(self.bytes, match, i + 1))
+
+    def _pattern_yaralyzer(self, pattern: str, rules_label: str):
+        return Yaralyzer.for_patterns([escape_yara_pattern(pattern)], self.bytes, self.label.plain, rules_label)
 
     def _record_decode_stats(self, bytes_match: BytesMatch, decoder: BytesDecoder, label: str) -> None:
         """Attempt to decode _bytes with all configured encodings and print a table of the results"""
