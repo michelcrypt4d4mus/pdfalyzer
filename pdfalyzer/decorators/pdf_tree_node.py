@@ -19,7 +19,7 @@ from rich.table import Table
 from rich.text import Text
 from rich.tree import Tree
 from yaralyzer.helpers.bytes_helper import clean_byte_string, hex_string
-from yaralyzer.helpers.rich_text_helper import YARALYZER_THEME, console
+from yaralyzer.helpers.rich_text_helper import BYTES_NO_DIM, YARALYZER_THEME, console
 from yaralyzer.util.logging import log
 
 from yaralyzer.encoding_detection.character_encodings import NEWLINE_BYTE
@@ -32,10 +32,11 @@ from pdfalyzer.util.adobe_strings import (DANGEROUS_PDF_KEYS, FIRST, FONT, LAST,
      SUBTYPE, TRAILER, TYPE, UNLABELED, XREF, XREF_STREAM)
 from pdfalyzer.util.exceptions import PdfWalkError
 
-DEFAULT_MAX_ADDRESS_LENGTH = 90
 STREAM_PREVIEW_LENGTH_IN_TABLE = 500
-HEX = 'Hex'
+DEFAULT_MAX_ADDRESS_LENGTH = 90
 STREAM = 'Stream'
+HEX = 'Hex'
+PREVIEW_STYLES = {HEX: BYTES_NO_DIM, STREAM: 'bytes'}
 
 Relationship = namedtuple('Relationship', ['from_node', 'reference_key'])
 
@@ -265,12 +266,13 @@ class PdfTreeNode(NodeMixin):
                 row_label = "Preview" if hex_or_stream != HEX else ' Preview'
                 stream_string += '...'
 
+            style = PREVIEW_STYLES[hex_or_stream]
             row_label = f"{hex_or_stream}{row_label}\n  ({stream_preview_length} bytes)"
-            return_rows.append([Text(row_label, 'grey'), Text(stream_string, 'bytes')])
+            return_rows.append([Text(row_label, 'grey'), Text(stream_string, style)])
 
-        return_rows.append([Text('StreamLength', style='grey'), size_string(len(stream_data))])
         add_preview_row(STREAM, stream_preview_string)
         add_preview_row(HEX, stream_preview_hex)
+        return_rows.append([Text('StreamLength', style='grey'), size_string(len(stream_data))])
         return return_rows
 
 

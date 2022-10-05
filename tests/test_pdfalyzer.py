@@ -36,7 +36,7 @@ def test_pdfalyzer_rich_tree(adobe_type1_fonts_pdf_path, analyzing_malicious_doc
 def test_font_scan(adobe_type1_fonts_pdf_path):
     environ[MAX_DECODE_LENGTH_ENV_VAR] = '2'
     font_scan_output = _run_with_args(adobe_type1_fonts_pdf_path, '-f')
-    _assert_line_count_within_range(11037, font_scan_output)
+    _assert_line_count_within_range(9843, font_scan_output)
 
 
 def _run_with_args(pdf, *args) -> str:

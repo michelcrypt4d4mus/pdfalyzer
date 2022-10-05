@@ -1,4 +1,7 @@
 # NEXT RELEASE
+
+
+# 1.7.0
 * Use `yaralyzer` as the match engine
 * Scan all binary streams, not just the fonts
 

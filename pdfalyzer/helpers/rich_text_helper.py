@@ -16,9 +16,12 @@ from rich.panel import Panel
 from rich.style import Style
 from rich.table import Table
 from rich.text import Text
-from yaralyzer.helpers.rich_text_helper import (YARALYZER_THEME, console, prefix_with_plain_text_obj)
+from rich.theme import Theme
+from yaralyzer.helpers.rich_text_helper import (GREY_ADDRESS, YARALYZER_THEME_DICT, console,
+     prefix_with_plain_text_obj)
 from yaralyzer.util.logging import log, log_and_print
 
+from pdfalyzer.helpers.dict_helper import merge
 from pdfalyzer.util import adobe_strings
 
 # Colors
@@ -29,6 +32,52 @@ FONT_OBJ_BLUE = 'deep_sky_blue4 bold'
 # PDF object styles
 PDF_ARRAY = 'color(120)'
 PDF_NON_TREE_REF = 'color(243)'
+
+PDFALYZER_THEME_DICT = YARALYZER_THEME_DICT.copy()
+PDFALYZER_THEME_DICT.update({
+    'address': GREY_ADDRESS,
+    # PDF objects
+    'pdf.array': PDF_ARRAY,
+    'pdf.non_tree_ref': PDF_NON_TREE_REF,
+    # fonts
+    'font.property': 'color(135)',
+    'font.title': 'reverse dark_blue on color(253)',
+    # charmap
+    'charmap.title': 'color(18) reverse on white dim',
+    'charmap.prepared_title': 'color(23) reverse on white dim',
+    'charmap.prepared': 'color(106) dim',
+    'charmap.byte': 'color(58)',
+    'charmap.char': 'color(120) bold',
+    # design elements
+    'subtable': 'color(8) on color(232)',
+    'header.minor': 'color(249) bold',
+    'header.danger': DANGER_HEADER,
+    'header.danger_reverse': f'{DANGER_HEADER} reverse',
+    # neutral log events
+    'event.attn': 'bold bright_cyan',
+    'event.lowpriority': 'bright_black',
+    # good log events
+    'event.good': 'green4',
+    'event.better': 'turquoise4',
+    'event.reallygood': 'dark_cyan',
+    'event.reallygreat': 'spring_green1',
+    'event.great': 'sea_green2',
+    'event.evenbetter': 'chartreuse1',
+    'event.best': 'green1',
+    'event.siren': 'blink bright_white on red3',
+    # warn log events
+    'warn': 'bright_yellow',
+    'warn.mild': 'yellow2',
+    'warn.milder': 'dark_orange3',
+    'warn.harsh': 'reverse bright_yellow',
+    # error log events
+    'fail': 'bold reverse red',
+    'milderror': 'red',
+    'red_alert': 'blink bold red reverse on white',
+})
+
+console.push_theme(Theme(PDFALYZER_THEME_DICT))
+
 
 TYPE_STYLES = {
     Number: 'bright_cyan bold',
@@ -166,7 +215,7 @@ def pdfalyzer_show_color_theme() -> None:
 
     colors = [
         prefix_with_plain_text_obj(name[:MAX_THEME_COL_SIZE], style=str(style)).append(' ')
-        for name, style in YARALYZER_THEME.styles.items()
+        for name, style in PDFALYZER_THEME_DICT.items()
         if name not in ['reset', 'repr_url']
     ]
 
