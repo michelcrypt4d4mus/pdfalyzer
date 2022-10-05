@@ -126,9 +126,7 @@ scripts/install_t1utils.sh
 
 
 # Usage
-2. Run `pdfalyze --help` to see usage instructions.
-
-As of right now these are the options:
+Run `pdfalyze --help` to see usage instructions. As of right now these are the options:
 
 ![argparse_help](doc/svgs/rendered_images/pdfalyzer_help.png)
 
