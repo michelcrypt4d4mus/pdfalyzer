@@ -130,7 +130,7 @@ scripts/install_t1utils.sh
 
 As of right now these are the options:
 
-![argparse_help](doc/screenshots/rich_help/pdfalyzer_private_help.png)
+![argparse_help](doc/svgs/rendered_images/pdfalyzer_help.png)
 
 Beyond that there's [a few scripts](scripts/) in the repo that may be of interest.
 
