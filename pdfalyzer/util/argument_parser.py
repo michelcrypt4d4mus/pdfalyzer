@@ -1,5 +1,5 @@
 import sys
-from argparse import ArgumentDefaultsHelpFormatter, ArgumentParser
+from argparse import ArgumentDefaultsHelpFormatter, ArgumentParser, Action
 from collections import namedtuple
 from functools import partial, update_wrapper
 from importlib.metadata import version
@@ -8,7 +8,8 @@ from typing import List
 
 from rich_argparse import RichHelpFormatter
 from yaralyzer.helpers.rich_text_helper import console
-from yaralyzer.util.argument_parser import export, parser, parse_arguments as parse_yaralyzer_args
+from yaralyzer.util.argument_parser import (ExplicitDefaultsHelpFormatter, export, parser,
+     parse_arguments as parse_yaralyzer_args)
 from yaralyzer.util.logging import log, log_and_print, log_argparse_result, log_current_config, log_invocation
 
 from pdfalyzer.config import LOG_DIR_ENV_VAR, PdfalyzerConfig
@@ -16,16 +17,6 @@ from pdfalyzer.detection.constants.binary_regexes import QUOTE_REGEXES
 
 # NamedTuple to keep our argument selection orderly
 OutputSection = namedtuple('OutputSection', ['argument', 'method'])
-
-# Class to enable defaults to only be printed when they are not None or False
-class ExplicitDefaultsHelpFormatter(RichHelpFormatter):
-#class ExplicitDefaultsHelpFormatter(ArgumentDefaultsHelpFormatter):
-    def _get_help_string(self, action):
-        if 'default' in vars(action) and action.default in (None, False):
-            return action.help
-        else:
-            return super()._get_help_string(action)
-
 
 ALL_FONTS_OPTION = -1
 

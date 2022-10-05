@@ -1,6 +1,9 @@
 # NEXT RELEASE
 
 
+# 1.8.1
+* Show defaults and valid values for command line options
+
 # 1.8.0
 * Add table of stream lengths for PDF objects containing streams to `--doc-info` output
 * Quote extraction API methods should use yara, not bespoke extraction
