@@ -137,6 +137,9 @@ Beyond that there's [a few scripts](scripts/) in the repo that may be of interes
 ### Setting Command Line Options Permanently With A `.pdfalyzer` File
 If you find yourself specificying the same options over and over you may be able to automate that with a [dotenv](https://pypi.org/project/python-dotenv/) setup. When you run `pdfalyze` on some PDF the tool will check for a file called `.pdfalyzer` first in the current directory and then in the home directory. If it finds a file in either such place it will load options from it. Documentation on the options that can be configured with these files lives in [`.pdfalyzer.example`](.pdfalyzer.example) which doubles as an example file you can copy into place and edit to your needs. Even if don't configure your own `.pdfalyzer` file you may still glean some insight from reading the descriptions of the various variables in [.pdfalyzer.example](.pdfalyzer.example); there's a little more exposition there than in the output of `pdfalyze -h`.
 
+### Colors And Themes
+Run `pdfalyzer_show_color_theme` to see the color theme employed.
+
 ### As A Code Library
 At its core The Pdfalyzer is taking PDF internal objects gathered by [PyPDF2](https://github.com/py-pdf/PyPDF2) and wrapping them in [AnyTree](https://github.com/c0fec0de/anytree)'s `NodeMixin` class.  Given that things like searching the tree or accessing internal properties will be done through those packages' code it may be quite helpful to review their documentation.
 
@@ -218,48 +221,7 @@ You might be able to easily fix your problem by adding the Adobe object's refere
 # Contributing
 One easy way of contributing is to run [the script to test against all the PDFs in `~/Documents`](scripts/test_against_all_pdfs_in_Documents_folder.sh) and reporting any issues.
 
-Beyond that contributions are welcome, just make sure that before you open a pull request:
-
-1. The test suite passes (run by typing `pytest`)
-1. You add a description of your changes to [the changelog](CHANGELOG.md)
-
-If your pull request includes some `pytest` setup/unit testing you'll be my new favorite person.
-
-## Development Environment Setup
-1. `git clone https://github.com/michelcrypt4d4mus/pdfalyzer.git`
-1. `cd pdfalyzer`
-
-After that there's a forking path depending on whether or not you use [poetry](https://python-poetry.org) to manage your python lifestyle.
-
-Note that the minimum versions for each package were chosen because that's what worked on my machine and not because that version had some critical bug fix or feature so it's entirely possible that using earlier versions than are specified in [pyproject.toml](pyproject.toml) or [requirements.txt](requirements.txt) will work just fine. Feel free to experiment if there's some kind of version conflict for you.
-
-#### With Python Poetry
-These commands are the `poetry` equivalent of the traditional virtualenv installation followed by `source venv/bin/activate` but there's a lot of ways to run a python script in a virtualenv with `poetry` so you do you if you prefer another approach.
-
-```sh
-poetry install
-source $(poetry env info --path)/bin/activate
-```
-
-#### With A Manual `venv`
-```sh
-python -m venv .venv              # Create a virtualenv in .venv
-. .venv/bin/activate              # Activate the virtualenv
-pip install -r requirements.txt   # Install packages
-```
-
-Note that I'm not sure exactly how to get the `pdfalyze` command installed when developing outside of a `poetry` env, but creating a simple `run_pdfalyzer.py` file with these contents would do the same thing:
-```python
-from pdfalyzer import pdfalyzer
-pdfalyzer()
-```
-
-## Colors And Themes
-Run `pdfalyzer_show_color_theme` to see the color theme employed.
-
-## Testing
-Run all tests by typing `pytest`. Test coverage is relatively spartan but should throw failures if you really mess something up. See [How To Invoke pytest](https://docs.pytest.org/en/7.1.x/how-to/usage.html) official docs for other options.
-
+Beyond that see [CONTRIBUTING.md](CONTRIBUTING.md).
 
 # TODO
 * highlight decodes done at `chardet`s behest
