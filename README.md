@@ -126,11 +126,11 @@ scripts/install_t1utils.sh
 
 
 # Usage
-2. Run `pdfalyze -h` to see usage instructions.
+2. Run `pdfalyze --help` to see usage instructions.
 
 As of right now these are the options:
 
-![argparse_help](doc/screenshots/rich_help/full_text_of_help_orange_group.png)
+![argparse_help](doc/screenshots/rich_help/pdfalyzer_private_help.png)
 
 Beyond that there's [a few scripts](scripts/) in the repo that may be of interest.
 

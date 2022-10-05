@@ -20,8 +20,8 @@ from pdfalyzer.helpers import rich_text_helper
 OutputSection = namedtuple('OutputSection', ['argument', 'method'])
 
 # Class to enable defaults to only be printed when they are not None or False
-#class ExplicitDefaultsHelpFormatter(RichHelpFormatter):
-class ExplicitDefaultsHelpFormatter(ArgumentDefaultsHelpFormatter):
+class ExplicitDefaultsHelpFormatter(RichHelpFormatter):
+#class ExplicitDefaultsHelpFormatter(ArgumentDefaultsHelpFormatter):
     def _get_help_string(self, action):
         if 'default' in vars(action) and action.default in (None, False):
             return action.help
