@@ -56,7 +56,7 @@ def _render_help(program_name: str, export_format: str, output_dir: str) -> str:
     export_method(output_file, **export_kwargs[export_method_name])
     console.print(f"\n\nInvoked Rich.console.{export_method_name}('{output_file}')", style='cyan')
     console.print(f"   * kwargs: '{export_kwargs[export_method_name]}'...\n", style='cyan')
-    console.print(f"Rendered help to '{output_file}'", style='cyan')
+    console.print(f"Help rendered to '{output_file}'...", style='cyan')
     return output_file
 
 
