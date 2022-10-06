@@ -6,9 +6,9 @@ searching the tree and printing out information.
 import hashlib
 from collections import defaultdict
 from os.path import basename
-from typing import Iterator
+from typing import Iterator, List
 
-from anytree import LevelOrderIter, NodeMixin, RenderTree, SymlinkNode
+from anytree import LevelOrderIter, RenderTree, SymlinkNode
 from anytree.render import DoubleStyle
 from anytree.search import findall_by_attr
 from PyPDF2 import PdfReader
@@ -19,20 +19,19 @@ from rich.table import Column, Table
 from rich.text import Text
 from pdfalyzer.detection.yaralyzer_helper import get_file_yaralyzer
 from yaralyzer.helpers.file_helper import load_binary_data
-from yaralyzer.helpers.rich_text_helper import console, theme_colors_with_prefix
+from yaralyzer.output.rich_console import console, theme_colors_with_prefix
 from yaralyzer.util.logging import log
-from yaralyzer.yaralyzer import Yaralyzer
 
 from pdfalyzer.decorators.document_model_printer import print_with_header
 from pdfalyzer.decorators.pdf_tree_node import PdfTreeNode
-from pdfalyzer.helpers.number_helper import size_string
+from pdfalyzer.helpers.number_helper import size_string, size_in_bytes_string
 from pdfalyzer.helpers.pdf_object_helper import get_symlink_representation
-from pdfalyzer.helpers.string_helper import pp, print_section_header
+from pdfalyzer.helpers.rich_text_helper import print_section_header, print_section_subheader
+from pdfalyzer.helpers.string_helper import pp
 from pdfalyzer.font_info import FontInfo
-from pdfalyzer.util.adobe_strings import (COLOR_SPACE, D, DEST, EXT_G_STATE, FONT, K, KIDS, NON_TREE_REFERENCES, NUMS,
-     OBJECT_STREAM, OPEN_ACTION, P, PARENT, PREV, RESOURCES, SIZE, STRUCT_ELEM, TRAILER, TYPE, UNLABELED, XOBJECT,
-     XREF, XREF_STREAM)
-from pdfalyzer.util.filesystem_awareness import PROJECT_DIR
+from pdfalyzer.util.adobe_strings import (COLOR_SPACE, D, DEST, EXT_G_STATE, FONT, K, KIDS,
+     NON_TREE_REFERENCES, NUMS, OBJECT_STREAM, OPEN_ACTION, P, PARENT, PREV, RESOURCES, SIZE,
+     STRUCT_ELEM, TRAILER, TYPE, UNLABELED, XOBJECT, XREF, XREF_STREAM)
 from pdfalyzer.util.exceptions import PdfWalkError
 
 TRAILER_FALLBACK_ID = 10000000
@@ -206,13 +205,17 @@ class Pdfalyzer:
             console.print(f'{i}: {self.traversed_nodes[i]}')
 
     def print_stream_objects(self) -> None:
-        print_section_header(f'Stream Summary for {self.pdf_basename}')
+        print_section_subheader(f'Stream Summary for {self.pdf_basename}')
 
         table = Table('Stream Length', 'Node')
         table.columns[0].justify = 'right'
+        stream_nodes: List[PdfTreeNode] = []
 
         for node in self.stream_node_iterator():
-            table.add_row(Text(str(node.stream_length), style='number'), node.__rich__())
+            stream_nodes.append(node)
+
+        for node in sorted(stream_nodes, key=lambda r: r.idnum):
+            table.add_row(size_in_bytes_string(node.stream_length), node.__rich__())
 
         console.print(table)
 
@@ -406,7 +409,7 @@ class Pdfalyzer:
             node_labels[node.label] += 1
             node_count += 1
 
-            if isinstance(node, dict):
+            if isinstance(node.obj, dict):
                 for k in node.obj.keys():
                     keys_encountered[k] += 1
 

@@ -19,7 +19,7 @@ from rich.table import Table
 from rich.text import Text
 from rich.tree import Tree
 from yaralyzer.helpers.bytes_helper import clean_byte_string, hex_string
-from yaralyzer.helpers.rich_text_helper import BYTES_NO_DIM, YARALYZER_THEME, console
+from yaralyzer.output.rich_console import BYTES_NO_DIM, YARALYZER_THEME, console
 from yaralyzer.util.logging import log
 
 from yaralyzer.encoding_detection.character_encodings import NEWLINE_BYTE

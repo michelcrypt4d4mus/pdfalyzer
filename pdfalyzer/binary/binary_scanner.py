@@ -16,9 +16,9 @@ from yaralyzer.config import YaralyzerConfig
 from yaralyzer.decoding.bytes_decoder import BytesDecoder
 from yaralyzer.encoding_detection.character_encodings import BOMS
 from yaralyzer.helpers.bytes_helper import print_bytes
-from yaralyzer.helpers.rich_text_helper import (CENTER, console, console_width, na_txt, prefix_with_plain_text_obj,
-     subheading_width)
+from yaralyzer.helpers.rich_text_helper import CENTER, na_txt, prefix_with_plain_text_obj
 from yaralyzer.helpers.string_helper import escape_yara_pattern
+from yaralyzer.output.rich_console import console, console_width
 from yaralyzer.output.regex_match_metrics import RegexMatchMetrics
 from yaralyzer.yaralyzer import Yaralyzer
 from yaralyzer.util.logging import log
@@ -26,8 +26,9 @@ from yaralyzer.util.logging import log
 from pdfalyzer.config import PdfalyzerConfig
 from pdfalyzer.detection.constants.binary_regexes import DANGEROUS_STRINGS, QUOTE_REGEXES, QUOTE_PATTERNS
 from pdfalyzer.helpers.rich_text_helper import (DANGER_HEADER, NOT_FOUND_MSG,
-     generate_subtable, get_label_style, pad_header)
-from pdfalyzer.helpers.string_helper import generate_hyphen_line, print_section_header
+     generate_subtable, get_label_style, pad_header, print_section_header)
+from pdfalyzer.helpers.string_helper import generate_hyphen_line
+from pdfalyzer.output.layout import subheading_width
 from pdfalyzer.util.adobe_strings import CURRENTFILE_EEXEC
 
 # For rainbow colors

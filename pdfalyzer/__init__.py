@@ -12,10 +12,10 @@ if not environ.get('INVOKED_BY_PYTEST', False):
             break
 
 from yaralyzer.config import YaralyzerConfig
-from yaralyzer.helpers.rich_text_helper import console
+from yaralyzer.output.file_export import invoke_rich_export
+from yaralyzer.output.rich_console import console
 from yaralyzer.util.logging import log, log_and_print
 
-from pdfalyzer.helpers.rich_text_helper import invoke_rich_export
 from pdfalyzer.pdfalyzer import Pdfalyzer
 from pdfalyzer.util.pdf_parser_manager import PdfParserManager
 from pdfalyzer.util.argument_parser import ALL_FONTS_OPTION, output_sections, parse_arguments
@@ -24,6 +24,7 @@ from pdfalyzer.util.argument_parser import ALL_FONTS_OPTION, output_sections, pa
 def pdfalyze():
     args = parse_arguments()
     pdfalyzer = Pdfalyzer(args.file_to_scan_path)
+    output_basepath = None
 
     # Binary stream extraction is a special case
     if args.extract_binary_streams:
@@ -68,6 +69,10 @@ def pdfalyze():
 
         if args.export_svg:
             invoke_rich_export(console.save_svg, output_basepath)
+
+        # Clear the buffer if we have one
+        if args.output_dir:
+            del console._record_buffer[:]
 
     # Drop into interactive shell if requested
     if args.interact:

@@ -1,6 +1,9 @@
 # NEXT RELEASE
 
 
+# 1.8.2
+* Sync with `yaralyzer` 0.3.3
+
 # 1.8.1
 * Show defaults and valid values for command line options
 

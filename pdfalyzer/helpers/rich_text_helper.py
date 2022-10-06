@@ -17,8 +17,8 @@ from rich.style import Style
 from rich.table import Table
 from rich.text import Text
 from rich.theme import Theme
-from yaralyzer.helpers.rich_text_helper import (GREY_ADDRESS, YARALYZER_THEME_DICT, console,
-     prefix_with_plain_text_obj)
+from yaralyzer.output.rich_console import GREY_ADDRESS, YARALYZER_THEME_DICT, console
+from yaralyzer.helpers.rich_text_helper import prefix_with_plain_text_obj
 from yaralyzer.util.logging import log, log_and_print
 
 from pdfalyzer.helpers.dict_helper import merge
@@ -138,6 +138,16 @@ MAX_THEME_COL_SIZE = 35
 NOT_FOUND_MSG = Text('(not found)', style='grey.dark_italic')
 
 
+def print_section_header(headline: str, style: str = '') -> None:
+    print_section_subheader(headline, f"{style} reverse", True)
+
+
+def print_section_subheader(headline: str, style: str = '', expand: bool = False) -> None:
+    console.line(2)
+    console.print(Panel(headline, style=style, expand=expand))
+    console.line()
+
+
 def get_label_style(label: str) -> str:
     """Lookup a style based on the label string"""
     return next((ls[1] for ls in LABEL_STYLES if ls[0].search(label)), DEFAULT_LABEL_STYLE)
@@ -179,34 +189,6 @@ def generate_subtable(cols, header_style='subtable') -> Table:
 def pad_header(header: str) -> Padding:
     """Would pad anything, not just headers"""
     return Padding(header, HEADER_PADDING)
-
-
-def invoke_rich_export(export_method, output_file_basepath) -> str:
-    """
-    Announce the export, perform the export, announce completion.
-    export_method is a Rich.console.save_blah() method, output_file_path is file path w/no extname.
-    Returns the path to path data was exported to.
-    """
-    method_name = export_method.__name__
-    extname = 'txt' if method_name == 'save_text' else method_name.split('_')[-1]
-    output_file_path = f"{output_file_basepath}.{extname}"
-
-    if method_name not in _EXPORT_KWARGS:
-        raise RuntimeError(f"{method_name} is not a valid Rich.console export method!")
-
-    kwargs = _EXPORT_KWARGS[method_name].copy()
-    kwargs.update({'clear': False})
-
-    if 'svg' in method_name:
-        kwargs.update({'title': path.basename(output_file_path) })
-
-    # Invoke it
-    log_and_print(f"Invoking Rich.console.{method_name}('{output_file_path}') with kwargs: '{kwargs}'...")
-    start_time = time.perf_counter()
-    export_method(output_file_path, **kwargs)
-    elapsed_time = time.perf_counter() - start_time
-    log_and_print(f"'{output_file_path}' written in {elapsed_time:02f} seconds")
-    return output_file_path
 
 
 def pdfalyzer_show_color_theme() -> None:

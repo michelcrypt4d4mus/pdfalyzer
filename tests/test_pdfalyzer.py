@@ -56,4 +56,4 @@ def _assert_line_count_within_range(line_count, text):
         for i, line in enumerate(text.split("\n")):
             print(f"{i}: {line}")
 
-        raise AssertionError(f"Expected {line_count} +/- but found {lines_in_text}")
+        assert False, f"Expected {line_count} +/- but found {lines_in_text}"

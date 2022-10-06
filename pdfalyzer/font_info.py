@@ -13,7 +13,7 @@ from rich.table import Table
 from rich.text import Text
 from yaralyzer.config import YaralyzerConfig
 from yaralyzer.helpers.bytes_helper import print_bytes
-from yaralyzer.helpers.rich_text_helper import console, subheading_width
+from yaralyzer.output.rich_console import console
 from yaralyzer.util.logging import log
 
 from pdfalyzer.binary.binary_scanner import BinaryScanner
@@ -21,6 +21,7 @@ from pdfalyzer.config import PdfalyzerConfig
 from pdfalyzer.detection.yaralyzer_helper import get_bytes_yaralyzer
 from pdfalyzer.helpers.rich_text_helper import get_label_style, get_type_style
 from pdfalyzer.helpers.string_helper import pp
+from pdfalyzer.output.layout import subheading_width
 from pdfalyzer.util.adobe_strings import (FONT, FONT_DESCRIPTOR, FONT_FILE, FONT_LENGTHS, RESOURCES, SUBTYPE,
      TO_UNICODE, TYPE, W, WIDTHS)
 

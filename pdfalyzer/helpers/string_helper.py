@@ -6,8 +6,7 @@ from pprint import PrettyPrinter
 from typing import Pattern
 
 from PyPDF2.generic import PdfObject
-from rich.panel import Panel
-from yaralyzer.helpers.rich_text_helper import console, console_width
+from yaralyzer.output.rich_console import console_width
 
 
 # Style
@@ -20,13 +19,6 @@ pp = PrettyPrinter(
     indent=INDENT_DEPTH,
     width=PRETTY_PRINT_WIDTH,
     sort_dicts=True)
-
-
-def print_section_header(headline: str, style=None) -> None:
-    style = style or ''
-    console.line(2)
-    console.print(Panel(headline, style=f"{style} reverse"))
-    console.line()
 
 
 def pypdf_class_name(obj: PdfObject) -> str:

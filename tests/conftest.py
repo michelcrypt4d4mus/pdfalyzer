@@ -1,8 +1,9 @@
-from os import environ, path
+from os import environ, path, remove
 environ['INVOKED_BY_PYTEST'] = 'True'
 
 import pytest
 from yaralyzer.config import MAX_DECODE_LENGTH_ENV_VAR, YaralyzerConfig
+from yaralyzer.helpers.file_helper import files_in_dir
 
 from pdfalyzer.pdfalyzer import Pdfalyzer
 from pdfalyzer.util.filesystem_awareness import DOCUMENTATION_DIR
@@ -46,6 +47,17 @@ def all_pdf_fixtures_in_repo(adobe_type1_fonts_pdf, analyzing_malicious_document
         adobe_type1_fonts_pdf,
         analyzing_malicious_documents_pdf_path
     ]
+
+
+@pytest.fixture
+def tmp_dir():
+    """Clear the tmp dir when fixture is loaded"""
+    tmpdir = path.join(path.dirname(__file__), 'tmp')
+
+    for file in files_in_dir(tmpdir):
+        remove(file)
+
+    return tmpdir
 
 
 def _pdf_in_doc_dir(filename):
