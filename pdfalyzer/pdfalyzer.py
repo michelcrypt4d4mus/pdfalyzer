@@ -26,9 +26,9 @@ from pdfalyzer.decorators.document_model_printer import print_with_header
 from pdfalyzer.decorators.pdf_tree_node import PdfTreeNode
 from pdfalyzer.helpers.number_helper import size_string, size_in_bytes_string
 from pdfalyzer.helpers.pdf_object_helper import get_symlink_representation
-from pdfalyzer.helpers.rich_text_helper import print_section_header, print_section_subheader
 from pdfalyzer.helpers.string_helper import pp
 from pdfalyzer.font_info import FontInfo
+from pdfalyzer.output.layout import print_section_header, print_section_subheader
 from pdfalyzer.util.adobe_strings import (COLOR_SPACE, D, DEST, EXT_G_STATE, FONT, K, KIDS,
      NON_TREE_REFERENCES, NUMS, OBJECT_STREAM, OPEN_ACTION, P, PARENT, PREV, RESOURCES, SIZE,
      STRUCT_ELEM, TRAILER, TYPE, UNLABELED, XOBJECT, XREF, XREF_STREAM)

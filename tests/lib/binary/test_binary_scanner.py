@@ -11,7 +11,7 @@ def test_front_slash_quoted_bytes_extraction(font_info):
 
 
 def test_extract_guillemet(font_info):
-    _check_matches(font_info.binary_scanner.extract_guillemet_quoted_bytes, 12, 2167)
+    _check_matches(font_info.binary_scanner.extract_guillemet_quoted_bytes, 59, 23138)
 
 
 def _check_matches(match_iterator, expected_matches: int, expected_bytes: int) -> None:

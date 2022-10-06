@@ -138,16 +138,6 @@ MAX_THEME_COL_SIZE = 35
 NOT_FOUND_MSG = Text('(not found)', style='grey.dark_italic')
 
 
-def print_section_header(headline: str, style: str = '') -> None:
-    print_section_subheader(headline, f"{style} reverse", True)
-
-
-def print_section_subheader(headline: str, style: str = '', expand: bool = False) -> None:
-    console.line(2)
-    console.print(Panel(headline, style=style, expand=expand))
-    console.line()
-
-
 def get_label_style(label: str) -> str:
     """Lookup a style based on the label string"""
     return next((ls[1] for ls in LABEL_STYLES if ls[0].search(label)), DEFAULT_LABEL_STYLE)

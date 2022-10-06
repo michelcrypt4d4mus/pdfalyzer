@@ -18,7 +18,7 @@ from rich.panel import Panel
 from rich.table import Table
 from rich.text import Text
 from rich.tree import Tree
-from yaralyzer.helpers.bytes_helper import clean_byte_string, hex_string
+from yaralyzer.helpers.bytes_helper import clean_byte_string, hex_text
 from yaralyzer.output.rich_console import BYTES_NO_DIM, YARALYZER_THEME, console
 from yaralyzer.util.logging import log
 
@@ -262,7 +262,7 @@ class PdfTreeNode(NodeMixin):
         stream_preview_length = len(stream_preview)
 
         if isinstance(self.stream_data, bytes):
-            stream_preview_hex = hex_string(stream_preview).plain
+            stream_preview_hex = hex_text(stream_preview).plain
         else:
             stream_preview_hex = f"N/A (Stream data is type '{type(self.stream_data).__name__}', not bytes)"
 

@@ -1,10 +1,10 @@
 """
 Class to help with the pre-configured YARA rules in /yara.
 """
+import re
 from os import path
-from typing import Iterator, Union
 
-from yaralyzer.bytes_match import BytesMatch
+from yaralyzer.util.logging import log
 from yaralyzer.yaralyzer import Yaralyzer
 
 from pdfalyzer.util.filesystem_awareness import PROJECT_DIR, YARA_RULES_DIR

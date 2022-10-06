@@ -5,7 +5,7 @@ various character encodings upon it to see what comes out.
 import re
 from collections import defaultdict
 from numbers import Number
-from typing import Any, Iterator, Pattern, Tuple
+from typing import Any, Iterator, Optional, Pattern, Tuple
 
 from deprecated import deprecated
 from rich.panel import Panel
@@ -15,20 +15,21 @@ from yaralyzer.bytes_match import BytesMatch
 from yaralyzer.config import YaralyzerConfig
 from yaralyzer.decoding.bytes_decoder import BytesDecoder
 from yaralyzer.encoding_detection.character_encodings import BOMS
-from yaralyzer.helpers.bytes_helper import print_bytes
+from yaralyzer.helpers.bytes_helper import hex_string, print_bytes
 from yaralyzer.helpers.rich_text_helper import CENTER, na_txt, prefix_with_plain_text_obj
 from yaralyzer.helpers.string_helper import escape_yara_pattern
-from yaralyzer.output.rich_console import console, console_width
+from yaralyzer.output.rich_console import BYTES_NO_DIM, console, console_width
 from yaralyzer.output.regex_match_metrics import RegexMatchMetrics
+from yaralyzer.yara.yara_rule_builder import HEX, REGEX, safe_label
 from yaralyzer.yaralyzer import Yaralyzer
 from yaralyzer.util.logging import log
 
 from pdfalyzer.config import PdfalyzerConfig
-from pdfalyzer.detection.constants.binary_regexes import DANGEROUS_STRINGS, QUOTE_REGEXES, QUOTE_PATTERNS
+from pdfalyzer.detection.constants.binary_regexes import BACKTICK, DANGEROUS_STRINGS, FRONTSLASH, GUILLEMET, QUOTE_PATTERNS
 from pdfalyzer.helpers.rich_text_helper import (DANGER_HEADER, NOT_FOUND_MSG,
-     generate_subtable, get_label_style, pad_header, print_section_header)
+     generate_subtable, get_label_style, pad_header)
 from pdfalyzer.helpers.string_helper import generate_hyphen_line
-from pdfalyzer.output.layout import subheading_width
+from pdfalyzer.output.layout import print_section_header, print_section_subheader, subheading_width
 from pdfalyzer.util.adobe_strings import CURRENTFILE_EEXEC
 
 # For rainbow colors
@@ -51,20 +52,30 @@ class BinaryScanner:
 
     def check_for_dangerous_instructions(self) -> None:
         """Scan for all the strings in DANGEROUS_INSTRUCTIONS list and decode bytes around them"""
-        print_section_header("Scanning Font Binary For Anything 'Mad Sus'...", style=DANGER_HEADER)
+        print_section_header("Scanning Binary For Anything 'Mad Sus'...", style=DANGER_HEADER)
 
         for instruction in DANGEROUS_STRINGS:
-            label = f"({BOMS[instruction]}) " if instruction in BOMS else instruction
-            self.process_yara_matches(instruction, label, force=True)
+            yaralyzer = self._pattern_yaralyzer(instruction, REGEX)
+            yaralyzer.highlight_style = 'bright_red bold'
+            self.process_yara_matches(yaralyzer, instruction, force=True)
+
+    def check_for_boms(self) -> None:
+        print_section_subheader("Scanning Binary for any BOMs...")
+
+        for bom_bytes, bom_name in BOMS.items():
+            yaralyzer = self._pattern_yaralyzer(hex_string(bom_bytes), HEX, bom_name)
+            yaralyzer.highlight_style = 'bright_green bold'
+            self.process_yara_matches(yaralyzer, bom_name, force=True)
 
     def force_decode_all_quoted_bytes(self) -> None:
         """Find all strings matching QUOTE_PATTERNS (AKA between quote chars) and decode them with various encodings"""
         quote_types = QUOTE_PATTERNS.keys() if PdfalyzerConfig.QUOTE_TYPE is None else [PdfalyzerConfig.QUOTE_TYPE]
 
         for quote_type in quote_types:
-            quote_regex = QUOTE_PATTERNS[quote_type]
-            print_section_header(f"Forcing Decode of {quote_type.capitalize()} Quoted Strings", style='color(100)')
-            self.process_yara_matches(quote_regex, rules_label=f"{quote_type} quoted")
+            quote_pattern = QUOTE_PATTERNS[quote_type]
+            print_section_header(f"Forcing Decode of {quote_type.capitalize()} Quoted Strings", style=BYTES_NO_DIM)
+            yaralyzer = self._quote_yaralyzer(quote_pattern, quote_type)
+            self.process_yara_matches(yaralyzer, f"{quote_type}_quoted")
 
     # -------------------------------------------------------------------------------
     # These extraction iterators will iterate over all matches for a specific pattern.
@@ -72,15 +83,15 @@ class BinaryScanner:
     # -------------------------------------------------------------------------------
     def extract_guillemet_quoted_bytes(self) -> Iterator[Tuple[BytesMatch, BytesDecoder]]:
         """Iterate on all strings surrounded by Guillemet quotes, e.g. «string»"""
-        return self._pattern_yaralyzer(QUOTE_PATTERNS['guillemet'], 'guillemet').match_iterator()
+        return self._quote_yaralyzer(QUOTE_PATTERNS[GUILLEMET], GUILLEMET).match_iterator()
 
     def extract_backtick_quoted_bytes(self) -> Iterator[Tuple[BytesMatch, BytesDecoder]]:
         """Returns an interator over all strings surrounded by backticks"""
-        return self._pattern_yaralyzer(QUOTE_PATTERNS['backtick'], 'backtick').match_iterator()
+        return self._quote_yaralyzer(QUOTE_PATTERNS[BACKTICK], BACKTICK).match_iterator()
 
     def extract_front_slash_quoted_bytes(self) -> Iterator[Tuple[BytesMatch, BytesDecoder]]:
         """Returns an interator over all strings surrounded by front_slashes (hint: regular expressions)"""
-        return self._pattern_yaralyzer(QUOTE_PATTERNS['frontslash'], 'frontslash').match_iterator()
+        return self._quote_yaralyzer(QUOTE_PATTERNS[FRONTSLASH], FRONTSLASH).match_iterator()
 
     def print_stream_preview(self, num_bytes=None, title_suffix=None) -> None:
         """Print a preview showing the beginning and end of the stream data"""
@@ -141,21 +152,22 @@ class BinaryScanner:
         console.line(2)
         console.print(stats_table)
 
-    def process_yara_matches(self, pattern: str, rules_label: str, force: bool = False) -> None:
+    def process_yara_matches(self, yaralyzer: Yaralyzer, pattern: str, force: bool = False) -> None:
         """Decide whether to attempt to decode the matched bytes, track stats. force param ignores min/max length"""
-        for bytes_match, bytes_decoder in self._pattern_yaralyzer(pattern, rules_label).match_iterator():
+        for bytes_match, bytes_decoder in yaralyzer.match_iterator():
             self.regex_extraction_stats[pattern].match_count += 1
             self.regex_extraction_stats[pattern].bytes_matched += bytes_match.match_length
             self.regex_extraction_stats[pattern].bytes_match_objs.append(bytes_match)
 
             # Send suppressed decodes to a queue and track the reason for the suppression in the stats
-            if not (force or (YaralyzerConfig.MIN_DECODE_LENGTH < bytes_match.match_length < YaralyzerConfig.MAX_DECODE_LENGTH)):
-                self._queue_suppression_notice(bytes_match, rules_label)
+            if not ((YaralyzerConfig.MIN_DECODE_LENGTH < bytes_match.match_length < YaralyzerConfig.MAX_DECODE_LENGTH) \
+                    or force):
+                self._queue_suppression_notice(bytes_match, pattern)
                 continue
 
             # Print out any queued suppressed notices before printing non suppressed matches
             self._print_suppression_notices()
-            self._record_decode_stats(bytes_match, bytes_decoder, rules_label or pattern)
+            self._record_decode_stats(bytes_match, bytes_decoder, pattern)
 
             if self.regex_extraction_stats[pattern].match_count == 0:
                 console.print(f"{pattern} was not found for {self.label}...", style='dim')
@@ -170,8 +182,31 @@ class BinaryScanner:
         for i, match in enumerate(regex.finditer(self.bytes, self._eexec_idx())):
             yield(BytesMatch.from_regex_match(self.bytes, match, i + 1))
 
-    def _pattern_yaralyzer(self, pattern: str, rules_label: str):
-        return Yaralyzer.for_patterns([escape_yara_pattern(pattern)], self.bytes, self.label.plain, rules_label)
+    def _pattern_yaralyzer(
+            self,
+            pattern: str,
+            pattern_type: str,
+            rules_label: Optional[str] = None,
+            pattern_label: Optional[str] = None
+        ) -> Yaralyzer:
+        """Build a yaralyzer to scan self.bytes"""
+        return Yaralyzer.for_patterns(
+            patterns=[escape_yara_pattern(pattern)],
+            patterns_type=pattern_type,
+            scannable=self.bytes,
+            scannable_label=self.label.plain,
+            rules_label=safe_label(rules_label or pattern),
+            pattern_label=safe_label(pattern_label or pattern)
+        )
+
+    def _quote_yaralyzer(self, quote_pattern: str, quote_type: str):
+        """Helper method to build a Yaralyzer for a quote_pattern"""
+        label = f"{quote_type}_Quoted"
+
+        if quote_type == GUILLEMET:
+            return self._pattern_yaralyzer(quote_pattern, HEX, label, label)
+        else:
+            return self._pattern_yaralyzer(quote_pattern, REGEX, label, label)
 
     def _record_decode_stats(self, bytes_match: BytesMatch, decoder: BytesDecoder, label: str) -> None:
         """Attempt to decode _bytes with all configured encodings and print a table of the results"""
@@ -198,7 +233,7 @@ class BinaryScanner:
         if bytes_match.match_length < YaralyzerConfig.MIN_DECODE_LENGTH:
             txt = Text('Too little to actually attempt decode at ', style='grey') + txt
         else:
-            txt.append(" is too large to decode ")
+            txt.append(" too long to decode ")
             txt.append(f"(--max-decode-length is {YaralyzerConfig.MAX_DECODE_LENGTH} bytes)", style='grey')
 
         log.debug(Text('Queueing suppression notice: ') + txt)

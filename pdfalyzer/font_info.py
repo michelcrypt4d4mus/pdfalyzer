@@ -169,6 +169,7 @@ class FontInfo:
         if self.binary_scanner is not None:
             self.binary_scanner.print_stream_preview(title_suffix=f" of /FontFile for {self.display_title}")
             self.binary_scanner.check_for_dangerous_instructions()
+            self.binary_scanner.check_for_boms()
 
             if not YaralyzerConfig.SUPPRESS_DECODES:
                 self.binary_scanner.force_decode_all_quoted_bytes()

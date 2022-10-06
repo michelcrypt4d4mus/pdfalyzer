@@ -1,8 +1,14 @@
 # NEXT RELEASE
 
 
+# 1.8.3
+* Highlight suspicious instructions in red, BOMs in green
+* Reenable guillemet quote matching
+* Clearer labeling of binary scan results
+* Sync with `yaralyzer` v0.4.0
+
 # 1.8.2
-* Sync with `yaralyzer` 0.3.3
+* Sync with `yaralyzer` v0.3.3
 
 # 1.8.1
 * Show defaults and valid values for command line options

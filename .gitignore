@@ -15,6 +15,7 @@ dist/
 /tools/
 /tmp/
 /output/export/
+/tests/tmp/
 
 # Other
 .DS_Store
