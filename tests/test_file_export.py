@@ -18,9 +18,9 @@ def test_file_export(analyzing_malicious_documents_pdf_path, tmp_dir):
 
     check_output([PDFALYZE, analyzing_malicious_documents_pdf_path, *args], env=environ)
     rendered_files = files_in_dir(tmp_dir)
-    assert len(rendered_files) == 6
+    assert len(rendered_files) == 7
     file_sizes = sorted([path.getsize(f) for f in rendered_files])
-    assert_array_is_close(file_sizes, [7031, 8346, 55178, 181310, 437873, 1464895])
+    assert_array_is_close(file_sizes, [2815, 8346, 35523, 78146, 181310, 1464895, 6948612])
 
     for file in rendered_files:
         remove(file)

@@ -100,15 +100,12 @@ class BinaryScanner:
         console.line()
 
         if snipped_byte_count < 0:
-            title = f"All {self.stream_length} bytes in stream"
+            title = f"ALL {self.stream_length} BYTES IN STREAM"
         else:
-            title = f"First and last {num_bytes} bytes of {self.stream_length} byte stream"
+            title = f"FIRST AND LAST {num_bytes} BYTES OF {self.stream_length} BYTE STREAM"
 
         title += title_suffix if title_suffix is not None else ''
         title = f"BEGIN {title}".upper()
-        #console.print(title, style='grey')
-
-        #console.print(Panel(title, style='bytes.title', expand=False))
         console.print(generate_hyphen_line(title=title), style='dim')
 
         if snipped_byte_count < 0:
