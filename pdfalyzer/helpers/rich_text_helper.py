@@ -36,6 +36,7 @@ PDF_NON_TREE_REF = 'color(243)'
 PDFALYZER_THEME_DICT = YARALYZER_THEME_DICT.copy()
 PDFALYZER_THEME_DICT.update({
     'address': GREY_ADDRESS,
+    'BOM': 'bright_green',
     # PDF objects
     'pdf.array': PDF_ARRAY,
     'pdf.non_tree_ref': PDF_NON_TREE_REF,

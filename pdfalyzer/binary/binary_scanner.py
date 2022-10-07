@@ -29,7 +29,7 @@ from pdfalyzer.detection.constants.binary_regexes import BACKTICK, DANGEROUS_STR
 from pdfalyzer.helpers.rich_text_helper import (DANGER_HEADER, NOT_FOUND_MSG,
      generate_subtable, get_label_style, pad_header)
 from pdfalyzer.helpers.string_helper import generate_hyphen_line
-from pdfalyzer.output.layout import print_section_header, print_section_subheader, subheading_width
+from pdfalyzer.output.layout import half_width, print_section_header, print_section_subheader, subheading_width
 from pdfalyzer.util.adobe_strings import CURRENTFILE_EEXEC
 
 # For rainbow colors
@@ -52,7 +52,7 @@ class BinaryScanner:
 
     def check_for_dangerous_instructions(self) -> None:
         """Scan for all the strings in DANGEROUS_INSTRUCTIONS list and decode bytes around them"""
-        print_section_header("Scanning Binary For Anything 'Mad Sus'...", style=DANGER_HEADER)
+        print_section_subheader("Scanning Binary For Anything 'Mad Sus'...", style=f"{DANGER_HEADER} reverse")
 
         for instruction in DANGEROUS_STRINGS:
             yaralyzer = self._pattern_yaralyzer(instruction, REGEX)
@@ -60,11 +60,11 @@ class BinaryScanner:
             self.process_yara_matches(yaralyzer, instruction, force=True)
 
     def check_for_boms(self) -> None:
-        print_section_subheader("Scanning Binary for any BOMs...")
+        print_section_subheader("Scanning Binary for any BOMs...", style='BOM')
 
         for bom_bytes, bom_name in BOMS.items():
             yaralyzer = self._pattern_yaralyzer(hex_string(bom_bytes), HEX, bom_name)
-            yaralyzer.highlight_style = 'bright_green bold'
+            yaralyzer.highlight_style = 'BOM'
             self.process_yara_matches(yaralyzer, bom_name, force=True)
 
     def force_decode_all_quoted_bytes(self) -> None:
@@ -73,7 +73,7 @@ class BinaryScanner:
 
         for quote_type in quote_types:
             quote_pattern = QUOTE_PATTERNS[quote_type]
-            print_section_header(f"Forcing Decode of {quote_type.capitalize()} Quoted Strings", style=BYTES_NO_DIM)
+            print_section_subheader(f"Forcing Decode of {quote_type.capitalize()} Quoted Strings", style=BYTES_NO_DIM)
             yaralyzer = self._quote_yaralyzer(quote_pattern, quote_type)
             self.process_yara_matches(yaralyzer, f"{quote_type}_quoted")
 
@@ -105,8 +105,11 @@ class BinaryScanner:
             title = f"First and last {num_bytes} bytes of {self.stream_length} byte stream"
 
         title += title_suffix if title_suffix is not None else ''
-        console.print(Panel(title, style='bytes.title', expand=False))
-        console.print(generate_hyphen_line(title='BEGIN BYTES'), style='dim')
+        title = f"BEGIN {title}".upper()
+        #console.print(title, style='grey')
+
+        #console.print(Panel(title, style='bytes.title', expand=False))
+        console.print(generate_hyphen_line(title=title), style='dim')
 
         if snipped_byte_count < 0:
             print_bytes(self.bytes)
@@ -115,7 +118,7 @@ class BinaryScanner:
             console.print(f"\n    <...skip {snipped_byte_count} bytes...>\n", style='dim')
             print_bytes(self.bytes[-num_bytes:])
 
-        console.print(generate_hyphen_line(title='END BYTES'), style='dim')
+        console.print(generate_hyphen_line(title=title), style='dim')
         console.line()
 
     def print_decoding_stats_table(self) -> None:
@@ -150,7 +153,7 @@ class BinaryScanner:
             stats_table.add_row(*row, style='color(232)')
 
         console.line(2)
-        console.print(stats_table)
+        console.print(stats_table, justify='center')
 
     def process_yara_matches(self, yaralyzer: Yaralyzer, pattern: str, force: bool = False) -> None:
         """Decide whether to attempt to decode the matched bytes, track stats. force param ignores min/max length"""
@@ -261,7 +264,7 @@ def new_decoding_stats_table(title) -> Table:
 
     table = Table(
         title=title,
-        min_width=subheading_width(),
+        min_width=half_width(),
         show_lines=True,
         padding=(0, 1),
         style='color(18)',

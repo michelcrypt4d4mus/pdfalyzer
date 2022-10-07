@@ -20,8 +20,8 @@ from rich.text import Text
 from yaralyzer.config import YaralyzerConfig
 from yaralyzer.helpers.bytes_helper import get_bytes_info
 from yaralyzer.helpers.file_helper import load_binary_data
-from yaralyzer.helpers.rich_text_helper import LEFT, size_in_bytes_text
-from yaralyzer.output.rich_console import GREY, console, theme_colors_with_prefix
+from yaralyzer.helpers.rich_text_helper import CENTER, LEFT, size_in_bytes_text
+from yaralyzer.output.rich_console import BYTES_HIGHLIGHT, GREY, console, console_width, theme_colors_with_prefix
 from yaralyzer.output.rich_layout_elements import bytes_hashes_table
 from yaralyzer.util.logging import log
 
@@ -32,7 +32,7 @@ from pdfalyzer.detection.yaralyzer_helper import get_file_yaralyzer
 from pdfalyzer.helpers.pdf_object_helper import get_symlink_representation
 from pdfalyzer.helpers.string_helper import pp
 from pdfalyzer.font_info import FontInfo
-from pdfalyzer.output.layout import print_section_header, print_section_subheader
+from pdfalyzer.output.layout import print_section_header, print_section_subheader, print_section_sub_subheader
 from pdfalyzer.util.adobe_strings import (COLOR_SPACE, D, DEST, EXT_G_STATE, FONT, K, KIDS,
      NON_TREE_REFERENCES, NUMS, OBJECT_STREAM, OPEN_ACTION, P, PARENT, PREV, RESOURCES, SIZE,
      STRUCT_ELEM, TRAILER, TYPE, UNLABELED, XOBJECT, XREF, XREF_STREAM)
@@ -179,7 +179,7 @@ class Pdfalyzer:
             node_stream_bytes = node.stream_data
 
             if node_stream_bytes is None or node.stream_length == 0:
-                print_section_subheader(f"{node} stream has length 0", style='dim')
+                print_section_sub_subheader(f"{node} stream has length 0", style='dim')
                 continue
 
             if not isinstance(node_stream_bytes, bytes):
@@ -188,9 +188,9 @@ class Pdfalyzer:
                 log.warning(msg)
                 node_stream_bytes = node_stream_bytes.encode()
 
-            print_section_subheader(f"{node} Stream Bytes")
-            binary_scanner = BinaryScanner(node_stream_bytes)
-            console.print(bytes_hashes_table(binary_scanner.bytes, str(self)))
+            print_section_subheader(f"{node} Analysis", style=BYTES_HIGHLIGHT, width=console_width())
+            binary_scanner = BinaryScanner(node_stream_bytes, node, node.__rich__())
+            console.print(bytes_hashes_table(binary_scanner.bytes))
             binary_scanner.print_stream_preview()
             binary_scanner.check_for_dangerous_instructions()
 
@@ -225,12 +225,7 @@ class Pdfalyzer:
             node.print_other_relationships()
 
     def stream_objects_table(self) -> Table:
-        table = Table(
-            'Stream Length',
-            'Node',
-            title=f'Stream Summary for {self.pdf_basename}',
-            title_style=GREY,
-            title_justify=LEFT)
+        table = Table('Stream Length', 'Node')
 
         table.columns[0].justify = 'right'
         stream_nodes: List[PdfTreeNode] = []
