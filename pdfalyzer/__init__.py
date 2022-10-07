@@ -18,7 +18,7 @@ from yaralyzer.util.logging import log, log_and_print
 
 from pdfalyzer.pdfalyzer import Pdfalyzer
 from pdfalyzer.util.pdf_parser_manager import PdfParserManager
-from pdfalyzer.util.argument_parser import ALL_FONTS_OPTION, output_sections, parse_arguments
+from pdfalyzer.util.argument_parser import ALL_STREAMS, output_sections, parse_arguments
 
 
 def pdfalyze():
@@ -41,8 +41,8 @@ def pdfalyze():
         if export_type == 'font_info':
             output_basename += '_'
 
-            if args.font != ALL_FONTS_OPTION:
-                output_basename += f"_id{args.font}"
+            if args.streams != ALL_STREAMS:
+                output_basename += f"_id{args.streams}"
 
             output_basename += f"_maxdecode{YaralyzerConfig.MAX_DECODE_LENGTH}"
 

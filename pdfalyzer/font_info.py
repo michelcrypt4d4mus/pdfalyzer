@@ -22,7 +22,7 @@ from pdfalyzer.config import PdfalyzerConfig
 from pdfalyzer.detection.yaralyzer_helper import get_bytes_yaralyzer
 from pdfalyzer.helpers.rich_text_helper import get_label_style, get_type_style
 from pdfalyzer.helpers.string_helper import pp
-from pdfalyzer.output.layout import print_section_subheader, subheading_width
+from pdfalyzer.output.layout import print_section_subheader, print_headline_panel, subheading_width
 from pdfalyzer.util.adobe_strings import (FONT, FONT_DESCRIPTOR, FONT_FILE, FONT_LENGTHS, RESOURCES, SUBTYPE,
      TO_UNICODE, TYPE, W, WIDTHS)
 
@@ -162,11 +162,13 @@ class FontInfo:
 
     def print_summary(self):
         """Prints a table of info about the font drawn from the various PDF objects. quote_type of None means all."""
-        self.print_header_panel()
+        print_section_subheader(str(self), style='font.title')
+        #console.print(Panel(self.display_title, width=subheading_width(), padding=(1, 1)), style='font.title')
         console.print(self._summary_table())
+        console.line()
         self.print_character_mapping()
         self.print_prepared_charmap()
-        console.line(2)
+        console.line()
 
     def print_character_mapping(self):
         """Prints the character mapping extracted by PyPDF2._charmap in tidy columns"""
@@ -174,8 +176,7 @@ class FontInfo:
             log.info(f"No character map found in {self}")
             return
 
-        header_panel = Panel(f"{CHARMAP_TITLE} for {self.display_title}", style='charmap.title', expand=False)
-        console.print(Padding(header_panel, CHARMAP_TITLE_PADDING))
+        print_headline_panel(f"{self} {CHARMAP_TITLE}", style='charmap.title')
         charmap_entries = [_format_charmap_entry(k, v) for k, v in self.character_mapping.items()]
 
         charmap_columns = Columns(
@@ -194,8 +195,8 @@ class FontInfo:
             log.info(f"No prepared_charmap found in {self}")
             return
 
-        section_title = f"Adobe PostScript charmap prepared by PyPDF2 for {self.display_title}"
-        console.print(Padding(Panel(section_title, style='charmap.prepared_title', expand=False), CHARMAP_TITLE_PADDING))
+        headline = f"{self} Adobe PostScript charmap prepared by PyPDF2"
+        print_headline_panel(headline, style='charmap.prepared_title')
         print_bytes(self.prepared_char_map, style='charmap.prepared')
         console.print('')
 
@@ -212,9 +213,6 @@ class FontInfo:
             print(f"\n  Stream after: {self.stream_data[demarcation:demarcation + FONT_SECTION_PREVIEW_LEN]}")
 
         print(f"\nfinal bytes back from {self.stream_data.lengths[2]} + 10: {self.stream_data[-10 - -f.lengths[2]:]}")
-
-    def print_header_panel(self):
-        console.print(Panel(self.display_title, width=subheading_width(), padding=(1, 1)), style='font.title')
 
     def _summary_table(self):
         """Build a Rich Table with important info about the font"""

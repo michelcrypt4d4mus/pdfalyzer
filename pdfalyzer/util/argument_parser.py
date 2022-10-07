@@ -13,12 +13,12 @@ from yaralyzer.util.argument_parser import (ExplicitDefaultsHelpFormatter, expor
 from yaralyzer.util.logging import log, log_and_print, log_argparse_result, log_current_config, log_invocation
 
 from pdfalyzer.config import LOG_DIR_ENV_VAR, PdfalyzerConfig
-from pdfalyzer.detection.constants.binary_regexes import QUOTE_REGEXES
+from pdfalyzer.detection.constants.binary_regexes import QUOTE_PATTERNS
 
 # NamedTuple to keep our argument selection orderly
 OutputSection = namedtuple('OutputSection', ['argument', 'method'])
 
-ALL_FONTS_OPTION = -1
+ALL_STREAMS = -1
 
 DESCRIPTION = "Explore PDF's inner data structure with absurdly large and in depth visualizations. " + \
               "Track the control flow of her darker impulses, scan rivers of her binary data for signs " + \
@@ -60,28 +60,28 @@ select.add_argument('-t', '--tree', action='store_true',
 select.add_argument('-r', '--rich', action='store_true',
                     help='show much larger / more detailed tree visualization (one row per PDF object property)')
 
-select.add_argument('-c', '--counts', action='store_true',
-                    help='show counts of some of the properties of the objects in the PDF')
-
-select.add_argument('-f', '--font',
-                    help="scan font binaries for sus content. brute force is involved. brutes are slow and so " + \
-                         "is slow. a single font can be optionally be selected by its internal PDF [ID]. " + \
-                         "not a multiselect but choosing nothing is still choosing everything. " + \
-                         "try '-f -- [the rest]' if you run into an argument position related piccadilly.",
-                    nargs='?',
-                    const=ALL_FONTS_OPTION,
-                    metavar='ID',
-                    type=int)
+select.add_argument('-f', '--fonts', action='store_true',
+                    help="show info about fonts included character mappings for embedded font binaries")
 
 select.add_argument('-y', '--yara', action='store_true',
                     help="scan the PDF with YARA rules")
 
-select.add_argument('-s', '--streams', action='store_true',
-                    help="scan all the PDF's decoded/decrypted for suspicious bytes as well as any YARA rule matches")
+select.add_argument('-c', '--counts', action='store_true',
+                    help='show counts of some of the properties of the objects in the PDF')
+
+select.add_argument('-s', '--streams',
+                    help="scan all the PDF's decoded/decrypted streams for sus content as well as any YARA rule matches. " + \
+                         "brute force is involved; output is verbose. a single OBJ_ID can be optionally provided to " + \
+                         "limit the output to a single internal object. try '-s -- [OTHERARGS]' if you run into an " + \
+                         "argument position related piccadilly.",
+                    nargs='?',
+                    const=ALL_STREAMS,
+                    metavar='OBJ_ID',
+                    type=int)
 
 select.add_argument('--quote-type',
-                    help='scan binary data for quoted data of this type only or all types if not set',
-                    choices=list(QUOTE_REGEXES.keys()))
+                    help='optionally limit stream extraction of quoted bytes to this quote type only',
+                    choices=list(QUOTE_PATTERNS.keys()))
 
 # Make sure the selection section is at the top
 parser._action_groups = parser._action_groups[:2] + [parser._action_groups[-1]] + parser._action_groups[2:-1]
@@ -122,9 +122,9 @@ def output_sections(args, pdfalyzer) -> List[OutputSection]:
     """
     # Create a partial for print_font_info() because it's the only one that can take an argument
     # partials have no __name__ so update_wrapper() propagates the 'print_font_info' as this partial's name
-    font_id = None if args.font == ALL_FONTS_OPTION else args.font
-    font_info = partial(pdfalyzer.print_font_info, font_idnum=font_id)
-    update_wrapper(font_info, pdfalyzer.print_font_info)
+    stream_id = None if args.streams == ALL_STREAMS else args.streams
+    stream_scan = partial(pdfalyzer.print_streams_analysis, idnum=stream_id)
+    update_wrapper(stream_scan, pdfalyzer.print_streams_analysis)
 
     # The first element string matches the argument in 'select' group.
     # Top to bottom is the default order of output.
@@ -132,10 +132,10 @@ def output_sections(args, pdfalyzer) -> List[OutputSection]:
         OutputSection('docinfo', pdfalyzer.print_document_info),
         OutputSection('tree', pdfalyzer.print_tree),
         OutputSection('rich', pdfalyzer.print_rich_table_tree),
-        OutputSection('font', font_info),
+        OutputSection('fonts', pdfalyzer.print_font_info),
         OutputSection('counts', pdfalyzer.print_summary),
         OutputSection('yara', pdfalyzer.print_yara_results),
-        OutputSection('streams', pdfalyzer.print_streams_analysis),
+        OutputSection('streams', stream_scan),
     ]
 
     output_sections = [section for section in possible_output_sections if vars(args)[section.argument]]

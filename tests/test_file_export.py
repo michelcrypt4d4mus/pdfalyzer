@@ -20,7 +20,7 @@ def test_file_export(analyzing_malicious_documents_pdf_path, tmp_dir):
     rendered_files = files_in_dir(tmp_dir)
     assert len(rendered_files) == 7
     file_sizes = sorted([path.getsize(f) for f in rendered_files])
-    assert_array_is_close(file_sizes, [2815, 8346, 35523, 78146, 181310, 1464895, 6948612])
+    assert_array_is_close(file_sizes, [3193, 8724, 35908, 79141, 181688, 1465273, 6948612])
 
     for file in rendered_files:
         remove(file)
@@ -28,5 +28,5 @@ def test_file_export(analyzing_malicious_documents_pdf_path, tmp_dir):
 
 def assert_array_is_close(_list1, _list2):
     for i, item in enumerate(_list1):
-        if not isclose(item, _list2[i], rel_tol=0.10):
+        if not isclose(item, _list2[i], rel_tol=0.05):
             assert False, f"File size of {item} too far from {_list2[i]}"

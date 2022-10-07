@@ -2,12 +2,12 @@
 Class for handling binary data - scanning through it for various suspicious patterns as well as forcing
 various character encodings upon it to see what comes out.
 """
-import re
 from collections import defaultdict
 from numbers import Number
-from typing import Any, Iterator, Optional, Pattern, Tuple
+from typing import Any, Iterator, Optional, Pattern, Tuple, Union
 
 from deprecated import deprecated
+from rich.markup import escape
 from rich.panel import Panel
 from rich.table import Table
 from rich.text import Text
@@ -25,26 +25,27 @@ from yaralyzer.yaralyzer import Yaralyzer
 from yaralyzer.util.logging import log
 
 from pdfalyzer.config import PdfalyzerConfig
-from pdfalyzer.detection.constants.binary_regexes import BACKTICK, DANGEROUS_STRINGS, FRONTSLASH, GUILLEMET, QUOTE_PATTERNS
-from pdfalyzer.helpers.rich_text_helper import (DANGER_HEADER, NOT_FOUND_MSG,
-     generate_subtable, get_label_style, pad_header)
+from pdfalyzer.decorators.pdf_tree_node import PdfTreeNode
+from pdfalyzer.detection.constants.binary_regexes import (BACKTICK, DANGEROUS_STRINGS, FRONTSLASH, GUILLEMET,
+     QUOTE_PATTERNS)
+from pdfalyzer.helpers.rich_text_helper import NOT_FOUND_MSG, generate_subtable, get_label_style, pad_header
 from pdfalyzer.helpers.string_helper import generate_hyphen_line
-from pdfalyzer.output.layout import half_width, print_section_header, print_section_subheader, subheading_width
-from pdfalyzer.util.adobe_strings import CURRENTFILE_EEXEC
+from pdfalyzer.output.layout import half_width, print_headline_panel, print_section_sub_subheader
+from pdfalyzer.util.adobe_strings import CONTENTS, CURRENTFILE_EEXEC
 
 # For rainbow colors
 CHAR_ENCODING_1ST_COLOR_NUMBER = 203
 
 
 class BinaryScanner:
-    def __init__(self, _bytes: bytes, owner: Any = None, label: Any = None):
+    def __init__(self, _bytes: bytes, owner: Union['FontInfo', 'PdfTreeNode'], label: Optional[Text] = None):
         """owner is an optional link back to the object containing this binary"""
         self.bytes = _bytes
         self.label = label
         self.owner = owner
 
-        if label is None and owner is not None:
-             self.label = Text(owner.label, get_label_style(owner.label))
+        if label is None and isinstance(owner, PdfTreeNode):
+             self.label = owner.__rich__()
 
         self.stream_length = len(_bytes)
         self.regex_extraction_stats = defaultdict(lambda: RegexMatchMetrics())
@@ -52,7 +53,7 @@ class BinaryScanner:
 
     def check_for_dangerous_instructions(self) -> None:
         """Scan for all the strings in DANGEROUS_INSTRUCTIONS list and decode bytes around them"""
-        print_section_subheader("Scanning Binary For Anything 'Mad Sus'...", style=f"{DANGER_HEADER} reverse")
+        print_section_sub_subheader("Scanning Binary For Anything 'Mad Sus'...", style=f"bright_red")
 
         for instruction in DANGEROUS_STRINGS:
             yaralyzer = self._pattern_yaralyzer(instruction, REGEX)
@@ -60,7 +61,8 @@ class BinaryScanner:
             self.process_yara_matches(yaralyzer, instruction, force=True)
 
     def check_for_boms(self) -> None:
-        print_section_subheader("Scanning Binary for any BOMs...", style='BOM')
+        """Check the binary data for BOMs"""
+        print_section_sub_subheader("Scanning Binary for any BOMs...", style='BOM')
 
         for bom_bytes, bom_name in BOMS.items():
             yaralyzer = self._pattern_yaralyzer(hex_string(bom_bytes), HEX, bom_name)
@@ -72,8 +74,13 @@ class BinaryScanner:
         quote_types = QUOTE_PATTERNS.keys() if PdfalyzerConfig.QUOTE_TYPE is None else [PdfalyzerConfig.QUOTE_TYPE]
 
         for quote_type in quote_types:
+            if self.owner and self.owner.type == CONTENTS and quote_type in [FRONTSLASH, GUILLEMET]:
+                msg = f"Not attempting {quote_type} decode for {CONTENTS} node type..."
+                print_headline_panel(msg, style='dim')
+                continue
+
             quote_pattern = QUOTE_PATTERNS[quote_type]
-            print_section_subheader(f"Forcing Decode of {quote_type.capitalize()} Quoted Strings", style=BYTES_NO_DIM)
+            print_section_sub_subheader(f"Forcing Decode of {quote_type.capitalize()} Quoted Strings", style=BYTES_NO_DIM)
             yaralyzer = self._quote_yaralyzer(quote_pattern, quote_type)
             self.process_yara_matches(yaralyzer, f"{quote_type}_quoted")
 
@@ -169,8 +176,10 @@ class BinaryScanner:
             self._print_suppression_notices()
             self._record_decode_stats(bytes_match, bytes_decoder, pattern)
 
-            if self.regex_extraction_stats[pattern].match_count == 0:
-                console.print(f"{pattern} was not found for {self.label}...", style='dim')
+        # This check initializes the defaultdic for 'pattern'
+        if self.regex_extraction_stats[pattern].match_count == 0:
+            #console.print(f"{pattern} was not found for {escape(self.label.plain)}...", style='dim')
+            pass
 
     def bytes_after_eexec_statement(self) -> bytes:
         """Get the bytes after the 'eexec' demarcation line (if it appears). See Adobe docs for details."""

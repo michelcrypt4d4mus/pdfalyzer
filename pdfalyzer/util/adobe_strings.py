@@ -16,6 +16,7 @@ AA              = CatalogDictionary.AA  # Automatic Action
 ACRO_FORM       = CatalogDictionary.ACRO_FORM  # Can trigger Javascript on open
 COLOR_SPACE     = Resources.COLOR_SPACE
 D               = '/D'  # Destination, usually of a link or action
+CONTENTS        = '/Contents'
 DEST            = '/Dest'  # Similar to /D?
 EXT_G_STATE     = Resources.EXT_G_STATE
 FIRST           = '/First'
@@ -58,7 +59,7 @@ FONT_LENGTHS = [f'/Length{i + 1}' for i in range(3)]
 
 # Instructions to flag when scanning stream data for malicious content.
 DANGEROUS_PDF_KEYS = [
-    AA,
+    # AA,  # AA is too generic; can't afford to remove the frontslash
     ACRO_FORM,
     JAVASCRIPT,
     JS,

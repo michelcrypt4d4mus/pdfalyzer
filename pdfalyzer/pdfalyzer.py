@@ -3,14 +3,13 @@ Walks the PDF objects, wrapping each in a PdfTreeNode and putting them into a tr
 managed by the anytree library. Once the PDF is parsed this class manages things like
 searching the tree and printing out information.
 """
-import hashlib
 from collections import defaultdict
 from os.path import basename
-from typing import Iterator, List
+from typing import List, Optional
 
 from anytree import LevelOrderIter, RenderTree, SymlinkNode
 from anytree.render import DoubleStyle
-from anytree.search import findall_by_attr
+from anytree.search import findall, findall_by_attr
 from PyPDF2 import PdfReader
 from PyPDF2.errors import PdfReadError
 from PyPDF2.generic import IndirectObject, NameObject, NumberObject, StreamObject
@@ -21,7 +20,7 @@ from yaralyzer.config import YaralyzerConfig
 from yaralyzer.helpers.bytes_helper import get_bytes_info
 from yaralyzer.helpers.file_helper import load_binary_data
 from yaralyzer.helpers.rich_text_helper import CENTER, LEFT, size_in_bytes_text
-from yaralyzer.output.rich_console import BYTES_HIGHLIGHT, GREY, console, console_width, theme_colors_with_prefix
+from yaralyzer.output.rich_console import BYTES_HIGHLIGHT, GREY, console
 from yaralyzer.output.rich_layout_elements import bytes_hashes_table
 from yaralyzer.util.logging import log
 
@@ -171,11 +170,11 @@ class Pdfalyzer:
         for font_info in [fi for fi in self.font_infos if font_idnum is None or font_idnum == fi.idnum]:
             font_info.print_summary()
 
-    def print_streams_analysis(self) -> None:
+    def print_streams_analysis(self, idnum: Optional[int] = None) -> None:
         print_section_header(f'Binary Stream Analysis / Extraction')
         console.print(self.stream_objects_table())
 
-        for node in self.stream_node_iterator():
+        for node in [n for n in self.stream_nodes() if idnum is None or idnum == n.idnum]:
             node_stream_bytes = node.stream_data
 
             if node_stream_bytes is None or node.stream_length == 0:
@@ -188,8 +187,8 @@ class Pdfalyzer:
                 log.warning(msg)
                 node_stream_bytes = node_stream_bytes.encode()
 
-            print_section_subheader(f"{node} Analysis", style=BYTES_HIGHLIGHT, width=console_width())
-            binary_scanner = BinaryScanner(node_stream_bytes, node, node.__rich__())
+            print_section_subheader(f"{node} Summary and Analysis", style=f"{BYTES_HIGHLIGHT} reverse")
+            binary_scanner = BinaryScanner(node_stream_bytes, node)
             console.print(bytes_hashes_table(binary_scanner.bytes))
             binary_scanner.print_stream_preview()
             binary_scanner.check_for_dangerous_instructions()
@@ -201,10 +200,7 @@ class Pdfalyzer:
             binary_scanner.print_decoding_stats_table()
 
     def print_yara_results(self, font_idnum=None) -> None:
-        print_section_header(f'YARA Scan for {self.pdf_basename}')
-        theme_colors = [color[len('yara') + 1:] for color in theme_colors_with_prefix('yara')]
-        color_key = Text('Color Code: ') + Text(' ').join(theme_colors) + Text('\n')
-        console.print(color_key, justify='center')
+        print_section_header(f"YARA Scan of PDF rules for '{self.pdf_basename}'")
         self.yaralyzer.yaralyze()
 
         # TODO: we should really scan all the binary streams not just those in the fonts
@@ -226,22 +222,17 @@ class Pdfalyzer:
 
     def stream_objects_table(self) -> Table:
         table = Table('Stream Length', 'Node')
-
         table.columns[0].justify = 'right'
-        stream_nodes: List[PdfTreeNode] = []
 
-        for node in self.stream_node_iterator():
-            stream_nodes.append(node)
-
-        for node in sorted(stream_nodes, key=lambda r: r.idnum):
+        for node in self.stream_nodes():
             table.add_row(size_in_bytes_text(node.stream_length), node.__rich__())
 
         return table
 
-    def stream_node_iterator(self) -> Iterator[PdfTreeNode]:
-        for node in LevelOrderIter(self.pdf_tree):
-            if isinstance(node.obj, StreamObject):
-                yield node
+    def stream_nodes(self) -> List[PdfTreeNode]:
+        """List of actual nodes (not SymlinkNodes) containing streams sorted by PDF object ID"""
+        stream_filter = lambda node: node.contains_stream() and not isinstance(node, SymlinkNode)
+        return sorted(findall(self.pdf_tree, stream_filter), key=lambda r: r.idnum)
 
     def _process_reference(self, node: PdfTreeNode, key: str, address: str, reference: IndirectObject) -> [PdfTreeNode]:
         """Place the referenced node in the tree. Returns a list of nodes to walk next."""

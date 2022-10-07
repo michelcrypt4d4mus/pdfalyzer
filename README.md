@@ -151,27 +151,27 @@ Here's a short intro to how to access these objects:
 from pdfalyzer.pdfalyzer import Pdfalyzer
 
 # Load a PDF and parse its nodes into the tree.
-walker = Pdfalyzer("/path/to/the/evil.pdf")
-actual_pdf_tree = walker.pdf_tree
+pdfalyzer = Pdfalyzer("/path/to/the/evil.pdf")
+actual_pdf_tree = pdfalyzer.pdf_tree
 
 # Find a PDF object by its ID in the PDF
-node = walker.find_node_by_idnum(44)
+node = pdfalyzer.find_node_by_idnum(44)
 pdf_object = node.obj
 
 # Use anytree's findall_by_attr to find nodes with a given property
 from anytree.search import findall_by_attr
-page_nodes = findall_by_attr(walker.pdf_tree, name='type', value='/Page')
+page_nodes = findall_by_attr(pdfalyzer.pdf_tree, name='type', value='/Page')
 
 # Get the fonts
-font1 = walker.font_infos[0]
+font1 = pdfalyzer.font_infos[0]
 
 # Iterate over backtick quoted strings from a font binary and process them
 for backtick_quoted_string in font1.binary_scanner.extract_backtick_quoted_bytes():
     process(backtick_quoted_string)
 
-# Try to decode - by force if necessary - everything in the font binary that looks like a quoted string
-# or regex (meaning bytes between single quotes, double quotes, front slashes, backticks, or guillemet quotes)
-font1.force_decode_all_quoted_bytes()
+# Iterate over all stream objects:
+for node in pdfalyzer.stream_nodes():
+    do_stuff(node.stream_data)
 ```
 
 

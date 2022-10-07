@@ -24,7 +24,7 @@ from yaralyzer.output.rich_console import BYTES_NO_DIM, YARALYZER_THEME, console
 from yaralyzer.util.logging import log
 
 from yaralyzer.encoding_detection.character_encodings import NEWLINE_BYTE
-from pdfalyzer.helpers.pdf_object_helper import get_references, get_symlink_representation
+from pdfalyzer.helpers.pdf_object_helper import PdfObjectRef, get_references, get_symlink_representation
 from pdfalyzer.helpers.rich_text_helper import (PDF_ARRAY, TYPE_STYLES, get_label_style,
      get_type_style, get_type_string_style)
 from pdfalyzer.helpers.string_helper import pypdf_class_name
@@ -134,7 +134,7 @@ class PdfTreeNode(NodeMixin):
             log.debug(f"Removing relationship {relationship} from {self}")
             self.other_relationships.remove(relationship)
 
-    def other_relationship_count(self):
+    def other_relationship_count(self) -> int:
         return len(self.other_relationships)
 
     def get_reference_key_for_relationship(self, from_node: 'PdfTreeNode'):
@@ -147,12 +147,17 @@ class PdfTreeNode(NodeMixin):
         return relationship.reference_key
 
     # TODO: this doesn't include /Parent references
-    def referenced_by_keys(self) -> list[str]:
+    def referenced_by_keys(self) -> List[str]:
         """All the PDF instruction strings that referred to this object"""
         return [r.reference_key for r in self.other_relationships] + [self.known_to_parent_as]
 
-    def references(self):
+    def references(self) -> List[PdfObjectRef]:
+        """Returns all nodes referenced from this node (see PdfObjectRef definition)"""
         return get_references(self.obj)
+
+    def contains_stream(self) -> bool:
+        """Returns True for ContentStream, DecodedStream, and EncodedStream objects"""
+        return isinstance(self.obj, StreamObject)
 
     def _find_address_of_this_node(self, other_node: 'PdfTreeNode') -> str:
         """Find the address used in other_node to refer to this node"""
@@ -179,7 +184,7 @@ class PdfTreeNode(NodeMixin):
     # BELOW HERE IS JUST TEXT FORMATTING #
     ######################################
 
-    def print_other_relationships(self):
+    def print_other_relationships(self) -> None:
         """Print this node's non tree relationships (the ones represented by SymlinkNodes in the tree)"""
         console.print(f"Other relationships of {escape(str(self))}")
 

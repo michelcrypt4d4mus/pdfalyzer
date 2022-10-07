@@ -1,19 +1,25 @@
 # NEXT RELEASE
 
+# 1.10.0
+* `--streams` arg now takes an optional PDF object ID
+* `--fonts` no longer takes an optional PDF object ID
+* YARA matches will display more than 512 bytes
+* Improved output formatting
+
 # 1.9.0
 * Scan all binary streams, not just fonts.  Separate `--streams` option is provided. (`--font` option has much less output)
 * Display MD5, SHA1, and SHA256 for all binary streams as well as overall file
 
-# 1.8.3
+### 1.8.3
 * Highlight suspicious instructions in red, BOMs in green
 * Reenable guillemet quote matching
 * Clearer labeling of binary scan results
 * Sync with `yaralyzer` v0.4.0
 
-# 1.8.2
+### 1.8.2
 * Sync with `yaralyzer` v0.3.3
 
-# 1.8.1
+### 1.8.1
 * Show defaults and valid values for command line options
 
 # 1.8.0

@@ -1,17 +1,13 @@
-from pdfalyzer.decorators.pdf_tree_node import PdfTreeNode
-from pdfalyzer.pdfalyzer import Pdfalyzer
-
-
 def test_quote_extraction_methods(font_info):
-    _check_matches(font_info.binary_scanner.extract_backtick_quoted_bytes, 163, 33267)
+    _check_matches(font_info.binary_scanner.extract_backtick_quoted_bytes, 163, 52840)
 
 
 def test_front_slash_quoted_bytes_extraction(font_info):
-    _check_matches(font_info.binary_scanner.extract_front_slash_quoted_bytes, 756, 106625)
+    _check_matches(font_info.binary_scanner.extract_front_slash_quoted_bytes, 756, 167814)
 
 
 def test_extract_guillemet(font_info):
-    _check_matches(font_info.binary_scanner.extract_guillemet_quoted_bytes, 59, 23138)
+    _check_matches(font_info.binary_scanner.extract_guillemet_quoted_bytes, 59, 78763)
 
 
 def _check_matches(match_iterator, expected_matches: int, expected_bytes: int) -> None:
