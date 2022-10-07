@@ -74,7 +74,10 @@ select.add_argument('-f', '--font',
                     type=int)
 
 select.add_argument('-y', '--yara', action='store_true',
-                    help="scan the PDF and all its decoded/decrypted binary streams with YARA rules")
+                    help="scan the PDF with YARA rules")
+
+select.add_argument('-s', '--streams', action='store_true',
+                    help="scan all the PDF's decoded/decrypted for suspicious bytes as well as any YARA rule matches")
 
 select.add_argument('--quote-type',
                     help='scan binary data for quoted data of this type only or all types if not set',
@@ -123,14 +126,16 @@ def output_sections(args, pdfalyzer) -> List[OutputSection]:
     font_info = partial(pdfalyzer.print_font_info, font_idnum=font_id)
     update_wrapper(font_info, pdfalyzer.print_font_info)
 
-    # Top to bottom is the default order of output
+    # The first element string matches the argument in 'select' group.
+    # Top to bottom is the default order of output.
     possible_output_sections = [
         OutputSection('docinfo', pdfalyzer.print_document_info),
         OutputSection('tree', pdfalyzer.print_tree),
         OutputSection('rich', pdfalyzer.print_rich_table_tree),
         OutputSection('font', font_info),
         OutputSection('counts', pdfalyzer.print_summary),
-        OutputSection('yara', pdfalyzer.print_yara_results)
+        OutputSection('yara', pdfalyzer.print_yara_results),
+        OutputSection('streams', pdfalyzer.print_streams_analysis),
     ]
 
     output_sections = [section for section in possible_output_sections if vars(args)[section.argument]]

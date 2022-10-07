@@ -1,5 +1,8 @@
 # NEXT RELEASE
 
+# 1.9.0
+* Scan all binary streams, not just fonts.  Separate `--streams` option is provided. (`--font` option has much less output)
+* Display MD5, SHA1, and SHA256 for all binary streams as well as overall file
 
 # 1.8.3
 * Highlight suspicious instructions in red, BOMs in green

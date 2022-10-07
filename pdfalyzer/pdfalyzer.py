@@ -17,14 +17,18 @@ from PyPDF2.generic import IndirectObject, NameObject, NumberObject, StreamObjec
 from rich.panel import Panel
 from rich.table import Column, Table
 from rich.text import Text
-from pdfalyzer.detection.yaralyzer_helper import get_file_yaralyzer
+from yaralyzer.config import YaralyzerConfig
+from yaralyzer.helpers.bytes_helper import get_bytes_info
 from yaralyzer.helpers.file_helper import load_binary_data
-from yaralyzer.output.rich_console import console, theme_colors_with_prefix
+from yaralyzer.helpers.rich_text_helper import LEFT, size_in_bytes_text
+from yaralyzer.output.rich_console import GREY, console, theme_colors_with_prefix
+from yaralyzer.output.rich_layout_elements import bytes_hashes_table
 from yaralyzer.util.logging import log
 
+from pdfalyzer.binary.binary_scanner import BinaryScanner
 from pdfalyzer.decorators.document_model_printer import print_with_header
 from pdfalyzer.decorators.pdf_tree_node import PdfTreeNode
-from pdfalyzer.helpers.number_helper import size_string, size_in_bytes_string
+from pdfalyzer.detection.yaralyzer_helper import get_file_yaralyzer
 from pdfalyzer.helpers.pdf_object_helper import get_symlink_representation
 from pdfalyzer.helpers.string_helper import pp
 from pdfalyzer.font_info import FontInfo
@@ -60,9 +64,7 @@ class Pdfalyzer:
         self.pdf_path = pdf_path
         self.pdf_basename = basename(pdf_path)
         self.pdf_bytes = load_binary_data(pdf_path)
-        self.md5 = hashlib.md5(self.pdf_bytes ).hexdigest().upper()
-        self.sha1 = hashlib.sha1(self.pdf_bytes ).hexdigest().upper()
-        self.sha256 = hashlib.sha256(self.pdf_bytes ).hexdigest().upper()
+        self.pdf_bytes_info = get_bytes_info(self.pdf_bytes)
         pdf_file = open(pdf_path, 'rb')  # Filehandle must be left open for PyPDF2 to perform seeks
         self.pdf = PdfReader(pdf_file)
         self.yaralyzer = get_file_yaralyzer(pdf_path)
@@ -139,15 +141,9 @@ class Pdfalyzer:
         """Print the embedded document info (author, timestamps, version, etc)"""
         print_section_header(f'Document Info for {self.pdf_basename}')
         console.print(pp.pformat(self.pdf.getDocumentInfo()))
-
-        table = Table('File Size', Column(size_string(len(self.pdf_bytes))))
-        table.add_row('MD5', self.md5)
-        table.add_row('SHA1', self.sha1)
-        table.add_row('SHA256', self.sha256)
-        table.columns[1].style = 'orange3'
-        table.columns[1].header_style = 'bright_cyan'
-        console.print(table)
-        self.print_stream_objects()
+        console.line()
+        console.print(bytes_hashes_table(self.pdf_bytes, self.pdf_basename))
+        console.line()
 
     def print_tree(self):
         print_section_header(f'Simple tree view of {self.pdf_basename}')
@@ -175,6 +171,35 @@ class Pdfalyzer:
         for font_info in [fi for fi in self.font_infos if font_idnum is None or font_idnum == fi.idnum]:
             font_info.print_summary()
 
+    def print_streams_analysis(self) -> None:
+        print_section_header(f'Binary Stream Analysis / Extraction')
+        console.print(self.stream_objects_table())
+
+        for node in self.stream_node_iterator():
+            node_stream_bytes = node.stream_data
+
+            if node_stream_bytes is None or node.stream_length == 0:
+                print_section_subheader(f"{node} stream has length 0", style='dim')
+                continue
+
+            if not isinstance(node_stream_bytes, bytes):
+                msg = f"Stream in {node} is not bytes, it's {type(node.stream_data)}. Will reencode for YARA " + \
+                       "but they may not be the same bytes as the original stream!"
+                log.warning(msg)
+                node_stream_bytes = node_stream_bytes.encode()
+
+            print_section_subheader(f"{node} Stream Bytes")
+            binary_scanner = BinaryScanner(node_stream_bytes)
+            console.print(bytes_hashes_table(binary_scanner.bytes, str(self)))
+            binary_scanner.print_stream_preview()
+            binary_scanner.check_for_dangerous_instructions()
+
+            if not YaralyzerConfig.SUPPRESS_DECODES:
+                binary_scanner.check_for_boms()
+                binary_scanner.force_decode_all_quoted_bytes()
+
+            binary_scanner.print_decoding_stats_table()
+
     def print_yara_results(self, font_idnum=None) -> None:
         print_section_header(f'YARA Scan for {self.pdf_basename}')
         theme_colors = [color[len('yara') + 1:] for color in theme_colors_with_prefix('yara')]
@@ -199,15 +224,14 @@ class Pdfalyzer:
             console.print(Panel(f"Non tree relationships for {node}", expand=False))
             node.print_other_relationships()
 
-    def print_traversed_nodes(self) -> None:
-        """Debug method that displays which nodes have already been walked"""
-        for i in sorted(self.traversed_nodes.keys()):
-            console.print(f'{i}: {self.traversed_nodes[i]}')
+    def stream_objects_table(self) -> Table:
+        table = Table(
+            'Stream Length',
+            'Node',
+            title=f'Stream Summary for {self.pdf_basename}',
+            title_style=GREY,
+            title_justify=LEFT)
 
-    def print_stream_objects(self) -> None:
-        print_section_subheader(f'Stream Summary for {self.pdf_basename}')
-
-        table = Table('Stream Length', 'Node')
         table.columns[0].justify = 'right'
         stream_nodes: List[PdfTreeNode] = []
 
@@ -215,9 +239,9 @@ class Pdfalyzer:
             stream_nodes.append(node)
 
         for node in sorted(stream_nodes, key=lambda r: r.idnum):
-            table.add_row(size_in_bytes_string(node.stream_length), node.__rich__())
+            table.add_row(size_in_bytes_text(node.stream_length), node.__rich__())
 
-        console.print(table)
+        return table
 
     def stream_node_iterator(self) -> Iterator[PdfTreeNode]:
         for node in LevelOrderIter(self.pdf_tree):
@@ -419,6 +443,11 @@ class Pdfalyzer:
             'node_labels': node_labels,
             'pdf_object_types': pdf_object_types,
         }
+
+    def _print_traversed_nodes(self) -> None:
+        """Debug method that displays which nodes have already been walked"""
+        for i in sorted(self.traversed_nodes.keys()):
+            console.print(f'{i}: {self.traversed_nodes[i]}')
 
     def _verify_all_traversed_nodes_are_in_tree(self) -> None:
         """Make sure every node we can see is reachable from the root of the tree"""

@@ -19,11 +19,11 @@ from rich.table import Table
 from rich.text import Text
 from rich.tree import Tree
 from yaralyzer.helpers.bytes_helper import clean_byte_string, hex_text
+from yaralyzer.helpers.rich_text_helper import size_text
 from yaralyzer.output.rich_console import BYTES_NO_DIM, YARALYZER_THEME, console
 from yaralyzer.util.logging import log
 
 from yaralyzer.encoding_detection.character_encodings import NEWLINE_BYTE
-from pdfalyzer.helpers.number_helper import size_string
 from pdfalyzer.helpers.pdf_object_helper import get_references, get_symlink_representation
 from pdfalyzer.helpers.rich_text_helper import (PDF_ARRAY, TYPE_STYLES, get_label_style,
      get_type_style, get_type_string_style)
@@ -285,7 +285,7 @@ class PdfTreeNode(NodeMixin):
 
         add_preview_row(STREAM, stream_preview_string)
         add_preview_row(HEX, stream_preview_hex)
-        return_rows.append([Text('StreamLength', style='grey'), size_string(len(self.stream_data))])
+        return_rows.append([Text('StreamLength', style='grey'), size_text(len(self.stream_data))])
         return return_rows
 
     def generate_rich_tree(self, tree=None, depth=0):

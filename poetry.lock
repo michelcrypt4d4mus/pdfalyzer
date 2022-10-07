@@ -218,7 +218,7 @@ python-versions = ">=3.7"
 
 [[package]]
 name = "typing-extensions"
-version = "4.3.0"
+version = "4.4.0"
 description = "Backported and Experimental Type Hints for Python 3.7+"
 category = "main"
 optional = false
@@ -242,7 +242,7 @@ python-versions = "*"
 
 [[package]]
 name = "yaralyzer"
-version = "0.4.0"
+version = "0.5.0"
 description = "Visualize and force decode YARA and regex matches found in a file or byte stream. With colors. Lots of colors."
 category = "main"
 optional = false
@@ -258,7 +258,7 @@ yara-python = ">=4.2.3,<5.0.0"
 [metadata]
 lock-version = "1.1"
 python-versions = "^3.9"
-content-hash = "d3d85192197e608e48fea30832d7964bf1ebc18c468f431a7856fa3a55554ed2"
+content-hash = "cd07dbb7533e0aaa5aea9c4af4432c82cce2f787bb230e65f9479cf7f921c520"
 
 [metadata.files]
 anytree = [
@@ -338,8 +338,8 @@ tomli = [
     {file = "tomli-2.0.1.tar.gz", hash = "sha256:de526c12914f0c550d15924c62d72abc48d6fe7364aa87328337a31007fe8a4f"},
 ]
 typing-extensions = [
-    {file = "typing_extensions-4.3.0-py3-none-any.whl", hash = "sha256:25642c956049920a5aa49edcdd6ab1e06d7e5d467fc00e0506c44ac86fbfca02"},
-    {file = "typing_extensions-4.3.0.tar.gz", hash = "sha256:e6d2677a32f47fc7eb2795db1dd15c1f34eff616bcaf2cfb5e997f854fa1c4a6"},
+    {file = "typing_extensions-4.4.0-py3-none-any.whl", hash = "sha256:16fa4864408f655d35ec496218b85f79b3437c829e93320c7c9215ccfd92489e"},
+    {file = "typing_extensions-4.4.0.tar.gz", hash = "sha256:1511434bb92bf8dd198c12b1cc812e800d4181cfcb867674e0f8279cc93087aa"},
 ]
 wrapt = [
     {file = "wrapt-1.14.1-cp27-cp27m-macosx_10_9_x86_64.whl", hash = "sha256:1b376b3f4896e7930f1f772ac4b064ac12598d1c38d04907e696cc4d794b43d3"},
@@ -423,6 +423,6 @@ yara-python = [
     {file = "yara_python-4.2.3-cp39-cp39-win_amd64.whl", hash = "sha256:87125ede7fbc18ae65aab550f1a36f4ebf73bb828c5d7a3dd2bb99176f0faa15"},
 ]
 yaralyzer = [
-    {file = "yaralyzer-0.4.0-py3-none-any.whl", hash = "sha256:b6b1e8e5d32447ec308c2a1fbade9b624172ffa6a3e4d5b550c295718463dcda"},
-    {file = "yaralyzer-0.4.0.tar.gz", hash = "sha256:99f8721f64346e1f0281b783a3b15813bfff5837a89219c90bd3089a5f802d25"},
+    {file = "yaralyzer-0.5.0-py3-none-any.whl", hash = "sha256:635d5f98ddb05d3b3ec1f9b351cc07b34c92f1cfbefacae039f44a3a5bd7493f"},
+    {file = "yaralyzer-0.5.0.tar.gz", hash = "sha256:02f0b0b0810f01e822f99a6089e71140d152eec39e97cfc30f344974cab47811"},
 ]

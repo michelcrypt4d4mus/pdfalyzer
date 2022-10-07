@@ -52,6 +52,7 @@ def _render_help(program_name: str, export_format: str, output_dir: str) -> str:
         "save_text": {"styles": True},
     }
 
+    parser.prog = 'pdfalyze'
     console.print(Text.from_ansi(parser.format_help()))
     export_method(output_file, **export_kwargs[export_method_name])
     console.print(f"\n\nInvoked Rich.console.{export_method_name}('{output_file}')", style='cyan')

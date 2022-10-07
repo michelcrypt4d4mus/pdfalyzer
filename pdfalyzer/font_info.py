@@ -14,6 +14,7 @@ from rich.text import Text
 from yaralyzer.config import YaralyzerConfig
 from yaralyzer.helpers.bytes_helper import print_bytes
 from yaralyzer.output.rich_console import console
+from yaralyzer.output.rich_layout_elements import bytes_hashes_table
 from yaralyzer.util.logging import log
 
 from pdfalyzer.binary.binary_scanner import BinaryScanner
@@ -21,7 +22,7 @@ from pdfalyzer.config import PdfalyzerConfig
 from pdfalyzer.detection.yaralyzer_helper import get_bytes_yaralyzer
 from pdfalyzer.helpers.rich_text_helper import get_label_style, get_type_style
 from pdfalyzer.helpers.string_helper import pp
-from pdfalyzer.output.layout import subheading_width
+from pdfalyzer.output.layout import print_section_subheader, subheading_width
 from pdfalyzer.util.adobe_strings import (FONT, FONT_DESCRIPTOR, FONT_FILE, FONT_LENGTHS, RESOURCES, SUBTYPE,
      TO_UNICODE, TYPE, W, WIDTHS)
 
@@ -165,17 +166,6 @@ class FontInfo:
         console.print(self._summary_table())
         self.print_character_mapping()
         self.print_prepared_charmap()
-
-        if self.binary_scanner is not None:
-            self.binary_scanner.print_stream_preview(title_suffix=f" of /FontFile for {self.display_title}")
-            self.binary_scanner.check_for_dangerous_instructions()
-            self.binary_scanner.check_for_boms()
-
-            if not YaralyzerConfig.SUPPRESS_DECODES:
-                self.binary_scanner.force_decode_all_quoted_bytes()
-
-            self.binary_scanner.print_decoding_stats_table()
-
         console.line(2)
 
     def print_character_mapping(self):
