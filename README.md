@@ -12,12 +12,10 @@ pdfalyze the_heidiggerian_themes_expressed_in_illmatic.pdf
 ```
 
 ### What It Do
-1. **Generate summary format as well as in depth visualizations of a PDF's tree structure**[^1] with helpful color themes that conceptually link objects of similar type. See [the examples below](#example-output) to get an idea.
-1. **Display text representations of the PDF's embedded binary data**. Adobe calls these "streams" and they hold things like images, fonts, etc.
+1. **Generate in depth visualizations of a PDF's tree structure**[^1] that give you a complete picture of all of the PDF's internal objects and the links between them. See [the examples below](#example-output) to get an idea.
 1. **Scan for malicious content** both with all the PDF related [YARA](https://github.com/VirusTotal/yara-python) rules I could dig up as well as in-depth scans of the embedded compressed binaries. Some tools don't decompress those binaries before scanning.
-1. **Show the results of attempting to decode suspicious byte patterns with many differente character encodings.** Several encodings are configured as defaults to try but [the `chardet` library](https://github.com/chardet/chardet) is also leveraged to attempt to detect the encoding.
+1. **Forcibly decode suspicious byte patterns with many different character encodings.** [`chardet`](https://github.com/chardet/chardet) is leveraged to attempt to guess the encoding but no matter what `chardet` thinks the results of forcing the bytes into an encoding will be displayed.
 1. **Be used as a library for your own PDF related code.** All[^2] the inner PDF objects are guaranteed to be available in a searchable tree data structure.
-1. **Ease the extraction of all the binary data in a PDF** (fonts, images, etc) to separate files for further analysis. (The heavy lifting is actually done by [Didier Stevens's tools](#installing-didier-stevenss-pdf-analysis-tools) - the pdfalyzer automates what would otherwise be a lot of typing into a single command.)
 
 If you're looking for one of these things this may be the tool for you.
 
@@ -27,9 +25,9 @@ An exception will be raised if there's any issue placing a node while parsing or
 This tool is mostly about examining a PDF's logical structure and assisting with the discovery of malicious content. As such it doesn't have much to offer as far as extracting text from PDFs, rendering PDFs[^3], writing new PDFs, or many of the more conventional things one might do with a portable document.
 
 ### Did The World Really Need Another PDF Tool?
-This tool was built to fill a gap in the PDF assessment landscape following [my own recent experience trying to find malicious content in a PDF file](https://twitter.com/Cryptadamist/status/1570167937381826560). Didier Stevens's [pdfid.py](https://github.com/DidierStevens/DidierStevensSuite/blob/master/pdfid.py) and [pdf-parser.py](https://github.com/DidierStevens/DidierStevensSuite/blob/master/pdf-parser.py) are still the best game in town when it comes to PDF analysis tools but they lack in the visualization department and also don't give you much to work with as far as giving you a data model you can write your own code around. [Peepdf](https://github.com/jesparza/peepdf) seemed promising but turned out to be in a buggy, out of date, and more or less unfixable state. And neither of them offered much in the way of tooling for embedded font analysis.
+This tool was built to fill a gap in the PDF assessment landscape following [my own recent experience trying to find malicious content in a PDF file](https://twitter.com/Cryptadamist/status/1570167937381826560). Didier Stevens's [pdfid.py](https://github.com/DidierStevens/DidierStevensSuite/blob/master/pdfid.py) and [pdf-parser.py](https://github.com/DidierStevens/DidierStevensSuite/blob/master/pdf-parser.py) are still the best game in town when it comes to PDF analysis tools but they lack in the visualization department and also don't give you much to work with as far as giving you a data model you can write your own code around. [Peepdf](https://github.com/jesparza/peepdf) seemed promising but turned out to be in a buggy, out of date, and more or less unfixable state. And neither of them offered much in the way of tooling for embedded binary analysis.
 
-All those things being the case led to a situation where I felt the world might be slightly improved if I strung together a couple of more stable/well known/actively maintained open source projects ([AnyTree](https://github.com/c0fec0de/anytree), [PyPDF2](https://github.com/py-pdf/PyPDF2), and [Rich](https://github.com/Textualize/rich)) into this tool.
+Thus I felt the world might be slightly improved if I strung together a couple of more stable/well known/actively maintained open source projects ([AnyTree](https://github.com/c0fec0de/anytree), [PyPDF2](https://github.com/py-pdf/PyPDF2), and [Rich](https://github.com/Textualize/rich)) into this tool.
 
 
 
