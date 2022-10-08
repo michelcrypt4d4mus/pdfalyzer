@@ -42,16 +42,18 @@ The dimmer (as in "harder to see") nodes[^4] marked with `Non Child Reference` g
 
 ![Basic Tree](doc/svgs/rendered_images/basic_tree.png)
 
-That's a pretty basic document. If you'd like to see the tree for a more complicated/longer PDF, [here's an example showing the `nmap` cheat sheet](doc/svgs/rendered_images/NMAP_Commands_Cheat_Sheet_and_Tutorial.pdf.tree.svg.png).
+That's a pretty basic document. [Here's the basic tree for a more complicated PDF](doc/svgs/rendered_images/NMAP_Commands_Cheat_Sheet_and_Tutorial.pdf.tree.svg.png).
 
 ### Rich Tree View
-This image shows a more in-depth view of of the PDF tree for the same document shown above. This tree (AKA the "rich" tree) has almost everything - shows all PDF object properties, all relationships between objects. Even includes sizable previews of any binary data streams embedded or encrypted in the document. Note that the `/OpenAction` is highlighted in bright red, as is the Adobe Type1 font binary (Google's project zero regards any Adobe Type1 font as "mad sus").
-
-[Here's an even bigger example showing the same `nmap` cheat sheet](doc/svgs/rendered_images/NMAP_Commands_Cheat_Sheet_and_Tutorial.pdf.rich_table_tree.png).
+This image shows a more in-depth view of of the PDF tree for the same document shown above. This tree (AKA the "rich" tree) has almost everything. Shows all PDF object properties, all relationships between objects, and sizable previews of any binary data streams embedded or encrypted in the document. Note that in addition to `/OpenAction`, the Adobe Type1 font binary is also red (Google's project zero regards any Adobe Type1 font as "mad sus").
 
 ![Rich Tree](doc/svgs/rendered_images/rich_table_tree.png)
 
-### Font Analysis (And Lots Of It)
+
+[And here's the rich tree for the same more complicated PDF](doc/svgs/rendered_images/NMAP_Commands_Cheat_Sheet_and_Tutorial.pdf.rich_table_tree.png).
+
+
+### Binary Analysis (And Lots Of It)
 #### View the Properties of the Fonts in the PDF
 Comes with a preview of the beginning and end of the font's raw binary data stream (at least if it's that kind of font).
 
@@ -62,8 +64,7 @@ It's actually `PyPDF2` doing the lifting here but we're happy to take the credit
 
 ![Font Charmap](doc/svgs/rendered_images/font_character_mapping.png)
 
-#### Search Encrypted Binary Font Data for #MadSus Content No Malware Scanner Will Catch[^5]
-
+#### Search Internal Binary Data for Sus Content No Malware Scanner Will Catch[^5]
 Things like, say, a hidden binary `/F` (PDF instruction meaning "URL") followed by a `JS` (I'll let you guess what "JS" stands for) and then a binary `»` character (AKA "the character the PDF specification uses to close a section of the PDF's logical structure"). Put all that together and it says that you're looking at a secret JavaScript instruction embedded in the encrypted part of a font binary. A secret instruction that causes the PDF renderer to pop out of its frame prematurely as it renders the font.
 
 ![Font with JS](doc/svgs/rendered_images/font29.js.1.png)
@@ -82,9 +83,6 @@ When all is said and done you can see some stats that may help you figure out wh
 Behold the beauty:
 ![Basic Tree](doc/svgs/rendered_images/decoding_and_chardet_table_2.png)
 
-### Compute Summary Statistics About A PDF's Inner Structure
-Some simple counts of some properties of the internal PDF objects. Not the most exciting but sometimes helpful. `pdfid.py` also does something much like this. Not exciting enough to show a screenshot.
-
 
 # Installation
 
@@ -92,7 +90,7 @@ Some simple counts of some properties of the internal PDF objects. Not the most 
 pipx install pdfalyzer
 ```
 
-[pipx](https://pypa.github.io/pipx/) is a tool that basically runs `pip install` for a python package but in such a way that the installed package's requirements are isolated from your system's python packages. If you  don't feel like installing `pipx` then `pip install` should work fine as long as there are no conflicts between The Pdfalyzer's required packages and those on your system already. (If you aren't using other python based command line tools then your odds of a conflict are basically 0%.)
+[pipx](https://pypa.github.io/pipx/) is a tool that basically runs `pip install` for a python package but in such a way that the installed package's requirements are isolated from your system's python packages. If you don't feel like installing `pipx` then `pip install` should work fine as long as there are no conflicts between The Pdfalyzer's required packages and those on your system already. (If you aren't using other python based command line tools then your odds of a conflict are basically 0%.)
 
 For info on how to setup a dev environment, see [Contributing](#contributing) section at the end of this file.
 
@@ -100,28 +98,6 @@ For info on how to setup a dev environment, see [Contributing](#contributing) se
 1. If you encounter an error building the python `cryptography` package check your `pip` version (`pip --version`). If it's less than 22.0, upgrade `pip` with `pip install --upgrade pip`.
 2. On linux if you encounter an error building `wheel` or `cffi` you may need to install some packages like a compiler for the `rust` language or some SSL libraries. `sudo apt-get install build-essential libssl-dev libffi-dev rustc` may help.
 1. While `poetry.lock` is checked into this repo the versions "required" there aren't really "required" so feel free to delete or downgrade if you need to.
-
-### 3rd Party Tools
-#### Installing Didier Stevens's PDF Analysis Tools
-Stevens's tools provide comprehensive info about the contents of a PDF, are guaranteed not to trigger the rendering of any malicious content (especially `pdfid.py`), and have been battle tested for well over a decade. It would probably be a good idea to analyze your PDF with his tools before you start working with this one.
-
-If you're lazy and don't want to retrieve his tools yourself there's [a simple bash script](scripts/install_didier_stevens_pdf_tools.sh) to download them from his github repo and place them in a `tools/` subdirectory off the project root. Just run this:
-
-```sh
-scripts/install_didier_stevens_pdf_tools.sh
-```
-
-If there is a discrepancy between the output of betweeen his tools and this one you should assume his tool is correct and The Pdfalyzer is wrong until you conclusively prove otherwise.
-
-#### Installing The `t1utils` Font Suite
-`t1utils` is a suite of old but battle tested apps for manipulating old Adobe font formats.  You don't need it unless you're dealing with an older Type 1 or Type 2 font binary but given that those have been very popular exploit vectors in the past few years it can be extremely helpful. One of the tools in the suite, [`t1disasm`](https://www.lcdf.org/type/t1disasm.1.html), is particularly useful because it decrypts and decompiles Adobe Type 1 font binaries into a more human readable string representation.
-
-There's [a script](scripts/install_t1utils.sh) to help you install the suite if you need it:
-
-```sh
-scripts/install_t1utils.sh
-```
-
 
 
 # Usage
@@ -185,6 +161,29 @@ You might be able to easily fix your problem by adding the Adobe object's refere
 
 
 # PDF Resources
+
+### 3rd Party Tools
+#### Installing Didier Stevens's PDF Analysis Tools
+Stevens's tools provide comprehensive info about the contents of a PDF, are guaranteed not to trigger the rendering of any malicious content (especially `pdfid.py`), and have been battle tested for well over a decade. It would probably be a good idea to analyze your PDF with his tools before you start working with this one.
+
+If you're lazy and don't want to retrieve his tools yourself there's [a simple bash script](scripts/install_didier_stevens_pdf_tools.sh) to download them from his github repo and place them in a `tools/` subdirectory off the project root. Just run this:
+
+```sh
+scripts/install_didier_stevens_pdf_tools.sh
+```
+
+If there is a discrepancy between the output of betweeen his tools and this one you should assume his tool is correct and The Pdfalyzer is wrong until you conclusively prove otherwise.
+
+#### Installing The `t1utils` Font Suite
+`t1utils` is a suite of old but battle tested apps for manipulating old Adobe font formats.  You don't need it unless you're dealing with an older Type 1 or Type 2 font binary but given that those have been very popular exploit vectors in the past few years it can be extremely helpful. One of the tools in the suite, [`t1disasm`](https://www.lcdf.org/type/t1disasm.1.html), is particularly useful because it decrypts and decompiles Adobe Type 1 font binaries into a more human readable string representation.
+
+There's [a script](scripts/install_t1utils.sh) to help you install the suite if you need it:
+
+```sh
+scripts/install_t1utils.sh
+```
+
+### Documentation
 #### Official Adobe Documentation
 * [Official Adobe PDF 1.7 Specification](https://opensource.adobe.com/dc-acrobat-sdk-docs/standards/pdfstandards/pdf/PDF32000_2008.pdf) - Indispensable map when navigating a PDF forest.
 * [Adobe Type 1 Font Format Specification](https://adobe-type-tools.github.io/font-tech-notes/pdfs/T1_SPEC.pdf) - Official spec for Adobe's original font description language and file format. Useful if you have suspicions about malicious fonts. Type1 seems to be the attack vector of choice recently which isn't so surprising when you consider that it's a 30 year old technology and the code that renders these fonts probably hasn't been extensively tested in decades because almost no one uses them anymore outside of people who want to use them as attack vectors.
