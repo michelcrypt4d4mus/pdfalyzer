@@ -1,5 +1,5 @@
 # THE PDFALYZER
-A PDF analysis tool geared towards visualizing the inner tree-like data structure[^1] of a PDF in [spectacularly large and colorful diagrams](#example-output) as well as scanning the various kinds of binary data within the PDF for hidden potentially malicious content.
+A PDF analysis tool geared towards visualizing the inner tree-like data structure[^1] of a PDF in [spectacularly large and colorful diagrams](#example-output) as well as scanning the binary streams embedded in the PDF for hidden potentially malicious content.
 
 The Pdfalyzer makes heavy use of YARA (via [The Yaralyzer](https://github.com/michelcrypt4d4mus/yaralyzer)) for matching/extracting byte patterns. [The Yaralyzer](https://github.com/michelcrypt4d4mus/yaralyzer) actually began its life as The Pdfalyzer's matching engine.
 
@@ -10,13 +10,12 @@ The Pdfalyzer makes heavy use of YARA (via [The Yaralyzer](https://github.com/mi
 pipx install pdfalyzer
 pdfalyze the_heidiggerian_themes_expressed_in_illmatic.pdf
 ```
-`pip install pdfalyzer` also works. See [Installation](#installation) and [Usage](#usage) for more details.
 
 ### What It Do
 1. **Generate summary format as well as in depth visualizations of a PDF's tree structure**[^1] with helpful color themes that conceptually link objects of similar type. See [the examples below](#example-output) to get an idea.
 1. **Display text representations of the PDF's embedded binary data**. Adobe calls these "streams" and they hold things like images, fonts, etc.
-1. **Scan for malicious content in the PDF** both with PDF related [YARA](https://github.com/VirusTotal/yara-python) rules collected from around the internet as well as custom in-depth scans of the embedded font binaries where other tools don't look. These scans will be done both to the overall finay binary as well as to each of the PDF's embedded binary streams _post decode/decrypt_. Most PDFs have many such streams.
-1. **Show the results of attempting to decode suspicious byte patterns with many differente character encodings.** In particular quoted bytes - those between things like front slashes (hint: think regexes) in addition to regular quote characters. Several encodings are configured as defaults to try but [the `chardet` library](https://github.com/chardet/chardet) is also leveraged to attempt to detect if the binary could be in an unconfigured encoding.
+1. **Scan for malicious content** both with all the PDF related [YARA](https://github.com/VirusTotal/yara-python) rules I could dig up as well as in-depth scans of the embedded compressed binaries. Some tools don't decompress those binaries before scanning.
+1. **Show the results of attempting to decode suspicious byte patterns with many differente character encodings.** Several encodings are configured as defaults to try but [the `chardet` library](https://github.com/chardet/chardet) is also leveraged to attempt to detect the encoding.
 1. **Be used as a library for your own PDF related code.** All[^2] the inner PDF objects are guaranteed to be available in a searchable tree data structure.
 1. **Ease the extraction of all the binary data in a PDF** (fonts, images, etc) to separate files for further analysis. (The heavy lifting is actually done by [Didier Stevens's tools](#installing-didier-stevenss-pdf-analysis-tools) - the pdfalyzer automates what would otherwise be a lot of typing into a single command.)
 
@@ -28,14 +27,14 @@ An exception will be raised if there's any issue placing a node while parsing or
 This tool is mostly about examining a PDF's logical structure and assisting with the discovery of malicious content. As such it doesn't have much to offer as far as extracting text from PDFs, rendering PDFs[^3], writing new PDFs, or many of the more conventional things one might do with a portable document.
 
 ### Did The World Really Need Another PDF Tool?
-This tool was built to fill a gap in the PDF assessment landscape following my . Didier Stevens's [pdfid.py](https://github.com/DidierStevens/DidierStevensSuite/blob/master/pdfid.py) and [pdf-parser.py](https://github.com/DidierStevens/DidierStevensSuite/blob/master/pdf-parser.py) are still the best game in town when it comes to PDF analysis tools but they lack in the visualization department and also don't give you much to work with as far as giving you a data model you can write your own code around. [Peepdf](https://github.com/jesparza/peepdf) seemed promising but turned out to be in a buggy, out of date, and more or less unfixable state. And neither of them offered much in the way of tooling for embedded font analysis.
+This tool was built to fill a gap in the PDF assessment landscape following [my own recent experience trying to find malicious content in a PDF file](https://twitter.com/Cryptadamist/status/1570167937381826560). Didier Stevens's [pdfid.py](https://github.com/DidierStevens/DidierStevensSuite/blob/master/pdfid.py) and [pdf-parser.py](https://github.com/DidierStevens/DidierStevensSuite/blob/master/pdf-parser.py) are still the best game in town when it comes to PDF analysis tools but they lack in the visualization department and also don't give you much to work with as far as giving you a data model you can write your own code around. [Peepdf](https://github.com/jesparza/peepdf) seemed promising but turned out to be in a buggy, out of date, and more or less unfixable state. And neither of them offered much in the way of tooling for embedded font analysis.
 
-All those things being the case lead to a situation where I felt the world might be slightly improved if I strung together a couple of more stable/well known/actively maintained open source projects ([AnyTree](https://github.com/c0fec0de/anytree), [PyPDF2](https://github.com/py-pdf/PyPDF2), and [Rich](https://github.com/Textualize/rich)) into this tool.
+All those things being the case led to a situation where I felt the world might be slightly improved if I strung together a couple of more stable/well known/actively maintained open source projects ([AnyTree](https://github.com/c0fec0de/anytree), [PyPDF2](https://github.com/py-pdf/PyPDF2), and [Rich](https://github.com/Textualize/rich)) into this tool.
 
 
 
 # Example Output
-The Pdfalyzer can export visualizations to HTML, ANSI colored text, and SVG images using the file export functionality that comes with [Rich](https://github.com/Textualize/rich). SVGs can be turned into `png` format images with a tool like `inkscape` or `cairosvg` (Inkscape works a lot better in our experience).
+The Pdfalyzer can export visualizations to HTML, ANSI colored text, and SVG images using the file export functionality that comes with [Rich](https://github.com/Textualize/rich). SVGs can be turned into `png` format images with a tool like Inkscape or `cairosvg` (Inkscape works a lot better in our experience).
 
 
 ### Basic Tree View
