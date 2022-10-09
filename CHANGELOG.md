@@ -1,5 +1,8 @@
 # NEXT RELEASE
 
+### 1.10.2
+* Bump deps
+
 ### 1.10.1
 * Use `rich_argparse_plus` for help text
 
