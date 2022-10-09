@@ -1,5 +1,8 @@
 # NEXT RELEASE
 
+### 1.10.1
+* Use `rich_argparse_plus` for help text
+
 # 1.10.0
 * `--streams` arg now takes an optional PDF object ID
 * `--fonts` no longer takes an optional PDF object ID

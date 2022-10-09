@@ -1,6 +1,6 @@
 [tool.poetry]
 name = "pdfalyzer"
-version = "1.10.0"
+version = "1.10.1"
 description = "A PDF analysis toolkit. Scan a PDF with relevant YARA rules, visualize its inner tree-like data structure in living color (lots of colors), force decodes of suspicious font binaries, and more."
 authors = ["Michel de Cryptadamus <michel@cryptadamus.com>"]
 license = "GPL-3.0-or-later"
@@ -48,7 +48,7 @@ Deprecated = "^1.2.13"
 PyPDF2 = "^2.10"
 python-dotenv = "^0.21.0"
 rich = "^12.5.1"
-rich-argparse = "^0.3.0"
+rich-argparse-plus = "^0.3.1"
 yaralyzer = "^0.6.0"
 
 

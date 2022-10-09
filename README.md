@@ -1,3 +1,9 @@
+<!-- ![Tests](https://img.shields.io/github/workflow/status/michelcrypt4d4mus/pdfalyzer/tests?label=tests) -->
+![Python Version](https://img.shields.io/pypi/pyversions/pdfalyzer)
+![Release](https://img.shields.io/github/v/release/michelcrypt4d4mus/pdfalyzer?sort=semver)
+![Downloads](https://img.shields.io/pypi/dm/pdfalyzer)
+
+
 # THE PDFALYZER
 A PDF analysis tool geared towards visualizing the inner tree-like data structure[^1] of a PDF in [spectacularly large and colorful diagrams](#example-output) as well as scanning the binary streams embedded in the PDF for hidden potentially malicious content.
 
@@ -103,7 +109,7 @@ For info on how to setup a dev environment, see [Contributing](#contributing) se
 # Usage
 Run `pdfalyze --help` to see usage instructions. As of right now these are the options:
 
-![argparse_help](doc/svgs/rendered_images/pdfalyzer_help.png)
+![argparse_help](doc/svgs/rendered_images/pdfalyze_help_prince_theme.png)
 
 Beyond that there's [a few scripts](scripts/) in the repo that may be of interest.
 

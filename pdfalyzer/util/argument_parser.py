@@ -1,15 +1,14 @@
 import sys
-from argparse import ArgumentDefaultsHelpFormatter, ArgumentParser, Action
+from argparse import ArgumentParser
 from collections import namedtuple
 from functools import partial, update_wrapper
 from importlib.metadata import version
 from os import environ, getcwd, path
 from typing import List
 
-from rich_argparse import RichHelpFormatter
+from rich_argparse_plus import RichHelpFormatterPlus
 from yaralyzer.helpers.rich_text_helper import console
-from yaralyzer.util.argument_parser import (ExplicitDefaultsHelpFormatter, export, parser,
-     parse_arguments as parse_yaralyzer_args)
+from yaralyzer.util.argument_parser import export, parser, parse_arguments as parse_yaralyzer_args
 from yaralyzer.util.logging import log, log_and_print, log_argparse_result, log_current_config, log_invocation
 
 from pdfalyzer.config import LOG_DIR_ENV_VAR, PdfalyzerConfig
@@ -18,7 +17,7 @@ from pdfalyzer.detection.constants.binary_regexes import QUOTE_PATTERNS
 # NamedTuple to keep our argument selection orderly
 OutputSection = namedtuple('OutputSection', ['argument', 'method'])
 
-ALL_STREAMS = -1
+RichHelpFormatterPlus.choose_theme('prince')
 
 DESCRIPTION = "Explore PDF's inner data structure with absurdly large and in depth visualizations. " + \
               "Track the control flow of her darker impulses, scan rivers of her binary data for signs " + \
@@ -30,6 +29,7 @@ EPILOG = "Values for various config options can be set permanently by a .pdfalyz
          f"A registry of previous pdfalyzer invocations will be incribed to a file if the '{LOG_DIR_ENV_VAR}' " + \
          "environment variable is configured."
 
+ALL_STREAMS = -1
 
 # Positional args, version, help, etc. Note that we extend the yaralyzer's parser and export
 export.add_argument('-bin', '--extract-binary-streams',
@@ -39,7 +39,7 @@ export.add_argument('-bin', '--extract-binary-streams',
 
 
 parser = ArgumentParser(
-    formatter_class=ExplicitDefaultsHelpFormatter,
+    formatter_class=RichHelpFormatterPlus,
     description=DESCRIPTION,
     epilog=EPILOG,
     parents=[parser],  # Extend yaralyzer args
