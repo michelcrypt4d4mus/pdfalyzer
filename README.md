@@ -37,62 +37,9 @@ Thus I felt the world might be slightly improved if I strung together a couple o
 
 
 
-# Example Output
-The Pdfalyzer can export visualizations to HTML, ANSI colored text, and SVG images using the file export functionality that comes with [Rich](https://github.com/Textualize/rich). SVGs can be turned into `png` format images with a tool like Inkscape or `cairosvg` (Inkscape works a lot better in our experience).
-
-
-### Basic Tree View
-As you can see the "mad sus" `/OpenAction` relationship is highlighted bright red, as would be a couple of other suspicious PDF instructions like `/JavaScript` that don't exist in the PDF but do exist in other documents.
-
-The dimmer (as in "harder to see") nodes[^4] marked with `Non Child Reference` give you a way to visualize the relationships between PDF objects that exist outside of the tree structure's parent/child relationships.
-
-![Basic Tree](doc/svgs/rendered_images/basic_tree.png)
-
-That's a pretty basic document. [Here's the basic tree for a more complicated PDF](doc/svgs/rendered_images/NMAP_Commands_Cheat_Sheet_and_Tutorial.pdf.tree.svg.png).
-
-### Rich Tree View
-This image shows a more in-depth view of of the PDF tree for the same document shown above. This tree (AKA the "rich" tree) has almost everything. Shows all PDF object properties, all relationships between objects, and sizable previews of any binary data streams embedded or encrypted in the document. Note that in addition to `/OpenAction`, the Adobe Type1 font binary is also red (Google's project zero regards any Adobe Type1 font as "mad sus").
-
-![Rich Tree](doc/svgs/rendered_images/rich_table_tree.png)
-
-
-[And here's the rich tree for the same more complicated PDF linked to in the Basic Tree section](doc/svgs/rendered_images/NMAP_Commands_Cheat_Sheet_and_Tutorial.pdf.rich_table_tree.png).
-
-
-### Binary Analysis (And Lots Of It)
-#### View the Properties of the Fonts in the PDF
-Comes with a preview of the beginning and end of the font's raw binary data stream (at least if it's that kind of font).
-
-![Font Properties](doc/svgs/rendered_images/font_summary_with_byte_preview.png)
-
-#### Extract Character Mappings from Ancient Adobe Font Formats
-It's actually `PyPDF2` doing the lifting here but we're happy to take the credit.
-
-![Font Charmap](doc/svgs/rendered_images/font_character_mapping.png)
-
-#### Search Internal Binary Data for Sus Content No Malware Scanner Will Catch[^5]
-Things like, say, a hidden binary `/F` (PDF instruction meaning "URL") followed by a `JS` (I'll let you guess what "JS" stands for) and then a binary `»` character (AKA "the character the PDF specification uses to close a section of the PDF's logical structure"). Put all that together and it says that you're looking at a secret JavaScript instruction embedded in the encrypted part of a font binary. A secret instruction that causes the PDF renderer to pop out of its frame prematurely as it renders the font.
-
-![Font with JS](doc/svgs/rendered_images/font29.js.1.png)
-
-#### Extract And Decode Binary Patterns
-Like, say, bytes between common regular expression markers that you might want to force a decode of in a lot of different encodings.
-
-![Font Scan Regex](doc/svgs/rendered_images/font_34_frontslash_scan.png)
-
-When all is said and done you can see some stats that may help you figure out what the character encoding may or may not be for the bytes matched by those patterns:
-
-![Font Decode Summary](doc/svgs/rendered_images/font29_summary_stats.png)
-
-
-#### Now There's Even A Fancy Table To Tell You What The `chardet` Library Would Rank As The Most Likely Encoding For A Chunk Of Binary Data
-Behold the beauty:
-![Basic Tree](doc/svgs/rendered_images/decoding_and_chardet_table_2.png)
-
-
 # Installation
 
-```
+```sh
 pipx install pdfalyzer
 ```
 
@@ -102,11 +49,7 @@ For info on how to setup a dev environment, see [Contributing](#contributing) se
 
 ### Troubleshooting The Installation
 1. If you used regular `pip3` instead of `pipx` and you only want to use the CLI and don't need to `import` the python classes to your own code, you should try to install with `pipx` instead.
-1. If you run into an issue about missing YARA try to install [yara-python](https://pypi.org/project/yara-python/)
-age: https://pypi.org/project/yara-python/
-that's odd because it's a required package for the pdfalyzer. maybe try
-pip install python-yara
-If that doesn't work you may have to install the YARA executable separately. docs here.
+1. If you run into an issue about missing YARA try to install [yara-python](https://pypi.org/project/yara-python/). If that doesn't work you may have to install the YARA executable separately.
 1. If you encounter an error building the python `cryptography` package check your `pip` version (`pip --version`). If it's less than 22.0, upgrade `pip` with `pip install --upgrade pip`.
 2. On linux if you encounter an error building `wheel` or `cffi` you may need to install some packages like a compiler for the `rust` language or some SSL libraries. `sudo apt-get install build-essential libssl-dev libffi-dev rustc` may help.
 1. While `poetry.lock` is checked into this repo the versions "required" there aren't really "required" so feel free to delete or downgrade if you need to.
@@ -116,6 +59,12 @@ If that doesn't work you may have to install the YARA executable separately. doc
 Run `pdfalyze --help` to see usage instructions. As of right now these are the options:
 
 ![argparse_help](doc/svgs/rendered_images/pdfalyze_help_prince_theme.png)
+
+Note that The Pdfalyzer output is _extremely_ verbose if you don't limit the output sections (See `ANALYSIS SELECTION` in the `--help`). Almost all of the verbosity comes from the `--stream` option. To get everything _except_ the stream option, use these flags
+
+```sh
+pdfalyzer lacan_buys_the_dip.pdf -d -t -r -f -y -c
+```
 
 Beyond that there's [a few scripts](scripts/) in the repo that may be of interest.
 
@@ -169,6 +118,62 @@ If that does happen and you run into an issue using this tool on a particular PD
 * `INDETERMINATE_REFERENCES`
 
 You might be able to easily fix your problem by adding the Adobe object's reference key to the appropriate list.
+
+
+
+
+# Example Output
+The Pdfalyzer can export visualizations to HTML, ANSI colored text, and SVG images using the file export functionality that comes with [Rich](https://github.com/Textualize/rich). SVGs can be turned into `png` format images with a tool like Inkscape or `cairosvg` (Inkscape works a lot better in our experience).
+
+
+### Basic Tree View
+As you can see the "mad sus" `/OpenAction` relationship is highlighted bright red, as would be a couple of other suspicious PDF instructions like `/JavaScript` that don't exist in the PDF but do exist in other documents.
+
+The dimmer (as in "harder to see") nodes[^4] marked with `Non Child Reference` give you a way to visualize the relationships between PDF objects that exist outside of the tree structure's parent/child relationships.
+
+![Basic Tree](doc/svgs/rendered_images/basic_tree.png)
+
+That's a pretty basic document. [Here's the basic tree for a more complicated PDF](doc/svgs/rendered_images/NMAP_Commands_Cheat_Sheet_and_Tutorial.pdf.tree.svg.png).
+
+### Rich Tree View
+This image shows a more in-depth view of of the PDF tree for the same document shown above. This tree (AKA the "rich" tree) has almost everything. Shows all PDF object properties, all relationships between objects, and sizable previews of any binary data streams embedded or encrypted in the document. Note that in addition to `/OpenAction`, the Adobe Type1 font binary is also red (Google's project zero regards any Adobe Type1 font as "mad sus").
+
+![Rich Tree](doc/svgs/rendered_images/rich_table_tree.png)
+
+
+[And here's the rich tree for the same more complicated PDF linked to in the Basic Tree section](doc/svgs/rendered_images/NMAP_Commands_Cheat_Sheet_and_Tutorial.pdf.rich_table_tree.png).
+
+
+### Binary Analysis (And Lots Of It)
+#### View the Properties of the Fonts in the PDF
+Comes with a preview of the beginning and end of the font's raw binary data stream (at least if it's that kind of font).
+
+![Font Properties](doc/svgs/rendered_images/font_summary_with_byte_preview.png)
+
+#### Extract Character Mappings from Ancient Adobe Font Formats
+It's actually `PyPDF2` doing the lifting here but we're happy to take the credit.
+
+![Font Charmap](doc/svgs/rendered_images/font_character_mapping.png)
+
+#### Search Internal Binary Data for Sus Content No Malware Scanner Will Catch[^5]
+Things like, say, a hidden binary `/F` (PDF instruction meaning "URL") followed by a `JS` (I'll let you guess what "JS" stands for) and then a binary `»` character (AKA "the character the PDF specification uses to close a section of the PDF's logical structure"). Put all that together and it says that you're looking at a secret JavaScript instruction embedded in the encrypted part of a font binary. A secret instruction that causes the PDF renderer to pop out of its frame prematurely as it renders the font.
+
+![Font with JS](doc/svgs/rendered_images/font29.js.1.png)
+
+#### Extract And Decode Binary Patterns
+Like, say, bytes between common regular expression markers that you might want to force a decode of in a lot of different encodings.
+
+![Font Scan Regex](doc/svgs/rendered_images/font_34_frontslash_scan.png)
+
+When all is said and done you can see some stats that may help you figure out what the character encoding may or may not be for the bytes matched by those patterns:
+
+![Font Decode Summary](doc/svgs/rendered_images/font29_summary_stats.png)
+
+
+#### Now There's Even A Fancy Table To Tell You What The `chardet` Library Would Rank As The Most Likely Encoding For A Chunk Of Binary Data
+Behold the beauty:
+![Basic Tree](doc/svgs/rendered_images/decoding_and_chardet_table_2.png)
+
 
 
 
