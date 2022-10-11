@@ -1,12 +1,19 @@
-from os import environ, path, remove
+from os import environ, path, pardir, remove
+import importlib.resources
+import pathlib
 environ['INVOKED_BY_PYTEST'] = 'True'
 
 import pytest
-from yaralyzer.config import MAX_DECODE_LENGTH_ENV_VAR, YaralyzerConfig
 from yaralyzer.helpers.file_helper import files_in_dir
 
 from pdfalyzer.pdfalyzer import Pdfalyzer
-from pdfalyzer.util.filesystem_awareness import DOCUMENTATION_DIR
+
+
+PROJECT_DIR = path.join(str(importlib.resources.files('pdfalyzer')), pardir)
+DOCUMENTATION_DIR = path.join(PROJECT_DIR, 'doc')
+SVG_DIR = path.join(DOCUMENTATION_DIR, 'svgs')
+RENDERED_IMAGES_DIR = path.join(SVG_DIR, 'rendered_images')
+
 
 
 # Full paths to PDF test fixtures

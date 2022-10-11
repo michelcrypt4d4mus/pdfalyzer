@@ -1,10 +1,11 @@
 import importlib.resources
 import logging
-from os import environ, path
+from os import environ, pardir, path
 
 from yaralyzer.config import YaralyzerConfig, is_env_var_set_and_not_false, is_invoked_by_pytest
 
 PDFALYZE = 'pdfalyze'
+PROJECT_ROOT = path.join(str(importlib.resources.files('pdfalyzer')), pardir)
 PYTEST_FLAG = 'INVOKED_BY_PYTEST'
 
 # Configuring PDFALYZER_LOG_DIR has side effects; see .pdfalyzer.example in repo for specifics.
@@ -22,7 +23,7 @@ YaralyzerConfig.LOG_LEVEL = logging.getLevelName(environ.get(LOG_LEVEL_ENV_VAR, 
 class PdfalyzerConfig:
     JAVSCRIPT_KEYWORD_ALERT_THRESHOLD = 2
     QUOTE_TYPE = None
-    DEFAULT_PDF_PARSER_EXECUTABLE = path.join(str(importlib.resources.files('pdfalyzer')), 'tools', 'pdf-parser.py')
+    DEFAULT_PDF_PARSER_EXECUTABLE = path.join(PROJECT_ROOT, 'tools', 'pdf-parser.py')
 
     # Path to Didier Stevens's pdf-parser.py
     if is_env_var_set_and_not_false(PDF_PARSER_EXECUTABLE_ENV_VAR):
