@@ -13,6 +13,7 @@ from anytree.search import findall, findall_by_attr
 from PyPDF2 import PdfReader
 from PyPDF2.errors import PdfReadError
 from PyPDF2.generic import IndirectObject, NameObject, NumberObject, StreamObject
+from rich.markup import escape
 from rich.panel import Panel
 from rich.table import Column, Table
 from rich.text import Text
@@ -187,7 +188,7 @@ class Pdfalyzer:
                 log.warning(msg)
                 node_stream_bytes = node_stream_bytes.encode()
 
-            print_section_subheader(f"{node} Summary and Analysis", style=f"{BYTES_HIGHLIGHT} reverse")
+            print_section_subheader(f"{escape(str(node))} Summary and Analysis", style=f"{BYTES_HIGHLIGHT} reverse")
             binary_scanner = BinaryScanner(node_stream_bytes, node)
             console.print(bytes_hashes_table(binary_scanner.bytes))
             binary_scanner.print_stream_preview()

@@ -1,6 +1,9 @@
 # NEXT RELEASE
 
-# 1.10.3
+# 1.10.4
+* Fix bug with unescaped string in section header
+
+### 1.10.3
 * Fix bug with discovery of packaged `.yara` files
 * More PDF YARA rules from `lprat`
 
