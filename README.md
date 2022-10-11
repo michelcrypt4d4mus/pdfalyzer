@@ -148,27 +148,24 @@ This image shows a more in-depth view of of the PDF tree for the same document s
 
 
 ### Binary Analysis (And Lots Of It)
-#### View the Properties of the Fonts in the PDF
-Comes with a preview of the beginning and end of the font's raw binary data stream (at least if it's that kind of font).
+
+**View the properties of the fonts in the PDF**. Comes with a preview of the beginning and end of the font's raw binary data stream (at least if it's that kind of font).
 
 ![Font Properties](doc/svgs/rendered_images/font_summary_with_byte_preview.png)
 
-#### Extract Character Mappings from Ancient Adobe Font Formats
-It's actually `PyPDF2` doing the lifting here but we're happy to take the credit.
+**Extract character mappings from ancient Adobe font formats:** It's actually `PyPDF2` doing the lifting here but we're happy to take the credit.
 
 ![Font Charmap](doc/svgs/rendered_images/font_character_mapping.png)
 
-#### Search Internal Binary Data for Sus Content No Malware Scanner Will Catch[^5]
-Things like, say, a hidden binary `/F` (PDF instruction meaning "URL") followed by a `JS` (I'll let you guess what "JS" stands for) and then a binary `»` character (AKA "the character the PDF specification uses to close a section of the PDF's logical structure"). Put all that together and it says that you're looking at a secret JavaScript instruction embedded in the encrypted part of a font binary. A secret instruction that causes the PDF renderer to pop out of its frame prematurely as it renders the font.
+**Search Internal Binary Data for Sus Content No Malware Scanner Will Catch[^5]:** Things like, say, a hidden binary `/F` (PDF instruction meaning "URL") followed by a `JS` (I'll let you guess what "JS" stands for) and then a binary `»` character (AKA "the character the PDF specification uses to close a section of the PDF's logical structure"). Put all that together and it says that you're looking at a secret JavaScript instruction embedded in the encrypted part of a font binary. A secret instruction that causes the PDF renderer to pop out of its frame prematurely as it renders the font.
 
 ![Font with JS](doc/svgs/rendered_images/font29.js.1.png)
 
-#### Extract And Decode Binary Patterns
-Like, say, bytes between common regular expression markers that you might want to force a decode of in a lot of different encodings.
+**Extract And Decode Binary Patterns:** Like, say, bytes between common regular expression markers that you might want to force a decode of in a lot of different encodings.
 
 ![Font Scan Regex](doc/svgs/rendered_images/font_34_frontslash_scan.png)
 
-When all is said and done you can see some stats that may help you figure out what the character encoding may or may not be for the bytes matched by those patterns:
+**See stats:** When all is said and done you can see some stats that may help you figure out what the character encoding may or may not be for the bytes matched by those patterns:
 
 ![Font Decode Summary](doc/svgs/rendered_images/font29_summary_stats.png)
 
