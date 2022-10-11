@@ -1,21 +1,17 @@
 """
 Class to help with the pre-configured YARA rules in /yara.
 """
-import re
-from os import path
+import importlib.resources
 
-from yaralyzer.util.logging import log
 from yaralyzer.yaralyzer import Yaralyzer
 
-from pdfalyzer.util.filesystem_awareness import PROJECT_DIR, YARA_RULES_DIR
-
-YARA_RULES_DIR = path.join(PROJECT_DIR, 'yara')
+YARA_RULES_DIR = importlib.resources.path('pdfalyzer', 'yara_rules')
 
 
 def get_file_yaralyzer(file_path_to_scan: str) -> Yaralyzer:
     """Get a yaralyzer for a file path"""
-    return Yaralyzer.for_rules_dirs([YARA_RULES_DIR], file_path_to_scan)
+    return Yaralyzer.for_rules_dirs([str(YARA_RULES_DIR)], file_path_to_scan)
 
 
 def get_bytes_yaralyzer(scannable: bytes, label: str) -> Yaralyzer:
-    return Yaralyzer.for_rules_dirs([YARA_RULES_DIR], scannable, label)
+    return Yaralyzer.for_rules_dirs([str(YARA_RULES_DIR)], scannable, label)

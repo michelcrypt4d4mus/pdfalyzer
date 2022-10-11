@@ -56,7 +56,7 @@ This image shows a more in-depth view of of the PDF tree for the same document s
 ![Rich Tree](doc/svgs/rendered_images/rich_table_tree.png)
 
 
-[And here's the rich tree for the same more complicated PDF](doc/svgs/rendered_images/NMAP_Commands_Cheat_Sheet_and_Tutorial.pdf.rich_table_tree.png).
+[And here's the rich tree for the same more complicated PDF linked to in the Basic Tree section](doc/svgs/rendered_images/NMAP_Commands_Cheat_Sheet_and_Tutorial.pdf.rich_table_tree.png).
 
 
 ### Binary Analysis (And Lots Of It)
@@ -101,6 +101,12 @@ pipx install pdfalyzer
 For info on how to setup a dev environment, see [Contributing](#contributing) section at the end of this file.
 
 ### Troubleshooting The Installation
+1. If you used regular `pip3` instead of `pipx` and you only want to use the CLI and don't need to `import` the python classes to your own code, you should try to install with `pipx` instead.
+1. If you run into an issue about missing YARA try to install [yara-python](https://pypi.org/project/yara-python/)
+age: https://pypi.org/project/yara-python/
+that's odd because it's a required package for the pdfalyzer. maybe try
+pip install python-yara
+If that doesn't work you may have to install the YARA executable separately. docs here.
 1. If you encounter an error building the python `cryptography` package check your `pip` version (`pip --version`). If it's less than 22.0, upgrade `pip` with `pip install --upgrade pip`.
 2. On linux if you encounter an error building `wheel` or `cffi` you may need to install some packages like a compiler for the `rust` language or some SSL libraries. `sudo apt-get install build-essential libssl-dev libffi-dev rustc` may help.
 1. While `poetry.lock` is checked into this repo the versions "required" there aren't really "required" so feel free to delete or downgrade if you need to.
@@ -213,6 +219,8 @@ Beyond that see [CONTRIBUTING.md](CONTRIBUTING.md).
 * highlight decodes done at `chardet`s behest
 * Highlight decodes with a lot of Javascript keywords
 * deal with repetitive matches
+* https://github.com/1Project/Scanr/blob/master/emulator/emulator.py
+# https://github.com/mandiant/flare-floss
 
 
 

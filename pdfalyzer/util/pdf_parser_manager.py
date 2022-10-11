@@ -8,7 +8,6 @@ from subprocess import check_output
 from yaralyzer.util.logging import log
 
 from pdfalyzer.config import PDF_PARSER_EXECUTABLE_ENV_VAR, PdfalyzerConfig
-from pdfalyzer.util.filesystem_awareness import PROJECT_DIR
 
 # PDF Internal Data Regexes
 PDF_OBJECT_START_REGEX = re.compile('^obj (\\d+) \\d+$')

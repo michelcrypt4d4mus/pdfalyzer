@@ -1,5 +1,9 @@
 # NEXT RELEASE
 
+# 1.10.3
+* Fix bug with discovery of packaged `.yara` files
+* More PDF YARA rules from `lprat`
+
 ### 1.10.2
 * Bump deps
 
