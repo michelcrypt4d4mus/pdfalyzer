@@ -8,13 +8,11 @@
 
 ![Basic Tree](doc/svgs/rendered_images/basic_tree.png)
 
-A PDF analysis tool geared towards visualizing the inner tree-like data structure[^1] of a PDF in [spectacularly large and colorful diagrams](#example-output) as well as scanning the binary streams embedded in the PDF for hidden potentially malicious content.
+A PDF analysis tool geared towards visualizing the inner tree-like data structure[^1] of a PDF in [spectacularly large and colorful diagrams](#example-output) as well as scanning the binary streams embedded in the PDF for hidden potentially malicious content. The Pdfalyzer makes heavy use of YARA (via [The Yaralyzer](https://github.com/michelcrypt4d4mus/yaralyzer)) for matching/extracting byte patterns. [The Yaralyzer](https://github.com/michelcrypt4d4mus/yaralyzer) actually began its life as The Pdfalyzer's matching engine.
 
-The Pdfalyzer makes heavy use of YARA (via [The Yaralyzer](https://github.com/michelcrypt4d4mus/yaralyzer)) for matching/extracting byte patterns. [The Yaralyzer](https://github.com/michelcrypt4d4mus/yaralyzer) actually began its life as The Pdfalyzer's matching engine.
+**PyPi Users:** This document renders a lot better [on GitHub](https://github.com/michelcrypt4d4mus/pdfalyzer). Pictures, footnotes, etc.
 
-**PyPi Users:** If you are reading this document [on PyPi](https://pypi.org/project/pdfalyzer/) be aware that it renders a lot better [over on GitHub](https://github.com/michelcrypt4d4mus/pdfalyzer). Lots of pretty pictures, footnotes that work, etc.
-
-#### Quick Start
+### Quick Start
 ```sh
 pipx install pdfalyzer
 pdfalyze the_heidiggerian_themes_expressed_in_illmatic.pdf
@@ -24,11 +22,10 @@ pdfalyze the_heidiggerian_themes_expressed_in_illmatic.pdf
 1. **Generate in depth visualizations of a PDF's tree structure**[^1] that give you a complete picture of all of the PDF's internal objects and the links between them. See [the examples below](#example-output) to get an idea.
 1. **Scan for malicious content** both with all the PDF related [YARA](https://github.com/VirusTotal/yara-python) rules I could dig up as well as in-depth scans of the embedded compressed binaries. Some tools don't decompress those binaries before scanning.
 1. **Forcibly decode suspicious byte patterns with many different character encodings.** [`chardet`](https://github.com/chardet/chardet) is leveraged to attempt to guess the encoding but no matter what `chardet` thinks the results of forcing the bytes into an encoding will be displayed.
-1. **Be used as a library for your own PDF related code.** All[^2] the inner PDF objects are guaranteed to be available in a searchable tree data structure.
+1. **Usable as a library for your own PDF related code.** All[^2] the inner PDF objects are guaranteed to be available in a searchable tree data structure.
 
 If you're looking for one of these things this may be the tool for you.
 
-An exception will be raised if there's any issue placing a node while parsing or if there are any nodes not reachable from the root of the tree at the end of parsing.
 
 ### What It Don't Do
 This tool is mostly about examining a PDF's logical structure and assisting with the discovery of malicious content. As such it doesn't have much to offer as far as extracting text from PDFs, rendering PDFs[^3], writing new PDFs, or many of the more conventional things one might do with a portable document.
@@ -42,11 +39,12 @@ Thus I felt the world might be slightly improved if I strung together a couple o
 
 # Installation
 
+Installation with [pipx](https://pypa.github.io/pipx/)[^4] is preferred though `pip3` should also work.
 ```sh
 pipx install pdfalyzer
 ```
 
-[pipx](https://pypa.github.io/pipx/) is a tool that basically runs `pip install` for a python package but in such a way that the installed package's requirements are isolated from your system's python packages. If you don't feel like installing `pipx` then `pip install` should work fine as long as there are no conflicts between The Pdfalyzer's required packages and those on your system already. (If you aren't using other python based command line tools then your odds of a conflict are basically 0%.)
+
 
 For info on how to setup a dev environment, see [Contributing](#contributing) section at the end of this file.
 
@@ -80,7 +78,7 @@ Run `pdfalyzer_show_color_theme` to see the color theme employed.
 ### As A Code Library
 At its core The Pdfalyzer is taking PDF internal objects gathered by [PyPDF2](https://github.com/py-pdf/PyPDF2) and wrapping them in [AnyTree](https://github.com/c0fec0de/anytree)'s `NodeMixin` class.  Given that things like searching the tree or accessing internal properties will be done through those packages' code it may be helpful to review their documentation.
 
-As far as The Pdfalyzer's unique functionality goes, [Pdfalyzer](pdfalyzer/pdfalyzer.py) is the class at the heart of the operation. It holds both the PDF's logical tree as well as a couple of other data structures that have been pre-processed to make them easier to work with. Chief among these are the [FontInfo](pdfalyzer/font_info.py) class which pulls together various properties of a font strewn across 3 or 4 different PDF objects and the [BinaryScanner](pdfalyzer/binary/binary_scanner.py) class which lets you dig through the raw bytes looking for suspicious patterns.
+As far as The Pdfalyzer's unique functionality goes, [Pdfalyzer](pdfalyzer/pdfalyzer.py) is the class at the heart of the operation. It holds both the PDF's logical tree as well as a couple of other data structures that have been pre-processed to make them easier to work with. Chief among these are the [FontInfo](pdfalyzer/font_info.py) class which pulls together various properties of a font strewn across 3 or 4 different PDF objects and the [BinaryScanner](pdfalyzer/binary/binary_scanner.py) class which lets you dig through the embedded streams' bytes looking for suspicious patterns.
 
 Here's a short intro to how to access these objects:
 
@@ -88,7 +86,7 @@ Here's a short intro to how to access these objects:
 from pdfalyzer.pdfalyzer import Pdfalyzer
 
 # Load a PDF and parse its nodes into the tree.
-pdfalyzer = Pdfalyzer("/path/to/the/evil.pdf")
+pdfalyzer = Pdfalyzer("/path/to/the/evil_or_non_evil.pdf")
 actual_pdf_tree = pdfalyzer.pdf_tree
 
 # Find a PDF object by its ID in the PDF
@@ -99,16 +97,19 @@ pdf_object = node.obj
 from anytree.search import findall_by_attr
 page_nodes = findall_by_attr(pdfalyzer.pdf_tree, name='type', value='/Page')
 
-# Get the fonts
-font1 = pdfalyzer.font_infos[0]
-
-# Iterate over backtick quoted strings from a font binary and process them
-for backtick_quoted_string in font1.binary_scanner.extract_backtick_quoted_bytes():
-    process(backtick_quoted_string)
+# Do stuff with the fonts
+for font in pdfalyzer.font_infos:
+    do_stuff(font)
 
 # Iterate over all stream objects:
 for node in pdfalyzer.stream_nodes():
     do_stuff(node.stream_data)
+
+# Iterate over backtick quoted strings from a font binary and process them
+font = pdfalyzer.font_infos[0]
+
+for backtick_quoted_string in font.binary_scanner.extract_backtick_quoted_bytes():
+    process(backtick_quoted_string)
 ```
 
 
@@ -132,7 +133,7 @@ The Pdfalyzer can export visualizations to HTML, ANSI colored text, and SVG imag
 ### Basic Tree View
 As you can see the "mad sus" `/OpenAction` relationship is highlighted bright red, as would be a couple of other suspicious PDF instructions like `/JavaScript` that don't exist in the PDF but do exist in other documents.
 
-The dimmer (as in "harder to see") nodes[^4] marked with `Non Child Reference` give you a way to visualize the relationships between PDF objects that exist outside of the tree structure's parent/child relationships.
+The dimmer (as in "harder to see") nodes[^5] marked with `Non Child Reference` give you a way to visualize the relationships between PDF objects that exist outside of the tree structure's parent/child relationships.
 
 ![Basic Tree](doc/svgs/rendered_images/basic_tree.png)
 
@@ -157,7 +158,7 @@ This image shows a more in-depth view of of the PDF tree for the same document s
 
 ![Font Charmap](doc/svgs/rendered_images/font_character_mapping.png)
 
-**Search Internal Binary Data for Sus Content No Malware Scanner Will Catch[^5]:** Things like, say, a hidden binary `/F` (PDF instruction meaning "URL") followed by a `JS` (I'll let you guess what "JS" stands for) and then a binary `»` character (AKA "the character the PDF specification uses to close a section of the PDF's logical structure"). Put all that together and it says that you're looking at a secret JavaScript instruction embedded in the encrypted part of a font binary. A secret instruction that causes the PDF renderer to pop out of its frame prematurely as it renders the font.
+**Search Internal Binary Data for Sus Content No Malware Scanner Will Catch[^6]:** Things like, say, a hidden binary `/F` (PDF instruction meaning "URL") followed by a `JS` (I'll let you guess what "JS" stands for) and then a binary `»` character (AKA "the character the PDF specification uses to close a section of the PDF's logical structure"). Put all that together and it says that you're looking at a secret JavaScript instruction embedded in the encrypted part of a font binary. A secret instruction that causes the PDF renderer to pop out of its frame prematurely as it renders the font.
 
 ![Font with JS](doc/svgs/rendered_images/font29.js.1.png)
 
@@ -231,13 +232,15 @@ Beyond that see [CONTRIBUTING.md](CONTRIBUTING.md).
 
 [^1]: The official Adobe PDF specification calls this tree the PDF's "logical structure", which is a good example of nomenclature that does not help those who see it understand anything about what is being described. I can forgive them given that they named this thing back in the 80s, though it's a good example of why picking good names for things at the beginning is so important.
 
-[^2]: All internal PDF objects are guaranteed to exist in the tree except in these situations when warnings will be printed:
+[^2]: An exception will be raised if there's any issue placing a node while parsing or if there are any nodes not reachable from the root of the tree at the end of parsing. If there are no exceptions then all internal PDF objects are guaranteed to exist in the tree except in these situations when warnings will be printed:
   `/ObjStm` (object stream) is a collection of objects in a single stream that will be unrolled into its component objects.
   `/XRef` Cross-reference stream objects which hold the same references as the `/Trailer` are hacked in as symlinks of the `/Trailer`
 
 [^3]: Given the nature of the PDFs this tool is meant to be scan anything resembling "rendering" the document is pointedly NOT offered.
 
-[^4]: Technically they are `SymlinkNodes`, a really nice feature of [AnyTree](https://github.com/c0fec0de/anytree).
+[^4]: `pipx` is a tool that basically runs `pip install` for a python package but in such a way that the installed package's requirements are isolated from your system's python packages. If you don't feel like installing `pipx` then `pip install` should work fine as long as there are no conflicts between The Pdfalyzer's required packages and those on your system already. (If you aren't using other python based command line tools then your odds of a conflict are basically 0%.)
 
-[^5]: At least they weren't catching it as of September 2022.
+[^5]: Technically they are `SymlinkNodes`, a really nice feature of [AnyTree](https://github.com/c0fec0de/anytree).
+
+[^6]: At least they weren't catching it as of September 2022.
 
