@@ -63,7 +63,7 @@ Run `pdfalyze --help` to see usage instructions. As of right now these are the o
 
 ![argparse_help](doc/svgs/rendered_images/pdfalyze_help_prince_theme.png)
 
-Note that The Pdfalyzer output is _extremely_ verbose if you don't limit the output sections (See `ANALYSIS SELECTION` in the `--help`). Almost all of the verbosity comes from the `--stream` option. To get everything _except_ the stream option, use these flags
+Note that The Pdfalyzer output is _extremely_ verbose if you don't limit the output sections (See `ANALYSIS SELECTION` in the `--help`). Almost all of the verbosity comes from the `--stream` option pulling things that _could be_ (but are almost certainly not) malicious. To get everything _except_ the stream option, use these flags
 
 ```sh
 pdfalyzer lacan_buys_the_dip.pdf -d -t -r -f -y -c
@@ -78,9 +78,9 @@ If you find yourself specificying the same options over and over you may be able
 Run `pdfalyzer_show_color_theme` to see the color theme employed.
 
 ### As A Code Library
-At its core The Pdfalyzer is taking PDF internal objects gathered by [PyPDF2](https://github.com/py-pdf/PyPDF2) and wrapping them in [AnyTree](https://github.com/c0fec0de/anytree)'s `NodeMixin` class.  Given that things like searching the tree or accessing internal properties will be done through those packages' code it may be quite helpful to review their documentation.
+At its core The Pdfalyzer is taking PDF internal objects gathered by [PyPDF2](https://github.com/py-pdf/PyPDF2) and wrapping them in [AnyTree](https://github.com/c0fec0de/anytree)'s `NodeMixin` class.  Given that things like searching the tree or accessing internal properties will be done through those packages' code it may be helpful to review their documentation.
 
-As far as The Pdfalyzer's unique functionality goes, `Pdfalyzer` is the class at the heart of the operation. It holds both the PDF's logical tree as well as a couple of other data structures that have been pre-processed to make them easier to work with. Chief among these is the `FontInfo` class which pulls together various properties of a font strewn across 3 or 4 different PDF objects and the `BinaryScanner1` class which lets you dig through the raw bytes looking for suspicious patterns.
+As far as The Pdfalyzer's unique functionality goes, [Pdfalyzer](pdfalyzer/pdfalyzer.py) is the class at the heart of the operation. It holds both the PDF's logical tree as well as a couple of other data structures that have been pre-processed to make them easier to work with. Chief among these are the [FontInfo](pdfalyzer/font_info.py) class which pulls together various properties of a font strewn across 3 or 4 different PDF objects and the [BinaryScanner](pdfalyzer/binary/binary_scanner.py) class which lets you dig through the raw bytes looking for suspicious patterns.
 
 Here's a short intro to how to access these objects:
 
@@ -122,7 +122,7 @@ If that does happen and you run into an issue using this tool on a particular PD
 
 You might be able to easily fix your problem by adding the Adobe object's reference key to the appropriate list.
 
-
+Alternatively, please open [a GitHub issue](https://github.com/michelcrypt4d4mus/pdfalyzer/issues) with the compressed (`.zip`, `.gz`, whatever) PDF that is causing the problem attached and I'll take a look when I can.  I will _not_ take a look at any uncompressed PDFs due to the security risks, so make sure you zip it before you ship it.
 
 
 # Example Output
