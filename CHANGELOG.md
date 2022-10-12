@@ -1,5 +1,8 @@
 # NEXT RELEASE
 
+# 1.10.5
+* Improve the handling of indeterminate and pure reference nodes
+
 # 1.10.4
 * Fix bug with unescaped string in section header
 

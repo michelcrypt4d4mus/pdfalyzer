@@ -28,7 +28,7 @@ from pdfalyzer.config import PdfalyzerConfig
 from pdfalyzer.decorators.pdf_tree_node import PdfTreeNode
 from pdfalyzer.detection.constants.binary_regexes import (BACKTICK, DANGEROUS_STRINGS, FRONTSLASH, GUILLEMET,
      QUOTE_PATTERNS)
-from pdfalyzer.helpers.rich_text_helper import NOT_FOUND_MSG, generate_subtable, get_label_style, pad_header
+from pdfalyzer.helpers.rich_text_helper import NOT_FOUND_MSG, generate_subtable, pad_header
 from pdfalyzer.helpers.string_helper import generate_hyphen_line
 from pdfalyzer.output.layout import half_width, print_headline_panel, print_section_sub_subheader
 from pdfalyzer.util.adobe_strings import CONTENTS, CURRENTFILE_EEXEC

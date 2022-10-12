@@ -8,7 +8,7 @@ hooks)
 """
 from collections import namedtuple
 from numbers import Number
-from typing import List, Union
+from typing import List, Optional, Union
 
 from anytree import NodeMixin, SymlinkNode
 from PyPDF2.generic import (DictionaryObject, EncodedStreamObject, IndirectObject, NumberObject, PdfObject,
@@ -25,20 +25,21 @@ from yaralyzer.util.logging import log
 
 from yaralyzer.encoding_detection.character_encodings import NEWLINE_BYTE
 from pdfalyzer.helpers.pdf_object_helper import PdfObjectRef, get_references, get_symlink_representation
-from pdfalyzer.helpers.rich_text_helper import (PDF_ARRAY, TYPE_STYLES, get_label_style,
+from pdfalyzer.helpers.rich_text_helper import (PDF_ARRAY, TYPE_STYLES,
      get_type_style, get_type_string_style)
 from pdfalyzer.helpers.string_helper import pypdf_class_name
-from pdfalyzer.util.adobe_strings import (DANGEROUS_PDF_KEYS, FIRST, FONT, LAST, NEXT, TYPE1_FONT, S,
-     SUBTYPE, TRAILER, TYPE, UNLABELED, XREF, XREF_STREAM)
+from pdfalyzer.output.layout import get_label_style
+from pdfalyzer.util.adobe_strings import (DANGEROUS_PDF_KEYS, FIRST, FONT, LAST, NEXT, NON_TREE_REFERENCES, TYPE1_FONT, S,
+     SUBTYPE, TRAILER, TYPE, UNLABELED, XREF, XREF_STREAM, PURE_REFERENCE_NODE_LABELS)
 from pdfalyzer.util.exceptions import PdfWalkError
+
+Relationship = namedtuple('Relationship', ['from_node', 'reference_key'])
 
 STREAM_PREVIEW_LENGTH_IN_TABLE = 500
 DEFAULT_MAX_ADDRESS_LENGTH = 90
 STREAM = 'Stream'
 HEX = 'Hex'
 PREVIEW_STYLES = {HEX: BYTES_NO_DIM, STREAM: 'bytes'}
-
-Relationship = namedtuple('Relationship', ['from_node', 'reference_key'])
 
 
 class PdfTreeNode(NodeMixin):
@@ -151,6 +152,22 @@ class PdfTreeNode(NodeMixin):
         """All the PDF instruction strings that referred to this object"""
         return [r.reference_key for r in self.other_relationships] + [self.known_to_parent_as]
 
+    # Old clause:  elif key in NON_TREE_REFERENCES or node.label.startswith(NUMS) or node.label in PURE_REFERENCE_NODE_LABELS:
+    def is_pure_reference(self, reference_key):
+        """Returns True if the reference is probably not in the tree"""
+        # if self.idnum == 505:
+        #     import pdb;pdb.set_trace()
+        if reference_key in (NON_TREE_REFERENCES + PURE_REFERENCE_NODE_LABELS):
+            return True
+#        if isinstance(reference_key, int):
+#            return False
+
+        # TODO: Checking startswith(NUMS) etc. is a hack that probably will not cover all cases with /StructElem
+        return any(self.label.startswith(key) for key in PURE_REFERENCE_NODE_LABELS)
+
+#    def is_indeterminat_reference(self, reference_key):
+
+
     def references(self) -> List[PdfObjectRef]:
         """Returns all nodes referenced from this node (see PdfObjectRef definition)"""
         return get_references(self.obj)
@@ -159,7 +176,7 @@ class PdfTreeNode(NodeMixin):
         """Returns True for ContentStream, DecodedStream, and EncodedStream objects"""
         return isinstance(self.obj, StreamObject)
 
-    def _find_address_of_this_node(self, other_node: 'PdfTreeNode') -> str:
+    def _find_address_of_this_node(self, other_node: 'PdfTreeNode') -> Optional[str]:
         """Find the address used in other_node to refer to this node"""
         refs_to_this_node = [ref for ref in other_node.references() if ref.pdf_obj.idnum == self.idnum]
 

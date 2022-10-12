@@ -22,12 +22,9 @@ from yaralyzer.helpers.rich_text_helper import prefix_with_plain_text_obj
 from yaralyzer.util.logging import log, log_and_print
 
 from pdfalyzer.helpers.dict_helper import merge
-from pdfalyzer.util import adobe_strings
 
 # Colors
 DANGER_HEADER = 'color(88) on white'  # Red
-DEFAULT_LABEL_STYLE = 'yellow'
-FONT_OBJ_BLUE = 'deep_sky_blue4 bold'
 
 # PDF object styles
 PDF_ARRAY = 'color(120)'
@@ -89,36 +86,6 @@ TYPE_STYLES = {
     ByteStringObject: 'bytes',
 }
 
-LABEL_STYLES = [
-    [re.compile('JavaScript|JS|OpenAction', re.I | re.M), 'blink bold red'],
-    [re.compile(f'^{adobe_strings.FONT_DESCRIPTOR}'),     'cornflower_blue'],
-    [re.compile(f'^{adobe_strings.FONT_FILE}'),           'steel_blue1'],
-    [re.compile(f'^{adobe_strings.FONT}'),                FONT_OBJ_BLUE],
-    [re.compile(f'^{adobe_strings.TO_UNICODE}'),          'grey30'],
-    [re.compile(f'^{adobe_strings.WIDTHS}'),              'color(67)'],
-    [re.compile(f'^{adobe_strings.W}'),                   'color(67)'],
-    [re.compile(f'^{adobe_strings.RESOURCES}'),           'magenta'],
-    [re.compile('/(Trailer|Root|Info|Outlines)'),         'bright_green'],
-    [re.compile('/Catalog'),                              'color(47)'],
-    [re.compile('/(Metadata|ViewerPreferences)'),         'color(35)'],
-    [re.compile('^/Contents'),                            'medium_purple1'],
-    [re.compile('^/Action'),                              'dark_red'],
-    [re.compile('^/Annots'),                              'deep_sky_blue4'],
-    [re.compile('^/Annot'),                               'color(24)'],
-    [re.compile('^/Pages'),                               'dark_orange3'],
-    [re.compile('^/Page'),                                'light_salmon3'],
-    [re.compile('^/ColorSpace'),                          'medium_orchid1'],
-    [re.compile('^/(URI|Names)'),                         'white'],
-    [re.compile(f'^{adobe_strings.XOBJECT}'),             'grey37'],
-    [re.compile(f'^{adobe_strings.UNLABELED}'),           'grey35 reverse'],
-    [re.compile(f'^{adobe_strings.XREF}'),                'color(148)'],
-]
-
-LABEL_STYLES += [
-    [re.compile(f'^{key}'), PDF_NON_TREE_REF]
-    for key in adobe_strings.NON_TREE_REFERENCES
-]
-
 # Color meter realted constants. Make even sized buckets color coded from blue (cold) to green (go)
 METER_COLORS = list(reversed([82, 85, 71, 60, 67, 30, 24, 16]))
 METER_INTERVAL = (100 / float(len(METER_COLORS))) + 0.1
@@ -137,11 +104,6 @@ MAX_THEME_COL_SIZE = 35
 
 # Text object defaults mostly for table entries
 NOT_FOUND_MSG = Text('(not found)', style='grey.dark_italic')
-
-
-def get_label_style(label: str) -> str:
-    """Lookup a style based on the label string"""
-    return next((ls[1] for ls in LABEL_STYLES if ls[0].search(label)), DEFAULT_LABEL_STYLE)
 
 
 def get_type_style(klass) -> str:

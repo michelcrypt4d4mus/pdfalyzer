@@ -8,9 +8,9 @@ from PyPDF2.generic import IndirectObject, PdfObject
 from rich.markup import escape
 from yaralyzer.util.logging import log
 
-from pdfalyzer.util.adobe_strings import DANGEROUS_PDF_KEYS
+from pdfalyzer.output.layout import get_label_style
+from pdfalyzer.util.adobe_strings import *
 from pdfalyzer.util.exceptions import PdfWalkError
-from pdfalyzer.helpers.rich_text_helper import get_label_style
 
 # In the case of easy key/value pairs the reference_key and the reference_address are the same but
 # for more complicated references the reference_address will be the reference_key plus sub references.
@@ -21,6 +21,7 @@ PdfObjectRef = namedtuple('PdfObjectRef', ['reference_key', 'reference_address',
 
 # For printing SymlinkNodes
 SymlinkRepresentation = namedtuple('SymlinkRepresentation', ['text', 'style'])
+
 
 
 def get_references(obj: PdfObject, ref_key=None, ref_address=None) -> List[PdfObjectRef]:

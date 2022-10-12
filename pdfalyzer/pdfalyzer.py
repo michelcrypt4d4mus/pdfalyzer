@@ -29,34 +29,14 @@ from pdfalyzer.binary.binary_scanner import BinaryScanner
 from pdfalyzer.decorators.document_model_printer import print_with_header
 from pdfalyzer.decorators.pdf_tree_node import PdfTreeNode
 from pdfalyzer.detection.yaralyzer_helper import get_file_yaralyzer
-from pdfalyzer.helpers.pdf_object_helper import get_symlink_representation
+from pdfalyzer.helpers.pdf_object_helper import INDETERMINATE_REFERENCES, get_symlink_representation
 from pdfalyzer.helpers.string_helper import pp
 from pdfalyzer.font_info import FontInfo
 from pdfalyzer.output.layout import print_section_header, print_section_subheader, print_section_sub_subheader
-from pdfalyzer.util.adobe_strings import (COLOR_SPACE, D, DEST, EXT_G_STATE, FONT, K, KIDS,
-     NON_TREE_REFERENCES, NUMS, OBJECT_STREAM, OPEN_ACTION, P, PARENT, PREV, RESOURCES, SIZE,
-     STRUCT_ELEM, TRAILER, TYPE, UNLABELED, XOBJECT, XREF, XREF_STREAM)
+from pdfalyzer.util.adobe_strings import *
 from pdfalyzer.util.exceptions import PdfWalkError
 
 TRAILER_FALLBACK_ID = 10000000
-
-# Some PdfObjects can't be properly placed in the tree until the entire tree is parsed
-INDETERMINATE_REFERENCES = [
-    COLOR_SPACE,
-    DEST,
-    EXT_G_STATE,
-    FONT,
-    OPEN_ACTION,
-    RESOURCES,
-    XOBJECT,
-    UNLABELED, # TODO: this might be wrong? maybe this is where the /Resources actually live?
-]
-
-# A node with this label is really just a non-tree link between nodes
-PURE_REFERENCE_NODE_LABELS = [
-    D,
-    DEST,
-]
 
 
 class Pdfalyzer:
@@ -155,11 +135,13 @@ class Pdfalyzer:
             else:
                 console.print(Text(pre) + node.__rich__())
 
+        self._verify_all_traversed_nodes_are_in_tree()
         console.print("\n\n")
 
     def print_rich_table_tree(self) -> None:
         print_section_header(f'Rich tree view of {self.pdf_basename}')
         console.print(self.pdf_tree.generate_rich_tree())
+        self._verify_all_traversed_nodes_are_in_tree()
 
     def print_summary(self) -> None:
         print_section_header(f'PDF Node Summary for {self.pdf_basename}')
@@ -236,13 +218,19 @@ class Pdfalyzer:
         return sorted(findall(self.pdf_tree, stream_filter), key=lambda r: r.idnum)
 
     def _process_reference(self, node: PdfTreeNode, key: str, address: str, reference: IndirectObject) -> [PdfTreeNode]:
-        """Place the referenced node in the tree. Returns a list of nodes to walk next."""
+        """
+        Place the referenced node in the tree. Returns a list of nodes to walk next.
+        address is the reference_key used in node.obj to refer to 'reference' object
+           plus any modifiers like [2] or [/Something]
+        """
         self.max_generation = max([self.max_generation, reference.generation or 0])
         seen_before = (reference.idnum in self.traversed_nodes)
         referenced_node = self._build_or_find_node(reference, address)
         reference_log_string = f"{node} reference at {address} to {referenced_node}"
         log.info(f'Assessing {reference_log_string}...')
         references_to_return = []
+        is_pure_ref = node.is_pure_reference(key)
+        log.debug(f"   {node} => {key}: is_pure_ref? {is_pure_ref}")
 
         # If one is already a parent/child of the other there's nothing to do
         if referenced_node == node.parent or referenced_node in node.children:
@@ -251,8 +239,12 @@ class Pdfalyzer:
 
         # If there's an explicit /Parent or /Kids reference then we know the correct relationship
         if key in [PARENT, KIDS] or (node.type == STRUCT_ELEM and key in [K, P]):
+            log.debug(f"Explicit parent/child reference in {node} at {key}")
             if key in [PARENT, P]:
-                node.set_parent(referenced_node)
+                # try:
+                    node.set_parent(referenced_node)
+                # except Exception as e:
+                #     import pdb;pdb.set_trace()
             else:
                 node.add_child(referenced_node)
 
@@ -263,21 +255,22 @@ class Pdfalyzer:
             if not seen_before:
                 references_to_return = [referenced_node]
 
-        # Non tree references are not children or parents.
-        # TODO: Checking startswith(NUMS) is a hack that probably will not cover all cases with /StructElem
-        elif key in NON_TREE_REFERENCES or node.label.startswith(NUMS) or node.label in PURE_REFERENCE_NODE_LABELS:
-            log.debug(f"{reference_log_string} is a non tree reference.")
-            referenced_node.add_relationship(node, address)
-
-            if not self.find_node_by_idnum(referenced_node.idnum):
-                references_to_return = [referenced_node]
-
         # Indeterminate references need to wait until everything has been scanned to be placed
         elif key in INDETERMINATE_REFERENCES and key == address:
             log.info(f'  Indeterminate {reference_log_string}')
             referenced_node.add_relationship(node, address)
             self.indeterminate_ids.add(referenced_node.idnum)
             return [referenced_node]
+
+        # Non tree references are not children or parents.
+        elif node.is_pure_reference(key):
+            log.debug(f"{reference_log_string} is a pure reference.")
+            referenced_node.add_relationship(node, address)
+
+            # If node looks like a pure ref but is not in tree, consider it indeterminate
+            if not self.find_node_by_idnum(referenced_node.idnum):
+                references_to_return = [referenced_node]
+                self.indeterminate_ids.add(referenced_node.idnum)
 
         # If we've seen the node before it should have a parent or be indeterminate
         elif seen_before:
@@ -291,6 +284,7 @@ class Pdfalyzer:
             node.add_child(referenced_node)
             references_to_return = [referenced_node]
 
+        log.debug("Nodes to walk next: " + ', '.join([str(r) for r in references_to_return]))
         return references_to_return
 
     def _symlink_other_relationships(self):
@@ -324,6 +318,10 @@ class Pdfalyzer:
             node = self.traversed_nodes[idnum]
             referenced_by_keys = list(set([r.reference_key for r in node.other_relationships]))
             log.info(f"Attempting to resolve indeterminate node {node}")
+
+            if node.parent is not None:
+                log.info(f"{node} already has parent: {node.parent}")
+                continue
 
             if node.label == RESOURCES:
                 self._place_resources_node(node)
@@ -443,7 +441,8 @@ class Pdfalyzer:
         if len(missing_nodes) > 0:
             msg = f"Nodes were traversed but never placed: {missing_nodes}"
             console.print(msg)
-            raise PdfWalkError(msg)
+            log.warning(msg)
+            #raise PdfWalkError(msg)
 
     def _verify_untraversed_nodes_are_untraversable(self) -> None:
         """Make sure any PDF object IDs we can't find in tree are /ObjStm or /Xref nodes"""

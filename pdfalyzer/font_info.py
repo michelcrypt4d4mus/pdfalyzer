@@ -20,7 +20,8 @@ from yaralyzer.util.logging import log
 from pdfalyzer.binary.binary_scanner import BinaryScanner
 from pdfalyzer.config import PdfalyzerConfig
 from pdfalyzer.detection.yaralyzer_helper import get_bytes_yaralyzer
-from pdfalyzer.helpers.rich_text_helper import get_label_style, get_type_style
+from pdfalyzer.output.layout import get_label_style
+from pdfalyzer.helpers.rich_text_helper import get_type_style
 from pdfalyzer.helpers.string_helper import pp
 from pdfalyzer.output.layout import print_section_subheader, print_headline_panel, subheading_width
 from pdfalyzer.util.adobe_strings import (FONT, FONT_DESCRIPTOR, FONT_FILE, FONT_LENGTHS, RESOURCES, SUBTYPE,

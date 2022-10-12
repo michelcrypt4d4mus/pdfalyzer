@@ -66,15 +66,35 @@ DANGEROUS_PDF_KEYS = [
     OPEN_ACTION
 ]
 
+# Adobe font instruction that begins the binary (usually encrypted) section of the font definition
+CURRENTFILE_EEXEC = b'currentfile eexec'
+
+# A node with this label is really just a non-tree link between nodes
+PURE_REFERENCE_NODE_LABELS = [
+    D,
+    DEST,
+    NUMS
+]
+
 # Some references are never part of a parent/child relationship in the tree
 NON_TREE_REFERENCES = [
     OPEN_ACTION,
-    D,
-    FIRST,
+#    D,
     LAST,
     NEXT,
     PREV,
 ]
 
-# Adobe font instruction that begins the binary (usually encrypted) section of the font definition
-CURRENTFILE_EEXEC = b'currentfile eexec'
+# Some PdfObjects can't be properly placed in the tree until the entire tree is parsed
+INDETERMINATE_REFERENCES = [
+    COLOR_SPACE,
+    D,
+    DEST,
+    EXT_G_STATE,
+    FIRST,
+    FONT,
+    OPEN_ACTION,
+    RESOURCES,
+    XOBJECT,
+    UNLABELED, # TODO: this might be wrong? maybe this is where the /Resources actually live?
+]
