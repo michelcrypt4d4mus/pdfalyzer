@@ -238,9 +238,9 @@ class Pdfalyzer:
             return []
 
         # If there's an explicit /Parent or /Kids reference then we know the correct relationship
-        if key in [PARENT, KIDS] or (node.type == STRUCT_ELEM and key in [K, P]):
+        if node.is_parent_reference(key) or node.is_child_reference(key):
             log.debug(f"Explicit parent/child reference in {node} at {key}")
-            if key in [PARENT, P]:
+            if node.is_parent_reference(key):
                 # try:
                     node.set_parent(referenced_node)
                 # except Exception as e:
@@ -256,7 +256,7 @@ class Pdfalyzer:
                 references_to_return = [referenced_node]
 
         # Indeterminate references need to wait until everything has been scanned to be placed
-        elif key in INDETERMINATE_REFERENCES and key == address:
+        elif node.is_indeterminate_reference(key):
             log.info(f'  Indeterminate {reference_log_string}')
             referenced_node.add_relationship(node, address)
             self.indeterminate_ids.add(referenced_node.idnum)
@@ -326,11 +326,18 @@ class Pdfalyzer:
             if node.label == RESOURCES:
                 self._place_resources_node(node)
                 continue
+            # TODO: these almost all have the same outcome; could be one super ugly if statement
             elif len(referenced_by_keys) == 1:
                 log.info(f"{node}'s other relationships all use key {referenced_by_keys[0]}, linking to lowest id")
                 set_lowest_id_node_as_parent = True
                 possible_parents = node.other_relationships
-            elif len(referenced_by_keys) == 2 and (referenced_by_keys[0] in referenced_by_keys[1] or referenced_by_keys[1] in referenced_by_keys[0]):
+            elif all([EXTERNAL_GRAPHICS_STATE_REGEX.match(key) for key in referenced_by_keys]):
+                log.info(f"{node}'s other relationships are all {EXT_G_STATE} refs; linking to lowest id")
+                set_lowest_id_node_as_parent = True
+                possible_parents = node.other_relationships
+            elif len(referenced_by_keys) == 2 and \
+                    (   referenced_by_keys[0] in referenced_by_keys[1] \
+                     or referenced_by_keys[1] in referenced_by_keys[0]):
                 log.info(f"{node}'s other relationships ref keys are same except slice: {referenced_by_keys}, linking to lowest id")
                 set_lowest_id_node_as_parent = True
                 possible_parents = node.other_relationships
@@ -357,8 +364,8 @@ class Pdfalyzer:
                 continue
 
             self.print_tree()
-            log.fatal("Dumped tree status for debugging.")
             node.print_other_relationships()
+            log.fatal("Dumped tree status and other_relationships for debugging")
             raise PdfWalkError(f"Cannot place {node}")
 
     def _extract_font_infos(self) -> None:
@@ -436,10 +443,13 @@ class Pdfalyzer:
 
     def _verify_all_traversed_nodes_are_in_tree(self) -> None:
         """Make sure every node we can see is reachable from the root of the tree"""
-        missing_nodes = [node for idnum, node in self.traversed_nodes.items() if self.find_node_by_idnum(idnum) is None]
+        missing_nodes = [
+            node for idnum, node in self.traversed_nodes.items()
+            if self.find_node_by_idnum(idnum) is None
+        ]
 
         if len(missing_nodes) > 0:
-            msg = f"Nodes were traversed but never placed: {missing_nodes}"
+            msg = f"Nodes were traversed but never placed: {escape(str(missing_nodes))}"
             console.print(msg)
             log.warning(msg)
             #raise PdfWalkError(msg)

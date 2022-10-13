@@ -23,7 +23,6 @@ PdfObjectRef = namedtuple('PdfObjectRef', ['reference_key', 'reference_address',
 SymlinkRepresentation = namedtuple('SymlinkRepresentation', ['text', 'style'])
 
 
-
 def get_references(obj: PdfObject, ref_key=None, ref_address=None) -> List[PdfObjectRef]:
     """Return list of PdfObjectRefs"""
     if isinstance(obj, IndirectObject):

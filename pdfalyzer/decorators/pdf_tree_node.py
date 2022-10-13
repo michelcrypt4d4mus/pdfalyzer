@@ -29,8 +29,7 @@ from pdfalyzer.helpers.rich_text_helper import (PDF_ARRAY, TYPE_STYLES,
      get_type_style, get_type_string_style)
 from pdfalyzer.helpers.string_helper import pypdf_class_name
 from pdfalyzer.output.layout import get_label_style
-from pdfalyzer.util.adobe_strings import (DANGEROUS_PDF_KEYS, FIRST, FONT, LAST, NEXT, NON_TREE_REFERENCES, TYPE1_FONT, S,
-     SUBTYPE, TRAILER, TYPE, UNLABELED, XREF, XREF_STREAM, PURE_REFERENCE_NODE_LABELS)
+from pdfalyzer.util.adobe_strings import *
 from pdfalyzer.util.exceptions import PdfWalkError
 
 Relationship = namedtuple('Relationship', ['from_node', 'reference_key'])
@@ -43,14 +42,13 @@ PREVIEW_STYLES = {HEX: BYTES_NO_DIM, STREAM: 'bytes'}
 
 
 class PdfTreeNode(NodeMixin):
-    def __init__(self, obj: PdfObject, known_to_parent_as: str, idnum: int):
+    def __init__(self, obj: PdfObject, address: str, idnum: int):
         """
         reference_key: PDF instruction string used to reference obj
         idnum: ID used in the reference
         """
         self.obj = obj
         self.idnum = idnum
-        self.known_to_parent_as = known_to_parent_as
         self.other_relationships = []
         self.all_references_processed = False
 
@@ -62,27 +60,31 @@ class PdfTreeNode(NodeMixin):
             self.stream_length = 0
 
         if isinstance(obj, DictionaryObject):
-            self.type = obj.get(TYPE) or known_to_parent_as
-            self.label = obj.get(TYPE) or known_to_parent_as
+            self.type = obj.get(TYPE) or address
+            self.label = obj.get(TYPE) or address
             self.sub_type = obj.get(SUBTYPE) or obj.get(S)
 
             if isinstance(self.type, str):
                 self.type = self.type.split('[')[0]
         else:
-            self.type = known_to_parent_as.split('[')[0] if isinstance(known_to_parent_as, str) else known_to_parent_as
-            self.label = known_to_parent_as
+            # TODO: hacky/incorrect
+            self.type = address.split('[')[0] if isinstance(address, str) else address
+            self.label = address
             self.sub_type = None
 
-        if isinstance(self.known_to_parent_as, int):
-            self.known_to_parent_as = f"[{known_to_parent_as}]"
+        # TODO: this is hacky and possibly incorrect
+        if isinstance(address, int):
+            self.known_to_parent_as = f"[{address}]"
+        else:
+            self.known_to_parent_as = address
 
         if isinstance(self.label, int):
             self.label = f"{UNLABELED}[{self.label}]"
 
     @classmethod
-    def from_reference(cls, ref: IndirectObject, known_to_parent_as: str) -> 'PdfTreeNode':
+    def from_reference(cls, ref: IndirectObject, address: str) -> 'PdfTreeNode':
         """Builds a PdfTreeDecorator from an IndirectObject"""
-        return cls(ref.get_object(), known_to_parent_as, ref.idnum)
+        return cls(ref.get_object(), address, ref.idnum)
 
     def set_parent(self, parent: 'PdfTreeNode') -> None:
         """Set the parent of this node"""
@@ -153,7 +155,7 @@ class PdfTreeNode(NodeMixin):
         return [r.reference_key for r in self.other_relationships] + [self.known_to_parent_as]
 
     # Old clause:  elif key in NON_TREE_REFERENCES or node.label.startswith(NUMS) or node.label in PURE_REFERENCE_NODE_LABELS:
-    def is_pure_reference(self, reference_key):
+    def is_pure_reference(self, reference_key) -> bool:
         """Returns True if the reference is probably not in the tree"""
         # if self.idnum == 505:
         #     import pdb;pdb.set_trace()
@@ -165,8 +167,35 @@ class PdfTreeNode(NodeMixin):
         # TODO: Checking startswith(NUMS) etc. is a hack that probably will not cover all cases with /StructElem
         return any(self.label.startswith(key) for key in PURE_REFERENCE_NODE_LABELS)
 
-#    def is_indeterminat_reference(self, reference_key):
+    def is_parent_reference(self, reference_key) -> bool:
+        """Returns True for explicit parent refs"""
+        if reference_key == PARENT:
+            return True
+        elif self.type == STRUCT_ELEM and reference_key == P:
+            return True
+        else:
+            return False
 
+    def is_child_reference(self, reference_key) -> bool:
+        """Returns True for explicit child refs"""
+        if reference_key == KIDS:
+            return True
+        elif self.type == STRUCT_ELEM and reference_key == K:
+            return True
+        elif self.type == OBJR and reference_key == OBJ:
+            # TODO: there can be multiple OBJR refs to the same object... which wouldn't work w/this code
+            return True
+        else:
+            return False
+
+    # old check: elif key in INDETERMINATE_REFERENCES and key == address:
+    # TODO: why did we check equality?
+    def is_indeterminate_reference(self, reference_key):
+        """Returns true if we need to wait for all objects to be parsed before placement"""
+        if reference_key in INDETERMINATE_REFERENCES:
+            return True
+        else:
+            return False
 
     def references(self) -> List[PdfObjectRef]:
         """Returns all nodes referenced from this node (see PdfObjectRef definition)"""
@@ -270,6 +299,21 @@ class PdfTreeNode(NodeMixin):
 
         return table
 
+    def generate_rich_tree(self, tree=None, depth=0):
+        """Recursively generates a rich.tree.Tree object from this node"""
+        tree = tree or Tree(self.generate_rich_table())
+
+        for child in self.children:
+            if isinstance(child, SymlinkNode):
+                symlink_rep = get_symlink_representation(self, child)
+                tree.add(Panel(symlink_rep.text, style=symlink_rep.style, expand=False))
+                continue
+
+            child_branch = tree.add(child.generate_rich_table())
+            child.generate_rich_tree(child_branch)
+
+        return tree
+
     def _get_stream_preview_rows(self) -> List[List[Text]]:
         """Get rows that preview the stream data"""
         return_rows: List[List[Text]] = []
@@ -309,21 +353,6 @@ class PdfTreeNode(NodeMixin):
         add_preview_row(HEX, stream_preview_hex)
         return_rows.append([Text('StreamLength', style='grey'), size_text(len(self.stream_data))])
         return return_rows
-
-    def generate_rich_tree(self, tree=None, depth=0):
-        """Recursively generates a rich.tree.Tree object from this node"""
-        tree = tree or Tree(self.generate_rich_table())
-
-        for child in self.children:
-            if isinstance(child, SymlinkNode):
-                symlink_rep = get_symlink_representation(self, child)
-                tree.add(Panel(symlink_rep.text, style=symlink_rep.style, expand=False))
-                continue
-
-            child_branch = tree.add(child.generate_rich_table())
-            child.generate_rich_tree(child_branch)
-
-        return tree
 
     def _node_label(self) -> Text:
         text = Text('<', style='white')

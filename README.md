@@ -15,7 +15,7 @@ A PDF analysis tool geared towards visualizing the inner tree-like data structur
 ### Quick Start
 ```sh
 pipx install pdfalyzer
-pdfalyze the_heidiggerian_themes_expressed_in_illmatic.pdf
+pdfalyze heidegger_-_being_illmatic.pdf
 ```
 
 ### What It Do

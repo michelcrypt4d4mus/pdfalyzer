@@ -1,10 +1,10 @@
 """
 String constants specified in the Adobe specs for PDFs, fonts, etc.
 """
+import re
 
 from PyPDF2.constants import (CatalogDictionary, ImageAttributes, PageAttributes,
      PagesAttributes, Ressources as Resources)
-
 
 # Fake PDF instructions used to create more explanatory tables/trees/addresses/etc.
 ARRAY_ELEMENT = '/ArrayElement'
@@ -14,11 +14,13 @@ UNLABELED = '/UnlabeledArrayElement'
 # Actual PDF instructions
 AA              = CatalogDictionary.AA  # Automatic Action
 ACRO_FORM       = CatalogDictionary.ACRO_FORM  # Can trigger Javascript on open
+ANNOTS          = '/Annots'
 COLOR_SPACE     = Resources.COLOR_SPACE
 D               = '/D'  # Destination, usually of a link or action
 CONTENTS        = '/Contents'
 DEST            = '/Dest'  # Similar to /D?
 EXT_G_STATE     = Resources.EXT_G_STATE
+FIELDS          = '/Fields'
 FIRST           = '/First'
 FONT            = Resources.FONT
 FONT_FILE       = '/FontFile'
@@ -34,9 +36,13 @@ LAST            = '/Last'
 NEXT            = '/Next'
 NUMS            = '/Nums'
 OBJECT_STREAM   = '/ObjStm'
+OBJ             = '/Obj'
+# TODO: /Pg refs could be the parents of /OBJR?
+OBJR            = '/OBJR'  # Object reference to "an entire PDF object"
 OPEN_ACTION     = CatalogDictionary.OPEN_ACTION
 P               = '/P'  # Equivalent of /Parent for /StructElem
 PARENT          = PagesAttributes.PARENT
+PG              = '/Pg'  # Page ref for OBJR
 PREV            = '/Prev'
 RESOURCES       = PageAttributes.RESOURCES
 S               = '/S'  # Equivalent of /Subtype for /StructElem
@@ -47,6 +53,7 @@ TO_UNICODE      = '/ToUnicode'
 TYPE            = PageAttributes.TYPE
 TYPE1_FONT      = '/Type1'
 W               = '/W'  # Equivalen of /Widths in some situations
+WIDGET          = '/Widget'
 WIDTHS          = '/Widths'
 XOBJECT         = Resources.XOBJECT
 XREF            = '/XRef'
@@ -87,14 +94,19 @@ NON_TREE_REFERENCES = [
 
 # Some PdfObjects can't be properly placed in the tree until the entire tree is parsed
 INDETERMINATE_REFERENCES = [
+    ANNOTS,  # At least when it appears in a page
     COLOR_SPACE,
     D,
     DEST,
     EXT_G_STATE,
+    FIELDS,   # At least for  /AcroForm
     FIRST,
     FONT,
     OPEN_ACTION,
+    P,   # At least for widgets...
     RESOURCES,
     XOBJECT,
     UNLABELED, # TODO: this might be wrong? maybe this is where the /Resources actually live?
 ]
+
+EXTERNAL_GRAPHICS_STATE_REGEX = re.compile('/Resources\\[/ExtGState\\]\\[/GS\\d+\\]')
