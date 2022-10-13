@@ -48,13 +48,11 @@ class Pdfalyzer:
         pdf_file = open(pdf_path, 'rb')  # Filehandle must be left open for PyPDF2 to perform seeks
         self.pdf = PdfReader(pdf_file)
         self.yaralyzer = get_file_yaralyzer(pdf_path)
-
         # Initialize tracking variables
         self.indeterminate_ids = set()  # See INDETERMINATE_REFERENCES comment
         self.traversed_nodes = {}
         self.font_infos = []
         self.max_generation = 0
-
         # Build the tree
         self.walk_pdf()
 
@@ -327,6 +325,10 @@ class Pdfalyzer:
                 self._place_resources_node(node)
                 continue
             # TODO: these almost all have the same outcome; could be one super ugly if statement
+            elif node.label == COLOR_SPACE:
+                log.info("Color space node found; placing at lowest ID")
+                set_lowest_id_node_as_parent = True
+                possible_parents = node.other_relationships
             elif len(referenced_by_keys) == 1:
                 log.info(f"{node}'s other relationships all use key {referenced_by_keys[0]}, linking to lowest id")
                 set_lowest_id_node_as_parent = True
@@ -389,13 +391,22 @@ class Pdfalyzer:
 
     def _place_resources_node(self, resources_node) -> None:
         """See if there is a common ancestor like /Pages; if so that's the parent"""
+        relationships_labels = set()
+
         for relationship in resources_node.other_relationships:
             other_relationships = [r for r in resources_node.other_relationships if r != relationship]
+            relationships_labels.add(relationship.from_node.label)
 
             if all(relationship[0] in r[0].ancestors for r in other_relationships):
                 log.info(f'{relationship[0]} is the common ancestor found while placing /Resources')
                 resources_node.set_parent(relationship[0])
                 return
+
+        if relationships_labels == set([PAGE, PAGES]):
+            pages_nodes = [r.from_node for r in resources_node.other_relationships if r.from_node.label == PAGES]
+            log.warning(f"Failed to place {resources_node}; seems to be a loose {PAGE}. Linking to first {PAGES}")
+            resources_node.set_parent(sorted(pages_nodes, key=lambda n: n.idnum)[0])
+            return
 
         log.error(f"Failed to place {resources_node}. {RESOURCES} relationship dump:")
         resources_node.print_other_relationships()

@@ -67,7 +67,7 @@ class PdfTreeNode(NodeMixin):
             if isinstance(self.type, str):
                 self.type = self.type.split('[')[0]
         else:
-            # TODO: hacky/incorrect
+            # TODO: hacky
             self.type = address.split('[')[0] if isinstance(address, str) else address
             self.label = address
             self.sub_type = None
@@ -215,7 +215,7 @@ class PdfTreeNode(NodeMixin):
             # /XRef streams are basically trailer nodes without any direct reference
             if self.parent.label == TRAILER and self.type == XREF and XREF_STREAM in self.parent.obj:
                 return XREF_STREAM
-            elif self.label != NEXT:
+            elif self.label not in [FIRST, LAST, NEXT, PREV]:
                 log.warning(f"Could not find expected reference from {other_node} to {self}")
                 return None
         else:

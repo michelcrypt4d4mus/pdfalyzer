@@ -1,5 +1,8 @@
 # NEXT RELEASE
 
+# 1.10.7
+* Improve the handling of ColorSpace and Resources nodes
+
 # 1.10.6
 * Improve the handling of indeterminate and pure reference nodes (again)
 
