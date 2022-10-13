@@ -78,7 +78,7 @@ Run `pdfalyzer_show_color_theme` to see the color theme employed.
 ### As A Code Library
 At its core The Pdfalyzer is taking PDF internal objects gathered by [PyPDF2](https://github.com/py-pdf/PyPDF2) and wrapping them in [AnyTree](https://github.com/c0fec0de/anytree)'s `NodeMixin` class.  Given that things like searching the tree or accessing internal properties will be done through those packages' code it may be helpful to review their documentation.
 
-As far as The Pdfalyzer's unique functionality goes, [Pdfalyzer](pdfalyzer/pdfalyzer.py) is the class at the heart of the operation. It holds both the PDF's logical tree as well as a couple of other data structures that have been pre-processed to make them easier to work with. Chief among these are the [FontInfo](pdfalyzer/font_info.py) class which pulls together various properties of a font strewn across 3 or 4 different PDF objects and the [BinaryScanner](pdfalyzer/binary/binary_scanner.py) class which lets you dig through the embedded streams' bytes looking for suspicious patterns.
+As far as The Pdfalyzer's unique functionality goes, [`Pdfalyzer`](pdfalyzer/pdfalyzer.py) is the class at the heart of the operation. It holds both the PDF's logical tree as well as a couple of other data structures that have been pre-processed to make them easier to work with. Chief among these are the [`FontInfo`](pdfalyzer/font_info.py) class which pulls together various properties of a font strewn across 3 or 4 different PDF objects and the [`BinaryScanner`](pdfalyzer/binary/binary_scanner.py) class which lets you dig through the embedded streams' bytes looking for suspicious patterns.
 
 Here's a short intro to how to access these objects:
 
@@ -226,7 +226,7 @@ Beyond that see [CONTRIBUTING.md](CONTRIBUTING.md).
 * Highlight decodes with a lot of Javascript keywords
 * deal with repetitive matches
 * https://github.com/1Project/Scanr/blob/master/emulator/emulator.py
-# https://github.com/mandiant/flare-floss
+* https://github.com/mandiant/flare-floss
 
 
 

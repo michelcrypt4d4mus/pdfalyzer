@@ -52,7 +52,7 @@ select = parser.add_argument_group(
     "Multiselect. Choosing nothing is choosing everything.")
 
 select.add_argument('-d', '--docinfo', action='store_true',
-                    help='show embedded document info (author, title, timestamps, etc)')
+                    help='show embedded document info (author, title, timestamps, etc.), streams overview, and MD5/SHA hashes')
 
 select.add_argument('-t', '--tree', action='store_true',
                     help='show condensed tree visualization (one line per PDF object)')
