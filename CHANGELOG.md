@@ -1,5 +1,10 @@
 # NEXT RELEASE
 
+# 1.10.8
+* Fix `importlib.resources` usage in case there's a zip file
+* `/Names` is an indeterminate reference type
+* Catch stream decode exceptions and show error instead of failing.
+
 # 1.10.7
 * Improve the handling of ColorSpace and Resources nodes
 

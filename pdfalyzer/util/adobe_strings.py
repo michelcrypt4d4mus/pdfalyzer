@@ -33,6 +33,7 @@ JS              = '/JS'
 K               = '/K'  # Equivalent of /Kids for /StructElem
 KIDS            = PagesAttributes.KIDS
 LAST            = '/Last'
+NAMES           = '/Names'
 NEXT            = '/Next'
 NUMS            = '/Nums'
 OBJECT_STREAM   = '/ObjStm'
@@ -104,6 +105,7 @@ INDETERMINATE_REFERENCES = [
     FIELDS,   # At least for  /AcroForm
     FIRST,
     FONT,
+    NAMES,
     OPEN_ACTION,
     P,   # At least for widgets...
     RESOURCES,

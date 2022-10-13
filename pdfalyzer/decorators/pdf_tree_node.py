@@ -13,6 +13,7 @@ from typing import List, Optional, Union
 from anytree import NodeMixin, SymlinkNode
 from PyPDF2.generic import (DictionaryObject, EncodedStreamObject, IndirectObject, NumberObject, PdfObject,
      StreamObject)
+from PyPDF2.errors import PdfReadError
 from rich.markup import escape
 from rich.panel import Panel
 from rich.table import Table
@@ -53,7 +54,14 @@ class PdfTreeNode(NodeMixin):
         self.all_references_processed = False
 
         if isinstance(obj, StreamObject):
-            self.stream_data = self.obj.get_data()
+            try:
+                self.stream_data = self.obj.get_data()
+            except PdfReadError as e:
+                msg = f"Failed to decode stream: {e}"
+                self.stream_data = msg
+                log.error(msg)
+                console.print_exception()
+
             self.stream_length = len(self.stream_data)
         else:
             self.stream_data = None
