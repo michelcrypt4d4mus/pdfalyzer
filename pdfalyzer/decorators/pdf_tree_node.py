@@ -53,20 +53,6 @@ class PdfTreeNode(NodeMixin):
         self.other_relationships = []
         self.all_references_processed = False
 
-        if isinstance(obj, StreamObject):
-            try:
-                self.stream_data = self.obj.get_data()
-            except PdfReadError as e:
-                msg = f"Failed to decode stream: {e}"
-                self.stream_data = msg
-                log.error(msg)
-                console.print_exception()
-
-            self.stream_length = len(self.stream_data)
-        else:
-            self.stream_data = None
-            self.stream_length = 0
-
         if isinstance(obj, DictionaryObject):
             self.type = obj.get(TYPE) or address
             self.label = obj.get(TYPE) or address
@@ -88,6 +74,20 @@ class PdfTreeNode(NodeMixin):
 
         if isinstance(self.label, int):
             self.label = f"{UNLABELED}[{self.label}]"
+
+        if isinstance(obj, StreamObject):
+            try:
+                self.stream_data = self.obj.get_data()
+            except PdfReadError as e:
+                msg = f"Failed to decode stream in {self}: {e}"
+                self.stream_data = msg
+                console.print_exception()
+                log.warning(msg)
+
+            self.stream_length = len(self.stream_data)
+        else:
+            self.stream_data = None
+            self.stream_length = 0
 
     @classmethod
     def from_reference(cls, ref: IndirectObject, address: str) -> 'PdfTreeNode':

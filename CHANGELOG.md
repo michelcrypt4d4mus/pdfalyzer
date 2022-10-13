@@ -1,4 +1,5 @@
 # NEXT RELEASE
+* Better warning about stream decode failures
 
 # 1.10.8
 * Fix `importlib.resources` usage in case there's a zip file
