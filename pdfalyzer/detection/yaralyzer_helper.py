@@ -14,6 +14,7 @@ YARA_RULES_FILES = [
     'PDF_binary_stream.yara',
 ]
 
+
 def get_file_yaralyzer(file_path_to_scan: str) -> Yaralyzer:
     """Get a yaralyzer for a file path"""
     return _build_yaralyzer(file_path_to_scan)

@@ -12,7 +12,7 @@ from anytree.render import DoubleStyle
 from anytree.search import findall, findall_by_attr
 from PyPDF2 import PdfReader
 from PyPDF2.errors import PdfReadError
-from PyPDF2.generic import IndirectObject, NameObject, NumberObject, StreamObject
+from PyPDF2.generic import IndirectObject, NameObject, NumberObject
 from rich.markup import escape
 from rich.panel import Panel
 from rich.table import Column, Table
@@ -20,8 +20,8 @@ from rich.text import Text
 from yaralyzer.config import YaralyzerConfig
 from yaralyzer.helpers.bytes_helper import get_bytes_info
 from yaralyzer.helpers.file_helper import load_binary_data
-from yaralyzer.helpers.rich_text_helper import CENTER, LEFT, size_in_bytes_text
-from yaralyzer.output.rich_console import BYTES_HIGHLIGHT, GREY, console
+from yaralyzer.helpers.rich_text_helper import size_in_bytes_text
+from yaralyzer.output.rich_console import BYTES_HIGHLIGHT, console
 from yaralyzer.output.rich_layout_elements import bytes_hashes_table
 from yaralyzer.util.logging import log
 
@@ -50,37 +50,31 @@ class Pdfalyzer:
         self.yaralyzer = get_file_yaralyzer(pdf_path)
         # Initialize tracking variables
         self.indeterminate_ids = set()  # See INDETERMINATE_REFERENCES comment
-        self.traversed_nodes = {}
-        self.font_infos = []
-        self.max_generation = 0
-        # Build the tree
-        self.walk_pdf()
+        self.traversed_nodes = {}       # Nodes we've seen already
+        self.font_infos = []            # Font summary objects
+        self.max_generation = 0         # PDF revisions are "generations"; this is the max generation encountered
+        self.walk_pdf()                 # Build the tree
 
     def walk_pdf(self):
         """
-        PDFs are read trailer first so trailer is the root of the tree.
+        PDFs are always read trailer first so trailer is the root of the tree.
         We build the rest by recursively following references we find in nodes we encounter.
         """
         trailer = self.pdf.trailer
         self.pdf_size = trailer.get(SIZE)
-
         # Technically the trailer has no ID in the PDF but we set it to the /Size of the PDF for convenience
-        if self.pdf_size is None:
-            trailer_id = TRAILER_FALLBACK_ID
-        else:
-            trailer_id = self.pdf_size
-
+        trailer_id = self.pdf_size if self.pdf_size is not None else TRAILER_FALLBACK_ID
         self.pdf_tree = PdfTreeNode(trailer, TRAILER, trailer_id)
         self.traversed_nodes[self.pdf_tree.idnum] = self.pdf_tree
         self.walk_node(self.pdf_tree)
-        self._resolve_indeterminate_nodes()  # After scanning all the objects we place nodes whose position was uncertain
+        self._resolve_indeterminate_nodes()  # After scanning all objects we place nodes whose position was uncertain
         self._extract_font_infos()
         self._verify_all_traversed_nodes_are_in_tree()
         self._verify_untraversed_nodes_are_untraversable()
         self._symlink_other_relationships()  # Create symlinks for non parent/child relationships between nodes
         log.info(f"Walk complete.")
 
-    def walk_node(self, node: PdfTreeNode):
+    def walk_node(self, node: PdfTreeNode) -> None:
         """Recursively walk the PDF's tree structure starting at a given node"""
         log.info(f'walk_node() called with {node}. Object dump:\n{print_with_header(node.obj, node.label)}')
         self._ensure_safe_to_walk(node)
@@ -95,9 +89,12 @@ class Pdfalyzer:
             if not next_node.all_references_processed:
                 self.walk_node(next_node)
 
-    def find_node_by_idnum(self, idnum):
-        """Find node with idnum in the tree. Return None if that node is not in tree or not reachable from the root."""
-        nodes = [n for n in findall_by_attr(self.pdf_tree, name='idnum', value=idnum) if not isinstance(n, SymlinkNode)]
+    def find_node_by_idnum(self, idnum) -> Optional[PdfTreeNode]:
+        """Find node with idnum in the tree. Return None if that node is not reachable from the root."""
+        nodes = [
+            node for node in findall_by_attr(self.pdf_tree, name='idnum', value=idnum)
+            if not isinstance(node, SymlinkNode)
+        ]
 
         if len(nodes) == 0:
             return None
@@ -215,20 +212,24 @@ class Pdfalyzer:
         stream_filter = lambda node: node.contains_stream() and not isinstance(node, SymlinkNode)
         return sorted(findall(self.pdf_tree, stream_filter), key=lambda r: r.idnum)
 
-    def _process_reference(self, node: PdfTreeNode, key: str, address: str, reference: IndirectObject) -> [PdfTreeNode]:
+    def _process_reference(
+            self,
+            node: PdfTreeNode,
+            key: str,
+            address: str,
+            reference: IndirectObject
+        ) -> List[PdfTreeNode]:
         """
-        Place the referenced node in the tree. Returns a list of nodes to walk next.
-        address is the reference_key used in node.obj to refer to 'reference' object
+        Place the referenced 'node' in the tree. Returns a list of nodes to walk next.
+        'address' is the key used in node.obj to refer to 'reference' object
            plus any modifiers like [2] or [/Something]
         """
-        self.max_generation = max([self.max_generation, reference.generation or 0])
-        seen_before = (reference.idnum in self.traversed_nodes)
+        was_seen_before = (reference.idnum in self.traversed_nodes)
         referenced_node = self._build_or_find_node(reference, address)
         reference_log_string = f"{node} reference at {address} to {referenced_node}"
-        log.info(f'Assessing {reference_log_string}...')
+        log.debug(f'Assessing {reference_log_string}...')
+        self.max_generation = max([self.max_generation, reference.generation or 0])
         references_to_return = []
-        is_pure_ref = node.is_pure_reference(key)
-        log.debug(f"   {node} => {key}: is_pure_ref? {is_pure_ref}")
 
         # If one is already a parent/child of the other there's nothing to do
         if referenced_node == node.parent or referenced_node in node.children:
@@ -237,12 +238,8 @@ class Pdfalyzer:
 
         # If there's an explicit /Parent or /Kids reference then we know the correct relationship
         if node.is_parent_reference(key) or node.is_child_reference(key):
-            log.debug(f"Explicit parent/child reference in {node} at {key}")
             if node.is_parent_reference(key):
-                # try:
-                    node.set_parent(referenced_node)
-                # except Exception as e:
-                #     import pdb;pdb.set_trace()
+                node.set_parent(referenced_node)
             else:
                 node.add_child(referenced_node)
 
@@ -250,33 +247,29 @@ class Pdfalyzer:
                 log.info(f"  Found refefence {address} => {node} of previously indeterminate node {referenced_node}")
                 self.indeterminate_ids.remove(reference.idnum)
 
-            if not seen_before:
+            if not was_seen_before:
                 references_to_return = [referenced_node]
-
-        # Indeterminate references need to wait until everything has been scanned to be placed
         elif node.is_indeterminate_reference(key):
+            # Indeterminate references need to wait until everything has been scanned to be placed
             log.info(f'  Indeterminate {reference_log_string}')
             referenced_node.add_relationship(node, address)
             self.indeterminate_ids.add(referenced_node.idnum)
             return [referenced_node]
-
-        # Non tree references are not children or parents.
         elif node.is_pure_reference(key):
+            # Pure reference nodes like /Dest tend to just be links between nodes, so not in tree
             log.debug(f"{reference_log_string} is a pure reference.")
             referenced_node.add_relationship(node, address)
 
-            # If node looks like a pure ref but is not in tree, consider it indeterminate
+            # If node looks like a pure ref but is not in tree consider it indeterminate so it can be placed later
             if not self.find_node_by_idnum(referenced_node.idnum):
                 references_to_return = [referenced_node]
                 self.indeterminate_ids.add(referenced_node.idnum)
-
-        # If we've seen the node before it should have a parent or be indeterminate
-        elif seen_before:
+        elif was_seen_before:
+            # If we've seen the node before it should have a parent or be indeterminate
             if reference.idnum not in self.indeterminate_ids and referenced_node.parent is None:
                 raise PdfWalkError(f"{reference_log_string} - ref has no parent and is not indeterminate")
 
             referenced_node.add_relationship(node, address)
-
         # If no other conditions are met, add the reference as a child
         else:
             node.add_child(referenced_node)
@@ -309,16 +302,19 @@ class Pdfalyzer:
 
         for idnum in self.indeterminate_ids:
             if self.find_node_by_idnum(idnum):
-                log.warning(f"Node with ID {idnum} marked indeterminate but found in tree...")
+                # TODO we should probably remove the indeterminate node ID before this step
+                log.info(f"Node with ID {idnum} marked indeterminate but found in tree...")
                 continue
 
             set_lowest_id_node_as_parent = False
             node = self.traversed_nodes[idnum]
+            log.debug(f"Attempting to resolve indeterminate node {node}")
+            # TODO: this should be a method on PdfTreeNode
             referenced_by_keys = list(set([r.reference_key for r in node.other_relationships]))
-            log.info(f"Attempting to resolve indeterminate node {node}")
+            possible_parents = []
 
             if node.parent is not None:
-                log.info(f"{node} already has parent: {node.parent}")
+                log.debug(f"{node} already has parent: {node.parent}")
                 continue
 
             if node.label == RESOURCES:
@@ -345,7 +341,7 @@ class Pdfalyzer:
                 possible_parents = node.other_relationships
             elif any(r.from_node.label == RESOURCES for r in node.other_relationships) and \
                     all(any(r.from_node.label.startswith(ir) for ir in INDETERMINATE_REFERENCES) for r in node.other_relationships):
-                log.info(f"Linking {node} to lowest id {RESOURCES} node...")
+                log.info(f"Linking resources property {node} to lowest id {RESOURCES} node...")
                 possible_parents = [r for r in node.other_relationships if r.from_node.label == RESOURCES]
                 set_lowest_id_node_as_parent = True
             else:
@@ -358,17 +354,16 @@ class Pdfalyzer:
                     possible_parents = determinate_relations
                     set_lowest_id_node_as_parent = True
 
-            if set_lowest_id_node_as_parent:
-                lowest_idnum = min([r.from_node.idnum for r in possible_parents])
-                lowest_id_relationship = next(r for r in node.other_relationships if r.from_node.idnum == lowest_idnum)
-                log.info(f"Setting parent of {node} to {lowest_id_relationship}")
-                node.set_parent(self.traversed_nodes[lowest_idnum])
-                continue
+            if not set_lowest_id_node_as_parent:
+                self.print_tree()
+                node.print_other_relationships()
+                log.fatal("Dumped tree status and other_relationships for debugging")
+                raise PdfWalkError(f"Cannot place {node}")
 
-            self.print_tree()
-            node.print_other_relationships()
-            log.fatal("Dumped tree status and other_relationships for debugging")
-            raise PdfWalkError(f"Cannot place {node}")
+            lowest_idnum = min([r.from_node.idnum for r in possible_parents])
+            lowest_id_relationship = next(r for r in node.other_relationships if r.from_node.idnum == lowest_idnum)
+            log.info(f"Setting parent of {node} to {lowest_id_relationship}")
+            node.set_parent(self.traversed_nodes[lowest_idnum])
 
     def _extract_font_infos(self) -> None:
         """Extract information about fonts in the tree and place it in self.font_infos"""

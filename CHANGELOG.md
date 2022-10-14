@@ -1,15 +1,17 @@
 # NEXT RELEASE
 * Better warning about stream decode failures
+* Remove warnings that should not be warnings
+* Refactor rich table view code to `pdf_node_rich_table.py`
 
-# 1.10.8
+### 1.10.8
 * Fix `importlib.resources` usage in case there's a zip file
 * `/Names` is an indeterminate reference type
 * Catch stream decode exceptions and show error instead of failing.
 
-# 1.10.7
+### 1.10.7
 * Improve the handling of ColorSpace and Resources nodes
 
-# 1.10.6
+### 1.10.6
 * Improve the handling of indeterminate and pure reference nodes (again)
 
 ### 1.10.5
