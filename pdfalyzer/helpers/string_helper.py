@@ -8,11 +8,8 @@ from typing import Pattern
 from PyPDF2.generic import PdfObject
 from yaralyzer.output.rich_console import console_width
 
-
-# Style
 INDENT_DEPTH = 4
 PRETTY_PRINT_WIDTH = 60
-
 
 # Pretty Printer
 pp = PrettyPrinter(
@@ -52,3 +49,8 @@ def count_pattern_matches_in_text(pattern: str, text: str) -> int:
 def count_regex_matches_in_text(regex: Pattern, text: str) -> int:
     """For use when you precompile the regex"""
     return sum(1 for _ in regex.finditer(text))
+
+
+def root_address(_string: str) -> str:
+    """Strip the bracketed part off an address, e.g. '/Root[1]' => '/Root'."""
+    return _string.split('[')[0]

@@ -6,62 +6,58 @@ Child/parent relationships should be set using the add_child()/set_parent()
 methods and not set directly. (TODO: this could be done better with anytree
 hooks)
 """
-from collections import namedtuple
 from typing import List, Optional, Union
 
-from anytree import NodeMixin, SymlinkNode
-from PyPDF2.generic import DictionaryObject, IndirectObject, NumberObject, PdfObject, StreamObject
+from anytree import NodeMixin
 from PyPDF2.errors import PdfReadError
+from PyPDF2.generic import DictionaryObject, IndirectObject, NumberObject, PdfObject, StreamObject
 from rich.markup import escape
-from rich.panel import Panel
 from rich.text import Text
-from rich.tree import Tree
 from yaralyzer.output.rich_console import console
 from yaralyzer.util.logging import log
 
-from pdfalyzer.helpers.pdf_object_helper import PdfObjectRelationship, get_symlink_representation
-from pdfalyzer.helpers.rich_text_helper import get_type_style, get_type_string_style
-from pdfalyzer.helpers.string_helper import pypdf_class_name
-from pdfalyzer.output.layout import get_label_style
-from pdfalyzer.output.pdf_node_rich_table import build_pdf_node_table, get_node_type_style
+from pdfalyzer.helpers.pdf_object_helper import node_label
+from pdfalyzer.helpers.rich_text_helper import get_type_string_style, get_type_style
+from pdfalyzer.helpers.string_helper import pypdf_class_name, root_address
+from pdfalyzer.pdf_object_relationship import PdfObjectRelationship
 from pdfalyzer.util.adobe_strings import *
 from pdfalyzer.util.exceptions import PdfWalkError
 
 DEFAULT_MAX_ADDRESS_LENGTH = 90
+DECODE_FAILURE_LEN = -1
 
 
 class PdfTreeNode(NodeMixin):
     def __init__(self, obj: PdfObject, address: str, idnum: int):
         """
-        reference_key: PDF instruction string used to reference obj
+        address: PDF instruction string + modifiers used to reference obj
         idnum: ID used in the reference
         """
         self.obj = obj
         self.idnum = idnum
         self.all_references_processed: bool = False
         self.other_relationships: List[PdfObjectRelationship] = []
+        self.sub_type = None
 
         if isinstance(obj, DictionaryObject):
             self.type = obj.get(TYPE) or address
-            self.label = obj.get(TYPE) or address
             self.sub_type = obj.get(SUBTYPE) or obj.get(S)
+            self.label = obj.get(TYPE) or address  # TODO: should we use sub_type?
 
             if isinstance(self.type, str):
-                self.type = self.type.split('[')[0]
+                self.type = root_address(self.type)
+        elif isinstance(address, int):
+            self.label = f"{UNLABELED}[{address}]"
+            self.type = str(address)
         else:
-            # TODO: hacky
-            self.type = address.split('[')[0] if isinstance(address, str) else address
             self.label = address
-            self.sub_type = None
+            self.type = root_address(address)
 
         # TODO: this is hacky/temporarily incorrect bc we often don't know the parent when node is being constructed
         if isinstance(address, int):
             self.known_to_parent_as = f"[{address}]"
         else:
             self.known_to_parent_as = address
-
-        if isinstance(self.label, int):
-            self.label = f"{UNLABELED}[{self.label}]"
 
         if isinstance(obj, StreamObject):
             try:
@@ -71,8 +67,8 @@ class PdfTreeNode(NodeMixin):
                 msg = f"Failed to decode stream in {self}: {e}"
                 console.print_exception()
                 log.warning(msg)
-                self.stream_data = msg
-                self.stream_length = -1
+                self.stream_data = msg.encode()
+                self.stream_length = DECODE_FAILURE_LEN
         else:
             self.stream_data = None
             self.stream_length = 0
@@ -245,7 +241,8 @@ class PdfTreeNode(NodeMixin):
             reference_address = refs_to_this_node[0].reference_address
 
             if not all(ref.reference_address in [FIRST, LAST] for ref in refs_to_this_node):
-                log.warning(f"Multiple refs from {from_node} to {self}: {refs_to_this_node}. Using {reference_address} as address")
+                msg = f"Multiple refs from {from_node} to {self}: {refs_to_this_node}"
+                log.warning(msg + ", using {reference_address}")
 
             return reference_address
 
@@ -272,31 +269,8 @@ class PdfTreeNode(NodeMixin):
 
         return '...' + address[-max_length:][3:]
 
-    def generate_rich_tree(self, tree=None, depth=0) -> Tree:
-        """Recursively generates a rich.tree.Tree object from this node"""
-        tree = tree or Tree(build_pdf_node_table(self))
-
-        for child in self.children:
-            if isinstance(child, SymlinkNode):
-                symlink_rep = get_symlink_representation(self, child)
-                tree.add(Panel(symlink_rep.text, style=symlink_rep.style, expand=False))
-                continue
-
-            child_branch = tree.add(build_pdf_node_table(child))
-            child.generate_rich_tree(child_branch)
-
-        return tree
-
     def _node_label(self) -> Text:
-        text = Text('<', style='white')
-        text.append(f'{self.idnum}', style='bright_white')
-        text.append(':', style='white')
-        text.append(self.label[1:], style=f'{get_label_style(self.label)} underline bold')
-        text.append('(', style='white')
-        text.append(pypdf_class_name(self.obj), style=get_node_type_style(self.obj))
-        text.append(')', style='white')
-        text.append('>')
-        return text
+        return node_label(self.idnum, self.label, self.obj)
 
     def _colored_address(self, max_length: Optional[int] = None) -> Text:
         """Rich text version of tree_address()"""

@@ -143,13 +143,6 @@ class FontInfo:
             self._char_map = None
             self.character_mapping = None
 
-    def yara_scan(self) -> None:
-        if self.binary_scanner is None:
-            log.debug(f"No binary to scan for {self.display_title}")
-            return
-
-        get_bytes_yaralyzer(self.stream_data, str(self)).yaralyze()
-
     def width_stats(self):
         if self.widths is None:
             return {}

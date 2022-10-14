@@ -1,10 +1,14 @@
 # NEXT RELEASE
+
+# 1.11.0
+* Scan all binaries (not just font binaries) with included PDF related YARA rules
 * Better warning about stream decode failures
 * Remove warnings that should not be warnings
 * Refactor rich table view code to `pdf_node_rich_table.py`
+* Refactor `Relationship` and `PdfObjectRef` to single class, `PdfObjectRelationship`
 
 ### 1.10.8
-* Fix `importlib.resources` usage in case there's a zip file
+* Fix `importlib.resources` usage in case pdfalyer is packaged as a zip file
 * `/Names` is an indeterminate reference type
 * Catch stream decode exceptions and show error instead of failing.
 
