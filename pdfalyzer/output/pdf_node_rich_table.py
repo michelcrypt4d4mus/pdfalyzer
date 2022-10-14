@@ -28,6 +28,7 @@ def build_pdf_node_table(node: 'PdfTreeNode') -> Table:
     """
     Generate a Rich table representation of this node's PDF object and its properties.
     Table cols are [title, address, class name] (not exactly headers but sort of).
+    Dangerous things like /JavaScript, /OpenAction, Type1 fonts, etc, will be highlighted red.
     """
     title = f"{node.idnum}.{escape(node.label)}"
     table = Table(title, escape(node.tree_address()), pypdf_class_name(node.obj))
@@ -62,7 +63,7 @@ def build_pdf_node_table(node: 'PdfTreeNode') -> Table:
     return table
 
 
-def get_node_type_style(obj):
+def get_node_type_style(obj) -> str:
     klass_string = pypdf_class_name(obj)
 
     if 'Dictionary' in klass_string:

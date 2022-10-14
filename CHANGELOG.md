@@ -148,7 +148,7 @@ Bunch of small changes to support releasing on [pypi](https://pypi.org/project/p
 
 # 1.0.1
 * Fix issue with directly embedded `/Resources` not being walked correctly (along with their fonts)
-* Introduce `PdfObjectRef` tuple to contain the root reference key, the actual reference address string, and the referenced obj
+* Introduce `PdfObjectRelationship` tuple to contain the root reference key, the actual reference address string, and the referenced obj
 * Add warnings if any PDF objects are missing from the tree
 
 # 1.0.0

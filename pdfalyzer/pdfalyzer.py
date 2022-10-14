@@ -15,7 +15,7 @@ from PyPDF2.errors import PdfReadError
 from PyPDF2.generic import IndirectObject, NameObject, NumberObject
 from rich.markup import escape
 from rich.panel import Panel
-from rich.table import Column, Table
+from rich.table import Table
 from rich.text import Text
 from yaralyzer.config import YaralyzerConfig
 from yaralyzer.helpers.bytes_helper import get_bytes_info
@@ -29,7 +29,7 @@ from pdfalyzer.binary.binary_scanner import BinaryScanner
 from pdfalyzer.decorators.document_model_printer import print_with_header
 from pdfalyzer.decorators.pdf_tree_node import PdfTreeNode
 from pdfalyzer.detection.yaralyzer_helper import get_file_yaralyzer
-from pdfalyzer.helpers.pdf_object_helper import INDETERMINATE_REFERENCES, get_symlink_representation
+from pdfalyzer.helpers.pdf_object_helper import PdfObjectRelationship, get_symlink_representation
 from pdfalyzer.helpers.string_helper import pp
 from pdfalyzer.font_info import FontInfo
 from pdfalyzer.output.layout import print_section_header, print_section_subheader, print_section_sub_subheader
@@ -46,7 +46,7 @@ class Pdfalyzer:
         self.pdf_bytes = load_binary_data(pdf_path)
         self.pdf_bytes_info = get_bytes_info(self.pdf_bytes)
         pdf_file = open(pdf_path, 'rb')  # Filehandle must be left open for PyPDF2 to perform seeks
-        self.pdf = PdfReader(pdf_file)
+        self.pdf_reader = PdfReader(pdf_file)
         self.yaralyzer = get_file_yaralyzer(pdf_path)
         # Initialize tracking variables
         self.indeterminate_ids = set()  # See INDETERMINATE_REFERENCES comment
@@ -60,7 +60,7 @@ class Pdfalyzer:
         PDFs are always read trailer first so trailer is the root of the tree.
         We build the rest by recursively following references we find in nodes we encounter.
         """
-        trailer = self.pdf.trailer
+        trailer = self.pdf_reader.trailer
         self.pdf_size = trailer.get(SIZE)
         # Technically the trailer has no ID in the PDF but we set it to the /Size of the PDF for convenience
         trailer_id = self.pdf_size if self.pdf_size is not None else TRAILER_FALLBACK_ID
@@ -80,12 +80,12 @@ class Pdfalyzer:
         self._ensure_safe_to_walk(node)
         references = node.references()
 
-        for (key, address, value) in references:
-            self._process_reference(node, key, address, value)
+        for reference in references:
+            self._process_reference(reference)
 
         node.all_references_processed = True
 
-        for next_node in [self.traversed_nodes[ref.pdf_obj.idnum] for ref in references]:
+        for next_node in [self.traversed_nodes[ref.to_obj.idnum] for ref in references]:
             if not next_node.all_references_processed:
                 self.walk_node(next_node)
 
@@ -115,7 +115,7 @@ class Pdfalyzer:
     def print_document_info(self) -> None:
         """Print the embedded document info (author, timestamps, version, etc)"""
         print_section_header(f'Document Info for {self.pdf_basename}')
-        console.print(pp.pformat(self.pdf.getDocumentInfo()))
+        console.print(pp.pformat(self.pdf_reader.getDocumentInfo()))
         console.line()
         console.print(bytes_hashes_table(self.pdf_bytes, self.pdf_basename))
         console.line()
@@ -212,24 +212,24 @@ class Pdfalyzer:
         stream_filter = lambda node: node.contains_stream() and not isinstance(node, SymlinkNode)
         return sorted(findall(self.pdf_tree, stream_filter), key=lambda r: r.idnum)
 
-    def _process_reference(
-            self,
-            node: PdfTreeNode,
-            key: str,
-            address: str,
-            reference: IndirectObject
-        ) -> List[PdfTreeNode]:
+    def _process_reference(self, reference: PdfObjectRelationship) -> List[PdfTreeNode]:
         """
         Place the referenced 'node' in the tree. Returns a list of nodes to walk next.
         'address' is the key used in node.obj to refer to 'reference' object
            plus any modifiers like [2] or [/Something]
         """
-        was_seen_before = (reference.idnum in self.traversed_nodes)
-        referenced_node = self._build_or_find_node(reference, address)
-        reference_log_string = f"{node} reference at {address} to {referenced_node}"
+        if reference.from_node is None:
+            raise PdfWalkError(f"from_node missing from {reference}")
+
+        # TODO: these temp variables are unnecessary (as is the above None check)
+        node = reference.from_node
+        key = reference.reference_key
+        was_seen_before = (reference.to_obj.idnum in self.traversed_nodes)
+        referenced_node = self._build_or_find_node(reference.to_obj, reference.reference_address)
+        reference_log_string = f"{node} reference at {reference.reference_address} to {referenced_node}"
         log.debug(f'Assessing {reference_log_string}...')
-        self.max_generation = max([self.max_generation, reference.generation or 0])
-        references_to_return = []
+        self.max_generation = max([self.max_generation, reference.to_obj.generation or 0])
+        references_to_return: List[PdfTreeNode] = []
 
         # If one is already a parent/child of the other there's nothing to do
         if referenced_node == node.parent or referenced_node in node.children:
@@ -243,22 +243,22 @@ class Pdfalyzer:
             else:
                 node.add_child(referenced_node)
 
-            if reference.idnum in self.indeterminate_ids:
-                log.info(f"  Found refefence {address} => {node} of previously indeterminate node {referenced_node}")
-                self.indeterminate_ids.remove(reference.idnum)
+            if reference.to_obj.idnum in self.indeterminate_ids:
+                log.info(f"  Found reference {reference} => {node} of previously indeterminate node {referenced_node}")
+                self.indeterminate_ids.remove(reference.to_obj.idnum)
 
             if not was_seen_before:
                 references_to_return = [referenced_node]
         elif node.is_indeterminate_reference(key):
             # Indeterminate references need to wait until everything has been scanned to be placed
             log.info(f'  Indeterminate {reference_log_string}')
-            referenced_node.add_relationship(node, address)
+            referenced_node.add_relationship(reference)
             self.indeterminate_ids.add(referenced_node.idnum)
             return [referenced_node]
         elif node.is_pure_reference(key):
             # Pure reference nodes like /Dest tend to just be links between nodes, so not in tree
             log.debug(f"{reference_log_string} is a pure reference.")
-            referenced_node.add_relationship(node, address)
+            referenced_node.add_relationship(reference)
 
             # If node looks like a pure ref but is not in tree consider it indeterminate so it can be placed later
             if not self.find_node_by_idnum(referenced_node.idnum):
@@ -266,10 +266,11 @@ class Pdfalyzer:
                 self.indeterminate_ids.add(referenced_node.idnum)
         elif was_seen_before:
             # If we've seen the node before it should have a parent or be indeterminate
-            if reference.idnum not in self.indeterminate_ids and referenced_node.parent is None:
+            if reference.to_obj.idnum not in self.indeterminate_ids and referenced_node.parent is None:
                 raise PdfWalkError(f"{reference_log_string} - ref has no parent and is not indeterminate")
 
-            referenced_node.add_relationship(node, address)
+            log.debug(f"{reference.description()} was already seen")
+            referenced_node.add_relationship(reference)
         # If no other conditions are met, add the reference as a child
         else:
             node.add_child(referenced_node)
@@ -278,7 +279,8 @@ class Pdfalyzer:
         log.debug("Nodes to walk next: " + ', '.join([str(r) for r in references_to_return]))
         return references_to_return
 
-    def _symlink_other_relationships(self):
+    # TODO: this should probably be in the PdfTreeNode class
+    def _symlink_other_relationships(self) -> None:
         """Create SymlinkNodes for relationships between PDF objects that are not parent/child relationships"""
         for node in LevelOrderIter(self.pdf_tree):
             if node.other_relationship_count() == 0 or isinstance(node, SymlinkNode):
@@ -287,7 +289,7 @@ class Pdfalyzer:
             log.info(f"Symlinking {node}'s {node.other_relationship_count()} other relationships...")
 
             for relationship in node.other_relationships:
-                log.debug(f"   * Linking {relationship}")
+                log.debug(f"   Linking {relationship.description()} to {node}")
                 SymlinkNode(node, parent=relationship.from_node)
 
     def _resolve_indeterminate_nodes(self) -> None:
@@ -474,7 +476,8 @@ class Pdfalyzer:
                 log.debug(f"Verified object {idnum} is in tree")
                 continue
 
-            ref = IndirectObject(idnum, self.max_generation, self.pdf)
+            ref = IndirectObject(idnum, self.max_generation, self.pdf_reader)
+
             try:
                 obj = ref.get_object()
             except PdfReadError as e:
@@ -507,9 +510,9 @@ class Pdfalyzer:
             if obj_type == OBJECT_STREAM:
                 log.debug(f"Object with id {idnum} not found in tree because it's an {OBJECT_STREAM}")
             elif obj[TYPE] == XREF:
-                placeable = XREF_STREAM in self.pdf.trailer
+                placeable = XREF_STREAM in self.pdf_reader.trailer
 
-                for k, v in self.pdf.trailer.items():
+                for k, v in self.pdf_reader.trailer.items():
                     xref_val_for_key = obj.get(k)
 
                     if k in [XREF_STREAM, PREV]:

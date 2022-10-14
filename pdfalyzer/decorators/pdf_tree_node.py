@@ -19,15 +19,13 @@ from rich.tree import Tree
 from yaralyzer.output.rich_console import console
 from yaralyzer.util.logging import log
 
-from pdfalyzer.helpers.pdf_object_helper import PdfObjectRef, get_references, get_symlink_representation
+from pdfalyzer.helpers.pdf_object_helper import PdfObjectRelationship, get_symlink_representation
 from pdfalyzer.helpers.rich_text_helper import get_type_style, get_type_string_style
 from pdfalyzer.helpers.string_helper import pypdf_class_name
 from pdfalyzer.output.layout import get_label_style
 from pdfalyzer.output.pdf_node_rich_table import build_pdf_node_table, get_node_type_style
 from pdfalyzer.util.adobe_strings import *
 from pdfalyzer.util.exceptions import PdfWalkError
-
-Relationship = namedtuple('Relationship', ['from_node', 'reference_key'])
 
 DEFAULT_MAX_ADDRESS_LENGTH = 90
 
@@ -41,7 +39,7 @@ class PdfTreeNode(NodeMixin):
         self.obj = obj
         self.idnum = idnum
         self.all_references_processed: bool = False
-        self.other_relationships: List[Relationship] = []
+        self.other_relationships: List[PdfObjectRelationship] = []
 
         if isinstance(obj, DictionaryObject):
             self.type = obj.get(TYPE) or address
@@ -142,14 +140,14 @@ class PdfTreeNode(NodeMixin):
         child.known_to_parent_as = child._find_address_of_this_node(self) or child.known_to_parent_as
         log.info(f"  Added {child} as child of {self}")
 
-    def add_relationship(self, from_node: 'PdfTreeNode', reference_key: str) -> None:
-        """Handles relationships not covered by the tree structure"""
-        relationship = Relationship(from_node, reference_key)
-
+    def add_relationship(self, relationship: PdfObjectRelationship) -> None:
+        """Add a relationship that points at this node's PDF object. TODO: doesn't include parent/child"""
         if relationship in self.other_relationships:
+            log.debug(f"{relationship.description()} already in {self}'s other relationships")
+            self.print_other_relationships()
             return
 
-        log.info(f'Adding other relationship: {from_node} ref {reference_key} points to {self}')
+        log.info(f'Adding other relationship: {relationship.description()} pointing to {self}')
         self.other_relationships.append(relationship)
 
     def remove_relationship(self, from_node: 'PdfTreeNode') -> None:
@@ -168,14 +166,14 @@ class PdfTreeNode(NodeMixin):
     def other_relationship_count(self) -> int:
         return len(self.other_relationships)
 
-    def get_reference_key_for_relationship(self, from_node: 'PdfTreeNode'):
+    def get_address_for_relationship(self, from_node: 'PdfTreeNode') -> str:
         """Get the label that links from_node to this one outside of the tree structure"""
         relationship = next((r for r in self.other_relationships if r.from_node == from_node), None)
 
         if relationship is None:
             raise PdfWalkError(f"Can't find other relationship from {from_node} to {self}")
 
-        return relationship.reference_key
+        return relationship.reference_address
 
     # TODO: this doesn't include /Parent references
     def referenced_by_keys(self) -> List[str]:
@@ -217,32 +215,37 @@ class PdfTreeNode(NodeMixin):
         # TODO: Checking startswith(NUMS) etc. is a hack that probably will not cover all cases with /StructElem
         return any(self.label.startswith(key) for key in PURE_REFERENCE_NODE_LABELS)
 
-    def references(self) -> List[PdfObjectRef]:
-        """Returns all nodes referenced from this node (see PdfObjectRef definition)"""
-        return get_references(self.obj)
+    def references(self) -> List[PdfObjectRelationship]:
+        """Returns all nodes referenced from this node (see PdfObjectRelationship definition)"""
+        refs = PdfObjectRelationship.get_references(self.obj)
+
+        for ref in refs:
+            ref.from_node = self
+
+        return refs
 
     def contains_stream(self) -> bool:
         """Returns True for ContentStream, DecodedStream, and EncodedStream objects"""
         return isinstance(self.obj, StreamObject)
 
-    def _find_address_of_this_node(self, other_node: 'PdfTreeNode') -> Optional[str]:
-        """Find the address used in other_node to refer to this node"""
-        refs_to_this_node = [ref for ref in other_node.references() if ref.pdf_obj.idnum == self.idnum]
+    def _find_address_of_this_node(self, from_node: 'PdfTreeNode') -> Optional[str]:
+        """Find the address used in from_node to refer to this node"""
+        refs_to_this_node = [ref for ref in from_node.references() if ref.to_obj.idnum == self.idnum]
 
         if len(refs_to_this_node) == 1:
             return refs_to_this_node[0].reference_address
         elif len(refs_to_this_node) == 0:
-            # /XRef streams are basically trailer nodes without any direct reference
-            if self.parent.label == TRAILER and self.type == XREF and XREF_STREAM in self.parent.obj:
+            # TODO: Hack city. /XRef streams are basically trailer nodes without any direct reference
+            if self.parent and self.parent.label == TRAILER and self.type == XREF and XREF_STREAM in self.parent.obj:
                 return XREF_STREAM
             elif self.label not in [FIRST, LAST, NEXT, PREV]:
-                log.warning(f"Could not find expected reference from {other_node} to {self}")
+                log.warning(f"Could not find expected reference from {from_node} to {self}")
                 return None
         else:
             reference_address = refs_to_this_node[0].reference_address
 
             if not all(ref.reference_address in [FIRST, LAST] for ref in refs_to_this_node):
-                log.warning(f"Multiple refs from {other_node} to {self}: {refs_to_this_node}. Using {reference_address} as address")
+                log.warning(f"Multiple refs from {from_node} to {self}: {refs_to_this_node}. Using {reference_address} as address")
 
             return reference_address
 
