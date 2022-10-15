@@ -6,6 +6,7 @@ Child/parent relationships should be set using the add_child()/set_parent()
 methods and not set directly. (TODO: this could be done better with anytree
 hooks)
 """
+from audioop import add
 from typing import List, Optional, Union
 
 from anytree import NodeMixin
@@ -42,16 +43,19 @@ class PdfTreeNode(NodeMixin):
         if isinstance(obj, DictionaryObject):
             self.type = obj.get(TYPE) or address
             self.sub_type = obj.get(SUBTYPE) or obj.get(S)
-            self.label = obj.get(TYPE) or address  # TODO: should we use sub_type?
+            self.label = obj.get(TYPE) or address  # TODO: should we use sub_type for label?
 
+            # TODO this sucks.
             if isinstance(self.type, str):
                 self.type = root_address(self.type)
-        elif isinstance(address, int):
-            self.label = f"{UNLABELED}[{address}]"
-            self.type = str(address)
+                self.label = root_address(self.type)
         else:
             self.label = address
-            self.type = root_address(address)
+            self.type = root_address(address) if isinstance(address, str) else None
+
+        # Force a string. TODO this sucks.
+        if isinstance(self.label, int):
+            self.label = f"{UNLABELED}[{self.label}]"
 
         # TODO: this is hacky/temporarily incorrect bc we often don't know the parent when node is being constructed
         if isinstance(address, int):

@@ -44,7 +44,7 @@ Installation with [pipx](https://pypa.github.io/pipx/)[^4] is preferred though `
 pipx install pdfalyzer
 ```
 
-
+See [PyPDF2 installation notes](https://github.com/py-pdf/PyPDF2#installation) about `PyCryptodome` if you plan to `pdfalyze` any files that use AES encryption.
 
 For info on how to setup a dev environment, see [Contributing](#contributing) section at the end of this file.
 

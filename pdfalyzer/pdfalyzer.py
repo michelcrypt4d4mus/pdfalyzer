@@ -327,8 +327,9 @@ class Pdfalyzer:
             if node.parent is not None:
                 log.debug(f"{node} already has parent: {node.parent}")
                 continue
-
-            if node.label == RESOURCES:
+            if node.idnum == 5:
+                import pdb;pdb.set_trace()
+            if node.label.startswith(RESOURCES):
                 self._place_resources_node(node)
                 continue
             # TODO: these almost all have the same outcome; could be one super ugly if statement
@@ -395,18 +396,29 @@ class Pdfalyzer:
         if self.traversed_nodes[node.idnum] != node:
             raise PdfWalkError("Duplicate PDF object ID {node.idnum}")
 
+    # TODO: /Resources probably doesn't need special handling beyond the general indeterminate node
     def _place_resources_node(self, resources_node) -> None:
         """See if there is a common ancestor like /Pages; if so that's the parent"""
+        log.debug(f"  Indeterminate {RESOURCES} node {resources_node}")
         relationships_labels = set()
 
+        #import pdb; pdb.set_trace()
         for relationship in resources_node.other_relationships:
             other_relationships = [r for r in resources_node.other_relationships if r != relationship]
+            log.debug(f"Checking resourcees other relationship: {relationship.description()}")
+            log.debug(f"   Remaining relationships: {other_relationships}")
             relationships_labels.add(relationship.from_node.label)
 
-            if all(relationship[0] in r[0].ancestors for r in other_relationships):
-                log.info(f'{relationship[0]} is the common ancestor found while placing /Resources')
-                resources_node.set_parent(relationship[0])
+            if all(relationship.reference_key in r.from_node.ancestors for r in other_relationships):
+                log.info(f'{relationship.from_node} is the common ancestor found while placing /Resources')
+                resources_node.set_parent(relationship.from_node)
                 return
+
+        if len(relationships_labels) == 1:
+            log.info(f"One shared label for all {RESOURCES} links; setting parent as lowest id")
+            possible_parents = [r.from_node for r in resources_node.other_relationships]
+            resources_node.set_parent(sorted(possible_parents, key=lambda n: n.idnum)[0])
+            return
 
         if relationships_labels == set([PAGE, PAGES]):
             pages_nodes = [r.from_node for r in resources_node.other_relationships if r.from_node.label == PAGES]
@@ -414,7 +426,8 @@ class Pdfalyzer:
             resources_node.set_parent(sorted(pages_nodes, key=lambda n: n.idnum)[0])
             return
 
-        log.error(f"Failed to place {resources_node}. {RESOURCES} relationship dump:")
+        log.error(f"Failed to place {resources_node} with labels: {relationships_labels}")
+        log.error(f"{RESOURCES} relationship dump:")
         resources_node.print_other_relationships()
         raise PdfWalkError(f'Failed to place {resources_node}')
 
@@ -466,10 +479,11 @@ class Pdfalyzer:
         ]
 
         if len(missing_nodes) > 0:
-            msg = f"Nodes were traversed but never placed: {escape(str(missing_nodes))}"
+            msg = f"Nodes were traversed but never placed: {escape(str(missing_nodes))}\n" + \
+                   "For link nodes like /First, /Next, /Prev, and /Last this might be no big deal - depends " + \
+                   "on the PDF. But for other node typtes this could indicate missing data in the tree."
             console.print(msg)
             log.warning(msg)
-            #raise PdfWalkError(msg)
 
     def _verify_untraversed_nodes_are_untraversable(self) -> None:
         """Make sure any PDF object IDs we can't find in tree are /ObjStm or /Xref nodes"""

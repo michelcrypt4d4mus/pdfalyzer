@@ -1,5 +1,9 @@
 # NEXT RELEASE
 
+### 1.11.1
+* Fix regressions
+* Fix issue when `/Resources` is referred to by multiple addresses from different nodes
+
 # 1.11.0
 * Scan all binaries (not just font binaries) with included PDF related YARA rules
 * Better warning about stream decode failures
