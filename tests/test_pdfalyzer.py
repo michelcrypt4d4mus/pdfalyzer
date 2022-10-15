@@ -23,7 +23,7 @@ def test_pdfalyzer_basic_tree(adobe_type1_fonts_pdf_path, analyzing_malicious_do
     type1_tree = _run_with_args(adobe_type1_fonts_pdf_path, '-t')
     _assert_line_count_within_range(90, type1_tree)
     analyzing_malicious_tree = _run_with_args(analyzing_malicious_documents_pdf_path, '-t')
-    _assert_line_count_within_range(1004, analyzing_malicious_tree)
+    _assert_line_count_within_range(1022, analyzing_malicious_tree)
 
 
 def test_pdfalyzer_rich_tree(adobe_type1_fonts_pdf_path, analyzing_malicious_documents_pdf_path):

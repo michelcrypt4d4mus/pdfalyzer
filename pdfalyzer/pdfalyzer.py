@@ -29,7 +29,7 @@ from pdfalyzer.decorators.document_model_printer import print_with_header
 from pdfalyzer.decorators.pdf_tree_node import DECODE_FAILURE_LEN, PdfTreeNode
 from pdfalyzer.detection.yaralyzer_helper import get_file_yaralyzer
 from pdfalyzer.font_info import FontInfo
-from pdfalyzer.helpers.string_helper import pp
+from pdfalyzer.helpers.string_helper import is_prefixed_by_any, pp
 from pdfalyzer.detection.yaralyzer_helper import get_bytes_yaralyzer
 from pdfalyzer.output.layout import print_section_header, print_section_subheader, print_section_sub_subheader
 from pdfalyzer.output.pdf_node_rich_table import generate_rich_tree, get_symlink_representation
@@ -259,7 +259,7 @@ class Pdfalyzer:
             referenced_node.add_relationship(reference)
             self.indeterminate_ids.add(referenced_node.idnum)
             return [referenced_node]
-        elif node.is_pure_reference(key):
+        elif node.is_link_reference(key):
             # Pure reference nodes like /Dest tend to just be links between nodes, so not in tree
             log.debug(f"{reference_log_string} is a pure reference.")
             referenced_node.add_relationship(reference)
@@ -338,7 +338,7 @@ class Pdfalyzer:
             elif len(addresses) == 2 and (addresses[0] in addresses[1] or addresses[1] in addresses[0]):
                 log.info(f"{node}'s other relationships ref keys are same except slice: {addresses}, linking to lowest id")
             elif any(r.from_node.label == RESOURCES for r in node.other_relationships) and \
-                    all(any(r.from_node.label.startswith(ir) for ir in INDETERMINATE_REFERENCES) for r in node.other_relationships):
+                    all(is_prefixed_by_any(r.from_node.label, INDETERMINATE_REFERENCES) for r in node.other_relationships):
                 msg = f"{node} referred to from {RESOURCES} labeled node; all other relationships are indeterminate. "
                 msg += f"Choosing lowest id {RESOURCES} node among them as parent..."
                 possible_parent_relationships = [r for r in node.other_relationships if r.from_node.label == RESOURCES]

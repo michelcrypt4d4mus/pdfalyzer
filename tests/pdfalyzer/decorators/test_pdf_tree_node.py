@@ -8,18 +8,29 @@ def page_node(analyzing_malicious_pdfalyzer):
     return analyzing_malicious_pdfalyzer.find_node_by_idnum(3)
 
 
+@pytest.fixture(scope="session")
+def pages_node(analyzing_malicious_pdfalyzer):
+    return analyzing_malicious_pdfalyzer.find_node_by_idnum(2)
+
+
 def test_pdf_node_address(analyzing_malicious_pdfalyzer):
-    node = analyzing_malicious_pdfalyzer.find_node_by_idnum(41)
-    assert node.tree_address() == '/Root/StructTreeRoot/K[0]/K[24]/K[1]/K[3]/K[0]/K[0]/K[1]/K[0]/Obj'
-    node2 = analyzing_malicious_pdfalyzer.find_node_by_idnum(6)
-    assert node2.tree_address() == '/Root/Pages/Kids[0]/Resources[/Font][/F1]/FontDescriptor'
-    node3 = analyzing_malicious_pdfalyzer.find_node_by_idnum(17)
-    assert node3.tree_address() == '/Root/Pages/Kids[0]/Resources[/Font][/F4]/DescendantFonts[0]/CIDSystemInfo'
+    node41 = analyzing_malicious_pdfalyzer.find_node_by_idnum(41)
+    assert node41.tree_address() == '/Root/StructTreeRoot/K[0]/K[24]/K[1]/K[3]/K[0]/K[0]/K[1]/K[0]/Obj'
+    node6 = analyzing_malicious_pdfalyzer.find_node_by_idnum(6)
+    assert node6.tree_address() == '/Root/Pages/Kids[0]/Resources[/Font][/F1]/FontDescriptor'
+    node17 = analyzing_malicious_pdfalyzer.find_node_by_idnum(17)
+    assert node17.tree_address() == '/Root/Pages/Kids[0]/Resources[/Font][/F4]/DescendantFonts[0]/CIDSystemInfo'
 
 
-def test_get_address_for_relationship(analyzing_malicious_pdfalyzer, page_node):
+def test_address_in_other_node(analyzing_malicious_pdfalyzer, page_node, pages_node):
     sym_node = analyzing_malicious_pdfalyzer.find_node_by_idnum(13)
-    assert sym_node.get_address_for_relationship(page_node) == '/Annots[0]'
+    assert sym_node.address_in_other_node(page_node) == '/Annots[0]'
+    node38 = analyzing_malicious_pdfalyzer.find_node_by_idnum(38)
+    assert node38.address_in_other_node(page_node) == '/Annots[14]'
+
+    node7 = analyzing_malicious_pdfalyzer.find_node_by_idnum(7)
+    assert node7.address_in_other_node(page_node) == '/Resources[/ExtGState][/GS7]'
+    assert page_node.address_in_other_node(pages_node) == '/Kids[0]'
 
 
 def test_referenced_by_keys(analyzing_malicious_pdfalyzer, page_node):

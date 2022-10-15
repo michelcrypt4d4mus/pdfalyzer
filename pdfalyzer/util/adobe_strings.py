@@ -45,6 +45,7 @@ P               = '/P'  # Equivalent of /Parent for /StructElem
 PAGE            = '/Page'
 PAGES           = '/Pages'
 PARENT          = PagesAttributes.PARENT
+PARENT_TREE     = '/ParentTree'
 PG              = '/Pg'  # Page ref for OBJR
 PREV            = '/Prev'
 RESOURCES       = PageAttributes.RESOURCES
@@ -80,7 +81,8 @@ DANGEROUS_PDF_KEYS = [
 CURRENTFILE_EEXEC = b'currentfile eexec'
 
 # A node with this label is really just a non-tree link between nodes
-PURE_REFERENCE_NODE_LABELS = [
+# TODO: not sure these really need to be separate from NON_TREE_REFERENCES
+LINK_NODE_KEYS = [
     D,
     DEST,
     NUMS
@@ -89,7 +91,6 @@ PURE_REFERENCE_NODE_LABELS = [
 # Some references are never part of a parent/child relationship in the tree
 NON_TREE_REFERENCES = [
     OPEN_ACTION,
-#    D,
     LAST,
     NEXT,
     PREV,
@@ -113,4 +114,22 @@ INDETERMINATE_REFERENCES = [
     UNLABELED, # TODO: this might be wrong? maybe this is where the /Resources actually live?
 ]
 
+NON_TREE_KEYS = LINK_NODE_KEYS + NON_TREE_REFERENCES
 EXTERNAL_GRAPHICS_STATE_REGEX = re.compile('/Resources\\[/ExtGState\\]\\[/GS\\d+\\]')
+
+MULTI_REF_NODE_TYPES = [
+    NUMS,
+    PARENT_TREE
+]
+
+# Address reference keys that don't always appear (example: sometimes there is only a link to FIRST and LAST)
+# and none of the NEXT/PREV nodes between FIRST and LAST.
+IMPERMANENT_KEYS = [
+    FIRST,
+    LAST,
+    NEXT,
+    PREV,
+]
+
+# Address reference keys that adon't always appear or b) can appear more than once pointing at same node
+NON_STANDARD_ADDRESS_NODES = IMPERMANENT_KEYS + MULTI_REF_NODE_TYPES

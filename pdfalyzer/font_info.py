@@ -27,10 +27,9 @@ from pdfalyzer.output.layout import print_section_subheader, print_headline_pane
 from pdfalyzer.util.adobe_strings import (FONT, FONT_DESCRIPTOR, FONT_FILE, FONT_LENGTHS, RESOURCES, SUBTYPE,
      TO_UNICODE, TYPE, W, WIDTHS)
 
-
+CHARMAP_TITLE = 'Character Mapping (As Extracted By PyPDF2)'
 CHARMAP_TITLE_PADDING = (1, 0, 0, 2)
 CHARMAP_PADDING = (0, 2, 0, 10)
-CHARMAP_TITLE = 'Character Mapping (As Extracted By PyPDF2)'
 FONT_SECTION_PREVIEW_LEN = 30
 
 ATTRIBUTES_TO_SHOW_IN_SUMMARY_TABLE = [
@@ -254,7 +253,7 @@ class FontInfo:
         return self.display_title
 
 
-def _format_charmap_entry(k, v):
+def _format_charmap_entry(k: str, v: str) -> Text:
     key = pp.pformat(k)
 
     for quote_char in ['"', "'"]:

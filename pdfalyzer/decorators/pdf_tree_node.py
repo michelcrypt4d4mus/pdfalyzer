@@ -18,6 +18,7 @@ from yaralyzer.output.rich_console import console
 from yaralyzer.util.logging import log
 
 from pdfalyzer.decorators.pdf_object_properties import PdfObjectProperties
+from pdfalyzer.helpers.string_helper import is_prefixed_by_any
 from pdfalyzer.pdf_object_relationship import PdfObjectRelationship
 from pdfalyzer.util.adobe_strings import *
 from pdfalyzer.util.exceptions import PdfWalkError
@@ -78,7 +79,7 @@ class PdfTreeNode(NodeMixin, PdfObjectProperties):
 
         self.parent = parent
         self.remove_relationship(parent)
-        self.known_to_parent_as = self._find_address_of_this_node(parent) or self.first_address
+        self.known_to_parent_as = self.address_in_other_node(parent) or self.first_address
         log.info(f"  Added {parent} as parent of {self}")
 
     def add_child(self, child: 'PdfTreeNode') -> None:
@@ -94,7 +95,7 @@ class PdfTreeNode(NodeMixin, PdfObjectProperties):
 
         self.children += (child,)
         child.remove_relationship(self)
-        child.known_to_parent_as = child._find_address_of_this_node(self) or child.first_address
+        child.known_to_parent_as = child.address_in_other_node(self) or child.first_address
         log.info(f"  Added {child} as child of {self}")
 
     def add_relationship(self, relationship: PdfObjectRelationship) -> None:
@@ -129,16 +130,6 @@ class PdfTreeNode(NodeMixin, PdfObjectProperties):
 
     def other_relationship_count(self) -> int:
         return len(self.other_relationships)
-
-    # TODO: this is basically the same as _find_address_of_this_node()
-    def get_address_for_relationship(self, from_node: 'PdfTreeNode') -> str:
-        """Get the label that links from_node to this one outside of the tree structure"""
-        relationship = next((r for r in self.other_relationships if r.from_node == from_node), None)
-
-        if relationship is None:
-            raise PdfWalkError(f"Can't find other relationship from {from_node} to {self}")
-
-        return relationship.address
 
     def unique_addresses(self) -> List[str]:
         """All the addresses in other nodes that refer to this object."""
@@ -178,13 +169,9 @@ class PdfTreeNode(NodeMixin, PdfObjectProperties):
         """Returns true if we need to wait for all objects to be parsed before placement."""
         return reference_key in INDETERMINATE_REFERENCES
 
-    def is_pure_reference(self, reference_key: str) -> bool:
+    def is_link_reference(self, reference_key: str) -> bool:
         """Returns True if the reference is a pure reference/bookmark style node and thus not in the tree."""
-        if reference_key in (NON_TREE_REFERENCES + PURE_REFERENCE_NODE_LABELS):
-            return True
-
-        # TODO: Checking startswith(NUMS) etc. is hacky
-        return any(self.label.startswith(key) for key in PURE_REFERENCE_NODE_LABELS)
+        return reference_key in NON_TREE_KEYS or is_prefixed_by_any(self.label, LINK_NODE_KEYS)
 
     def references(self) -> List[PdfObjectRelationship]:
         """Returns all nodes referenced from this node (see PdfObjectRelationship definition)"""
@@ -223,7 +210,7 @@ class PdfTreeNode(NodeMixin, PdfObjectProperties):
 
         return '...' + address[-max_length:][3:]
 
-    def _find_address_of_this_node(self, from_node: 'PdfTreeNode') -> Optional[str]:
+    def address_in_other_node(self, from_node: 'PdfTreeNode') -> Optional[str]:
         """Find the address used in from_node to refer to this node"""
         refs_to_this_node = [ref for ref in from_node.references() if ref.to_obj.idnum == self.idnum]
 
@@ -233,13 +220,14 @@ class PdfTreeNode(NodeMixin, PdfObjectProperties):
             # TODO: Hack city. /XRef streams are basically trailer nodes without any direct reference
             if self.parent and self.parent.label == TRAILER and self.type == XREF and XREF_STREAM in self.parent.obj:
                 return XREF_STREAM
-            elif self.label not in [FIRST, LAST, NEXT, PREV]:
-                log.warning(f"Could not find expected reference from {from_node} to {self}")
+            elif self.label not in NON_STANDARD_ADDRESS_NODES:
+                log.info(f"Could not find expected reference from {from_node} to {self}")
                 return None
         else:
             address = refs_to_this_node[0].address
 
-            if not all(ref.address in [FIRST, LAST] for ref in refs_to_this_node):
+            if not (is_prefixed_by_any(from_node.label, NON_STANDARD_ADDRESS_NODES) or \
+                        all(ref.address in NON_STANDARD_ADDRESS_NODES for ref in refs_to_this_node)):
                 refs_to_this_node_str = comma_join([str(r) for r in refs_to_this_node])
                 msg = f"Multiple refs from {from_node} to {self}: {refs_to_this_node_str}"
                 log.warning(msg + f", using {address}")

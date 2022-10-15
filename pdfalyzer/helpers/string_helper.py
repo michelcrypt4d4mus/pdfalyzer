@@ -3,7 +3,7 @@ Various text formatting/styling/manipulating methods.
 """
 import re
 from pprint import PrettyPrinter
-from typing import Pattern
+from typing import List, Pattern
 
 from PyPDF2.generic import PdfObject
 from yaralyzer.output.rich_console import console_width
@@ -37,11 +37,6 @@ def generate_hyphen_line(width=None, title=None):
     return line if len(line) == width else line + '-'
 
 
-def list_to_string(_list: list, sep=', ') -> str:
-    """Join elements of _list with sep"""
-    return sep.join([str(item) for item in _list])
-
-
 def count_pattern_matches_in_text(pattern: str, text: str) -> int:
     return count_regex_matches_in_text(re.compile(pattern), text)
 
@@ -54,3 +49,8 @@ def count_regex_matches_in_text(regex: Pattern, text: str) -> int:
 def root_address(_string: str) -> str:
     """Strip the bracketed part off an address, e.g. '/Root[1]' => '/Root'."""
     return _string.split('[')[0]
+
+
+def is_prefixed_by_any(_string: str, prefixes: List[str]) -> bool:
+    """Returns True if _string starts with anything in 'prefixes'."""
+    return any([_string.startswith(prefix) for prefix in prefixes])
