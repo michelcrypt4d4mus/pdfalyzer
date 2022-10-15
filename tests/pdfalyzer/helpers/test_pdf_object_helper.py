@@ -1,7 +1,8 @@
 from PyPDF2 import PdfReader
 from PyPDF2.generic import IndirectObject
 
-from pdfalyzer.helpers.pdf_object_helper import PdfObjectRelationship, _sort_pdf_object_refs
+from pdfalyzer.helpers.pdf_object_helper import _sort_pdf_object_refs
+from pdfalyzer.pdf_object_relationship import PdfObjectRelationship
 from pdfalyzer.util.adobe_strings import *
 
 FONT_IDS = [5, 9, 11, 14, 20, 22, 24]
