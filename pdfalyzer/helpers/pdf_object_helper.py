@@ -3,12 +3,8 @@ Some methods to help with the direct manipulation/processing of PyPDF2's PdfObje
 """
 from typing import Any, List, Optional, Union
 
-from PyPDF2.generic import IndirectObject, PdfObject
-from rich.text import Text
+from PyPDF2.generic import IndirectObject
 
-from pdfalyzer.helpers.string_helper import pypdf_class_name
-from pdfalyzer.output.layout import get_label_style
-from pdfalyzer.output.pdf_node_rich_table import get_node_type_style
 from pdfalyzer.pdf_object_relationship import PdfObjectRelationship
 from pdfalyzer.util.adobe_strings import *
 

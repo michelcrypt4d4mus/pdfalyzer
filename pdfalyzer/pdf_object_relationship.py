@@ -4,7 +4,6 @@ Simple container class for information about a link between two PDF objects.
 from typing import List, Optional, Union
 
 from PyPDF2.generic import IndirectObject, PdfObject
-from yaralyzer.helpers.string_helper import comma_join
 from yaralyzer.util.logging import log
 
 from pdfalyzer.util.adobe_strings import *

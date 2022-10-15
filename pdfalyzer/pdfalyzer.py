@@ -20,7 +20,6 @@ from rich.text import Text
 from yaralyzer.config import YaralyzerConfig
 from yaralyzer.helpers.bytes_helper import get_bytes_info
 from yaralyzer.helpers.file_helper import load_binary_data
-from yaralyzer.helpers.rich_text_helper import size_in_bytes_text
 from yaralyzer.output.rich_console import BYTES_HIGHLIGHT, console
 from yaralyzer.output.rich_layout_elements import bytes_hashes_table
 from yaralyzer.util.logging import log
@@ -34,6 +33,7 @@ from pdfalyzer.helpers.string_helper import pp
 from pdfalyzer.detection.yaralyzer_helper import get_bytes_yaralyzer
 from pdfalyzer.output.layout import print_section_header, print_section_subheader, print_section_sub_subheader
 from pdfalyzer.output.pdf_node_rich_table import generate_rich_tree, get_symlink_representation
+from pdfalyzer.output.stream_objects_table import stream_objects_table
 from pdfalyzer.pdf_object_relationship import PdfObjectRelationship
 from pdfalyzer.util.adobe_strings import *
 from pdfalyzer.util.exceptions import PdfWalkError
@@ -121,6 +121,8 @@ class Pdfalyzer:
         console.line()
         console.print(bytes_hashes_table(self.pdf_bytes, self.pdf_basename))
         console.line()
+        console.print(self._stream_objects_table())
+        console.line()
 
     def print_tree(self) -> None:
         """Print the simple view of the PDF tree."""
@@ -154,7 +156,7 @@ class Pdfalyzer:
 
     def print_streams_analysis(self, idnum: Optional[int] = None) -> None:
         print_section_header(f'Binary Stream Analysis / Extraction')
-        console.print(self.stream_objects_table())
+        console.print(self._stream_objects_table())
 
         for node in [n for n in self.stream_nodes() if idnum is None or idnum == n.idnum]:
             node_stream_bytes = node.stream_data
@@ -184,6 +186,7 @@ class Pdfalyzer:
     def print_yara_results(self) -> None:
         print_section_header(f"YARA Scan of PDF rules for '{self.pdf_basename}'")
         self.yaralyzer.yaralyze()
+        console.line(2)
 
         for node in self.stream_nodes():
             if node.stream_length == DECODE_FAILURE_LEN:
@@ -192,6 +195,7 @@ class Pdfalyzer:
                 log.debug(f"No binary to scan for {node}")
             else:
                 get_bytes_yaralyzer(node.stream_data, str(node)).yaralyze()
+                console.line(2)
 
     def print_other_relationships(self) -> None:
         """Print the inter-node, non-tree relationships for all nodes in the tree"""
@@ -205,16 +209,6 @@ class Pdfalyzer:
             console.print("\n")
             console.print(Panel(f"Non tree relationships for {node}", expand=False))
             node.print_other_relationships()
-
-    def stream_objects_table(self) -> Table:
-        """Build a table of stream objects and their lengths."""
-        table = Table('Stream Length', 'Node')
-        table.columns[0].justify = 'right'
-
-        for node in self.stream_nodes():
-            table.add_row(size_in_bytes_text(node.stream_length), node.__rich__())
-
-        return table
 
     def stream_nodes(self) -> List[PdfTreeNode]:
         """List of actual nodes (not SymlinkNodes) containing streams sorted by PDF object ID"""
@@ -313,62 +307,71 @@ class Pdfalyzer:
         indeterminate_nodes_string = "\n   ".join([f"{node}" for node in indeterminate_nodes])
         log.info(f"Resolving {len(indeterminate_nodes)} indeterminate nodes: {indeterminate_nodes_string}")
 
-        for idnum in self.indeterminate_ids:
-            if self.find_node_by_idnum(idnum):
-                # TODO we should probably remove the indeterminate node ID before this step
-                log.info(f"Node with ID {idnum} marked indeterminate but found in tree...")
-                continue
-
-            set_lowest_id_node_as_parent = False
-            node = self.traversed_nodes[idnum]
+        for node in indeterminate_nodes:
+            # We're basically checking for situations where we can just pick the lowest ID object that
+            # has a relationship to the indeterminate node. In rare cases we will override 'possible_parent_relationships'.
             log.debug(f"Attempting to resolve indeterminate node {node}")
-            addresses = node.addresses()
             set_lowest_id_node_as_parent = True
-            possible_parents = node.other_relationships
+            possible_parent_relationships = node.other_relationships # TODO 'possible_parent_relationships'
+            addresses = node.unique_addresses()
+            # TODO: this name sucks
+            related_node_unique_labels = node.other_relationship_unique_labels()
+            common_ancestor_among_possible_parents = node.common_ancestor_among_other_relationship_nodes()
 
+            # TODO we should have removed the node from indeterminate_node_ids before this point
             if node.parent is not None:
-                log.debug(f"{node} already has parent: {node.parent}")
+                log.info(f"{node} marked indeterminate but already has parent: {node.parent}")
                 continue
 
-            if node.label.startswith(RESOURCES):
-                self._place_resources_node(node)
+            if common_ancestor_among_possible_parents is not None:
+                log.debug(f"  Found common ancestor: {common_ancestor_among_possible_parents}")
+                node.set_parent(common_ancestor_among_possible_parents)
                 continue
-
-            if node.label == COLOR_SPACE:
+            elif len(related_node_unique_labels) == 1:
+                log.info(f"Single label for all of {node}'s relationships; setting parent as lowest id")
+            elif node.label == COLOR_SPACE:
                 log.info("Color space node found; placing at lowest ID")
             elif len(addresses) == 1:
                 log.info(f"{node}'s other relationships all use key {addresses[0]}, linking to lowest id")
             elif all([EXTERNAL_GRAPHICS_STATE_REGEX.match(key) for key in addresses]):
                 log.info(f"{node}'s other relationships are all {EXT_G_STATE} refs; linking to lowest id")
-            elif len(addresses) == 2 and \
-                    (   addresses[0] in addresses[1] \
-                     or addresses[1] in addresses[0]):
+            elif len(addresses) == 2 and (addresses[0] in addresses[1] or addresses[1] in addresses[0]):
                 log.info(f"{node}'s other relationships ref keys are same except slice: {addresses}, linking to lowest id")
             elif any(r.from_node.label == RESOURCES for r in node.other_relationships) and \
                     all(any(r.from_node.label.startswith(ir) for ir in INDETERMINATE_REFERENCES) for r in node.other_relationships):
-                log.info(f"Linking resources property {node} to lowest id {RESOURCES} node...")
-                possible_parents = [r for r in node.other_relationships if r.from_node.label == RESOURCES]
+                msg = f"{node} referred to from {RESOURCES} labeled node; all other relationships are indeterminate. "
+                msg += f"Choosing lowest id {RESOURCES} node among them as parent..."
+                possible_parent_relationships = [r for r in node.other_relationships if r.from_node.label == RESOURCES]
+            elif node.label.startswith(RESOURCES) and related_node_unique_labels == set([PAGE, PAGES]):
+                # An edge case seen in the wild involving a PDF that doesn't conform to the PDF spec
+                log.warning(f"Failed to place {node}; seems to be a loose {PAGE}. Linking to first {PAGES}")
+                pages_nodes = [n for n in node.nodes_with_references_to_self() if node.type == PAGES]
+                node.set_parent(sorted(pages_nodes, key=lambda n: n.idnum)[0])
+                continue
             else:
-                possible_parents = [
+                possible_parent_relationships = [
                     r for r in node.other_relationships
                     if r.from_node.label not in INDETERMINATE_REFERENCES
                 ]
 
-                determinate_refkeys = set([r.from_node.label for r in possible_parents])
+                determinate_refkeys = set([r.from_node.label for r in possible_parent_relationships])
 
                 if len(determinate_refkeys) == 1:
-                    msg = f"1 ref_key {possible_parents[0].reference_key} is determinate, parent is lowest id using it"
+                    msg = f"1 ref_key {possible_parent_relationships[0].reference_key} is determinate, parent is lowest id using it"
                     log.info(msg)
                 else:
                     set_lowest_id_node_as_parent= False
 
             if not set_lowest_id_node_as_parent:
                 self.print_tree()
-                node.print_other_relationships()
-                log.fatal("Dumped tree status and other_relationships for debugging")
+                log.error(f"{node} relationship dump:")
+                node.log_other_relationships()
+                log.error(f"Failed to place {node} referenced from nodes w/labels: {list(related_node_unique_labels)}")
+                log.error(f"   Referenced by addresses: {node.unique_addresses()}")
+                log.fatal("Dumped tree status and other_relationships for debugging!")
                 raise PdfWalkError(f"Cannot place {node}")
 
-            lowest_idnum = min([r.from_node.idnum for r in possible_parents])
+            lowest_idnum = min([r.from_node.idnum for r in possible_parent_relationships])
             lowest_id_relationship = next(r for r in node.other_relationships if r.from_node.idnum == lowest_idnum)
             log.info(f"Setting parent of {node} to {lowest_id_relationship}")
             node.set_parent(self.traversed_nodes[lowest_idnum])
@@ -385,47 +388,9 @@ class Pdfalyzer:
                     if fi.idnum not in known_font_ids
                 ]
 
-    def _ensure_safe_to_walk(self, node) -> None:
-        if not node.idnum in self.traversed_nodes:
-            return
-
-        if self.traversed_nodes[node.idnum] != node:
-            raise PdfWalkError("Duplicate PDF object ID {node.idnum}")
-
-    # TODO: /Resources probably doesn't need special handling beyond the general indeterminate node
-    def _place_resources_node(self, resources_node) -> None:
-        """See if there is a common ancestor like /Pages; if so that's the parent"""
-        log.debug(f"  Indeterminate {RESOURCES} node {resources_node}")
-        relationships_labels = set()
-
-        for relationship in resources_node.other_relationships:
-            other_relationships = [r for r in resources_node.other_relationships if r != relationship]
-            relationships_labels.add(relationship.from_node.label)
-            log.debug(f"Checking resourcees other relationship: {relationship}")
-            log.debug(f"   Remaining relationships: {other_relationships}")
-
-            # Look for a common ancestor; if there is one choose it as the parent.
-            if all(relationship.from_node in r.from_node.ancestors for r in other_relationships):
-                log.info(f'{relationship.from_node} is the common ancestor found while placing {RESOURCES}')
-                resources_node.set_parent(relationship.from_node)
-                return
-
-        if len(relationships_labels) == 1:
-            log.info(f"One shared label for all {RESOURCES} links; setting parent as lowest id")
-            possible_parents = [r.from_node for r in resources_node.other_relationships]
-            resources_node.set_parent(sorted(possible_parents, key=lambda n: n.idnum)[0])
-            return
-        elif relationships_labels == set([PAGE, PAGES]):
-            log.warning(f"Failed to place {resources_node}; seems to be a loose {PAGE}. Linking to first {PAGES}")
-            pages_nodes = [r.from_node for r in resources_node.other_relationships if r.from_node.label == PAGES]
-            resources_node.set_parent(sorted(pages_nodes, key=lambda n: n.idnum)[0])
-            return
-
-        # If we get here then we failed to place the resources_node
-        log.error(f"Failed to place {resources_node} with labels: {relationships_labels}")
-        log.error(f"{RESOURCES} relationship dump:")
-        resources_node.print_other_relationships()
-        raise PdfWalkError(f'Failed to place {resources_node}')
+    def _ensure_safe_to_walk(self, node: PdfTreeNode) -> None:
+        """Assert that we haven't traversed this node or if we have it has the same ID."""
+        assert node.idnum not in self.traversed_nodes or self.traversed_nodes[node.idnum] == node
 
     def _build_or_find_node(self, reference: IndirectObject, reference_key: str) -> PdfTreeNode:
         """If node exists in self.traversed_nodes return it, otherwise build a node"""
@@ -461,6 +426,9 @@ class Pdfalyzer:
             'node_labels': node_labels,
             'pdf_object_types': pdf_object_types,
         }
+
+    def _stream_objects_table(self) -> Table:
+        return stream_objects_table(self.stream_nodes())
 
     def _print_traversed_nodes(self) -> None:
         """Debug method that displays which nodes have already been walked"""

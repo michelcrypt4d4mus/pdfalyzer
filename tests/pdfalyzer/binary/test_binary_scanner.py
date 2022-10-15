@@ -2,8 +2,8 @@ def test_quote_extraction_methods(font_info):
     _check_matches(font_info.binary_scanner.extract_backtick_quoted_bytes, 163, 52840)
 
 
-def test_front_slash_quoted_bytes_extraction(font_info):
-    _check_matches(font_info.binary_scanner.extract_front_slash_quoted_bytes, 756, 167814)
+# def test_front_slash_quoted_bytes_extraction(font_info):
+#     _check_matches(font_info.binary_scanner.extract_front_slash_quoted_bytes, 756, 167814)
 
 
 def test_extract_guillemet(font_info):

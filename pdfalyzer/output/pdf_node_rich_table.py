@@ -76,7 +76,7 @@ def build_pdf_node_table(node: 'PdfTreeNode') -> Table:
     table.columns[2].header_style = get_node_type_style(node.obj)
 
     if node.label != node.known_to_parent_as:
-        table.add_row(Text('ParentRefKey', style='grey'), Text(str(node.known_to_parent_as), style='grey'), '')
+        table.add_row(Text('AddressInParent', style='grey'), Text(str(node.known_to_parent_as), style='grey'), '')
 
     if isinstance(node.obj, dict):
         for k, v in node.obj.items():

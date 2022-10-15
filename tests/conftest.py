@@ -33,7 +33,7 @@ def font_obj_ids_in_analyzing_malicious_docs_pdf():
 
 # PDF walkers to parse them
 @pytest.fixture(scope="session")
-def analyzing_malicious_documents_pdfalyzer(analyzing_malicious_documents_pdf_path):
+def analyzing_malicious_pdfalyzer(analyzing_malicious_documents_pdf_path):
     return Pdfalyzer(analyzing_malicious_documents_pdf_path)
 
 @pytest.fixture(scope="session")
@@ -43,8 +43,8 @@ def adobe_type1_fonts_pdfalyzer(adobe_type1_fonts_pdf_path):
 
 # A font info object
 @pytest.fixture(scope="session")
-def font_info(analyzing_malicious_documents_pdfalyzer):
-    return next(fi for fi in analyzing_malicious_documents_pdfalyzer.font_infos if fi.idnum == 5)
+def font_info(analyzing_malicious_pdfalyzer):
+    return next(fi for fi in analyzing_malicious_pdfalyzer.font_infos if fi.idnum == 5)
 
 
 # Handy iterator

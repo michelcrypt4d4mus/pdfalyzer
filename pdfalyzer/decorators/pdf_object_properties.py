@@ -11,7 +11,6 @@ from pdfalyzer.helpers.rich_text_helper import get_type_style, get_type_string_s
 from pdfalyzer.helpers.string_helper import pypdf_class_name, root_address
 from pdfalyzer.output.layout import get_label_style
 from pdfalyzer.output.pdf_node_rich_table import get_node_type_style
-from pdfalyzer.pdf_object_relationship import PdfObjectRelationship
 from pdfalyzer.util.adobe_strings import *
 
 
@@ -28,7 +27,6 @@ class PdfObjectProperties:
         self.obj = pdf_object
         self.indirect_object = indirect_object
         self.sub_type = None
-        self.other_relationships: List[PdfObjectRelationship] = []
         self.all_references_processed = False
         self.known_to_parent_as: Optional[str] = None
 
@@ -60,7 +58,7 @@ class PdfObjectProperties:
 
     @classmethod
     def from_reference(cls, reference: IndirectObject, address: str) -> 'PdfObjectProperties':
-        cls(reference.get_object(), address, reference.idnum, reference)
+        return cls(reference.get_object(), address, reference.idnum, reference)
 
     @classmethod
     def resolve_references(cls, reference_key: str, obj: PdfObject) -> Any:
