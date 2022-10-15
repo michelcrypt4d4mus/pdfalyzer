@@ -41,7 +41,7 @@ def test_font_scan(adobe_type1_fonts_pdf_path):
 
 def test_yara_scan(adobe_type1_fonts_pdf_path):
     font_scan_output = _run_with_args(adobe_type1_fonts_pdf_path, '-y')
-    _assert_line_count_within_range(544, font_scan_output)
+    _assert_line_count_within_range(590, font_scan_output)
 
 
 def _run_with_args(pdf, *args) -> str:

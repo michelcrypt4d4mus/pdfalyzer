@@ -131,7 +131,7 @@ diagrams = ["jinja2", "railroad-diagrams"]
 
 [[package]]
 name = "PyPDF2"
-version = "2.11.0"
+version = "2.11.1"
 description = "A pure-python PDF library capable of splitting, merging, cropping, and transforming PDF files"
 category = "main"
 optional = false
@@ -191,7 +191,7 @@ jupyter = ["ipywidgets (>=7.5.1,<8.0.0)"]
 
 [[package]]
 name = "rich_argparse_plus"
-version = "0.3.1.2"
+version = "0.3.1.4"
 description = "A rich text formatter for argparse help with export and default features"
 category = "main"
 optional = false
@@ -246,7 +246,7 @@ python-versions = "*"
 
 [[package]]
 name = "yaralyzer"
-version = "0.6.2"
+version = "0.7.0"
 description = "Visualize and force decode YARA and regex matches found in a file or byte stream. With colors. Lots of colors."
 category = "main"
 optional = false
@@ -262,7 +262,7 @@ yara-python = ">=4.2.3,<5.0.0"
 [metadata]
 lock-version = "1.1"
 python-versions = "^3.9"
-content-hash = "f6230542f7aef3370aef0da1a6d21ab874e05bdca0284065e1ed7ddb6ba27cbe"
+content-hash = "36b0773c6e3d0c9e00e8c92a94465ec01c9d1762a4c0ed0933188b8548bf59fd"
 
 [metadata.files]
 anytree = [
@@ -314,8 +314,8 @@ pyparsing = [
     {file = "pyparsing-3.0.9.tar.gz", hash = "sha256:2b020ecf7d21b687f219b71ecad3631f644a47f01403fa1d1036b0c6416d70fb"},
 ]
 PyPDF2 = [
-    {file = "PyPDF2-2.11.0-py3-none-any.whl", hash = "sha256:5e4cf55d1bc7afe164915848bdf3568fa56ad644cb24954e31a928efaa4760c4"},
-    {file = "PyPDF2-2.11.0.tar.gz", hash = "sha256:d881761f6c63109a859093c91dc90a15d01ff35eacdeb92809360b9623e2c3c9"},
+    {file = "PyPDF2-2.11.1-py3-none-any.whl", hash = "sha256:7291a552ead2e7c2d556cce03bf71842fbbab478fcba13ae75ab1d59746b4dcb"},
+    {file = "PyPDF2-2.11.1.tar.gz", hash = "sha256:3c7badd512c21711eb1789c2eadbf96279289c0f94452ee54a86473bfbefd732"},
 ]
 pytest = [
     {file = "pytest-7.1.3-py3-none-any.whl", hash = "sha256:1377bda3466d70b55e3f5cecfa55bb7cfcf219c7964629b967c37cf0bda818b7"},
@@ -330,8 +330,8 @@ rich = [
     {file = "rich-12.6.0.tar.gz", hash = "sha256:ba3a3775974105c221d31141f2c116f4fd65c5ceb0698657a11e9f295ec93fd0"},
 ]
 rich_argparse_plus = [
-    {file = "rich_argparse_plus-0.3.1.2-py3-none-any.whl", hash = "sha256:e5f4755dc6a1c97d4a67d9188506dfcee575b1fa007467d550ae50816146e979"},
-    {file = "rich_argparse_plus-0.3.1.2.tar.gz", hash = "sha256:b57ec7cf559f8604fb103010347186d3540dd7fcdf353f0cbe2b4c32be48bdc2"},
+    {file = "rich_argparse_plus-0.3.1.4-py3-none-any.whl", hash = "sha256:74772572b852b7fefe28e44c5fe0e6491354b2594dae33ccec3860b349f96b21"},
+    {file = "rich_argparse_plus-0.3.1.4.tar.gz", hash = "sha256:aab9e49b4ba98ff501705678330eda8e9bc07d933edc5cac5f38671ee53f9998"},
 ]
 six = [
     {file = "six-1.16.0-py2.py3-none-any.whl", hash = "sha256:8abb2f1d86890a2dfb989f9a77cfcfd3e47c2a354b01111771326f8aa26e0254"},
@@ -427,6 +427,6 @@ yara-python = [
     {file = "yara_python-4.2.3-cp39-cp39-win_amd64.whl", hash = "sha256:87125ede7fbc18ae65aab550f1a36f4ebf73bb828c5d7a3dd2bb99176f0faa15"},
 ]
 yaralyzer = [
-    {file = "yaralyzer-0.6.2-py3-none-any.whl", hash = "sha256:e119e038c203ee1030b772a86ea4c169a85eb072ea647597100c91d82bd804c6"},
-    {file = "yaralyzer-0.6.2.tar.gz", hash = "sha256:7a9b66c053d58cd436589e55db6c3414a68d92b94dd29f32bcb705ba5d5ff7c8"},
+    {file = "yaralyzer-0.7.0-py3-none-any.whl", hash = "sha256:1ba49c54713bf0e855eb21fb9cfae3451dcc43506b8ca63f888791c74a8d6c15"},
+    {file = "yaralyzer-0.7.0.tar.gz", hash = "sha256:3769441f119800be920e1980ac3f608295e47688deebdd89c0c1ca424d6fda5c"},
 ]

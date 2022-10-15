@@ -26,8 +26,8 @@ from yaralyzer.util.logging import log
 
 from pdfalyzer.config import PdfalyzerConfig
 from pdfalyzer.decorators.pdf_tree_node import PdfTreeNode
-from pdfalyzer.detection.constants.binary_regexes import (BACKTICK, DANGEROUS_STRINGS, FRONTSLASH, GUILLEMET,
-     QUOTE_PATTERNS)
+from pdfalyzer.detection.constants.binary_regexes import (BACKTICK, DANGEROUS_STRINGS, FRONTSLASH,
+     GUILLEMET, QUOTE_PATTERNS)
 from pdfalyzer.helpers.rich_text_helper import NOT_FOUND_MSG, generate_subtable, pad_header
 from pdfalyzer.helpers.string_helper import generate_hyphen_line
 from pdfalyzer.output.layout import half_width, print_headline_panel, print_section_sub_subheader
@@ -176,9 +176,8 @@ class BinaryScanner:
             self._print_suppression_notices()
             self._record_decode_stats(bytes_match, bytes_decoder, pattern)
 
-        # This check initializes the defaultdic for 'pattern'
+        # This check initializes the defaultdict for 'pattern'
         if self.regex_extraction_stats[pattern].match_count == 0:
-            #console.print(f"{pattern} was not found for {escape(self.label.plain)}...", style='dim')
             pass
 
     def bytes_after_eexec_statement(self) -> bytes:

@@ -136,8 +136,8 @@ def _get_stream_preview_rows(node: 'PdfTreeNode') -> List[List[Text]]:
 
     if isinstance(node.stream_data, bytes):
         stream_preview_hex = hex_text(stream_preview).plain
-        stream_preview_lines = stream_preview.split(NEWLINE_BYTE)
-        stream_preview_string = "\n".join([clean_byte_string(line) for line in stream_preview_lines])
+        stream_preview_lines = [clean_byte_string(line) for line in stream_preview.split(NEWLINE_BYTE)]
+        stream_preview_string = "\n".join(stream_preview_lines)
     else:
         stream_preview_hex = f"N/A (Stream data is type '{type(node.stream_data).__name__}', not bytes)"
         stream_preview_string = stream_preview

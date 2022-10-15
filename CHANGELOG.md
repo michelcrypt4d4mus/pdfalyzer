@@ -1,5 +1,8 @@
 # NEXT RELEASE
 
+### 1.11.2
+* Bump dependencies
+
 ### 1.11.1
 * Fix regressions
 * Fix issue when `/Resources` is referred to by multiple addresses from different nodes
