@@ -327,8 +327,7 @@ class Pdfalyzer:
             if node.parent is not None:
                 log.debug(f"{node} already has parent: {node.parent}")
                 continue
-            if node.idnum == 5:
-                import pdb;pdb.set_trace()
+
             if node.label.startswith(RESOURCES):
                 self._place_resources_node(node)
                 continue
@@ -402,7 +401,6 @@ class Pdfalyzer:
         log.debug(f"  Indeterminate {RESOURCES} node {resources_node}")
         relationships_labels = set()
 
-        #import pdb; pdb.set_trace()
         for relationship in resources_node.other_relationships:
             other_relationships = [r for r in resources_node.other_relationships if r != relationship]
             log.debug(f"Checking resourcees other relationship: {relationship.description()}")
