@@ -1,25 +1,22 @@
 """
-PDF object decorator - wraps actual PDF objects to make them anytree nodes.
+PDF node decorator - wraps actual PDF objects to make them anytree nodes.
 Also adds decorators/generators for Rich text representation.
 
 Child/parent relationships should be set using the add_child()/set_parent()
 methods and not set directly. (TODO: this could be done better with anytree
 hooks)
 """
-from audioop import add
-from typing import List, Optional, Union
+from typing import List, Optional
 
 from anytree import NodeMixin
 from PyPDF2.errors import PdfReadError
-from PyPDF2.generic import DictionaryObject, IndirectObject, NumberObject, PdfObject, StreamObject
+from PyPDF2.generic import IndirectObject, PdfObject, StreamObject
 from rich.markup import escape
 from rich.text import Text
 from yaralyzer.output.rich_console import console
 from yaralyzer.util.logging import log
 
-from pdfalyzer.helpers.pdf_object_helper import node_label
-from pdfalyzer.helpers.rich_text_helper import get_type_string_style, get_type_style
-from pdfalyzer.helpers.string_helper import pypdf_class_name, root_address
+from pdfalyzer.decorators.pdf_object_properties import PdfObjectProperties
 from pdfalyzer.pdf_object_relationship import PdfObjectRelationship
 from pdfalyzer.util.adobe_strings import *
 from pdfalyzer.util.exceptions import PdfWalkError
@@ -28,40 +25,13 @@ DEFAULT_MAX_ADDRESS_LENGTH = 90
 DECODE_FAILURE_LEN = -1
 
 
-class PdfTreeNode(NodeMixin):
+class PdfTreeNode(NodeMixin, PdfObjectProperties):
     def __init__(self, obj: PdfObject, address: str, idnum: int):
         """
-        address: PDF instruction string + modifiers used to reference obj
+        address: PDF instruction string + modifiers used to reference 'obj'
         idnum: ID used in the reference
         """
-        self.obj = obj
-        self.idnum = idnum
-        self.all_references_processed: bool = False
-        self.other_relationships: List[PdfObjectRelationship] = []
-        self.sub_type = None
-
-        if isinstance(obj, DictionaryObject):
-            self.type = obj.get(TYPE) or address
-            self.sub_type = obj.get(SUBTYPE) or obj.get(S)
-            self.label = obj.get(TYPE) or address  # TODO: should we use sub_type for label?
-
-            # TODO this sucks.
-            if isinstance(self.type, str):
-                self.type = root_address(self.type)
-                self.label = root_address(self.type)
-        else:
-            self.label = address
-            self.type = root_address(address) if isinstance(address, str) else None
-
-        # Force a string. TODO this sucks.
-        if isinstance(self.label, int):
-            self.label = f"{UNLABELED}[{self.label}]"
-
-        # TODO: this is hacky/temporarily incorrect bc we often don't know the parent when node is being constructed
-        if isinstance(address, int):
-            self.known_to_parent_as = f"[{address}]"
-        else:
-            self.known_to_parent_as = address
+        PdfObjectProperties.__init__(self, obj, address, idnum)
 
         if isinstance(obj, StreamObject):
             try:
@@ -82,36 +52,6 @@ class PdfTreeNode(NodeMixin):
         """Builds a PdfTreeDecorator from an IndirectObject"""
         return cls(ref.get_object(), address, ref.idnum)
 
-    @classmethod
-    def resolve_references(cls, reference_key: str, obj: PdfObject):
-        """
-        Recursively build the same data structure except IndirectObjects are resolved to nodes.
-        TODO: pdf_object_helper.py is a much better location for this but creates a circular reference.
-        """
-        if isinstance(obj, NumberObject):
-            return obj.as_numeric()
-        elif isinstance(obj, IndirectObject):
-            return cls.from_reference(obj, reference_key)
-        elif isinstance(obj, list):
-            return [cls.resolve_references(reference_key, item) for item in obj]
-        elif isinstance(obj, dict):
-            return {k: cls.resolve_references(k, v) for k, v in obj.items()}
-        else:
-            return obj
-
-    @classmethod
-    def to_table_row(cls, reference_key: str, obj: PdfObject, is_single_row_table=False) -> List[Union[Text, str]]:
-        """
-        Turns PDF object properties into a formatted 3-tuple for use in Rich tables representing PdfObjects.
-        TODO: pdf_object_helper.py is a much better location for this but creates a circular reference.
-        """
-        return [
-            Text(f"{reference_key}", style='grey' if isinstance(reference_key, int) else ''),
-            Text(f"{escape(str(cls.resolve_references(reference_key, obj)))}", style=get_type_style(type(obj))),
-            # 3rd col (AKA type(value)) is redundant if it's a TextString/Number/etc. node so we make it empty
-            '' if is_single_row_table else Text(pypdf_class_name(obj), style=get_type_string_style(type(obj)))
-        ]
-
     def set_parent(self, parent: 'PdfTreeNode') -> None:
         """Set the parent of this node."""
         if self.parent and self.parent != parent:
@@ -119,8 +59,7 @@ class PdfTreeNode(NodeMixin):
 
         self.parent = parent
         self.remove_relationship(parent)
-        # Adjust incorrect known_to_parent_as that can arise when adding non tree references to the walker
-        self.known_to_parent_as = self._find_address_of_this_node(parent) or self.known_to_parent_as
+        self.known_to_parent_as = self._find_address_of_this_node(parent) or self.first_address
         log.info(f"  Added {parent} as parent of {self}")
 
     def add_child(self, child: 'PdfTreeNode') -> None:
@@ -136,8 +75,7 @@ class PdfTreeNode(NodeMixin):
 
         self.children += (child,)
         child.remove_relationship(self)
-        # Adjust incorrect known_to_parent_as that can arise when adding non tree references to the walker
-        child.known_to_parent_as = child._find_address_of_this_node(self) or child.known_to_parent_as
+        child.known_to_parent_as = child._find_address_of_this_node(self) or child.first_address
         log.info(f"  Added {child} as child of {self}")
 
     def add_relationship(self, relationship: PdfObjectRelationship) -> None:
@@ -165,6 +103,7 @@ class PdfTreeNode(NodeMixin):
     def other_relationship_count(self) -> int:
         return len(self.other_relationships)
 
+    # TODO: this is basically the same as _find_address_of_this_node()
     def get_address_for_relationship(self, from_node: 'PdfTreeNode') -> str:
         """Get the label that links from_node to this one outside of the tree structure"""
         relationship = next((r for r in self.other_relationships if r.from_node == from_node), None)
@@ -174,14 +113,14 @@ class PdfTreeNode(NodeMixin):
 
         return relationship.address
 
-    def referenced_by_keys(self) -> List[str]:
-        """All the PDF instruction strings that referred to this object"""
-        referenced_as = set([r.reference_key for r in self.other_relationships])
+    def addresses(self) -> List[str]:
+        """All the PDF instruction strings that referred to this object."""
+        addresses = set([r.reference_key for r in self.other_relationships])
 
         if self.known_to_parent_as is not None:
-            referenced_as.add(self.known_to_parent_as)
+            addresses.add(self.known_to_parent_as)
 
-        return list(referenced_as)
+        return list(addresses)
 
     def is_parent_reference(self, reference_key: str) -> bool:
         """Returns True for explicit parent references."""
@@ -228,6 +167,27 @@ class PdfTreeNode(NodeMixin):
         """Returns True for ContentStream, DecodedStream, and EncodedStream objects"""
         return isinstance(self.obj, StreamObject)
 
+    def print_other_relationships(self) -> None:
+        """Print this node's non tree relationships (the ones represented by SymlinkNodes in the tree)"""
+        console.print(f"Other relationships of {escape(str(self))}")
+
+        for r in self.other_relationships:
+            console.print(f"  Referenced as {escape(str(r.reference_key))} by {escape(str(r.from_node))}")
+
+    def tree_address(self, max_length: Optional[int] = DEFAULT_MAX_ADDRESS_LENGTH) -> str:
+        """Creates a string like '/Catalog/Pages/Resources[2]/Font' truncated to max_length (if given)"""
+        if self.label == TRAILER:
+            return '/'
+        elif self.parent.label == TRAILER:
+            return self.known_to_parent_as
+
+        address = self.parent.tree_address() + self.known_to_parent_as
+
+        if max_length is None or max_length > len(address):
+            return address
+
+        return '...' + address[-max_length:][3:]
+
     def _find_address_of_this_node(self, from_node: 'PdfTreeNode') -> Optional[str]:
         """Find the address used in from_node to refer to this node"""
         refs_to_this_node = [ref for ref in from_node.references() if ref.to_obj.idnum == self.idnum]
@@ -246,47 +206,20 @@ class PdfTreeNode(NodeMixin):
 
             if not all(ref.address in [FIRST, LAST] for ref in refs_to_this_node):
                 msg = f"Multiple refs from {from_node} to {self}: {refs_to_this_node}"
-                log.warning(msg + ", using {address}")
+                log.warning(msg + f", using {address}")
 
             return address
-
-    ######################################
-    # BELOW HERE IS JUST TEXT FORMATTING #
-    ######################################
-
-    def print_other_relationships(self) -> None:
-        """Print this node's non tree relationships (the ones represented by SymlinkNodes in the tree)"""
-        console.print(f"Other relationships of {escape(str(self))}")
-
-        for r in self.other_relationships:
-            console.print(f"  Referenced as {escape(str(r.reference_key))} by {escape(str(r.from_node))}")
-
-    def tree_address(self, max_length: Optional[int] = None) -> str:
-        """Creates a string like '/Catalog/Pages/Resources/Font' truncated to max_length (if given)"""
-        if self.label == TRAILER:
-            return '/'
-
-        address = ''.join([str(node.known_to_parent_as) for node in self.path if node.label != TRAILER])
-
-        if max_length is None or max_length > len(address):
-            return address
-
-        return '...' + address[-max_length:][3:]
-
-    def _node_label(self) -> Text:
-        return node_label(self.idnum, self.label, self.obj)
 
     def _colored_address(self, max_length: Optional[int] = None) -> Text:
         """Rich text version of tree_address()"""
         text = Text('@', style='bright_white')
-        text.append(self.tree_address(max_length), style='address')
-        return text
+        return text.append(self.tree_address(max_length), style='address')
 
     def __rich__(self) -> Text:
-        return self._node_label()[:-1] + self._colored_address(max_length=DEFAULT_MAX_ADDRESS_LENGTH) + Text('>')
+        return PdfObjectProperties.__rich__(self)[:-1] + self._colored_address() + Text('>')
 
     def __str__(self) -> str:
-        return self._node_label().plain
+        return PdfObjectProperties.__rich__(self).plain
 
     def __repr__(self) -> str:
         return self.__str__()

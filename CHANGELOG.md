@@ -1,4 +1,5 @@
 # NEXT RELEASE
+* Add `sub_type` to node label
 
 ### 1.11.2
 * Bump dependencies

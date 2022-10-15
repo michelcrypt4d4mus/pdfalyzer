@@ -322,7 +322,7 @@ class Pdfalyzer:
             set_lowest_id_node_as_parent = False
             node = self.traversed_nodes[idnum]
             log.debug(f"Attempting to resolve indeterminate node {node}")
-            referenced_by_keys = node.referenced_by_keys()
+            addresses = node.addresses()
             set_lowest_id_node_as_parent = True
             possible_parents = node.other_relationships
 
@@ -336,14 +336,14 @@ class Pdfalyzer:
 
             if node.label == COLOR_SPACE:
                 log.info("Color space node found; placing at lowest ID")
-            elif len(referenced_by_keys) == 1:
-                log.info(f"{node}'s other relationships all use key {referenced_by_keys[0]}, linking to lowest id")
-            elif all([EXTERNAL_GRAPHICS_STATE_REGEX.match(key) for key in referenced_by_keys]):
+            elif len(addresses) == 1:
+                log.info(f"{node}'s other relationships all use key {addresses[0]}, linking to lowest id")
+            elif all([EXTERNAL_GRAPHICS_STATE_REGEX.match(key) for key in addresses]):
                 log.info(f"{node}'s other relationships are all {EXT_G_STATE} refs; linking to lowest id")
-            elif len(referenced_by_keys) == 2 and \
-                    (   referenced_by_keys[0] in referenced_by_keys[1] \
-                     or referenced_by_keys[1] in referenced_by_keys[0]):
-                log.info(f"{node}'s other relationships ref keys are same except slice: {referenced_by_keys}, linking to lowest id")
+            elif len(addresses) == 2 and \
+                    (   addresses[0] in addresses[1] \
+                     or addresses[1] in addresses[0]):
+                log.info(f"{node}'s other relationships ref keys are same except slice: {addresses}, linking to lowest id")
             elif any(r.from_node.label == RESOURCES for r in node.other_relationships) and \
                     all(any(r.from_node.label.startswith(ir) for ir in INDETERMINATE_REFERENCES) for r in node.other_relationships):
                 log.info(f"Linking resources property {node} to lowest id {RESOURCES} node...")
