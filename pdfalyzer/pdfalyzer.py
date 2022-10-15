@@ -221,6 +221,7 @@ class Pdfalyzer:
         stream_filter = lambda node: node.contains_stream() and not isinstance(node, SymlinkNode)
         return sorted(findall(self.pdf_tree, stream_filter), key=lambda r: r.idnum)
 
+    # TODO: should probably be on PdfTreeNode class
     def _process_reference(self, reference: PdfObjectRelationship) -> List[PdfTreeNode]:
         """
         Place the referenced 'node' in the tree. Returns a list of nodes to walk next.
@@ -234,8 +235,8 @@ class Pdfalyzer:
         node = reference.from_node
         key = reference.reference_key
         was_seen_before = (reference.to_obj.idnum in self.traversed_nodes)
-        referenced_node = self._build_or_find_node(reference.to_obj, reference.reference_address)
-        reference_log_string = f"{node} reference at {reference.reference_address} to {referenced_node}"
+        referenced_node = self._build_or_find_node(reference.to_obj, reference.address)
+        reference_log_string = f"{node} reference at {reference.address} to {referenced_node}"
         log.debug(f'Assessing {reference_log_string}...')
         self.max_generation = max([self.max_generation, reference.to_obj.generation or 0])
         references_to_return: List[PdfTreeNode] = []
@@ -278,7 +279,7 @@ class Pdfalyzer:
             if reference.to_obj.idnum not in self.indeterminate_ids and referenced_node.parent is None:
                 raise PdfWalkError(f"{reference_log_string} - ref has no parent and is not indeterminate")
 
-            log.debug(f"{reference.description()} was already seen")
+            log.debug(f"{reference} was already seen")
             referenced_node.add_relationship(reference)
         # If no other conditions are met, add the reference as a child
         else:
@@ -298,7 +299,7 @@ class Pdfalyzer:
 
             # TODO: this should probably be in the PdfTreeNode class
             for relationship in node.other_relationships:
-                log.debug(f"   Linking {relationship.description()} to {node}")
+                log.debug(f"   Linking {relationship} to {node}")
                 SymlinkNode(node, parent=relationship.from_node)
 
     def _resolve_indeterminate_nodes(self) -> None:
@@ -306,6 +307,7 @@ class Pdfalyzer:
         Some nodes cannot be placed until we have walked the rest of the tree. For instance
         if we encounter a /Page that references /Resources we need to know if there's a
         /Pages parent of the /Page before committing to a tree structure.
+        TODO: this method sucks.
         """
         indeterminate_nodes = [self.traversed_nodes[idnum] for idnum in self.indeterminate_ids]
         indeterminate_nodes_string = "\n   ".join([f"{node}" for node in indeterminate_nodes])
@@ -320,9 +322,9 @@ class Pdfalyzer:
             set_lowest_id_node_as_parent = False
             node = self.traversed_nodes[idnum]
             log.debug(f"Attempting to resolve indeterminate node {node}")
-            # TODO: this should be a method on PdfTreeNode
-            referenced_by_keys = list(set([r.reference_key for r in node.other_relationships]))
-            possible_parents = []
+            referenced_by_keys = node.referenced_by_keys()
+            set_lowest_id_node_as_parent = True
+            possible_parents = node.other_relationships
 
             if node.parent is not None:
                 log.debug(f"{node} already has parent: {node.parent}")
@@ -331,39 +333,34 @@ class Pdfalyzer:
             if node.label.startswith(RESOURCES):
                 self._place_resources_node(node)
                 continue
-            # TODO: these almost all have the same outcome; could be one super ugly if statement
-            elif node.label == COLOR_SPACE:
+
+            if node.label == COLOR_SPACE:
                 log.info("Color space node found; placing at lowest ID")
-                set_lowest_id_node_as_parent = True
-                possible_parents = node.other_relationships
             elif len(referenced_by_keys) == 1:
                 log.info(f"{node}'s other relationships all use key {referenced_by_keys[0]}, linking to lowest id")
-                set_lowest_id_node_as_parent = True
-                possible_parents = node.other_relationships
             elif all([EXTERNAL_GRAPHICS_STATE_REGEX.match(key) for key in referenced_by_keys]):
                 log.info(f"{node}'s other relationships are all {EXT_G_STATE} refs; linking to lowest id")
-                set_lowest_id_node_as_parent = True
-                possible_parents = node.other_relationships
             elif len(referenced_by_keys) == 2 and \
                     (   referenced_by_keys[0] in referenced_by_keys[1] \
                      or referenced_by_keys[1] in referenced_by_keys[0]):
                 log.info(f"{node}'s other relationships ref keys are same except slice: {referenced_by_keys}, linking to lowest id")
-                set_lowest_id_node_as_parent = True
-                possible_parents = node.other_relationships
             elif any(r.from_node.label == RESOURCES for r in node.other_relationships) and \
                     all(any(r.from_node.label.startswith(ir) for ir in INDETERMINATE_REFERENCES) for r in node.other_relationships):
                 log.info(f"Linking resources property {node} to lowest id {RESOURCES} node...")
                 possible_parents = [r for r in node.other_relationships if r.from_node.label == RESOURCES]
-                set_lowest_id_node_as_parent = True
             else:
-                determinate_relations = [r for r in node.other_relationships if r.from_node.label not in INDETERMINATE_REFERENCES]
-                determinate_refkeys = set([r.from_node.label for r in determinate_relations])
+                possible_parents = [
+                    r for r in node.other_relationships
+                    if r.from_node.label not in INDETERMINATE_REFERENCES
+                ]
+
+                determinate_refkeys = set([r.from_node.label for r in possible_parents])
 
                 if len(determinate_refkeys) == 1:
-                    ref_key = determinate_relations[0].reference_key
-                    log.info(f"Only one ref key {ref_key} that's determinate, choose parent as lowest id using it")
-                    possible_parents = determinate_relations
-                    set_lowest_id_node_as_parent = True
+                    msg = f"1 ref_key {possible_parents[0].reference_key} is determinate, parent is lowest id using it"
+                    log.info(msg)
+                else:
+                    set_lowest_id_node_as_parent= False
 
             if not set_lowest_id_node_as_parent:
                 self.print_tree()
@@ -403,12 +400,13 @@ class Pdfalyzer:
 
         for relationship in resources_node.other_relationships:
             other_relationships = [r for r in resources_node.other_relationships if r != relationship]
-            log.debug(f"Checking resourcees other relationship: {relationship.description()}")
-            log.debug(f"   Remaining relationships: {other_relationships}")
             relationships_labels.add(relationship.from_node.label)
+            log.debug(f"Checking resourcees other relationship: {relationship}")
+            log.debug(f"   Remaining relationships: {other_relationships}")
 
-            if all(relationship.reference_key in r.from_node.ancestors for r in other_relationships):
-                log.info(f'{relationship.from_node} is the common ancestor found while placing /Resources')
+            # Look for a common ancestor; if there is one choose it as the parent.
+            if all(relationship.from_node in r.from_node.ancestors for r in other_relationships):
+                log.info(f'{relationship.from_node} is the common ancestor found while placing {RESOURCES}')
                 resources_node.set_parent(relationship.from_node)
                 return
 
@@ -417,13 +415,13 @@ class Pdfalyzer:
             possible_parents = [r.from_node for r in resources_node.other_relationships]
             resources_node.set_parent(sorted(possible_parents, key=lambda n: n.idnum)[0])
             return
-
-        if relationships_labels == set([PAGE, PAGES]):
-            pages_nodes = [r.from_node for r in resources_node.other_relationships if r.from_node.label == PAGES]
+        elif relationships_labels == set([PAGE, PAGES]):
             log.warning(f"Failed to place {resources_node}; seems to be a loose {PAGE}. Linking to first {PAGES}")
+            pages_nodes = [r.from_node for r in resources_node.other_relationships if r.from_node.label == PAGES]
             resources_node.set_parent(sorted(pages_nodes, key=lambda n: n.idnum)[0])
             return
 
+        # If we get here then we failed to place the resources_node
         log.error(f"Failed to place {resources_node} with labels: {relationships_labels}")
         log.error(f"{RESOURCES} relationship dump:")
         resources_node.print_other_relationships()

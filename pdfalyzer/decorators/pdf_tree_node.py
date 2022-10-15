@@ -113,7 +113,7 @@ class PdfTreeNode(NodeMixin):
         ]
 
     def set_parent(self, parent: 'PdfTreeNode') -> None:
-        """Set the parent of this node"""
+        """Set the parent of this node."""
         if self.parent and self.parent != parent:
             raise PdfWalkError(f"Cannot set {parent} as parent of {self}, parent is already {self.parent}")
 
@@ -143,11 +143,10 @@ class PdfTreeNode(NodeMixin):
     def add_relationship(self, relationship: PdfObjectRelationship) -> None:
         """Add a relationship that points at this node's PDF object. TODO: doesn't include parent/child"""
         if relationship in self.other_relationships:
-            log.debug(f"{relationship.description()} already in {self}'s other relationships")
-            self.print_other_relationships()
+            log.debug(f"{relationship} already in {self}'s other relationships")
             return
 
-        log.info(f'Adding other relationship: {relationship.description()} pointing to {self}')
+        log.info(f'Adding other relationship: {relationship} pointing to {self}')
         self.other_relationships.append(relationship)
 
     def remove_relationship(self, from_node: 'PdfTreeNode') -> None:
@@ -173,12 +172,16 @@ class PdfTreeNode(NodeMixin):
         if relationship is None:
             raise PdfWalkError(f"Can't find other relationship from {from_node} to {self}")
 
-        return relationship.reference_address
+        return relationship.address
 
-    # TODO: this doesn't include /Parent references
     def referenced_by_keys(self) -> List[str]:
         """All the PDF instruction strings that referred to this object"""
-        return [r.reference_key for r in self.other_relationships] + [self.known_to_parent_as]
+        referenced_as = set([r.reference_key for r in self.other_relationships])
+
+        if self.known_to_parent_as is not None:
+            referenced_as.add(self.known_to_parent_as)
+
+        return list(referenced_as)
 
     def is_parent_reference(self, reference_key: str) -> bool:
         """Returns True for explicit parent references."""
@@ -202,17 +205,14 @@ class PdfTreeNode(NodeMixin):
 
     def is_indeterminate_reference(self, reference_key) -> bool:
         """Returns true if we need to wait for all objects to be parsed before placement."""
-        if reference_key in INDETERMINATE_REFERENCES:
-            return True
-        else:
-            return False
+        return reference_key in INDETERMINATE_REFERENCES
 
     def is_pure_reference(self, reference_key: str) -> bool:
         """Returns True if the reference is a pure reference/bookmark style node and thus not in the tree."""
         if reference_key in (NON_TREE_REFERENCES + PURE_REFERENCE_NODE_LABELS):
             return True
 
-        # TODO: Checking startswith(NUMS) etc. is a hack that probably will not cover all cases with /StructElem
+        # TODO: Checking startswith(NUMS) etc. is hacky
         return any(self.label.startswith(key) for key in PURE_REFERENCE_NODE_LABELS)
 
     def references(self) -> List[PdfObjectRelationship]:
@@ -233,7 +233,7 @@ class PdfTreeNode(NodeMixin):
         refs_to_this_node = [ref for ref in from_node.references() if ref.to_obj.idnum == self.idnum]
 
         if len(refs_to_this_node) == 1:
-            return refs_to_this_node[0].reference_address
+            return refs_to_this_node[0].address
         elif len(refs_to_this_node) == 0:
             # TODO: Hack city. /XRef streams are basically trailer nodes without any direct reference
             if self.parent and self.parent.label == TRAILER and self.type == XREF and XREF_STREAM in self.parent.obj:
@@ -242,13 +242,13 @@ class PdfTreeNode(NodeMixin):
                 log.warning(f"Could not find expected reference from {from_node} to {self}")
                 return None
         else:
-            reference_address = refs_to_this_node[0].reference_address
+            address = refs_to_this_node[0].address
 
-            if not all(ref.reference_address in [FIRST, LAST] for ref in refs_to_this_node):
+            if not all(ref.address in [FIRST, LAST] for ref in refs_to_this_node):
                 msg = f"Multiple refs from {from_node} to {self}: {refs_to_this_node}"
-                log.warning(msg + ", using {reference_address}")
+                log.warning(msg + ", using {address}")
 
-            return reference_address
+            return address
 
     ######################################
     # BELOW HERE IS JUST TEXT FORMATTING #

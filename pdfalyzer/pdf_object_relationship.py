@@ -13,9 +13,9 @@ from pdfalyzer.util.exceptions import PdfWalkError
 
 class PdfObjectRelationship:
     """
-    In the case of easy key/value pairs the reference_key and the reference_address are the same but
-    for more complicated references the reference_address will be the reference_key plus sub references.
-    e.g. a reference_key for a /Font labeled /F1 could be '/Resources' but the reference_address
+    In the case of easy key/value pairs the reference_key and the address are the same but
+    for more complicated references the address will be the reference_key plus sub references.
+    e.g. a reference_key for a /Font labeled /F1 could be '/Resources' but the address
     might be '/Resources[/Font][/F1] if the /Font is a directly embedded reference instead of a remote one.
     """
     def __init__(
@@ -23,12 +23,12 @@ class PdfObjectRelationship:
             from_obj: PdfObject,
             to_obj: IndirectObject,
             reference_key: str,
-            reference_address: str
+            address: str
         ) -> None:
         self.from_obj = from_obj
         self.to_obj = to_obj
         self.reference_key = reference_key
-        self.reference_address = reference_address
+        self.address = address
         self.from_node: Optional['PdfTreeNode'] = None  # To be filled in later.  TODO: Hacky
 
     @classmethod
@@ -75,15 +75,11 @@ class PdfObjectRelationship:
         if (self.to_obj.idnum != other.to_obj.idnum) or (self.from_node != other.from_node):
             return False
 
-        for k in ['reference_key', 'reference_address']:
+        for k in ['reference_key', 'address']:
             if getattr(self, k) != getattr(other, k):
                 return False
 
         return True
 
     def __str__(self) -> str:
-        return comma_join([f"{k}: {v}" for k, v in vars(self).items()])
-
-    def description(self) -> str:
-        """Sort of like __str__ but w/out the extra lines"""
-        return f"{self.from_node}: {self.reference_address} to {self.to_obj}"
+        return f"{self.from_node or self.from_obj}: {self.address} to {self.to_obj}"
