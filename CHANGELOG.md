@@ -1,4 +1,6 @@
 # NEXT RELEASE
+
+### 1.11.6
 * Launchable with `python -m pdfalyzer` for those who can't get `pdfalyze` script to work (h/t @MartinThoma)
 
 ### 1.11.5
