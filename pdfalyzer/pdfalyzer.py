@@ -60,7 +60,7 @@ class Pdfalyzer:
     def walk_pdf(self):
         """
         PDFs are always read trailer first so trailer is the root of the tree.
-        We build the rest by recursively following references we find in nodes we encounter.
+        We build the rest by recursively following relationships we find in nodes we encounter.
         """
         trailer = self.pdf_reader.trailer
         self.pdf_size = trailer.get(SIZE)
@@ -80,14 +80,14 @@ class Pdfalyzer:
         """Recursively walk the PDF's tree structure starting at a given node"""
         log.info(f'walk_node() called with {node}. Object dump:\n{print_with_header(node.obj, node.label)}')
         self._ensure_safe_to_walk(node)
-        references = node.references_to_other_nodes()
+        relationships = node.references_to_other_nodes()
 
-        for reference in references:
-            self._process_reference(reference)
+        for relationship in relationships:
+            self._process_relationship(relationship)
 
         node.all_references_processed = True
 
-        for next_node in [self.traversed_nodes[ref.to_obj.idnum] for ref in references]:
+        for next_node in [self.traversed_nodes[ref.to_obj.idnum] for ref in relationships]:
             if not next_node.all_references_processed:
                 self.walk_node(next_node)
 
@@ -227,53 +227,52 @@ class Pdfalyzer:
         """Iterate over nodes, grouping them by distance from the root."""
         return LevelOrderIter(self.pdf_tree)
 
-    # TODO: should maybe be on PdfTreeNode class
-    def _process_reference(self, reference: PdfObjectRelationship) -> List[PdfTreeNode]:
+    def _process_relationship(self, relationship: PdfObjectRelationship) -> List[PdfTreeNode]:
         """
-        Place the referenced 'node' in the tree. Returns a list of nodes to walk next.
-        'address' is the key used in node.obj to refer to 'reference' object
+        Place the relationshipd 'node' in the tree. Returns a list of nodes to walk next.
+        'address' is the key used in node.obj to refer to 'relationship' object
            plus any modifiers like [2] or [/Something]
         """
-        log.debug(f'Assessing {reference.from_node} reference {reference}...')
-        was_seen_before = (reference.to_obj.idnum in self.traversed_nodes) # Must come before _build_or_find()
-        from_node = reference.from_node
-        to_node = self._build_or_find_node(reference.to_obj, reference.address)
-        self.max_generation = max([self.max_generation, reference.to_obj.generation or 0])
+        log.debug(f'Assessing {relationship.from_node} relationship {relationship}...')
+        was_seen_before = (relationship.to_obj.idnum in self.traversed_nodes) # Must come before _build_or_find()
+        from_node = relationship.from_node
+        to_node = self._build_or_find_node(relationship.to_obj, relationship.address)
+        self.max_generation = max([self.max_generation, relationship.to_obj.generation or 0])
 
         # If one is already a parent/child of the other there's nothing to do
         if to_node == from_node.parent or to_node in from_node.children:
             log.debug(f"  {from_node} and {to_node} are already related")
             return []
 
-        # If there's an explicit /Parent or /Kids reference then we know the correct relationship
-        if reference.is_parent or reference.is_child:
-            if reference.is_parent:
+        # If there's an explicit /Parent or /Kids relationship then we know the correct relationship
+        if relationship.is_parent or relationship.is_child:
+            if relationship.is_parent:
                 from_node.set_parent(to_node)
             else:
                 from_node.add_child(to_node)
 
-            if reference.to_obj.idnum in self.indeterminate_ids:
-                log.info(f"  Found reference {reference} => {from_node} of previously indeterminate node {to_node}")
-                self.indeterminate_ids.remove(reference.to_obj.idnum)
+            if relationship.to_obj.idnum in self.indeterminate_ids:
+                log.info(f"  Found relationship {relationship} => {from_node} of previously indeterminate node {to_node}")
+                self.indeterminate_ids.remove(relationship.to_obj.idnum)
 
             if was_seen_before:
                 return []
-        elif reference.is_indeterminate or reference.is_link or was_seen_before:
-            to_node.add_non_tree_relationship(reference)
+        elif relationship.is_indeterminate or relationship.is_link or was_seen_before:
+            to_node.add_non_tree_relationship(relationship)
 
-            # Indeterminate references need to wait until everything has been scanned to be placed
-            if reference.is_indeterminate or (reference.is_link and not self.is_in_tree(to_node)):
-                log.info(f'  Indeterminate ref {reference}')
+            # Indeterminate relationships need to wait until everything has been scanned to be placed
+            if relationship.is_indeterminate or (relationship.is_link and not self.is_in_tree(to_node)):
+                log.info(f'  Indeterminate ref {relationship}')
                 self.indeterminate_ids.add(to_node.idnum)
-            elif reference.is_link:
-                log.debug(f"  Link ref {reference}")  # Link nodes like /Dest are usually just links between nodes
+            elif relationship.is_link:
+                log.debug(f"  Link ref {relationship}")  # Link nodes like /Dest are usually just links between nodes
                 return []
-            elif reference.to_obj.idnum not in self.indeterminate_ids and to_node.parent is None:
-                raise PdfWalkError(f"{reference} - ref has no parent and is not indeterminate")
+            elif relationship.to_obj.idnum not in self.indeterminate_ids and to_node.parent is None:
+                raise PdfWalkError(f"{relationship} - ref has no parent and is not indeterminate")
             else:
-                log.debug(f"  Already saw {reference}; not scanning next")
+                log.debug(f"  Already saw {relationship}; not scanning next")
                 return []
-        # If no other conditions are met, add the reference as a child
+        # If no other conditions are met, add the relationship as a child
         else:
             from_node.add_child(to_node)
 
@@ -296,7 +295,7 @@ class Pdfalyzer:
     def _resolve_indeterminate_nodes(self) -> None:
         """
         Some nodes cannot be placed until we have walked the rest of the tree. For instance
-        if we encounter a /Page that references /Resources we need to know if there's a
+        if we encounter a /Page that relationships /Resources we need to know if there's a
         /Pages parent of the /Page before committing to a tree structure.
         TODO: this method sucks.
         """
@@ -312,19 +311,19 @@ class Pdfalyzer:
             possible_parent_relationships = node.non_tree_relationships # TODO 'possible_parent_relationships'
             addresses = node.unique_addresses()
             # TODO: this name sucks
-            related_node_unique_labels = node.unique_labels_of_non_tree_referencers()
+            unique_labels_of_referring_nodes = set([r.from_node.label for r in node.non_tree_relationships])
             common_ancestor_among_possible_parents = node.common_ancestor_among_non_tree_relationships()
 
             # TODO we should have removed the node from indeterminate_node_ids before this point
             if node.parent is not None:
                 log.info(f"{node} marked indeterminate but already has parent: {node.parent}")
                 continue
-
-            if common_ancestor_among_possible_parents is not None:
+            elif common_ancestor_among_possible_parents is not None:
                 log.debug(f"  Found common ancestor: {common_ancestor_among_possible_parents}")
                 node.set_parent(common_ancestor_among_possible_parents)
                 continue
-            elif len(related_node_unique_labels) == 1:
+
+            if len(unique_labels_of_referring_nodes) == 1:
                 log.info(f"Single label for all of {node}'s relationships; setting parent as lowest id")
             elif node.label == COLOR_SPACE:
                 log.info("Color space node found; placing at lowest ID")
@@ -339,10 +338,10 @@ class Pdfalyzer:
                 msg = f"{node} referred to from {RESOURCES} labeled node; all other relationships are indeterminate. "
                 msg += f"Choosing lowest id {RESOURCES} node among them as parent..."
                 possible_parent_relationships = [r for r in node.non_tree_relationships if r.from_node.label == RESOURCES]
-            elif node.label.startswith(RESOURCES) and related_node_unique_labels == set([PAGE, PAGES]):
+            elif node.label.startswith(RESOURCES) and unique_labels_of_referring_nodes == set([PAGE, PAGES]):
                 # An edge case seen in the wild involving a PDF that doesn't conform to the PDF spec
                 log.warning(f"Failed to place {node}; seems to be a loose {PAGE}. Linking to first {PAGES}")
-                pages_nodes = [n for n in node.nodes_with_non_tree_references_to_self() if node.type == PAGES]
+                pages_nodes = [n for n in node.nodes_with_non_tree_relationships_to_self() if node.type == PAGES]
                 node.set_parent(sorted(pages_nodes, key=lambda n: n.idnum)[0])
                 continue
             else:
@@ -354,7 +353,7 @@ class Pdfalyzer:
                 determinate_refkeys = set([r.from_node.label for r in possible_parent_relationships])
 
                 if len(determinate_refkeys) == 1:
-                    msg = f"1 ref_key {possible_parent_relationships[0].reference_key} is determinate, parent is lowest id using it"
+                    msg = f"1 ref_key {possible_parent_relationships[0].relationship_key} is determinate, parent is lowest id using it"
                     log.info(msg)
                 else:
                     set_lowest_id_node_as_parent= False
@@ -363,7 +362,7 @@ class Pdfalyzer:
                 self.print_tree()
                 log.error(f"{node} relationship dump:")
                 node.log_non_tree_relationships()
-                log.error(f"Failed to place {node} referenced from nodes w/labels: {list(related_node_unique_labels)}")
+                log.error(f"Failed to place {node} relationshipd from nodes w/labels: {list(unique_labels_of_referring_nodes)}")
                 log.error(f"   Referenced by addresses: {node.unique_addresses()}")
                 log.fatal("Dumped tree status and non_tree_relationships for debugging!")
                 raise PdfWalkError(f"Cannot place {node}")
@@ -389,16 +388,14 @@ class Pdfalyzer:
         """Assert that we haven't traversed this node or if we have it has the same ID."""
         assert node.idnum not in self.traversed_nodes or self.traversed_nodes[node.idnum] == node
 
-    def _build_or_find_node(self, reference: IndirectObject, reference_key: str) -> PdfTreeNode:
+    def _build_or_find_node(self, relationship: IndirectObject, relationship_key: str) -> PdfTreeNode:
         """If node exists in self.traversed_nodes return it, otherwise build a node"""
-        if reference.idnum in self.traversed_nodes:
-            return self.traversed_nodes[reference.idnum]
+        if relationship.idnum in self.traversed_nodes:
+            return self.traversed_nodes[relationship.idnum]
 
-        # TODO: known_to_parent_as should not be passed for non-child relationships even though as it
-        #       stands it is corrected later when the true parent is found.
-        log.debug(f"Building node for {reference_key} -> {reference}")
-        new_node = PdfTreeNode.from_reference(reference, reference_key)
-        self.traversed_nodes[reference.idnum] = new_node
+        log.debug(f"Building node for {relationship_key} -> {relationship}")
+        new_node = PdfTreeNode.from_reference(relationship, relationship_key)
+        self.traversed_nodes[relationship.idnum] = new_node
         return new_node
 
     def _analyze_tree(self) -> dict:
@@ -478,7 +475,7 @@ class Pdfalyzer:
                 log.error(f"Cannot find ref {ref} in PDF!")
                 continue
             elif isinstance(obj, (NumberObject, NameObject)):
-                log.info(f"Obj {idnum} is a {type(obj)} w/value {obj}; if referenced by /Length etc. this is a nonissue but maybe worth doublechecking")
+                log.info(f"Obj {idnum} is a {type(obj)} w/value {obj}; if relationshipd by /Length etc. this is a nonissue but maybe worth doublechecking")
                 continue
             elif not isinstance(obj, dict):
                 log.error(f"Obj {idnum} ({obj}) of type {type(obj)} isn't dict, cannot determine if it should be in tree")

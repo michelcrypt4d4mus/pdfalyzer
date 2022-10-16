@@ -33,7 +33,7 @@ PREVIEW_STYLES = {HEX: BYTES_NO_DIM, STREAM: 'bytes'}
 
 def get_symlink_representation(from_node, to_node) -> SymlinkRepresentation:
     """Returns a tuple (symlink_text, style) that can be used for pretty printing, tree creation, etc"""
-    reference_key = str(to_node.address_in_other_node(from_node))
+    reference_key = str(to_node.address_of_this_node_in_other(from_node))
     pdf_instruction = root_address(reference_key)  # In case we ended up with a [0] or similar
 
     if pdf_instruction in DANGEROUS_PDF_KEYS:

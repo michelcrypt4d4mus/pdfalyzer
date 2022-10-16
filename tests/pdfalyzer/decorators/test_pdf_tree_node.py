@@ -12,15 +12,15 @@ def test_pdf_node_address(analyzing_malicious_pdfalyzer):
     assert node17.tree_address() == '/Root/Pages/Kids[0]/Resources[/Font][/F4]/DescendantFonts[0]/CIDSystemInfo'
 
 
-def test_address_in_other_node(analyzing_malicious_pdfalyzer, page_node, pages_node):
+def test_address_of_this_node_in_other(analyzing_malicious_pdfalyzer, page_node, pages_node):
     sym_node = analyzing_malicious_pdfalyzer.find_node_by_idnum(13)
-    assert sym_node.address_in_other_node(page_node) == '/Annots[0]'
+    assert sym_node.address_of_this_node_in_other(page_node) == '/Annots[0]'
     node38 = analyzing_malicious_pdfalyzer.find_node_by_idnum(38)
-    assert node38.address_in_other_node(page_node) == '/Annots[14]'
+    assert node38.address_of_this_node_in_other(page_node) == '/Annots[14]'
 
     node7 = analyzing_malicious_pdfalyzer.find_node_by_idnum(7)
-    assert node7.address_in_other_node(page_node) == '/Resources[/ExtGState][/GS7]'
-    assert page_node.address_in_other_node(pages_node) == '/Kids[0]'
+    assert node7.address_of_this_node_in_other(page_node) == '/Resources[/ExtGState][/GS7]'
+    assert page_node.address_of_this_node_in_other(pages_node) == '/Kids[0]'
 
 
 def test_referenced_by_keys(analyzing_malicious_pdfalyzer, page_node):

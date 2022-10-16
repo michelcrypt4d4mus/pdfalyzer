@@ -64,8 +64,6 @@ class PdfTreeNode(NodeMixin, PdfObjectProperties):
         for possible_ancestor in nodes:
             log.debug(f"  Checking possible common ancestor: {possible_ancestor}")
             other_nodes = [n for n in nodes if n != possible_ancestor]
-            labels = "\n".join([str(n) for n in other_nodes])
-            log.debug(f"    Other nodes:\n{labels}")  # TODO: this is excessive logging
 
             # Look for a common ancestor; if there is one choose it as the parent.
             if all(possible_ancestor in node.ancestors for node in other_nodes):
@@ -80,7 +78,7 @@ class PdfTreeNode(NodeMixin, PdfObjectProperties):
 
         self.parent = parent
         self.remove_non_tree_relationship(parent)
-        self.known_to_parent_as = self.address_in_other_node(parent) or self.first_address
+        self.known_to_parent_as = self.address_of_this_node_in_other(parent) or self.first_address
         log.info(f"  Added {parent} as parent of {self}")
 
     def add_child(self, child: 'PdfTreeNode') -> None:
@@ -96,17 +94,16 @@ class PdfTreeNode(NodeMixin, PdfObjectProperties):
 
         self.children += (child,)
         child.remove_non_tree_relationship(self)
-        child.known_to_parent_as = child.address_in_other_node(self) or child.first_address
+        child.known_to_parent_as = child.address_of_this_node_in_other(self) or child.first_address
         log.info(f"  Added {child} as child of {self}")
 
     def add_non_tree_relationship(self, relationship: PdfObjectRelationship) -> None:
         """Add a relationship that points at this node's PDF object. TODO: doesn't include parent/child"""
         if relationship in self.non_tree_relationships:
-            log.debug(f"{relationship} already in {self}'s other relationships")
             return
 
-        log.info(f'Adding other relationship: {relationship} pointing to {self}')
         self.non_tree_relationships.append(relationship)
+        log.info(f'Added other relationship: {relationship} {self}')
 
     def remove_non_tree_relationship(self, from_node: 'PdfTreeNode') -> None:
         """Remove all non_tree_relationships from from_node to this node"""
@@ -114,7 +111,8 @@ class PdfTreeNode(NodeMixin, PdfObjectProperties):
 
         if len(relationships_to_remove) == 0:
             return
-        elif len(relationships_to_remove) > 1 and not all(r.reference_key in [FIRST, LAST] for r in relationships_to_remove):
+        elif len(relationships_to_remove) > 1 and \
+                not all(r.reference_key in [FIRST, LAST] for r in relationships_to_remove):
             log.warning(f"> 1 relationships to remove from {from_node} to {self}: {relationships_to_remove}")
 
         for relationship in relationships_to_remove:
@@ -125,7 +123,6 @@ class PdfTreeNode(NodeMixin, PdfObjectProperties):
         """Return the node in non_tree_relationships that is a common ancestor of the other non_tree_relationships"""
         return type(self).find_common_ancestor_among_nodes(self.nodes_with_non_tree_references_to_self())
 
-    # TODO: does not include parent relationships...
     def nodes_with_non_tree_references_to_self(self) -> List['PdfTreeNode']:
         return [r.from_node for r in self.non_tree_relationships if r.from_node]
 
@@ -141,13 +138,9 @@ class PdfTreeNode(NodeMixin, PdfObjectProperties):
 
         return list(addresses)
 
-    def unique_labels_of_non_tree_referencers(self) -> Set[str]:
-        """Unique labels of nodes related to this one"""
-        return set([r.from_node.label for r in self.non_tree_relationships])
-
     def references_to_other_nodes(self) -> List[PdfObjectRelationship]:
         """Returns all nodes referenced from node.obj (see PdfObjectRelationship definition)"""
-        return PdfObjectRelationship.get_references(from_node=self)
+        return PdfObjectRelationship.build_node_references(from_node=self)
 
     def contains_stream(self) -> bool:
         """Returns True for ContentStream, DecodedStream, and EncodedStream objects"""
@@ -169,9 +162,12 @@ class PdfTreeNode(NodeMixin, PdfObjectProperties):
 
         return '...' + address[-max_length:][3:]
 
-    def address_in_other_node(self, from_node: 'PdfTreeNode') -> Optional[str]:
+    def address_of_this_node_in_other(self, from_node: 'PdfTreeNode') -> Optional[str]:
         """Find the local address used in from_node to refer to this node"""
-        refs_to_this_node = [ref for ref in from_node.references_to_other_nodes() if ref.to_obj.idnum == self.idnum]
+        refs_to_this_node = [
+            ref for ref in from_node.references_to_other_nodes()
+            if ref.to_obj.idnum == self.idnum
+        ]
 
         if len(refs_to_this_node) == 1:
             return refs_to_this_node[0].address
@@ -181,16 +177,13 @@ class PdfTreeNode(NodeMixin, PdfObjectProperties):
                 return XREF_STREAM
             elif self.label not in NON_STANDARD_ADDRESS_NODES:
                 log.info(f"Could not find expected reference from {from_node} to {self}")
-
-            return None
+            else:
+                return None
         else:
             address = refs_to_this_node[0].address
-
-            # Check if other node's label starts with a NON_STANDARD_ADDRESS string
-            #    or ALL the relationships in other nodes that point at this one always use a
-            #       NON_STANDARD_ADDRESS_NODES string to refer to it.
-            #
-            # If those things are not true, print a warning.
+            # If other node's label doesn't start with a NON_STANDARD_ADDRESS string
+            #   and any of the relationships pointing at this nod use something other than a
+            #       NON_STANDARD_ADDRESS_NODES string to refer here, print a warning about multiple refs.
             if not (is_prefixed_by_any(from_node.label, NON_STANDARD_ADDRESS_NODES) or \
                         all(ref.address in NON_STANDARD_ADDRESS_NODES for ref in refs_to_this_node)):
                 refs_to_this_node_str = comma_join([str(r) for r in refs_to_this_node])

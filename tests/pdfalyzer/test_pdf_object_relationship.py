@@ -26,16 +26,15 @@ def page_obj(pdf_reader):
 @pytest.fixture(scope="session")
 def page_obj_direct_refs(page_obj, page_node):
     yield [
-        PdfObjectRelationship(page_node, page_obj, IndirectObject(2, 0, pdf_reader), PARENT, PARENT),
-        PdfObjectRelationship(page_node, page_obj, IndirectObject(4, 0, pdf_reader), CONTENTS, CONTENTS),
+        PdfObjectRelationship(page_node, IndirectObject(2, 0, pdf_reader), PARENT, PARENT),
+        PdfObjectRelationship(page_node, IndirectObject(4, 0, pdf_reader), CONTENTS, CONTENTS),
     ]
 
 
-def test_get_references(pdf_reader, page_obj, page_node, page_obj_direct_refs):
+def test_build_node_references(pdf_reader, page_obj, page_node, page_obj_direct_refs):
     ext_g_state_refs = [
         PdfObjectRelationship(
             page_node,
-            page_obj,
             IndirectObject(id, 0, pdf_reader),
             RESOURCES,
             f"{RESOURCES}[{EXT_G_STATE}][/GS{id}]"
@@ -46,7 +45,6 @@ def test_get_references(pdf_reader, page_obj, page_node, page_obj_direct_refs):
     font_refs = [
         PdfObjectRelationship(
             page_node,
-            page_obj,
             IndirectObject(id, 0, pdf_reader),
             RESOURCES,
             f"{RESOURCES}[{FONT}][/F{i + 1}]"
@@ -55,12 +53,12 @@ def test_get_references(pdf_reader, page_obj, page_node, page_obj_direct_refs):
     ]
 
     annots_refs = [
-        PdfObjectRelationship(page_node, page_obj, IndirectObject(id, 0, pdf_reader), ANNOTS, ANNOTS + f"[{i}]")
+        PdfObjectRelationship(page_node, IndirectObject(id, 0, pdf_reader), ANNOTS, ANNOTS + f"[{i}]")
         for i, id in enumerate(ANNOTS_IDS)
     ]
 
     expected_refs = _sort_pdf_object_refs(page_obj_direct_refs + ext_g_state_refs + font_refs + annots_refs)
-    actual_refs = _sort_pdf_object_refs(PdfObjectRelationship.get_references(from_node=page_node))
+    actual_refs = _sort_pdf_object_refs(PdfObjectRelationship.build_node_references(page_node))
     assert actual_refs == expected_refs
 
 

@@ -22,16 +22,15 @@ class PdfObjectRelationship:
     def __init__(
             self,
             from_node: 'PdfTreeNode',
-            from_obj: PdfObject,  # TODO: this arg is redundant
             to_obj: IndirectObject,
             reference_key: str,
             address: str
         ) -> None:
         self.from_node = from_node
-        self.from_obj = from_node.obj
         self.to_obj = to_obj
         self.reference_key = reference_key
         self.address = address
+
         # Compute tree placement logic booleans
         self.is_indeterminate = reference_key in INDETERMINATE_REFERENCES
         self.is_link = reference_key in NON_TREE_KEYS or is_prefixed_by_any(from_node.label, LINK_NODE_KEYS)
@@ -40,25 +39,25 @@ class PdfObjectRelationship:
         if reference_key == KIDS or (from_node.type == STRUCT_ELEM and reference_key == K):
             log.debug(f"Explicit child reference in {from_node} at {reference_key}")
             self.is_child = True
+        # TODO: there can be multiple OBJR refs to the same object... which wouldn't work w/this code
         elif from_node.type == OBJR and reference_key == OBJ:
-            # TODO: there can be multiple OBJR refs to the same object... which wouldn't work w/this code
             log.info(f"Explicit (theoretically) child reference found for {OBJ} in {from_node}")
             self.is_child = True
         else:
             self.is_child = False
 
     @classmethod
-    def get_references(
+    def build_node_references(
             cls,
-            from_node: Optional['PdfTreeObject'] = None,
+            from_node: 'PdfTreeObject',
             from_obj: Optional[PdfObject] = None,
             ref_key: Optional[Union[str, int]] = None,
             address: Optional[str] = None
         ) -> List['PdfObjectRelationship']:
         """
-        Either 'from_node' or 'from_obj' must be given.  TODO: this is a code smell
-        Builds list of relationships 'from_obj' contains referencing other PDF objects.
-        Recursable types (list, dict) are recursively scanned.
+        Builds list of relationships 'from_node.obj' contains referencing other PDF objects.
+        Initially called with single arg from_node. Other args are employed when recursable
+        types (i.e. list, dict) are recursively scanned.
         """
         if from_node is None and from_obj is None:
             raise ValueError("Either :from_node or :from_obj must be provided to get references")
@@ -67,13 +66,13 @@ class PdfObjectRelationship:
         references: List[PdfObjectRelationship] = []
 
         if isinstance(from_obj, IndirectObject):
-            references.append(cls(from_node, from_obj, from_obj, str(ref_key), str(address)))
+            references.append(cls(from_node, from_obj, str(ref_key), str(address)))
         elif isinstance(from_obj, list):
             for i, item in enumerate(from_obj):
-                references += cls.get_references(from_node, item, ref_key or i, _build_address(i, address))
+                references += cls.build_node_references(from_node, item, ref_key or i, _build_address(i, address))
         elif isinstance(from_obj, dict):
             for key, val in from_obj.items():
-                references += cls.get_references(from_node, val, ref_key or key, _build_address(key, address))
+                references += cls.build_node_references(from_node, val, ref_key or key, _build_address(key, address))
         else:
             log.debug(f"Adding no references for PdfObject reference '{ref_key}' -> '{from_obj}'")
 
@@ -89,10 +88,10 @@ class PdfObjectRelationship:
             if getattr(self, key) != getattr(other, key):
                 return False
 
-        return self.to_obj.idnum == other.to_obj.idnum
+        return self.from_node.idnum == other.from_node.idnum
 
     def __str__(self) -> str:
-        return f"{self.from_node or self.from_obj}: {self.address} to {self.to_obj}"
+        return f"{self.from_node}: {self.address} to node ID {self.to_obj.idnum}"
 
 
 def _build_address(ref_key: Union[str, int], base_address: Optional[str] = None) -> str:
