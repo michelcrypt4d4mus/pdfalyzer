@@ -32,7 +32,8 @@ classifiers = [
 
 include = [
     "CHANGELOG.md",
-    { path = "doc" }
+    "LICENSE"
+    #{ path = "doc" }
 ]
 
 packages = [
