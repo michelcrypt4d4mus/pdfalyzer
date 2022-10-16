@@ -1,5 +1,5 @@
 """
-Output tables etc. for fonts' character mappings.
+Output tables and other formatting for font character mappings.
 """
 
 from rich.columns import Columns

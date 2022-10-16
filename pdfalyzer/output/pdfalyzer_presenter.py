@@ -11,16 +11,14 @@ from rich.panel import Panel
 from rich.table import Table
 from rich.text import Text
 from yaralyzer.config import YaralyzerConfig
-from yaralyzer.helpers.bytes_helper import get_bytes_info
 from yaralyzer.output.rich_console import BYTES_HIGHLIGHT, console
 from yaralyzer.output.rich_layout_elements import bytes_hashes_table
 from yaralyzer.util.logging import log
 
 from pdfalyzer.binary.binary_scanner import BinaryScanner
 from pdfalyzer.decorators.pdf_tree_node import DECODE_FAILURE_LEN
-from pdfalyzer.detection.yaralyzer_helper import get_file_yaralyzer
+from pdfalyzer.detection.yaralyzer_helper import get_bytes_yaralyzer, get_file_yaralyzer
 from pdfalyzer.helpers.string_helper import pp
-from pdfalyzer.detection.yaralyzer_helper import get_bytes_yaralyzer
 from pdfalyzer.output.layout import print_section_header, print_section_subheader, print_section_sub_subheader
 from pdfalyzer.output.pdf_node_rich_table import generate_rich_tree, get_symlink_representation
 from pdfalyzer.output.stream_objects_table import stream_objects_table

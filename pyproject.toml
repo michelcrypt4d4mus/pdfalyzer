@@ -42,7 +42,7 @@ packages = [
 
 [tool.poetry.scripts]
 pdfalyze = 'pdfalyzer:pdfalyze'
-pdfalyzer_show_color_theme = 'pdfalyzer.helpers.rich_text_helper:pdfalyzer_show_color_theme'
+pdfalyzer_show_color_theme = 'pdfalyzer:pdfalyzer_show_color_theme'
 
 
 [tool.poetry.dependencies]

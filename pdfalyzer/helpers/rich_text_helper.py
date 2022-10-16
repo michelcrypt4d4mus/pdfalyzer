@@ -8,14 +8,10 @@ from os import path
 from typing import List, Union
 
 from PyPDF2.generic import ByteStringObject, IndirectObject
-from rich import box
-from rich.columns import Columns
-from rich.panel import Panel
 from rich.text import Text
 from rich.theme import Theme
 from yaralyzer.output.rich_console import GREY_ADDRESS, YARALYZER_THEME_DICT, console
-from yaralyzer.helpers.rich_text_helper import prefix_with_plain_text_obj
-from yaralyzer.util.logging import log, log_and_print
+from yaralyzer.util.logging import log
 
 from pdfalyzer.util import adobe_strings
 
@@ -90,9 +86,6 @@ UNDERLINE_CONFIDENCE_THRESHOLD = 90
 BOLD_CONFIDENCE_THRESHOLD = 60
 DIM_COUNTRY_THRESHOLD = 25
 
-# For the table shown by running pdfalyzer_show_color_theme
-MAX_THEME_COL_SIZE = 35
-
 # Text object defaults mostly for table entries
 NOT_FOUND_MSG = Text('(not found)', style='grey.dark_italic')
 
@@ -108,19 +101,6 @@ def get_type_string_style(klass) -> str:
         return 'white'
     else:
         return f"{get_type_style(klass)} dim"
-
-
-def pdfalyzer_show_color_theme() -> None:
-    """Utility method to show pdfalyzer's color theme. Invocable with 'pdfalyzer_show_colors'."""
-    console.print(Panel('The Pdfalyzer Color Theme', style='reverse'))
-
-    colors = [
-        prefix_with_plain_text_obj(name[:MAX_THEME_COL_SIZE], style=str(style)).append(' ')
-        for name, style in PDFALYZER_THEME_DICT.items()
-        if name not in ['reset', 'repr_url']
-    ]
-
-    console.print(Columns(colors, column_first=True, padding=(0,3)))
 
 
 DEFAULT_LABEL_STYLE = 'yellow'

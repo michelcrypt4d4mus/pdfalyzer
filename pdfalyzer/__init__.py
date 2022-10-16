@@ -12,15 +12,22 @@ if not environ.get('INVOKED_BY_PYTEST', False):
             load_dotenv(dotenv_path=dotenv_file)
             break
 
+from rich.columns import Columns
+from rich.panel import Panel
 from yaralyzer.config import YaralyzerConfig
+from yaralyzer.helpers.rich_text_helper import prefix_with_plain_text_obj
 from yaralyzer.output.file_export import invoke_rich_export
 from yaralyzer.output.rich_console import console
 from yaralyzer.util.logging import log, log_and_print
 
+from pdfalyzer.helpers.rich_text_helper import PDFALYZER_THEME_DICT
 from pdfalyzer.output.pdfalyzer_presenter import PdfalyzerPresenter
 from pdfalyzer.pdfalyzer import Pdfalyzer
 from pdfalyzer.util.pdf_parser_manager import PdfParserManager
 from pdfalyzer.util.argument_parser import ALL_STREAMS, output_sections, parse_arguments
+
+# For the table shown by running pdfalyzer_show_color_theme
+MAX_THEME_COL_SIZE = 35
 
 
 def pdfalyze():
@@ -80,3 +87,16 @@ def pdfalyze():
     # Drop into interactive shell if requested
     if args.interact:
         code.interact(local=locals())
+
+
+def pdfalyzer_show_color_theme() -> None:
+    """Utility method to show pdfalyzer's color theme. Invocable with 'pdfalyzer_show_colors'."""
+    console.print(Panel('The Pdfalyzer Color Theme', style='reverse'))
+
+    colors = [
+        prefix_with_plain_text_obj(name[:MAX_THEME_COL_SIZE], style=str(style)).append(' ')
+        for name, style in PDFALYZER_THEME_DICT.items()
+        if name not in ['reset', 'repr_url']
+    ]
+
+    console.print(Columns(colors, column_first=True, padding=(0,3)))

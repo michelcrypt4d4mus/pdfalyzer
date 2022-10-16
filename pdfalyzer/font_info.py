@@ -159,4 +159,3 @@ class FontInfo:
 
     def __str__(self) -> str:
         return self.display_title
-
