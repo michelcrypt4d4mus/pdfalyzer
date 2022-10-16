@@ -271,8 +271,7 @@ class Pdfalyzer:
             elif reference.to_obj.idnum not in self.indeterminate_ids and to_node.parent is None:
                 raise PdfWalkError(f"{reference} - ref has no parent and is not indeterminate")
             else:
-                log.debug(f"{reference} was already seen")
-                to_node.add_non_tree_relationship(reference)
+                log.debug(f"  Already saw {reference}; not scanning next")
                 return []
         # If no other conditions are met, add the reference as a child
         else:
