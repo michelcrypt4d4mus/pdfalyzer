@@ -1,11 +1,13 @@
 """
 Functions for miscellaneous Rich text/string operations.
 """
+from typing import List
+
 from PyPDF2.generic import PdfObject
 from rich.text import Text
 
 from pdfalyzer.helpers.pdf_object_helper import pypdf_class_name
-from pdfalyzer.output.styles.node_colors import get_label_style, get_node_type_style
+from pdfalyzer.output.styles.node_colors import get_label_style, get_class_style_italic
 
 
 def quoted_text(
@@ -21,14 +23,18 @@ def quoted_text(
     return txt
 
 
-def node_label(idnum: int, label: str, pdf_object: PdfObject) -> Text:
+def node_label(idnum: int, label: str, pdf_object: PdfObject, underline: bool = True) -> Text:
     """Colored text representation of a PDF node. Example: <5:FontDescriptor(Dictionary)>."""
     text = Text('<', style='white')
     text.append(f'{idnum}', style='bright_white')
     text.append(':', style='white')
-    text.append(label[1:], style=f'{get_label_style(label)} underline bold')
+    text.append(label[1:], style=f"{get_label_style(label)} {'underline' if underline else ''} bold")
     text.append('(', style='white')
-    text.append(pypdf_class_name(pdf_object), style=get_node_type_style(pdf_object))
+    text.append(pypdf_class_name(pdf_object), style=get_class_style_italic(pdf_object))
     text.append(')', style='white')
     text.append('>')
     return text
+
+
+def comma_join_txt(text_objs: List[Text]) -> Text:
+    return Text(", ").join(text_objs)

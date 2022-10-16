@@ -2,6 +2,7 @@
 String constants specified in the Adobe specs for PDFs, fonts, etc.
 """
 import re
+from tarfile import ENCODING
 
 from PyPDF2.constants import (CatalogDictionary, ImageAttributes, PageAttributes,
      PagesAttributes, Ressources as Resources)
@@ -21,6 +22,7 @@ COLOR_SPACE     = Resources.COLOR_SPACE
 D               = '/D'  # Destination, usually of a link or action
 CONTENTS        = '/Contents'
 DEST            = '/Dest'  # Similar to /D?
+ENCODING        = '/Encoding'
 EXT_G_STATE     = Resources.EXT_G_STATE
 FIELDS          = '/Fields'
 FIRST           = '/First'

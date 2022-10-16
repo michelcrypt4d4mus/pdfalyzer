@@ -3,14 +3,15 @@ Decorator for PyPDF2 PdfObject that extracts a couple of properties (type, label
 """
 from typing import Any, List, Optional, Union
 
+from anytree import NodeMixin
 from PyPDF2.generic import DictionaryObject, IndirectObject, NumberObject, PdfObject
 from rich.markup import escape
 from rich.text import Text
 
 from pdfalyzer.helpers.pdf_object_helper import pypdf_class_name
-from pdfalyzer.helpers.rich_text_helper import node_label
+from pdfalyzer.helpers.rich_text_helper import comma_join_txt, node_label
 from pdfalyzer.helpers.string_helper import root_address
-from pdfalyzer.output.styles.node_colors import get_type_style, get_type_string_style
+from pdfalyzer.output.styles.node_colors import get_class_style, get_class_style_dim
 from pdfalyzer.util.adobe_strings import *
 
 
@@ -83,12 +84,42 @@ class PdfObjectProperties:
             is_single_row_table: bool = False
         ) -> List[Union[Text, str]]:
         """PDF object property at reference_key becomes a formatted 3-tuple for use in Rich tables."""
+        with_resolved_refs = cls.resolve_references(reference_key, obj)
+
         return [
             Text(f"{reference_key}", style='grey' if isinstance(reference_key, int) else ''),
-            Text(f"{escape(str(cls.resolve_references(reference_key, obj)))}", style=get_type_style(type(obj))),
+            # Prefix the Text() obj with an empty string to set unstyled chars to the class style of the object
+            # they are in.
+            Text('', style=get_class_style(obj)).append_text(cls._obj_to_rich_text(with_resolved_refs)),
             # 3rd col (AKA type(value)) is redundant if it's a TextString/Number/etc. node so we make it empty
-            '' if is_single_row_table else Text(pypdf_class_name(obj), style=get_type_string_style(type(obj)))
+            '' if is_single_row_table else Text(pypdf_class_name(obj), style=get_class_style_dim(obj))
         ]
+
+    # TODO: this doesn't recurse...
+    @classmethod
+    def _obj_to_rich_text(cls, obj: Any) -> Text:
+        """Recurse through obj and build a Text object."""
+        if isinstance(obj, dict):
+            key_value_pairs = [Text(f"{k}: ").append_text(cls._obj_to_rich_text(v)) for k, v in obj.items()]
+            return Text('{').append_text(comma_join_txt(key_value_pairs)).append('}')
+        elif isinstance(obj, list):
+            items = [cls._obj_to_rich_text(item) for item in obj]
+            return Text('[').append_text(comma_join_txt(items)).append(']')
+        else:
+            return cls._to_text(obj)
+
+    @classmethod
+    def _to_text(cls, obj: Any) -> Text:
+        """Handles styling non-recursable objects."""
+        if isinstance(obj, cls):
+            return cls.__rich_without_underline__(obj)
+        elif isinstance(obj, str):
+            return Text(obj)
+        else:
+            return Text(str(obj), style=get_class_style(obj))
+
+    def __rich_without_underline__(self) -> Text:
+        return node_label(self.idnum, self.label, self.obj, underline=False)
 
     def __rich__(self) -> Text:
         return node_label(self.idnum, self.label, self.obj)

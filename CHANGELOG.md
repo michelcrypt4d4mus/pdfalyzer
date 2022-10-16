@@ -1,5 +1,10 @@
 # NEXT RELEASE
 
+# 1.12.0
+* Rich table view displays object properties and referenced nodes with appropriate color and labeling
+* Style `/Encoding` objects as part of the font family
+* Refactor text coloring/styling to `pdfalyzer.output.styles` package
+
 ### 1.11.6
 * Launchable with `python -m pdfalyzer` for those who can't get `pdfalyze` script to work (h/t @MartinThoma)
 

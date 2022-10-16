@@ -19,7 +19,7 @@ from yaralyzer.util.logging import log
 
 from pdfalyzer.helpers.pdf_object_helper import pypdf_class_name
 from pdfalyzer.helpers.string_helper import root_address
-from pdfalyzer.output.styles.node_colors import get_label_style, get_node_type_style
+from pdfalyzer.output.styles.node_colors import get_label_style, get_class_style_italic
 from pdfalyzer.util.adobe_strings import *
 
 # For printing SymlinkNodes
@@ -73,7 +73,7 @@ def build_pdf_node_table(node: 'PdfTreeNode') -> Table:
     table.columns[0].header_style = f'reverse {get_label_style(node.label)}'
     table.columns[1].header_style = 'dim'
     table.columns[1].overflow = 'fold'
-    table.columns[2].header_style = get_node_type_style(node.obj)
+    table.columns[2].header_style = get_class_style_italic(node.obj)
 
     if node.label != node.known_to_parent_as:
         table.add_row(Text('AddressInParent', style='grey'), Text(str(node.known_to_parent_as), style='grey'), '')

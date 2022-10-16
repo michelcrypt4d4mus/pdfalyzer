@@ -5,7 +5,7 @@ from rich.table import Table
 from rich.text import Text
 
 from pdfalyzer.output.layout import subheading_width
-from pdfalyzer.output.styles.node_colors import get_type_style
+from pdfalyzer.output.styles.node_colors import get_class_style
 
 ATTRIBUTES_TO_SHOW_IN_SUMMARY_TABLE = [
     'sub_type',
@@ -22,7 +22,7 @@ def font_summary_table(font):
     table.columns[0].justify = 'right'
 
     def add_table_row(name, value):
-        table.add_row(name, Text(str(value), get_type_style(type(value))))
+        table.add_row(name, Text(str(value), get_class_style(value)))
 
     for attr in ATTRIBUTES_TO_SHOW_IN_SUMMARY_TABLE:
         attr_value = getattr(font, attr)
@@ -47,7 +47,7 @@ def font_summary_table(font):
                 'char widths',
                 Text(
                     f"{font.widths[0]} (single value repeated {len(font.widths)} times)",
-                    style=get_type_style(list)
+                    style=get_class_style(list)
                 )
             )
         else:
