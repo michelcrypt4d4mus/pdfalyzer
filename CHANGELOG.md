@@ -1,6 +1,7 @@
 # NEXT RELEASE
 * Add `sub_type` to node label
 * Handle unsupported stream filters (e.g. `/JBIG2Decode`) more gracefully
+* Suppress spurious warnings about multiple refs
 * Handle edge case `/Resources` node placement
 * Refactor `pdf_object_properties.py` decorator
 * Show embedded streams table in `--docinfo` output

@@ -73,7 +73,7 @@ class Pdfalyzer:
         self._extract_font_infos()
         self._verify_all_traversed_nodes_are_in_tree()
         self._verify_untraversed_nodes_are_untraversable()
-        self._symlink_other_relationships()  # Create symlinks for non parent/child relationships between nodes
+        self._symlink_non_tree_relationships()  # Create symlinks for non parent/child relationships between nodes
         log.info(f"Walk complete.")
 
     def walk_node(self, node: PdfTreeNode) -> None:
@@ -112,7 +112,7 @@ class Pdfalyzer:
         self.print_tree()
         self.print_rich_table_tree()
         self.print_font_info()
-        self.print_other_relationships()
+        self.print_non_tree_relationships()
 
     def print_document_info(self) -> None:
         """Print the embedded document info (author, timestamps, version, etc)."""
@@ -197,18 +197,18 @@ class Pdfalyzer:
                 get_bytes_yaralyzer(node.stream_data, str(node)).yaralyze()
                 console.line(2)
 
-    def print_other_relationships(self) -> None:
+    def print_non_tree_relationships(self) -> None:
         """Print the inter-node, non-tree relationships for all nodes in the tree"""
         console.line(2)
         console.print(Panel(f"Other Relationships", expand=False), style='reverse')
 
         for node in LevelOrderIter(self.pdf_tree):
-            if len(node.other_relationships) == 0:
+            if len(node.non_tree_relationships) == 0:
                 continue
 
             console.print("\n")
             console.print(Panel(f"Non tree relationships for {node}", expand=False))
-            node.print_other_relationships()
+            node.print_non_tree_relationships()
 
     def stream_nodes(self) -> List[PdfTreeNode]:
         """List of actual nodes (not SymlinkNodes) containing streams sorted by PDF object ID"""
@@ -241,8 +241,8 @@ class Pdfalyzer:
             return []
 
         # If there's an explicit /Parent or /Kids reference then we know the correct relationship
-        if node.is_parent_reference(key) or node.is_child_reference(key):
-            if node.is_parent_reference(key):
+        if reference.is_parent or reference.is_child:
+            if reference.is_parent:
                 node.set_parent(referenced_node)
             else:
                 node.add_child(referenced_node)
@@ -253,16 +253,16 @@ class Pdfalyzer:
 
             if not was_seen_before:
                 references_to_return = [referenced_node]
-        elif node.is_indeterminate_reference(key):
+        elif reference.is_indeterminate:
             # Indeterminate references need to wait until everything has been scanned to be placed
             log.info(f'  Indeterminate {reference_log_string}')
-            referenced_node.add_relationship(reference)
+            referenced_node.add_non_tree_relationship(reference)
             self.indeterminate_ids.add(referenced_node.idnum)
             return [referenced_node]
-        elif node.is_link_reference(key):
+        elif reference.is_link:
             # Pure reference nodes like /Dest tend to just be links between nodes, so not in tree
             log.debug(f"{reference_log_string} is a pure reference.")
-            referenced_node.add_relationship(reference)
+            referenced_node.add_non_tree_relationship(reference)
 
             # If node looks like a pure ref but is not in tree consider it indeterminate so it can be placed later
             if not self.find_node_by_idnum(referenced_node.idnum):
@@ -274,7 +274,7 @@ class Pdfalyzer:
                 raise PdfWalkError(f"{reference_log_string} - ref has no parent and is not indeterminate")
 
             log.debug(f"{reference} was already seen")
-            referenced_node.add_relationship(reference)
+            referenced_node.add_non_tree_relationship(reference)
         # If no other conditions are met, add the reference as a child
         else:
             node.add_child(referenced_node)
@@ -283,16 +283,16 @@ class Pdfalyzer:
         log.debug("Nodes to walk next: " + ', '.join([str(r) for r in references_to_return]))
         return references_to_return
 
-    def _symlink_other_relationships(self) -> None:
+    def _symlink_non_tree_relationships(self) -> None:
         """Create SymlinkNodes for relationships between PDF objects that are not parent/child relationships"""
         for node in LevelOrderIter(self.pdf_tree):
-            if node.other_relationship_count() == 0 or isinstance(node, SymlinkNode):
+            if node.non_tree_relationship_count() == 0 or isinstance(node, SymlinkNode):
                 continue
 
-            log.info(f"Symlinking {node}'s {node.other_relationship_count()} other relationships...")
+            log.info(f"Symlinking {node}'s {node.non_tree_relationship_count()} other relationships...")
 
             # TODO: this should probably be in the PdfTreeNode class
-            for relationship in node.other_relationships:
+            for relationship in node.non_tree_relationships:
                 log.debug(f"   Linking {relationship} to {node}")
                 SymlinkNode(node, parent=relationship.from_node)
 
@@ -312,11 +312,11 @@ class Pdfalyzer:
             # has a relationship to the indeterminate node. In rare cases we will override 'possible_parent_relationships'.
             log.debug(f"Attempting to resolve indeterminate node {node}")
             set_lowest_id_node_as_parent = True
-            possible_parent_relationships = node.other_relationships # TODO 'possible_parent_relationships'
+            possible_parent_relationships = node.non_tree_relationships # TODO 'possible_parent_relationships'
             addresses = node.unique_addresses()
             # TODO: this name sucks
-            related_node_unique_labels = node.other_relationship_unique_labels()
-            common_ancestor_among_possible_parents = node.common_ancestor_among_other_relationship_nodes()
+            related_node_unique_labels = node.unique_labels_of_non_tree_referencers()
+            common_ancestor_among_possible_parents = node.common_ancestor_among_non_tree_relationships()
 
             # TODO we should have removed the node from indeterminate_node_ids before this point
             if node.parent is not None:
@@ -337,20 +337,20 @@ class Pdfalyzer:
                 log.info(f"{node}'s other relationships are all {EXT_G_STATE} refs; linking to lowest id")
             elif len(addresses) == 2 and (addresses[0] in addresses[1] or addresses[1] in addresses[0]):
                 log.info(f"{node}'s other relationships ref keys are same except slice: {addresses}, linking to lowest id")
-            elif any(r.from_node.label == RESOURCES for r in node.other_relationships) and \
-                    all(is_prefixed_by_any(r.from_node.label, INDETERMINATE_REFERENCES) for r in node.other_relationships):
+            elif any(r.from_node.label == RESOURCES for r in node.non_tree_relationships) and \
+                    all(is_prefixed_by_any(r.from_node.label, INDETERMINATE_REFERENCES) for r in node.non_tree_relationships):
                 msg = f"{node} referred to from {RESOURCES} labeled node; all other relationships are indeterminate. "
                 msg += f"Choosing lowest id {RESOURCES} node among them as parent..."
-                possible_parent_relationships = [r for r in node.other_relationships if r.from_node.label == RESOURCES]
+                possible_parent_relationships = [r for r in node.non_tree_relationships if r.from_node.label == RESOURCES]
             elif node.label.startswith(RESOURCES) and related_node_unique_labels == set([PAGE, PAGES]):
                 # An edge case seen in the wild involving a PDF that doesn't conform to the PDF spec
                 log.warning(f"Failed to place {node}; seems to be a loose {PAGE}. Linking to first {PAGES}")
-                pages_nodes = [n for n in node.nodes_with_references_to_self() if node.type == PAGES]
+                pages_nodes = [n for n in node.nodes_with_non_tree_references_to_self() if node.type == PAGES]
                 node.set_parent(sorted(pages_nodes, key=lambda n: n.idnum)[0])
                 continue
             else:
                 possible_parent_relationships = [
-                    r for r in node.other_relationships
+                    r for r in node.non_tree_relationships
                     if r.from_node.label not in INDETERMINATE_REFERENCES
                 ]
 
@@ -365,14 +365,14 @@ class Pdfalyzer:
             if not set_lowest_id_node_as_parent:
                 self.print_tree()
                 log.error(f"{node} relationship dump:")
-                node.log_other_relationships()
+                node.log_non_tree_relationships()
                 log.error(f"Failed to place {node} referenced from nodes w/labels: {list(related_node_unique_labels)}")
                 log.error(f"   Referenced by addresses: {node.unique_addresses()}")
-                log.fatal("Dumped tree status and other_relationships for debugging!")
+                log.fatal("Dumped tree status and non_tree_relationships for debugging!")
                 raise PdfWalkError(f"Cannot place {node}")
 
             lowest_idnum = min([r.from_node.idnum for r in possible_parent_relationships])
-            lowest_id_relationship = next(r for r in node.other_relationships if r.from_node.idnum == lowest_idnum)
+            lowest_id_relationship = next(r for r in node.non_tree_relationships if r.from_node.idnum == lowest_idnum)
             log.info(f"Setting parent of {node} to {lowest_id_relationship}")
             node.set_parent(self.traversed_nodes[lowest_idnum])
 

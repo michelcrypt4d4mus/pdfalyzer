@@ -56,8 +56,9 @@ rich-argparse-plus = "^0.3.1"
 yaralyzer = "^0.7.0"
 
 
-[tool.poetry.dev-dependencies]
+[tool.poetry.group.dev.dependencies]
 pytest = "^7.1.2"
+pytest-skip-slow = "^0.0.3"
 
 
 [build-system]

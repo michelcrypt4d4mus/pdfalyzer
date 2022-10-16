@@ -7,19 +7,15 @@ from typing import Union
 from PyPDF2._cmap import build_char_map, prepare_cm
 from PyPDF2.generic import IndirectObject, PdfObject
 from rich.columns import Columns
-from rich.panel import Panel
 from rich.padding import Padding
 from rich.table import Table
 from rich.text import Text
-from yaralyzer.config import YaralyzerConfig
 from yaralyzer.helpers.bytes_helper import print_bytes
 from yaralyzer.output.rich_console import console
 from yaralyzer.output.rich_layout_elements import bytes_hashes_table
 from yaralyzer.util.logging import log
 
 from pdfalyzer.binary.binary_scanner import BinaryScanner
-from pdfalyzer.config import PdfalyzerConfig
-from pdfalyzer.detection.yaralyzer_helper import get_bytes_yaralyzer
 from pdfalyzer.output.layout import get_label_style
 from pdfalyzer.helpers.rich_text_helper import get_type_style
 from pdfalyzer.helpers.string_helper import pp

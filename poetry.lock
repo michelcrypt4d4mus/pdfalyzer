@@ -164,6 +164,20 @@ tomli = ">=1.0.0"
 testing = ["argcomplete", "hypothesis (>=3.56)", "mock", "nose", "pygments (>=2.7.2)", "requests", "xmlschema"]
 
 [[package]]
+name = "pytest-skip-slow"
+version = "0.0.3"
+description = "A pytest plugin to skip `@pytest.mark.slow` tests by default. "
+category = "dev"
+optional = false
+python-versions = ">=3.7"
+
+[package.dependencies]
+pytest = ">=6.2.0"
+
+[package.extras]
+test = ["tox"]
+
+[[package]]
 name = "python-dotenv"
 version = "0.21.0"
 description = "Read key-value pairs from a .env file and set them as environment variables"
@@ -262,7 +276,7 @@ yara-python = ">=4.2.3,<5.0.0"
 [metadata]
 lock-version = "1.1"
 python-versions = "^3.9"
-content-hash = "36b0773c6e3d0c9e00e8c92a94465ec01c9d1762a4c0ed0933188b8548bf59fd"
+content-hash = "b2423736c50ddf8fbd8ac3f3c059ac586a903c831c32669e3efe0235abb6de89"
 
 [metadata.files]
 anytree = [
@@ -320,6 +334,10 @@ PyPDF2 = [
 pytest = [
     {file = "pytest-7.1.3-py3-none-any.whl", hash = "sha256:1377bda3466d70b55e3f5cecfa55bb7cfcf219c7964629b967c37cf0bda818b7"},
     {file = "pytest-7.1.3.tar.gz", hash = "sha256:4f365fec2dff9c1162f834d9f18af1ba13062db0c708bf7b946f8a5c76180c39"},
+]
+pytest-skip-slow = [
+    {file = "pytest-skip-slow-0.0.3.tar.gz", hash = "sha256:5ba043e8b9bbf23bb4cb43fb802d1f5b71823c9869b33434a88170c2c68432ff"},
+    {file = "pytest_skip_slow-0.0.3-py3-none-any.whl", hash = "sha256:f4b419f545251ce9a24d574c70b15e6f24614d648b5c16ae8551ec0c4b5e48d6"},
 ]
 python-dotenv = [
     {file = "python-dotenv-0.21.0.tar.gz", hash = "sha256:b77d08274639e3d34145dfa6c7008e66df0f04b7be7a75fd0d5292c191d79045"},

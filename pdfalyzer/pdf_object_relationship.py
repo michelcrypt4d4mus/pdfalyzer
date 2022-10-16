@@ -6,8 +6,10 @@ from typing import List, Optional, Union
 from PyPDF2.generic import IndirectObject, PdfObject
 from yaralyzer.util.logging import log
 
+from pdfalyzer.helpers.string_helper import bracketed, is_prefixed_by_any
 from pdfalyzer.util.adobe_strings import *
-from pdfalyzer.util.exceptions import PdfWalkError
+
+INCOMPARABLE_PROPS = ['from_obj', 'to_obj']
 
 
 class PdfObjectRelationship:
@@ -19,66 +21,91 @@ class PdfObjectRelationship:
     """
     def __init__(
             self,
-            from_obj: PdfObject,
+            from_node: 'PdfTreeNode',
+            from_obj: PdfObject,  # TODO: this arg is redundant
             to_obj: IndirectObject,
             reference_key: str,
             address: str
         ) -> None:
-        self.from_obj = from_obj
+        self.from_node = from_node
+        self.from_obj = from_node.obj
         self.to_obj = to_obj
         self.reference_key = reference_key
         self.address = address
-        self.from_node: Optional['PdfTreeNode'] = None  # To be filled in later.  TODO: Hacky
+
+        self.is_indeterminate = reference_key in INDETERMINATE_REFERENCES
+        self.is_link = reference_key in NON_TREE_KEYS or is_prefixed_by_any(from_node.label, LINK_NODE_KEYS)
+        self.is_parent = reference_key == PARENT or (from_node.type == STRUCT_ELEM and reference_key == P)
+
+        if reference_key == KIDS or (from_node.type == STRUCT_ELEM and reference_key == K):
+            log.debug(f"Explicit child reference in {from_node} at {reference_key}")
+            self.is_child = True
+        elif from_node.type == OBJR and reference_key == OBJ:
+            # TODO: there can be multiple OBJR refs to the same object... which wouldn't work w/this code
+            log.info(f"Explicit (theoretically) child reference found for {OBJ} in {from_node}")
+            self.is_child = True
+        else:
+            self.is_child = False
 
     @classmethod
     def get_references(
             cls,
-            obj: PdfObject,
+            from_node: Optional['PdfTreeObject'] = None,
+            from_obj: Optional[PdfObject] = None,
             ref_key: Optional[Union[str, int]] = None,
-            ref_address: Optional[Union[str, int]] = None
+            address: Optional[str] = None
         ) -> List['PdfObjectRelationship']:
         """
-        Recurse through elements in 'obj' and return list of PdfObjectRelationships containing all IndirectObjects
-        referenced from addresses in 'obj'.
+        Either 'from_node' or 'from_obj' must be given.  TODO: this is a code smell
+        Builds list of relationships FROM 'from_obj' TO other PDF objects based on 'from_obj'.
+        Recursable types (list, dict) are recursively handled; refs found are flattened into a list.
         """
-        if isinstance(obj, IndirectObject):
-            if ref_key is None or ref_address is None:
-                raise PdfWalkError(f"{obj} is a reference but key or address not provided")
-            else:
-                return [cls(obj, obj, str(ref_key), str(ref_address))]
+        if from_node is None and from_obj is None:
+            raise ValueError("Either :from_node or :from_obj must be provided to get references")
 
-        return_list: List[PdfObjectRelationship] = []
+        from_obj = from_node.obj if from_obj is None else from_obj
+        references: List[PdfObjectRelationship] = []
 
-        if isinstance(obj, list):
-            for i, element in enumerate(obj):
-                if not isinstance(element, (IndirectObject, list, dict)):
-                    continue
-
-                idx = f"[{i}]"
-                _ref_address = idx if ref_address is None else f"{ref_address}{idx}"
-                return_list += cls.get_references(element, ref_key or i, _ref_address)
-        elif isinstance(obj, dict):
-            for k, v in obj.items():
-                _ref_address = k if ref_address is None else f"{ref_address}[{k}]"
-                return_list += cls.get_references(v, ref_key or k, _ref_address)
+        if isinstance(from_obj, IndirectObject):
+            references.append(cls(from_node, from_obj, from_obj, str(ref_key), str(address)))
+        elif isinstance(from_obj, list):
+            for i, item in enumerate(from_obj):
+                references += cls.get_references(from_node, item, ref_key or i, _build_address(i, address))
+        elif isinstance(from_obj, dict):
+            for key, val in from_obj.items():
+                references += cls.get_references(from_node, val, ref_key or key, _build_address(key, address))
         else:
-            log.debug(f"Adding no references for PdfObject reference '{ref_key}' -> '{obj}'")
+            log.debug(f"Adding no references for PdfObject reference '{ref_key}' -> '{from_obj}'")
 
-        for ref in return_list:
-            ref.from_obj = obj
+        # Set all returned relationships to originate from top level from_obj before returning
+        for ref in references:
+            ref.from_obj = from_obj
 
-        return return_list
+        return references
 
     def __eq__(self, other: 'PdfObjectRelationship') -> bool:
-        """Note that equality does not check self.from_obj."""
-        if (self.to_obj.idnum != other.to_obj.idnum) or (self.from_node != other.from_node):
-            return False
-
-        for k in ['reference_key', 'address']:
-            if getattr(self, k) != getattr(other, k):
+        """Note that equality does not check self.from_obj equality because we don't have the idnum"""
+        for key in [k for k in vars(self).keys() if k not in INCOMPARABLE_PROPS]:
+            if getattr(self, key) != getattr(other, key):
                 return False
 
-        return True
+        return self.to_obj.idnum == other.to_obj.idnum
 
     def __str__(self) -> str:
         return f"{self.from_node or self.from_obj}: {self.address} to {self.to_obj}"
+
+
+def _build_address(ref_key: Union[str, int], base_address: Optional[str] = None) -> str:
+    """
+    Append either array index indicators e.g. [5] or reference_keys. reference_keys that appear in a
+    PDF object are left as is. Any dict keys or array indices that refere to inner objects and not
+    to the PDF object itself are bracketed.  e.g. if there's a /Width key in a /Font node,
+    '/Width' is the address of the font widths. But if the /Font links to the widths through a
+    /Resources dict the address will be '/Resources[/Width]'
+    """
+    bracketed_ref_key = bracketed(ref_key)
+
+    if isinstance(ref_key, int):
+        return bracketed_ref_key if base_address is None else f"{base_address}{bracketed_ref_key}"
+    else:    # Don't bracket the reference keys that appear in the PDF objects themselves
+        return ref_key if base_address is None else f"{base_address}{bracketed_ref_key}"

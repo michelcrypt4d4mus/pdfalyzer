@@ -30,11 +30,12 @@ DECODE_FAILURE_LEN = -1
 class PdfTreeNode(NodeMixin, PdfObjectProperties):
     def __init__(self, obj: PdfObject, address: str, idnum: int):
         """
-        address: PDF instruction string + modifiers used to reference 'obj'
+        obj: The underlying PDF object
+        address: the first address that points from some node to this one
         idnum: ID used in the reference
         """
         PdfObjectProperties.__init__(self, obj, address, idnum)
-        self.other_relationships: List[PdfObjectRelationship] = []
+        self.non_tree_relationships: List[PdfObjectRelationship] = []
 
         if isinstance(obj, StreamObject):
             try:
@@ -74,11 +75,11 @@ class PdfTreeNode(NodeMixin, PdfObjectProperties):
 
     def set_parent(self, parent: 'PdfTreeNode') -> None:
         """Set the parent of this node."""
-        if self.parent and self.parent != parent:
+        if self.parent is not None and self.parent != parent:
             raise PdfWalkError(f"Cannot set {parent} as parent of {self}, parent is already {self.parent}")
 
         self.parent = parent
-        self.remove_relationship(parent)
+        self.remove_non_tree_relationship(parent)
         self.known_to_parent_as = self.address_in_other_node(parent) or self.first_address
         log.info(f"  Added {parent} as parent of {self}")
 
@@ -94,22 +95,22 @@ class PdfTreeNode(NodeMixin, PdfObjectProperties):
                 raise PdfWalkError(f"{self} already has child w/this ID: {child}")
 
         self.children += (child,)
-        child.remove_relationship(self)
+        child.remove_non_tree_relationship(self)
         child.known_to_parent_as = child.address_in_other_node(self) or child.first_address
         log.info(f"  Added {child} as child of {self}")
 
-    def add_relationship(self, relationship: PdfObjectRelationship) -> None:
+    def add_non_tree_relationship(self, relationship: PdfObjectRelationship) -> None:
         """Add a relationship that points at this node's PDF object. TODO: doesn't include parent/child"""
-        if relationship in self.other_relationships:
+        if relationship in self.non_tree_relationships:
             log.debug(f"{relationship} already in {self}'s other relationships")
             return
 
         log.info(f'Adding other relationship: {relationship} pointing to {self}')
-        self.other_relationships.append(relationship)
+        self.non_tree_relationships.append(relationship)
 
-    def remove_relationship(self, from_node: 'PdfTreeNode') -> None:
-        """Remove all other_relationships from from_node to this node"""
-        relationships_to_remove = [r for r in self.other_relationships if r.from_node == from_node]
+    def remove_non_tree_relationship(self, from_node: 'PdfTreeNode') -> None:
+        """Remove all non_tree_relationships from from_node to this node"""
+        relationships_to_remove = [r for r in self.non_tree_relationships if r.from_node == from_node]
 
         if len(relationships_to_remove) == 0:
             return
@@ -118,81 +119,39 @@ class PdfTreeNode(NodeMixin, PdfObjectProperties):
 
         for relationship in relationships_to_remove:
             log.debug(f"Removing relationship {relationship} from {self}")
-            self.other_relationships.remove(relationship)
+            self.non_tree_relationships.remove(relationship)
 
-    def common_ancestor_among_other_relationship_nodes(self) -> Optional['PdfTreeNode']:
-        """Return the node in other_relationships that is a common ancestor of the other other_relationships"""
-        return type(self).find_common_ancestor_among_nodes(self.nodes_with_references_to_self())
+    def common_ancestor_among_non_tree_relationships(self) -> Optional['PdfTreeNode']:
+        """Return the node in non_tree_relationships that is a common ancestor of the other non_tree_relationships"""
+        return type(self).find_common_ancestor_among_nodes(self.nodes_with_non_tree_references_to_self())
 
     # TODO: does not include parent relationships...
-    def nodes_with_references_to_self(self) -> List['PdfTreeNode']:
-        return [r.from_node for r in self.other_relationships if r.from_node]
+    def nodes_with_non_tree_references_to_self(self) -> List['PdfTreeNode']:
+        return [r.from_node for r in self.non_tree_relationships if r.from_node]
 
-    def other_relationship_count(self) -> int:
-        return len(self.other_relationships)
+    def non_tree_relationship_count(self) -> int:
+        return len(self.non_tree_relationships)
 
     def unique_addresses(self) -> List[str]:
         """All the addresses in other nodes that refer to this object."""
-        addresses = set([r.address for r in self.other_relationships])
+        addresses = set([r.address for r in self.non_tree_relationships])
 
         if self.known_to_parent_as is not None:
             addresses.add(self.known_to_parent_as)
 
         return list(addresses)
 
-    def other_relationship_unique_labels(self) -> Set[str]:
+    def unique_labels_of_non_tree_referencers(self) -> Set[str]:
         """Unique labels of nodes related to this one"""
-        return set([r.from_node.label for r in self.other_relationships])
-
-    # TODO: these methods' bools should be set in get_references()
-    def is_parent_reference(self, reference_key: str) -> bool:
-        """Returns True for explicit parent references."""
-        if reference_key == PARENT or (self.type == STRUCT_ELEM and reference_key == P):
-            log.debug(f"Explicit parent reference in {self} at {reference_key}")
-            return True
-        else:
-            return False
-
-    def is_child_reference(self, reference_key: str) -> bool:
-        """Returns True for explicit child references."""
-        if reference_key == KIDS or (self.type == STRUCT_ELEM and reference_key == K):
-            log.debug(f"Explicit child reference in {self} at {reference_key}")
-            return True
-        elif self.type == OBJR and reference_key == OBJ:
-            # TODO: there can be multiple OBJR refs to the same object... which wouldn't work w/this code
-            log.info(f"Explicit (theoretically) child reference found for {OBJ} in {self}")
-            return True
-        else:
-            return False
-
-    def is_indeterminate_reference(self, reference_key) -> bool:
-        """Returns true if we need to wait for all objects to be parsed before placement."""
-        return reference_key in INDETERMINATE_REFERENCES
-
-    def is_link_reference(self, reference_key: str) -> bool:
-        """Returns True if the reference is a pure reference/bookmark style node and thus not in the tree."""
-        return reference_key in NON_TREE_KEYS or is_prefixed_by_any(self.label, LINK_NODE_KEYS)
+        return set([r.from_node.label for r in self.non_tree_relationships])
 
     def references(self) -> List[PdfObjectRelationship]:
-        """Returns all nodes referenced from this node (see PdfObjectRelationship definition)"""
-        refs = PdfObjectRelationship.get_references(self.obj)
-
-        for ref in refs:
-            ref.from_node = self
-
-        return refs
+        """Returns all nodes referenced from node.obj (see PdfObjectRelationship definition)"""
+        return PdfObjectRelationship.get_references(from_node=self)
 
     def contains_stream(self) -> bool:
         """Returns True for ContentStream, DecodedStream, and EncodedStream objects"""
         return isinstance(self.obj, StreamObject)
-
-    def print_other_relationships(self) -> None:
-        """console.print this node's non tree relationships (represented by SymlinkNodes in the tree)."""
-        self._write_other_relationships(console.print)
-
-    def log_other_relationships(self) -> None:
-        """log this node's non tree relationships (represented by SymlinkNodes in the tree)."""
-        self._write_other_relationships(log.info)
 
     def tree_address(self, max_length: Optional[int] = DEFAULT_MAX_ADDRESS_LENGTH) -> str:
         """Creates a string like '/Catalog/Pages/Resources[2]/Font' truncated to max_length (if given)"""
@@ -211,7 +170,7 @@ class PdfTreeNode(NodeMixin, PdfObjectProperties):
         return '...' + address[-max_length:][3:]
 
     def address_in_other_node(self, from_node: 'PdfTreeNode') -> Optional[str]:
-        """Find the address used in from_node to refer to this node"""
+        """Find the local address used in from_node to refer to this node"""
         refs_to_this_node = [ref for ref in from_node.references() if ref.to_obj.idnum == self.idnum]
 
         if len(refs_to_this_node) == 1:
@@ -222,10 +181,16 @@ class PdfTreeNode(NodeMixin, PdfObjectProperties):
                 return XREF_STREAM
             elif self.label not in NON_STANDARD_ADDRESS_NODES:
                 log.info(f"Could not find expected reference from {from_node} to {self}")
-                return None
+
+            return None
         else:
             address = refs_to_this_node[0].address
 
+            # Check if other node's label starts with a NON_STANDARD_ADDRESS string
+            #    or ALL the relationships in other nodes that point at this one always use a
+            #       NON_STANDARD_ADDRESS_NODES string to refer to it.
+            #
+            # If those things are not true, print a warning.
             if not (is_prefixed_by_any(from_node.label, NON_STANDARD_ADDRESS_NODES) or \
                         all(ref.address in NON_STANDARD_ADDRESS_NODES for ref in refs_to_this_node)):
                 refs_to_this_node_str = comma_join([str(r) for r in refs_to_this_node])
@@ -234,11 +199,19 @@ class PdfTreeNode(NodeMixin, PdfObjectProperties):
 
             return address
 
-    def _write_other_relationships(self, write_method: Callable) -> None:
-        """Use write_method() to write self.other_relationships."""
+    def print_non_tree_relationships(self) -> None:
+        """console.print this node's non tree relationships (represented by SymlinkNodes in the tree)."""
+        self._write_non_tree_relationships(console.print)
+
+    def log_non_tree_relationships(self) -> None:
+        """log this node's non tree relationships (represented by SymlinkNodes in the tree)."""
+        self._write_non_tree_relationships(log.info)
+
+    def _write_non_tree_relationships(self, write_method: Callable) -> None:
+        """Use write_method() to write self.non_tree_relationships."""
         write_method(f"Other relationships of {escape(str(self))}")
 
-        for r in self.other_relationships:
+        for r in self.non_tree_relationships:
             write_method(f"  Relationship: {escape(str(r))}")
 
     def _colored_address(self, max_length: Optional[int] = None) -> Text:

@@ -3,7 +3,7 @@ Various text formatting/styling/manipulating methods.
 """
 import re
 from pprint import PrettyPrinter
-from typing import List, Pattern
+from typing import List, Pattern, Union
 
 from PyPDF2.generic import PdfObject
 from yaralyzer.output.rich_console import console_width
@@ -54,3 +54,7 @@ def root_address(_string: str) -> str:
 def is_prefixed_by_any(_string: str, prefixes: List[str]) -> bool:
     """Returns True if _string starts with anything in 'prefixes'."""
     return any([_string.startswith(prefix) for prefix in prefixes])
+
+
+def bracketed(index: Union[int, str]) -> str:
+    return f"[{index}]"

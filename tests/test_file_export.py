@@ -2,12 +2,14 @@ from math import isclose
 from os import environ, path, remove
 from subprocess import check_output
 
+import pytest
 from yaralyzer.helpers.file_helper import files_in_dir
 
 from pdfalyzer.config import PDFALYZE
 
 
-def test_file_export(analyzing_malicious_documents_pdf_path, tmp_dir):
+@pytest.mark.slow
+def test_file_export(analyzing_malicious_pdf_path, tmp_dir):
     args = [
         '--min-decode-length', '50',
         '--max-decode-length', '51',
@@ -16,7 +18,7 @@ def test_file_export(analyzing_malicious_documents_pdf_path, tmp_dir):
         '--output-dir', tmp_dir
     ]
 
-    check_output([PDFALYZE, analyzing_malicious_documents_pdf_path, *args], env=environ)
+    check_output([PDFALYZE, analyzing_malicious_pdf_path, *args], env=environ)
     rendered_files = files_in_dir(tmp_dir)
     assert len(rendered_files) == 7
     file_sizes = sorted([path.getsize(f) for f in rendered_files])

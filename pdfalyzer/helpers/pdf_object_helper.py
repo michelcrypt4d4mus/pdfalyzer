@@ -21,3 +21,4 @@ def does_list_have_any_references(_list) -> bool:
 
 def _sort_pdf_object_refs(refs: List[PdfObjectRelationship]) -> List[PdfObjectRelationship]:
     return sorted(refs, key=lambda ref: ref.to_obj.idnum)
+
