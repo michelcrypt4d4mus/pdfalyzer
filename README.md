@@ -49,7 +49,7 @@ See [PyPDF2 installation notes](https://github.com/py-pdf/PyPDF2#installation) a
 For info on how to setup a dev environment, see [Contributing](#contributing) section at the end of this file.
 
 ### Troubleshooting The Installation
-1. If you used regular `pip3` instead of `pipx` and you only want to use the CLI and don't need to `import` the python classes to your own code, you should try to install with `pipx` instead.
+1. If you used regular `pip3` instead of `pipx` to install it and ran into issues you should try to install with `pipx`. If you aren't looking to write python code that `import`s stuff from The Pdfalyzer package `pipx` is a much better answer all around.
 1. If you run into an issue about missing YARA try to install [yara-python](https://pypi.org/project/yara-python/). If that doesn't work you may have to install the YARA executable separately.
 1. If you encounter an error building the python `cryptography` package check your `pip` version (`pip --version`). If it's less than 22.0, upgrade `pip` with `pip install --upgrade pip`.
 2. On linux if you encounter an error building `wheel` or `cffi` you may need to install some packages like a compiler for the `rust` language or some SSL libraries. `sudo apt-get install build-essential libssl-dev libffi-dev rustc` may help.
@@ -60,8 +60,7 @@ For info on how to setup a dev environment, see [Contributing](#contributing) se
 If your python scripts setup is less than ideal and you can't get the `pdfalyze` command to work, `python -m pdfalyzer` should be an equivalent, more portable version of the same command.
 
 Run `pdfalyze --help` to see usage instructions. As of right now these are the options:
-
-![](https://github.com/michelcrypt4d4mus/pdfalyzer/raw/doc/svgs/rendered_images/pdfalyze_help_prince_theme.png)
+![](https://github.com/michelcrypt4d4mus/pdfalyzer/raw/master/doc/svgs/rendered_images/pdfalyze_help_prince_theme.png)
 
 Note that The Pdfalyzer output is _extremely_ verbose if you don't limit the output sections (See `ANALYSIS SELECTION` in the `--help`). Almost all of the verbosity comes from the `--stream` option pulling things that _could be_ (but are almost certainly not) malicious. To get everything _except_ the stream option, use these flags
 
@@ -116,16 +115,7 @@ for backtick_quoted_string in font.binary_scanner.extract_backtick_quoted_bytes(
 
 
 ### Troubleshooting
-This tool is by no means complete. It was built to handle a specific use case which encompassed a small fraction of the many and varied types of information that can show up in a PDF. While it has been tested on a decent number of large and very complicated PDFs (500-5,000 page manuals from Adobe itself) I'm sure there are a whole bunch of edge cases that will trip up the code.
-
-If that does happen and you run into an issue using this tool on a particular PDF it will most likely be an issue with relationships between objects within the PDF that are not meant to be parent/child in the tree structure made visible by this tool. There's not so many of these kinds of object references in any given file but there's a whole galaxy of possibilities and they must each be manually configured to prevent the tool from building an invalid tree.  If you run into that kind of problem take a look at these list constants in the code:
-
-* `NON_TREE_REFERENCES`
-* `INDETERMINATE_REF_KEYS`
-
-You might be able to easily fix your problem by adding the Adobe object's reference key to the appropriate list.
-
-Alternatively, please open [a GitHub issue](https://github.com/michelcrypt4d4mus/pdfalyzer/issues) with the compressed (`.zip`, `.gz`, whatever) PDF that is causing the problem attached and I'll take a look when I can.  I will _not_ take a look at any uncompressed PDFs due to the security risks, so make sure you zip it before you ship it.
+While The Pdfalyzer has been tested on quite a few large and very complicated PDFs there are no doubt a bunch of edge cases that will trip up the code. If that does happen and you hit an error, please open [a GitHub issue](https://github.com/michelcrypt4d4mus/pdfalyzer/issues) with the compressed (`.zip`, `.gz`, whatever) PDF that is causing the problem attached (if possible) and I'll take a look when I can. I will _not_ take a look at any uncompressed PDFs due to the security risks so make sure you zip it before you ship it.
 
 
 # Example Output
