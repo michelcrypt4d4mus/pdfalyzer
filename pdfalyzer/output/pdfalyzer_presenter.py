@@ -61,14 +61,12 @@ class PdfalyzerPresenter:
             else:
                 console.print(Text(pre) + node.__rich__())
 
-        self.pdfalyzer._verify_all_nodes_encountered_are_in_tree()
         console.print("\n\n")
 
     def print_rich_table_tree(self) -> None:
         """Print the rich view of the PDF tree."""
         print_section_header(f'Rich tree view of {self.pdfalyzer.pdf_basename}')
         console.print(generate_rich_tree(self.pdfalyzer.pdf_tree))
-        self.pdfalyzer._verify_all_nodes_encountered_are_in_tree()
 
     def print_summary(self) -> None:
         print_section_header(f'PDF Node Summary for {self.pdfalyzer.pdf_basename}')

@@ -1,5 +1,8 @@
 # NEXT RELEASE
 
+### 1.12.2
+* Refactor `PdfTreeVerifier` and `IndeterminateNode` out of `Pdfalyzer` class
+
 ### 1.12.1
 * Check for any explicit `/Kids` relationships when placing indeterminate nodes
 * All other things being equal prefer a single `/Page` or `/Pages` referrer as the parent
