@@ -1,10 +1,10 @@
 """
 Some methods to help with the direct manipulation/processing of PyPDF2's PdfObjects
 """
-import re
 from typing import Any, List, Optional, Union
 
 from PyPDF2.generic import IndirectObject, PdfObject
+from rich.text import Text
 from yaralyzer.util.logging import log
 
 from pdfalyzer.pdf_object_relationship import PdfObjectRelationship

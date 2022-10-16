@@ -20,8 +20,8 @@ from yaralyzer.output.file_export import invoke_rich_export
 from yaralyzer.output.rich_console import console
 from yaralyzer.util.logging import log, log_and_print
 
-from pdfalyzer.helpers.rich_text_helper import PDFALYZER_THEME_DICT
 from pdfalyzer.output.pdfalyzer_presenter import PdfalyzerPresenter
+from pdfalyzer.output.styles.rich_theme import PDFALYZER_THEME_DICT
 from pdfalyzer.pdfalyzer import Pdfalyzer
 from pdfalyzer.util.pdf_parser_manager import PdfParserManager
 from pdfalyzer.util.argument_parser import ALL_STREAMS, output_sections, parse_arguments

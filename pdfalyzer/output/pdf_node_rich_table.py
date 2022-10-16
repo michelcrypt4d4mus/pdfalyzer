@@ -14,12 +14,12 @@ from rich.tree import Tree
 from yaralyzer.encoding_detection.character_encodings import NEWLINE_BYTE
 from yaralyzer.helpers.bytes_helper import clean_byte_string, hex_text
 from yaralyzer.helpers.rich_text_helper import size_text
-from yaralyzer.output.rich_console import BYTES_NO_DIM, YARALYZER_THEME
+from yaralyzer.output.rich_console import BYTES_NO_DIM
 from yaralyzer.util.logging import log
 
-from pdfalyzer.helpers.rich_text_helper import PDF_ARRAY, TYPE_STYLES, get_label_style
 from pdfalyzer.helpers.pdf_object_helper import pypdf_class_name
 from pdfalyzer.helpers.string_helper import root_address
+from pdfalyzer.output.styles.node_colors import get_label_style, get_node_type_style
 from pdfalyzer.util.adobe_strings import *
 
 # For printing SymlinkNodes
@@ -99,25 +99,6 @@ def build_pdf_node_table(node: 'PdfTreeNode') -> Table:
         table.add_row(*row)
 
     return table
-
-
-def get_node_type_style(obj) -> str:
-    klass_string = pypdf_class_name(obj)
-
-    if 'Dictionary' in klass_string:
-        style = TYPE_STYLES[dict]
-    elif 'EncodedStream' in klass_string:
-        style = YARALYZER_THEME.styles['bytes']
-    elif 'Stream' in klass_string:
-        style = YARALYZER_THEME.styles['bytes.title']
-    elif 'Text' in klass_string:
-        style = YARALYZER_THEME.styles['grey.light']
-    elif 'Array' in klass_string:
-        style = PDF_ARRAY
-    else:
-        style = 'bright_yellow'
-
-    return f"{style} italic"
 
 
 def _get_stream_preview_rows(node: 'PdfTreeNode') -> List[List[Text]]:

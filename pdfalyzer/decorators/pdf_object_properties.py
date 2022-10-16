@@ -8,9 +8,9 @@ from rich.markup import escape
 from rich.text import Text
 
 from pdfalyzer.helpers.pdf_object_helper import pypdf_class_name
-from pdfalyzer.helpers.rich_text_helper import get_label_style, get_type_style, get_type_string_style
+from pdfalyzer.helpers.rich_text_helper import node_label
 from pdfalyzer.helpers.string_helper import root_address
-from pdfalyzer.output.pdf_node_rich_table import get_node_type_style
+from pdfalyzer.output.styles.node_colors import get_type_style, get_type_string_style
 from pdfalyzer.util.adobe_strings import *
 
 
@@ -95,16 +95,3 @@ class PdfObjectProperties:
 
     def __str__(self) -> str:
         return self.__rich__().plain
-
-
-def node_label(idnum: int, label: str, pdf_object: PdfObject) -> Text:
-    """Colored text representation of a node."""
-    text = Text('<', style='white')
-    text.append(f'{idnum}', style='bright_white')
-    text.append(':', style='white')
-    text.append(label[1:], style=f'{get_label_style(label)} underline bold')
-    text.append('(', style='white')
-    text.append(pypdf_class_name(pdf_object), style=get_node_type_style(pdf_object))
-    text.append(')', style='white')
-    text.append('>')
-    return text

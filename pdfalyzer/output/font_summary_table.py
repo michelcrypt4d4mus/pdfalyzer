@@ -4,8 +4,8 @@ Table of info about a /Font object hierarchy.
 from rich.table import Table
 from rich.text import Text
 
-from pdfalyzer.helpers.rich_text_helper import get_type_style
 from pdfalyzer.output.layout import subheading_width
+from pdfalyzer.output.styles.node_colors import get_type_style
 
 ATTRIBUTES_TO_SHOW_IN_SUMMARY_TABLE = [
     'sub_type',

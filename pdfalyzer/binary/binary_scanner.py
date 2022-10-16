@@ -28,7 +28,6 @@ from pdfalyzer.config import PdfalyzerConfig
 from pdfalyzer.decorators.pdf_tree_node import PdfTreeNode
 from pdfalyzer.detection.constants.binary_regexes import (BACKTICK, DANGEROUS_STRINGS, FRONTSLASH,
      GUILLEMET, QUOTE_PATTERNS)
-from pdfalyzer.helpers.rich_text_helper import NOT_FOUND_MSG
 from pdfalyzer.helpers.string_helper import generate_hyphen_line
 from pdfalyzer.output.layout import (generate_subtable, half_width, pad_header, print_headline_panel,
      print_section_sub_subheader)
@@ -36,6 +35,7 @@ from pdfalyzer.util.adobe_strings import CONTENTS, CURRENTFILE_EEXEC
 
 # For rainbow colors
 CHAR_ENCODING_1ST_COLOR_NUMBER = 203
+NOT_FOUND_MSG = Text('(not found)', style='grey.dark_italic')
 
 
 class BinaryScanner:

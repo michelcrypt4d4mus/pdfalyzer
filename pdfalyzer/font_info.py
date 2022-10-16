@@ -10,10 +10,10 @@ from yaralyzer.output.rich_console import console
 from yaralyzer.util.logging import log
 
 from pdfalyzer.binary.binary_scanner import BinaryScanner
-from pdfalyzer.helpers.rich_text_helper import get_label_style
 from pdfalyzer.output.character_mapping import print_character_mapping, print_prepared_charmap
 from pdfalyzer.output.font_summary_table import font_summary_table
 from pdfalyzer.output.layout import print_section_subheader
+from pdfalyzer.output.styles.node_colors import get_label_style
 from pdfalyzer.util.adobe_strings import (FONT, FONT_DESCRIPTOR, FONT_FILE, FONT_LENGTHS, RESOURCES,
      SUBTYPE, TO_UNICODE, TYPE, W, WIDTHS)
 

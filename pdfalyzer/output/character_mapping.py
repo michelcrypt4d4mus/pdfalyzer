@@ -1,7 +1,6 @@
 """
-Output tables and other formatting for font character mappings.
+Output formatting for font character mappings.
 """
-
 from rich.columns import Columns
 from rich.padding import Padding
 from rich.text import Text
