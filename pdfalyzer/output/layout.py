@@ -1,6 +1,7 @@
 """
 Methods to help with the design of the output
 """
+from rich import box
 from rich.padding import Padding
 from rich.panel import Panel
 from rich.table import Table
