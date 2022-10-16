@@ -1,6 +1,8 @@
 # NEXT RELEASE
 
 ### 1.11.5
+* Last ditch attempt to place indeterminate nodes according to which node has most descendants
+* Refactor `PdfalyzerPresenter` class to handle output formatting.
 
 ### 1.11.4
 * Fix parent/child issue with `/Annots` arrays being indeterminate
