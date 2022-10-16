@@ -57,8 +57,8 @@ class PdfObjectRelationship:
         ) -> List['PdfObjectRelationship']:
         """
         Either 'from_node' or 'from_obj' must be given.  TODO: this is a code smell
-        Builds list of relationships FROM 'from_obj' TO other PDF objects based on 'from_obj'.
-        Recursable types (list, dict) are recursively handled; refs found are flattened into a list.
+        Builds list of relationships 'from_obj' contains referencing other PDF objects.
+        Recursable types (list, dict) are recursively scanned.
         """
         if from_node is None and from_obj is None:
             raise ValueError("Either :from_node or :from_obj must be provided to get references")

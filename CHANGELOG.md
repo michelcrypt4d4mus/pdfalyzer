@@ -1,4 +1,6 @@
 # NEXT RELEASE
+
+### 1.11.3
 * Add `sub_type` to node label
 * Handle unsupported stream filters (e.g. `/JBIG2Decode`) more gracefully
 * Suppress spurious warnings about multiple refs
