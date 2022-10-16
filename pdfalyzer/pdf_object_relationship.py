@@ -32,7 +32,7 @@ class PdfObjectRelationship:
         self.to_obj = to_obj
         self.reference_key = reference_key
         self.address = address
-
+        # Compute tree placement logic booleans
         self.is_indeterminate = reference_key in INDETERMINATE_REFERENCES
         self.is_link = reference_key in NON_TREE_KEYS or is_prefixed_by_any(from_node.label, LINK_NODE_KEYS)
         self.is_parent = reference_key == PARENT or (from_node.type == STRUCT_ELEM and reference_key == P)

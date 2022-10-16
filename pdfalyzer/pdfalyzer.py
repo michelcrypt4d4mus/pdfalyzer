@@ -5,7 +5,7 @@ searching the tree and printing out information.
 """
 from collections import defaultdict
 from os.path import basename
-from typing import Dict, List, Optional
+from typing import Dict, Iterator, List, Optional
 
 from anytree import LevelOrderIter, RenderTree, SymlinkNode
 from anytree.render import DoubleStyle
@@ -80,7 +80,7 @@ class Pdfalyzer:
         """Recursively walk the PDF's tree structure starting at a given node"""
         log.info(f'walk_node() called with {node}. Object dump:\n{print_with_header(node.obj, node.label)}')
         self._ensure_safe_to_walk(node)
-        references = node.references()
+        references = node.references_to_other_nodes()
 
         for reference in references:
             self._process_reference(reference)
@@ -215,77 +215,75 @@ class Pdfalyzer:
         stream_filter = lambda node: node.contains_stream() and not isinstance(node, SymlinkNode)
         return sorted(findall(self.pdf_tree, stream_filter), key=lambda r: r.idnum)
 
-    # TODO: should probably be on PdfTreeNode class
+    def is_in_tree(self, search_for_node: PdfTreeNode) -> bool:
+        """Returns true if search_for_node is in the tree already."""
+        for node in self.level_order_node_iterator():
+            if node == search_for_node:
+                return True
+
+        return False
+
+    def level_order_node_iterator(self) -> Iterator[PdfTreeNode]:
+        """Iterate over nodes, grouping them by distance from the root."""
+        return LevelOrderIter(self.pdf_tree)
+
+    # TODO: should maybe be on PdfTreeNode class
     def _process_reference(self, reference: PdfObjectRelationship) -> List[PdfTreeNode]:
         """
         Place the referenced 'node' in the tree. Returns a list of nodes to walk next.
         'address' is the key used in node.obj to refer to 'reference' object
            plus any modifiers like [2] or [/Something]
         """
-        if reference.from_node is None:
-            raise PdfWalkError(f"from_node missing from {reference}")
-
-        # TODO: these temp variables are unnecessary (as is the above None check)
-        node = reference.from_node
-        key = reference.reference_key
-        was_seen_before = (reference.to_obj.idnum in self.traversed_nodes)
-        referenced_node = self._build_or_find_node(reference.to_obj, reference.address)
-        reference_log_string = f"{node} reference at {reference.address} to {referenced_node}"
-        log.debug(f'Assessing {reference_log_string}...')
+        log.debug(f'Assessing {reference.from_node} reference {reference}...')
+        was_seen_before = (reference.to_obj.idnum in self.traversed_nodes) # Must come before _build_or_find()
+        from_node = reference.from_node
+        to_node = self._build_or_find_node(reference.to_obj, reference.address)
         self.max_generation = max([self.max_generation, reference.to_obj.generation or 0])
-        references_to_return: List[PdfTreeNode] = []
 
         # If one is already a parent/child of the other there's nothing to do
-        if referenced_node == node.parent or referenced_node in node.children:
-            log.debug(f"  {node} and {referenced_node} are already related")
+        if to_node == from_node.parent or to_node in from_node.children:
+            log.debug(f"  {from_node} and {to_node} are already related")
             return []
 
         # If there's an explicit /Parent or /Kids reference then we know the correct relationship
         if reference.is_parent or reference.is_child:
             if reference.is_parent:
-                node.set_parent(referenced_node)
+                from_node.set_parent(to_node)
             else:
-                node.add_child(referenced_node)
+                from_node.add_child(to_node)
 
             if reference.to_obj.idnum in self.indeterminate_ids:
-                log.info(f"  Found reference {reference} => {node} of previously indeterminate node {referenced_node}")
+                log.info(f"  Found reference {reference} => {from_node} of previously indeterminate node {to_node}")
                 self.indeterminate_ids.remove(reference.to_obj.idnum)
 
-            if not was_seen_before:
-                references_to_return = [referenced_node]
-        elif reference.is_indeterminate:
+            if was_seen_before:
+                return []
+        elif reference.is_indeterminate or reference.is_link or was_seen_before:
+            to_node.add_non_tree_relationship(reference)
+
             # Indeterminate references need to wait until everything has been scanned to be placed
-            log.info(f'  Indeterminate {reference_log_string}')
-            referenced_node.add_non_tree_relationship(reference)
-            self.indeterminate_ids.add(referenced_node.idnum)
-            return [referenced_node]
-        elif reference.is_link:
-            # Pure reference nodes like /Dest tend to just be links between nodes, so not in tree
-            log.debug(f"{reference_log_string} is a pure reference.")
-            referenced_node.add_non_tree_relationship(reference)
-
-            # If node looks like a pure ref but is not in tree consider it indeterminate so it can be placed later
-            if not self.find_node_by_idnum(referenced_node.idnum):
-                references_to_return = [referenced_node]
-                self.indeterminate_ids.add(referenced_node.idnum)
-        elif was_seen_before:
-            # If we've seen the node before it should have a parent or be indeterminate
-            if reference.to_obj.idnum not in self.indeterminate_ids and referenced_node.parent is None:
-                raise PdfWalkError(f"{reference_log_string} - ref has no parent and is not indeterminate")
-
-            log.debug(f"{reference} was already seen")
-            referenced_node.add_non_tree_relationship(reference)
+            if reference.is_indeterminate or (reference.is_link and not self.is_in_tree(to_node)):
+                log.info(f'  Indeterminate ref {reference}')
+                self.indeterminate_ids.add(to_node.idnum)
+            elif reference.is_link:
+                log.debug(f"  Link ref {reference}")  # Link nodes like /Dest are usually just links between nodes
+                return []
+            elif reference.to_obj.idnum not in self.indeterminate_ids and to_node.parent is None:
+                raise PdfWalkError(f"{reference} - ref has no parent and is not indeterminate")
+            else:
+                log.debug(f"{reference} was already seen")
+                to_node.add_non_tree_relationship(reference)
+                return []
         # If no other conditions are met, add the reference as a child
         else:
-            node.add_child(referenced_node)
-            references_to_return = [referenced_node]
+            from_node.add_child(to_node)
 
-        log.debug("Nodes to walk next: " + ', '.join([str(r) for r in references_to_return]))
-        return references_to_return
+        log.debug(f"Node to walk next: {to_node}")
+        return [to_node]
 
     def _symlink_non_tree_relationships(self) -> None:
         """Create SymlinkNodes for relationships between PDF objects that are not parent/child relationships"""
-        for node in LevelOrderIter(self.pdf_tree):
+        for node in self.level_order_node_iterator():
             if node.non_tree_relationship_count() == 0 or isinstance(node, SymlinkNode):
                 continue
 
@@ -378,7 +376,7 @@ class Pdfalyzer:
 
     def _extract_font_infos(self) -> None:
         """Extract information about fonts in the tree and place it in self.font_infos"""
-        for node in LevelOrderIter(self.pdf_tree):
+        for node in self.level_order_node_iterator():
             if isinstance(node.obj, dict) and RESOURCES in node.obj:
                 log.debug(f"Extracting fonts from node with '{RESOURCES}' key: {node}...")
                 known_font_ids = [fi.idnum for fi in self.font_infos]
@@ -411,7 +409,7 @@ class Pdfalyzer:
         keys_encountered = defaultdict(int)
         node_count = 0
 
-        for node in LevelOrderIter(self.pdf_tree):
+        for node in self.level_order_node_iterator():
             pdf_object_types[type(node.obj).__name__] += 1
             node_labels[node.label] += 1
             node_count += 1

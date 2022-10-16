@@ -145,7 +145,7 @@ class PdfTreeNode(NodeMixin, PdfObjectProperties):
         """Unique labels of nodes related to this one"""
         return set([r.from_node.label for r in self.non_tree_relationships])
 
-    def references(self) -> List[PdfObjectRelationship]:
+    def references_to_other_nodes(self) -> List[PdfObjectRelationship]:
         """Returns all nodes referenced from node.obj (see PdfObjectRelationship definition)"""
         return PdfObjectRelationship.get_references(from_node=self)
 
@@ -171,7 +171,7 @@ class PdfTreeNode(NodeMixin, PdfObjectProperties):
 
     def address_in_other_node(self, from_node: 'PdfTreeNode') -> Optional[str]:
         """Find the local address used in from_node to refer to this node"""
-        refs_to_this_node = [ref for ref in from_node.references() if ref.to_obj.idnum == self.idnum]
+        refs_to_this_node = [ref for ref in from_node.references_to_other_nodes() if ref.to_obj.idnum == self.idnum]
 
         if len(refs_to_this_node) == 1:
             return refs_to_this_node[0].address
