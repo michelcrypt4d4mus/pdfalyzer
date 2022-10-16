@@ -7,23 +7,17 @@ from typing import List, Pattern, Union
 
 from PyPDF2.generic import PdfObject
 from yaralyzer.output.rich_console import console_width
+from yaralyzer.util.logging import log
 
 INDENT_DEPTH = 4
 PRETTY_PRINT_WIDTH = 60
-DIGIT_REGEX = re.compile("\d+")
+DIGIT_REGEX = re.compile("\\d+")
 
 # Pretty Printer
 pp = PrettyPrinter(
     indent=INDENT_DEPTH,
     width=PRETTY_PRINT_WIDTH,
     sort_dicts=True)
-
-
-def pypdf_class_name(obj: PdfObject) -> str:
-    """Shortened name of type(obj), e.g. PyPDF2.generic._data_structures.ArrayObject becomes Array"""
-    class_pkgs = type(obj).__name__.split('.')
-    class_pkgs.reverse()
-    return class_pkgs[0].removesuffix('Object')
 
 
 def generate_hyphen_line(width=None, title=None):
@@ -65,3 +59,20 @@ def bracketed(index: Union[int, str]) -> str:
 def replace_digits(string_with_digits: str) -> str:
     """Turn all digits to X chars in a string."""
     return DIGIT_REGEX.sub('x', string_with_digits)
+
+
+def all_strings_are_same_ignoring_numbers(strings: List[str]) -> bool:
+    """Returns true if string addresses are same except for digits."""
+    return len(set([replace_digits(s) for s in strings])) == 1
+
+
+def is_substring_of_longer_strings_in_list(_string: str, strings: List[str]) -> bool:
+    longer_strings = [s for s in strings if len(s) > len(_string)]
+    return all([_string in longer_string for longer_string in longer_strings])
+
+
+def has_a_common_substring(strings: List[str]) -> bool:
+    return all([
+        is_substring_of_longer_strings_in_list(s, strings)
+        for s in strings
+    ])

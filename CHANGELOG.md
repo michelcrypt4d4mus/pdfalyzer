@@ -1,7 +1,10 @@
 # NEXT RELEASE
 
+### 1.11.5
+
 ### 1.11.4
 * Fix parent/child issue with `/Annots` arrays being indeterminate
+* Fix issue with `/ColorSpace` node placement
 
 ### 1.11.3
 * Add `sub_type` to node label

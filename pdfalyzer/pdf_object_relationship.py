@@ -6,6 +6,7 @@ from typing import List, Optional, Union
 from PyPDF2.generic import IndirectObject, PdfObject
 from yaralyzer.util.logging import log
 
+#from pdfalyzer.he import has_indeterminate_prefix
 from pdfalyzer.helpers.string_helper import bracketed, is_prefixed_by_any
 from pdfalyzer.util.adobe_strings import *
 
@@ -32,8 +33,8 @@ class PdfObjectRelationship:
         self.address = address
 
         # Compute tree placement logic booleans
-        if (is_prefixed_by_any(from_node.type, INDETERMINATE_REF_KEYS) and not isinstance(self.from_node.obj, dict)) \
-            or reference_key in INDETERMINATE_REF_KEYS:
+        if (has_indeterminate_prefix(from_node.type) and not isinstance(self.from_node.obj, dict)) \
+                or reference_key in INDETERMINATE_REF_KEYS:
             log.info(f"Indeterminate node: {from_node}")
             self.is_indeterminate = True
         else:
@@ -96,7 +97,8 @@ class PdfObjectRelationship:
         return self.from_node.idnum == other.from_node.idnum
 
     def __str__(self) -> str:
-        return f"{self.from_node}: {self.address} to node ID {self.to_obj.idnum}"
+        return f"{self.from_node} ref_key: {self.reference_key}, addr: {self.address} => nodeID {self.to_obj.idnum}"
+
 
 
 def _build_address(ref_key: Union[str, int], base_address: Optional[str] = None) -> str:

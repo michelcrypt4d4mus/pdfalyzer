@@ -3,6 +3,7 @@ import logging
 from os import environ, pardir, path
 
 from yaralyzer.config import YaralyzerConfig, is_env_var_set_and_not_false, is_invoked_by_pytest
+from yaralyzer.util.logging import log, set_log_level
 
 PDFALYZE = 'pdfalyze'
 PROJECT_ROOT = path.join(str(importlib.resources.files('pdfalyzer')), pardir)
@@ -17,6 +18,7 @@ PDF_PARSER_EXECUTABLE_ENV_VAR = 'PDFALYZER_PDF_PARSER_PY_PATH'
 
 YaralyzerConfig.LOG_DIR = environ.get(LOG_DIR_ENV_VAR)
 YaralyzerConfig.LOG_LEVEL = logging.getLevelName(environ.get(LOG_LEVEL_ENV_VAR, 'WARN'))
+#set_log_level(YaralyzerConfig.LOG_LEVEL)
 
 
 class PdfalyzerConfig:

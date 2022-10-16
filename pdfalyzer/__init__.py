@@ -17,6 +17,7 @@ from yaralyzer.output.file_export import invoke_rich_export
 from yaralyzer.output.rich_console import console
 from yaralyzer.util.logging import log, log_and_print
 
+from pdfalyzer.output.pdfalyzer_presenter import PdfalyzerPresenter
 from pdfalyzer.pdfalyzer import Pdfalyzer
 from pdfalyzer.util.pdf_parser_manager import PdfParserManager
 from pdfalyzer.util.argument_parser import ALL_STREAMS, output_sections, parse_arguments
@@ -25,6 +26,7 @@ from pdfalyzer.util.argument_parser import ALL_STREAMS, output_sections, parse_a
 def pdfalyze():
     args = parse_arguments()
     pdfalyzer = Pdfalyzer(args.file_to_scan_path)
+    pdfalyzer = PdfalyzerPresenter(pdfalyzer)
     output_basepath = None
 
     # Binary stream extraction is a special case

@@ -56,7 +56,14 @@ class PdfTreeNode(NodeMixin, PdfObjectProperties):
     @classmethod
     def from_reference(cls, ref: IndirectObject, address: str) -> 'PdfTreeNode':
         """Builds a PdfTreeDecorator from an IndirectObject"""
-        return cls(ref.get_object(), address, ref.idnum)
+        try:
+            return cls(ref.get_object(), address, ref.idnum)
+        except PdfReadError as e:
+            console.print_exception()
+            msg = f"Failed to build node properly because of above exception ({e}). " + \
+                   "Tree integrity not guaranteed."
+            log.warning(msg)
+            return cls(ref, address, ref.idnum)
 
     @classmethod
     def find_common_ancestor_among_nodes(cls, nodes: List['PdfTreeNode']) -> Optional['PdfTreeNode']:
@@ -198,6 +205,13 @@ class PdfTreeNode(NodeMixin, PdfObjectProperties):
                 log.debug(f"   SymLinking {relationship} to {self}")
                 SymlinkNode(self, parent=relationship.from_node)
 
+    def descendants_count(self) -> int:
+        """How many nodes in the tree are children/grandchildren/great grandchildren/etc of this one"""
+        return len(self.children) + sum([child.descendants_count() for child in self.children])
+
+    def unique_labels_of_referring_nodes(self) -> List[str]:
+        return list(set([r.from_node.label for r in self.non_tree_relationships]))
+
     def print_non_tree_relationships(self) -> None:
         """console.print this node's non tree relationships (represented by SymlinkNodes in the tree)."""
         self._write_non_tree_relationships(console.print)
@@ -211,7 +225,7 @@ class PdfTreeNode(NodeMixin, PdfObjectProperties):
         write_method(f"Other relationships of {escape(str(self))}")
 
         for r in self.non_tree_relationships:
-            write_method(f"  Relationship: {escape(str(r))}")
+            write_method(f"  Relationship: {escape(str(r))}, Node Weight: {r.from_node.descendants_count()}")
 
     def _colored_address(self, max_length: Optional[int] = None) -> Text:
         """Rich text version of tree_address()"""
@@ -226,3 +240,16 @@ class PdfTreeNode(NodeMixin, PdfObjectProperties):
 
     def __repr__(self) -> str:
         return self.__str__()
+
+
+
+def find_node_with_lowest_id(list_of_nodes: List[PdfTreeNode]) -> PdfTreeNode:
+    """Find node in list_of_nodes_with_lowest ID"""
+    lowest_idnum = min([n.idnum for n in list_of_nodes])
+    return next(n for n in list_of_nodes if n.idnum == lowest_idnum)
+
+
+def find_node_with_most_descendants(list_of_nodes: List[PdfTreeNode]) -> PdfTreeNode:
+    """Find node in list_of_nodes_with most descendants"""
+    max_descendants = max([node.descendants_count() for node in list_of_nodes])
+    return find_node_with_lowest_id([n for n in list_of_nodes if n.descendants_count() == max_descendants])

@@ -4,14 +4,12 @@ Some methods to help with the direct manipulation/processing of PyPDF2's PdfObje
 import re
 from typing import Any, List, Optional, Union
 
-from PyPDF2.generic import IndirectObject
+from PyPDF2.generic import IndirectObject, PdfObject
 from yaralyzer.util.logging import log
 
 from pdfalyzer.helpers.string_helper import is_prefixed_by_any, replace_digits
 from pdfalyzer.pdf_object_relationship import PdfObjectRelationship
 from pdfalyzer.util.adobe_strings import *
-
-
 
 
 def pdf_object_id(pdf_object) -> Optional[int]:
@@ -28,12 +26,8 @@ def _sort_pdf_object_refs(refs: List[PdfObjectRelationship]) -> List[PdfObjectRe
     return sorted(refs, key=lambda ref: ref.to_obj.idnum)
 
 
-def has_indeterminate_prefix(address: str) -> bool:
-    return is_prefixed_by_any(address, INDETERMINATE_PREFIXES)
-
-
-def have_same_non_digit_chars(addresses: List[str]) -> bool:
-    """Returns true if string addresses are same except for digits."""
-    digits_to_Xes = set([replace_digits(a) for a in addresses])
-    log.info(f"Digits to Xes: {digits_to_Xes}")
-    return len(digits_to_Xes) == 1
+def pypdf_class_name(obj: PdfObject) -> str:
+    """Shortened name of type(obj), e.g. PyPDF2.generic._data_structures.ArrayObject becomes Array"""
+    class_pkgs = type(obj).__name__.split('.')
+    class_pkgs.reverse()
+    return class_pkgs[0].removesuffix('Object')

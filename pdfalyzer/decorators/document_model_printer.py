@@ -7,7 +7,8 @@ from PyPDF2.generic import ArrayObject, DictionaryObject, IndirectObject
 from rich.console import Console
 from rich.markup import escape
 
-from pdfalyzer.helpers.string_helper import pp, pypdf_class_name, INDENT_DEPTH
+from pdfalyzer.helpers.pdf_object_helper import pypdf_class_name
+from pdfalyzer.helpers.string_helper import pp, INDENT_DEPTH
 
 
 INDENT_SPACES = ' ' * INDENT_DEPTH

@@ -6,6 +6,8 @@ import re
 from PyPDF2.constants import (CatalogDictionary, ImageAttributes, PageAttributes,
      PagesAttributes, Ressources as Resources)
 
+from pdfalyzer.helpers.string_helper import is_prefixed_by_any
+
 # Fake PDF instructions used to create more explanatory tables/trees/addresses/etc.
 ARRAY_ELEMENT = '/ArrayElement'
 TRAILER = '/Trailer'
@@ -116,7 +118,6 @@ INDETERMINATE_REF_KEYS = [
 
 INDETERMINATE_PREFIXES = [p for p in INDETERMINATE_REF_KEYS if len(p) > 2]
 NON_TREE_KEYS = LINK_NODE_KEYS + NON_TREE_REFERENCES
-EXTERNAL_GRAPHICS_STATE_REGEX = re.compile('/Resources\\[/ExtGState\\]\\[/GS\\d+\\]')
 
 MULTI_REF_NODE_TYPES = [
     NUMS,
@@ -134,3 +135,7 @@ IMPERMANENT_KEYS = [
 
 # Address reference keys that adon't always appear or b) can appear more than once pointing at same node
 NON_STANDARD_ADDRESS_NODES = IMPERMANENT_KEYS + MULTI_REF_NODE_TYPES
+
+
+def has_indeterminate_prefix(address: str) -> bool:
+    return is_prefixed_by_any(address, INDETERMINATE_PREFIXES)
