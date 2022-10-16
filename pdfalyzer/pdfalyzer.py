@@ -300,12 +300,9 @@ class Pdfalyzer:
             set_lowest_id_node_as_parent = True
             possible_parent_relationships = node.non_tree_relationships # TODO 'possible_parent_relationships'
             addresses = node.unique_addresses()
-            # TODO: this name sucks
             unique_labels_of_referring_nodes = list(set([r.from_node.label for r in node.non_tree_relationships]))
             common_ancestor_among_possible_parents = node.common_ancestor_among_non_tree_relationships()
 
-            if node.idnum == 8148:
-                import pdb;pdb.set_trace()
             # TODO we should have removed the node from indeterminate_node_ids before this point
             if node.parent is not None:
                 log.info(f"{node} marked indeterminate but already has parent: {node.parent}")
@@ -317,7 +314,7 @@ class Pdfalyzer:
 
             if len(unique_labels_of_referring_nodes) == 1:
                 log.info(f"Single label for all of {node}'s relationships; setting parent as lowest id")
-            elif node.label == COLOR_SPACE:
+            elif node.type == COLOR_SPACE:
                 log.info("Color space node found; placing at lowest ID")
             elif len(addresses) == 1:
                 log.info(f"{node}'s other relationships all use key {addresses[0]}, linking to lowest id")

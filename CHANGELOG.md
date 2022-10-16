@@ -1,4 +1,6 @@
 # NEXT RELEASE
+
+### 1.11.4
 * Fix parent/child issue with `/Annots` arrays being indeterminate
 
 ### 1.11.3
