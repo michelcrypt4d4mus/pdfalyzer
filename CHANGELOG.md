@@ -1,5 +1,9 @@
 # NEXT RELEASE
 
+### 1.12.1
+* Check for any explicit `/Kids` relationships when placing indeterminate nodes
+* All other things being equal prefer a single `/Page` or `/Pages` referrer as the parent
+
 # 1.12.0
 * Rich table view displays object properties and referenced nodes with appropriate color and labeling
 * Style `/Encoding` objects as part of the font family

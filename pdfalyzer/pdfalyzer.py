@@ -179,20 +179,40 @@ class Pdfalyzer:
         indeterminate_nodes_string = "\n   ".join([f"{node}" for node in indeterminate_nodes])
         log.info(f"Resolving {len(indeterminate_nodes)} indeterminate nodes: {indeterminate_nodes_string}")
 
+        # Looking for situations where we can pick the node with the most descendants that
+        # has a relationship to the indeterminate node as the parent
         for node in indeterminate_nodes:
-            # We're basically checking for situations where we can just pick the lowest ID object that
-            # has a relationship to the indeterminate node. In rare cases we will override 'possible_parent_relationships'.
             if node.parent is not None:
                 log.info(f"{node} marked indeterminate but has parent: {node.parent}")
                 continue
             elif self._attempt_tree_placement(node):
-                log.info("SUCCESSFULLY PLACED indeterminate node custom style")
                 continue
 
             log.debug(f"Attempting to resolve indeterminate node: {node}")
-            possible_parent_relationships = node.non_tree_relationships.copy()
             unique_refferer_labels = node.unique_labels_of_referring_nodes()
             unique_addresses = node.unique_addresses()
+            possible_parent_relationships = node.non_tree_relationships.copy()
+
+            explicit_tree_relationships = [
+                r for r in possible_parent_relationships
+                if r.reference_key in [K, KIDS]
+            ]
+
+            if len(explicit_tree_relationships) == 1:
+                log.info(f"Explicit child relationship: {explicit_tree_relationships[0]}")
+                node.set_parent(explicit_tree_relationships[0].from_node)
+                continue
+
+            # Note this checks the from_node.type, not the reference key
+            page_relationships = [
+                r for r in possible_parent_relationships
+                if r.from_node.type in PAGE_AND_PAGES
+            ]
+
+            if len(page_relationships) == 1:
+                log.info(f"Preferentially choosing /Page(s) as parent: {page_relationships[0]}")
+                node.set_parent(page_relationships[0].from_node)
+                continue
 
             # Check addresses and referring node labels to see if they are all the same
             reference_keys_or_nodes_are_same = any([
@@ -200,33 +220,30 @@ class Pdfalyzer:
                 for _list in [unique_addresses, unique_refferer_labels]
             ])
 
+            possible_parents = [r.from_node for r in possible_parent_relationships]
+            parent = find_node_with_most_descendants(possible_parents)
+
             # Clauses that don't 'raise' or 'continue' result in related node with lowest ID being made parent
             if reference_keys_or_nodes_are_same:
                 log.info(f"Fuzzy match addresses: {unique_addresses} / labels: {unique_refferer_labels}")
             elif node.type == COLOR_SPACE:
                 log.info("Color space node found; placing at lowest ID")
             else:
-                log.warning(f"Indeterminate {node} parent based on descendant count, not PDF logic. Options were:")
+                log.warning(f"Indeterminate {node} parent {escape(str(parent))} chosen based on descendant count, not PDF logic.")
                 node.log_non_tree_relationships()
 
-            possible_parents = [r.from_node for r in possible_parent_relationships]
-            node.set_parent(find_node_with_most_descendants(possible_parents))
+            node.set_parent(parent)
 
     def _attempt_tree_placement(self, node: PdfTreeNode) -> bool:
         """Attempt to find place for node in self.pdf_tree."""
-        # TODO we should have removed the node from indeterminate_node_ids before this point
-        common_ancestor_among_possible_parents = node.common_ancestor_among_non_tree_relationships()
-
         # As opposed to INDETERMINITE
         determinate_relationships = [
             r for r in node.non_tree_relationships
             if r.from_node.type not in NON_TREE_KEYS
         ]
 
+        common_ancestor_among_possible_parents = node.common_ancestor_among_non_tree_relationships()
         log.info(f"Found {len(determinate_relationships)} determinate relationships...")
-
-        for r in determinate_relationships:
-            log.debug(f"  Determinate relationship: {r}")
 
         if common_ancestor_among_possible_parents is not None:
             log.info(f"  Found common ancestor: {common_ancestor_among_possible_parents}")
@@ -234,7 +251,7 @@ class Pdfalyzer:
         elif len(determinate_relationships) == 1:
             log.info(f"  Single determinate_relationship {determinate_relationships[0]}; making it the parent")
             node.set_parent(determinate_relationships[0].from_node)
-        elif node.unique_labels_of_referring_nodes() == set([PAGE, PAGES]):
+        elif set(node.unique_labels_of_referring_nodes()) == set(PAGE_AND_PAGES):
             # An edge case seen in the wild involving a PDF that doesn't conform to the PDF spec
             log.warning(f"  Failed to place {node}; seems to be a loose {PAGE}. Linking to first {PAGES}")
             pages_nodes = [n for n in node.nodes_with_non_tree_references_to_self() if node.type == PAGES]

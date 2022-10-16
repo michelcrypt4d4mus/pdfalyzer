@@ -218,14 +218,14 @@ class PdfTreeNode(NodeMixin, PdfObjectProperties):
 
     def log_non_tree_relationships(self) -> None:
         """log this node's non tree relationships (represented by SymlinkNodes in the tree)."""
-        self._write_non_tree_relationships(log.info)
+        self._write_non_tree_relationships(log.warning)
 
     def _write_non_tree_relationships(self, write_method: Callable) -> None:
         """Use write_method() to write self.non_tree_relationships."""
-        write_method(f"Other relationships of {escape(str(self))}")
+        write_method(f"{escape(str(self))} parent from candidates:")
 
-        for r in self.non_tree_relationships:
-            write_method(f"  Relationship: {escape(str(r))}, Node Weight: {r.from_node.descendants_count()}")
+        for i, r in enumerate(self.non_tree_relationships):
+            write_method(f"  {i + 1}. {escape(str(r))}, Descendant Count: {r.from_node.descendants_count()}")
 
     def _colored_address(self, max_length: Optional[int] = None) -> Text:
         """Rich text version of tree_address()"""
