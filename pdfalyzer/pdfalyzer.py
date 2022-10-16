@@ -42,7 +42,7 @@ class Pdfalyzer:
 
         # Initialize tracking variables
         self.indeterminate_ids = set()  # See INDETERMINATE_REF_KEYS comment
-        self.traversed_nodes: Dict[int, PdfTreeNode] = {}  # Nodes we've seen already
+        self.nodes_encountered: Dict[int, PdfTreeNode] = {}  # Nodes we've seen already
         self.font_infos: List[FontInfo] = []  # Font summary objects
         self.max_generation = 0  # PDF revisions are "generations"; this is the max generation encountered
 
@@ -52,14 +52,14 @@ class Pdfalyzer:
         self.pdf_size = trailer.get(SIZE)
         trailer_id = self.pdf_size if self.pdf_size is not None else TRAILER_FALLBACK_ID
         self.pdf_tree = PdfTreeNode(trailer, TRAILER, trailer_id)
-        self.traversed_nodes[self.pdf_tree.idnum] = self.pdf_tree
+        self.nodes_encountered[self.pdf_tree.idnum] = self.pdf_tree
         self.walk_node(self.pdf_tree)  # Build tree by recursively following relationships between nodes
 
         # After scanning all objects we place nodes whose position was uncertain, extract fonts, and verify
         self._resolve_indeterminate_nodes()
         self._extract_font_infos()
-        self._verify_all_traversed_nodes_are_in_tree()
-        self._verify_untraversed_nodes_are_untraversable()
+        self._verify_all_nodes_encountered_are_in_tree()
+        self._verify_unencountered_are_untraversable()
 
         # Create SymlinkNodes for relationships between PDF objects that are not parent/child relationships.
         # (Do this last because it has the side effect of making a lot more nodes)
@@ -117,7 +117,7 @@ class Pdfalyzer:
            plus any modifiers like [2] or [/Something]
         """
         log.info(f'Assessing relationship {relationship}...')
-        was_seen_before = (relationship.to_obj.idnum in self.traversed_nodes) # Must come before _build_or_find()
+        was_seen_before = (relationship.to_obj.idnum in self.nodes_encountered) # Must come before _build_or_find()
         from_node = relationship.from_node
         to_node = self._build_or_find_node(relationship.to_obj, relationship.address)
         self.max_generation = max([self.max_generation, relationship.to_obj.generation or 0])
@@ -175,7 +175,7 @@ class Pdfalyzer:
         /Pages parent of the /Page before committing to a tree structure.
         """
         #set_log_level('INFO')
-        indeterminate_nodes = [self.traversed_nodes[idnum] for idnum in self.indeterminate_ids]
+        indeterminate_nodes = [self.nodes_encountered[idnum] for idnum in self.indeterminate_ids]
         indeterminate_nodes_string = "\n   ".join([f"{node}" for node in indeterminate_nodes])
         log.info(f"Resolving {len(indeterminate_nodes)} indeterminate nodes: {indeterminate_nodes_string}")
 
@@ -234,14 +234,13 @@ class Pdfalyzer:
         elif len(determinate_relationships) == 1:
             log.info(f"  Single determinate_relationship {determinate_relationships[0]}; making it the parent")
             node.set_parent(determinate_relationships[0].from_node)
-        elif node.label.startswith(RESOURCES) and node.unique_labels_of_referring_nodes() == set([PAGE, PAGES]):
+        elif node.unique_labels_of_referring_nodes() == set([PAGE, PAGES]):
             # An edge case seen in the wild involving a PDF that doesn't conform to the PDF spec
             log.warning(f"  Failed to place {node}; seems to be a loose {PAGE}. Linking to first {PAGES}")
             pages_nodes = [n for n in node.nodes_with_non_tree_references_to_self() if node.type == PAGES]
             node.set_parent(sorted(pages_nodes, key=lambda n: n.idnum)[0])
         else:
-            # Then we didn't manage to place it.
-            return False
+            return False  # Then we didn't manage to place it.
 
         return True
 
@@ -258,24 +257,24 @@ class Pdfalyzer:
                 ]
 
     def _build_or_find_node(self, relationship: IndirectObject, relationship_key: str) -> PdfTreeNode:
-        """If node exists in self.traversed_nodes return it, otherwise build a node and store it."""
-        if relationship.idnum in self.traversed_nodes:
-            return self.traversed_nodes[relationship.idnum]
+        """If node exists in self.nodes_encountered return it, otherwise build a node and store it."""
+        if relationship.idnum in self.nodes_encountered:
+            return self.nodes_encountered[relationship.idnum]
 
         log.debug(f"Building node for {relationship}")
         new_node = PdfTreeNode.from_reference(relationship, relationship_key)
-        self.traversed_nodes[relationship.idnum] = new_node
+        self.nodes_encountered[relationship.idnum] = new_node
         return new_node
 
-    def _print_traversed_nodes(self) -> None:
+    def _print_nodes_encountered(self) -> None:
         """Debug method that displays which nodes have already been walked"""
-        for i in sorted(self.traversed_nodes.keys()):
-            console.print(f'{i}: {self.traversed_nodes[i]}')
+        for i in sorted(self.nodes_encountered.keys()):
+            console.print(f'{i}: {self.nodes_encountered[i]}')
 
-    def _verify_all_traversed_nodes_are_in_tree(self) -> None:
+    def _verify_all_nodes_encountered_are_in_tree(self) -> None:
         """Make sure every node we can see is reachable from the root of the tree"""
         missing_nodes = [
-            node for idnum, node in self.traversed_nodes.items()
+            node for idnum, node in self.nodes_encountered.items()
             if self.find_node_by_idnum(idnum) is None
         ]
 
@@ -286,13 +285,13 @@ class Pdfalyzer:
             console.print(msg)
             log.warning(msg)
 
-    def _verify_untraversed_nodes_are_untraversable(self) -> None:
+    def _verify_unencountered_are_untraversable(self) -> None:
         """Make sure any PDF object IDs we can't find in tree are /ObjStm or /Xref nodes"""
         if self.pdf_size is None:
             log.warning(f"{SIZE} not found in PDF trailer; cannot verify all nodes are in tree")
             return
         if self.max_generation > 0:
-            log.warning(f"_verify_untraversed_nodes_are_untraversable() only checking generation {self.max_generation}")
+            log.warning(f"_verify_unencountered_are_untraversable() only checking generation {self.max_generation}")
 
         # We expect to see all ordinals up to the number of nodes /Trailer claims exist as obj. IDs.
         missing_node_ids = [i for i in range(1, self.pdf_size) if self.find_node_by_idnum(i) is None]

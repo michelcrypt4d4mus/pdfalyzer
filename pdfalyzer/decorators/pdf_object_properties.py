@@ -8,9 +8,8 @@ from rich.markup import escape
 from rich.text import Text
 
 from pdfalyzer.helpers.pdf_object_helper import pypdf_class_name
-from pdfalyzer.helpers.rich_text_helper import get_type_style, get_type_string_style
+from pdfalyzer.helpers.rich_text_helper import get_label_style, get_type_style, get_type_string_style
 from pdfalyzer.helpers.string_helper import root_address
-from pdfalyzer.output.layout import get_label_style
 from pdfalyzer.output.pdf_node_rich_table import get_node_type_style
 from pdfalyzer.util.adobe_strings import *
 

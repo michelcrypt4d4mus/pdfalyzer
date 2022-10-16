@@ -17,10 +17,9 @@ from yaralyzer.helpers.rich_text_helper import size_text
 from yaralyzer.output.rich_console import BYTES_NO_DIM, YARALYZER_THEME
 from yaralyzer.util.logging import log
 
-from pdfalyzer.helpers.rich_text_helper import PDF_ARRAY, TYPE_STYLES
+from pdfalyzer.helpers.rich_text_helper import PDF_ARRAY, TYPE_STYLES, get_label_style
 from pdfalyzer.helpers.pdf_object_helper import pypdf_class_name
 from pdfalyzer.helpers.string_helper import root_address
-from pdfalyzer.output.layout import get_label_style
 from pdfalyzer.util.adobe_strings import *
 
 # For printing SymlinkNodes

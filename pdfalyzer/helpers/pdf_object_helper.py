@@ -7,7 +7,6 @@ from typing import Any, List, Optional, Union
 from PyPDF2.generic import IndirectObject, PdfObject
 from yaralyzer.util.logging import log
 
-from pdfalyzer.helpers.string_helper import is_prefixed_by_any, replace_digits
 from pdfalyzer.pdf_object_relationship import PdfObjectRelationship
 from pdfalyzer.util.adobe_strings import *
 

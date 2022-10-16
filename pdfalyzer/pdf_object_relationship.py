@@ -100,7 +100,6 @@ class PdfObjectRelationship:
         return f"{self.from_node} ref_key: {self.reference_key}, addr: {self.address} => nodeID {self.to_obj.idnum}"
 
 
-
 def _build_address(ref_key: Union[str, int], base_address: Optional[str] = None) -> str:
     """
     Append either array index indicators e.g. [5] or reference_keys. reference_keys that appear in a

@@ -3,7 +3,6 @@ Rich colors: https://rich.readthedocs.io/en/stable/appendix/colors.html
 TODO: interesting colors # row_styles[0] = 'reverse bold on color(144)' <-
 """
 import re
-import time
 from numbers import Number
 from os import path
 from typing import List, Union
@@ -11,17 +10,14 @@ from typing import List, Union
 from PyPDF2.generic import ByteStringObject, IndirectObject
 from rich import box
 from rich.columns import Columns
-from rich.padding import Padding
 from rich.panel import Panel
-from rich.style import Style
-from rich.table import Table
 from rich.text import Text
 from rich.theme import Theme
 from yaralyzer.output.rich_console import GREY_ADDRESS, YARALYZER_THEME_DICT, console
 from yaralyzer.helpers.rich_text_helper import prefix_with_plain_text_obj
 from yaralyzer.util.logging import log, log_and_print
 
-from pdfalyzer.helpers.dict_helper import merge
+from pdfalyzer.util import adobe_strings
 
 # Colors
 DANGER_HEADER = 'color(88) on white'  # Red
@@ -76,7 +72,6 @@ PDFALYZER_THEME_DICT.update({
 
 console.push_theme(Theme(PDFALYZER_THEME_DICT))
 
-
 TYPE_STYLES = {
     Number: 'bright_cyan bold',
     dict: 'color(64)',
@@ -94,10 +89,6 @@ METER_INTERVAL = (100 / float(len(METER_COLORS))) + 0.1
 UNDERLINE_CONFIDENCE_THRESHOLD = 90
 BOLD_CONFIDENCE_THRESHOLD = 60
 DIM_COUNTRY_THRESHOLD = 25
-
-# Table stuff
-DEFAULT_SUBTABLE_COL_STYLES = ['white', 'bright_white']
-HEADER_PADDING = (1, 1)
 
 # For the table shown by running pdfalyzer_show_color_theme
 MAX_THEME_COL_SIZE = 35
@@ -119,31 +110,6 @@ def get_type_string_style(klass) -> str:
         return f"{get_type_style(klass)} dim"
 
 
-def generate_subtable(cols, header_style='subtable') -> Table:
-    """Suited for lpacement in larger tables"""
-    table = Table(
-        box=box.SIMPLE,
-        show_edge=False,
-        collapse_padding=True,
-        header_style=header_style,
-        show_lines=False,
-        border_style='grey.dark',
-        expand=True)
-
-    for i, col in enumerate(cols):
-        if i + 1 < len(cols):
-            table.add_column(col, style=DEFAULT_SUBTABLE_COL_STYLES[0], justify='left')
-        else:
-            table.add_column(col, style='off_white', justify='right')
-
-    return table
-
-
-def pad_header(header: str) -> Padding:
-    """Would pad anything, not just headers"""
-    return Padding(header, HEADER_PADDING)
-
-
 def pdfalyzer_show_color_theme() -> None:
     """Utility method to show pdfalyzer's color theme. Invocable with 'pdfalyzer_show_colors'."""
     console.print(Panel('The Pdfalyzer Color Theme', style='reverse'))
@@ -155,3 +121,43 @@ def pdfalyzer_show_color_theme() -> None:
     ]
 
     console.print(Columns(colors, column_first=True, padding=(0,3)))
+
+
+DEFAULT_LABEL_STYLE = 'yellow'
+FONT_OBJ_BLUE = 'deep_sky_blue4 bold'
+PDF_NON_TREE_REF = 'color(243)'
+
+LABEL_STYLES = [
+    [re.compile('JavaScript|JS|OpenAction', re.I | re.M), 'blink bold red'],
+    [re.compile(f'^{adobe_strings.FONT_DESCRIPTOR}'),     'cornflower_blue'],
+    [re.compile(f'^{adobe_strings.FONT_FILE}'),           'steel_blue1'],
+    [re.compile(f'^{adobe_strings.FONT}'),                FONT_OBJ_BLUE],
+    [re.compile(f'^{adobe_strings.TO_UNICODE}'),          'grey30'],
+    [re.compile(f'^{adobe_strings.WIDTHS}'),              'color(67)'],
+    [re.compile(f'^{adobe_strings.W}'),                   'color(67)'],
+    [re.compile(f'^{adobe_strings.RESOURCES}'),           'magenta'],
+    [re.compile('/(Trailer|Root|Info|Outlines)'),         'bright_green'],
+    [re.compile('/Catalog'),                              'color(47)'],
+    [re.compile('/(Metadata|ViewerPreferences)'),         'color(35)'],
+    [re.compile('^/Contents'),                            'medium_purple1'],
+    [re.compile('^/Action'),                              'dark_red'],
+    [re.compile('^/Annots'),                              'deep_sky_blue4'],
+    [re.compile('^/Annot'),                               'color(24)'],
+    [re.compile('^/Pages'),                               'dark_orange3'],
+    [re.compile('^/Page'),                                'light_salmon3'],
+    [re.compile('^/ColorSpace'),                          'medium_orchid1'],
+    [re.compile('^/(URI|Names)'),                         'white'],
+    [re.compile(f'^{adobe_strings.XOBJECT}'),             'grey37'],
+    [re.compile(f'^{adobe_strings.UNLABELED}'),           'grey35 reverse'],
+    [re.compile(f'^{adobe_strings.XREF}'),                'color(148)'],
+]
+
+LABEL_STYLES += [
+    [re.compile(f'^{key}'), PDF_NON_TREE_REF]
+    for key in adobe_strings.NON_TREE_REFERENCES
+]
+
+
+def get_label_style(label: str) -> str:
+    """Lookup a style based on the label string"""
+    return next((ls[1] for ls in LABEL_STYLES if ls[0].search(label)), DEFAULT_LABEL_STYLE)

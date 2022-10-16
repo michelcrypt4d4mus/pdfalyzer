@@ -57,6 +57,8 @@ For info on how to setup a dev environment, see [Contributing](#contributing) se
 
 
 # Usage
+If your python scripts setup is less than ideal and you can't get the `pdfalyze` command to work, `python -m pdfalyzer` should be an equivalent, more portable version of the same command.
+
 Run `pdfalyze --help` to see usage instructions. As of right now these are the options:
 
 ![argparse_help](doc/svgs/rendered_images/pdfalyze_help_prince_theme.png)
@@ -131,21 +133,20 @@ The Pdfalyzer can export visualizations to HTML, ANSI colored text, and SVG imag
 
 
 ### Basic Tree View
-As you can see the "mad sus" `/OpenAction` relationship is highlighted bright red, as would be a couple of other suspicious PDF instructions like `/JavaScript` that don't exist in the PDF but do exist in other documents.
+As you can see the suspicious `/OpenAction` relationship is highlighted bright red, as would be a couple of other sus PDF instructions like `/JavaScript` or `/AcroForm` if they exist in the PDF being pdfalyzed.
 
 The dimmer (as in "harder to see") nodes[^5] marked with `Non Child Reference` give you a way to visualize the relationships between PDF objects that exist outside of the tree structure's parent/child relationships.
 
 ![Basic Tree](doc/svgs/rendered_images/basic_tree.png)
 
-That's a pretty basic document. [Here's the basic tree for a more complicated PDF](doc/svgs/rendered_images/NMAP_Commands_Cheat_Sheet_and_Tutorial.pdf.tree.svg.png).
+That's a pretty basic document. [Here's the basic tree for a more complicated PDF containing an NMAP cheat sheet](doc/svgs/rendered_images/NMAP_Commands_Cheat_Sheet_and_Tutorial.pdf.tree.svg.png).
 
 ### Rich Tree View
 This image shows a more in-depth view of of the PDF tree for the same document shown above. This tree (AKA the "rich" tree) has almost everything. Shows all PDF object properties, all relationships between objects, and sizable previews of any binary data streams embedded or encrypted in the document. Note that in addition to `/OpenAction`, the Adobe Type1 font binary is also red (Google's project zero regards any Adobe Type1 font as "mad sus").
 
 ![Rich Tree](doc/svgs/rendered_images/rich_table_tree.png)
 
-
-[And here's the rich tree for the same more complicated PDF linked to in the Basic Tree section](doc/svgs/rendered_images/NMAP_Commands_Cheat_Sheet_and_Tutorial.pdf.rich_table_tree.png).
+[And here's the rich tree for the same more complicated NMAP cheat sheet PDF linked instead of shown directly in the previous section](doc/svgs/rendered_images/NMAP_Commands_Cheat_Sheet_and_Tutorial.pdf.rich_table_tree.png).
 
 
 ### Binary Analysis (And Lots Of It)
@@ -173,6 +174,7 @@ This image shows a more in-depth view of of the PDF tree for the same document s
 
 #### Now There's Even A Fancy Table To Tell You What The `chardet` Library Would Rank As The Most Likely Encoding For A Chunk Of Binary Data
 Behold the beauty:
+
 ![Basic Tree](doc/svgs/rendered_images/decoding_and_chardet_table_2.png)
 
 

@@ -12,16 +12,14 @@ from rich.table import Table
 from rich.text import Text
 from yaralyzer.helpers.bytes_helper import print_bytes
 from yaralyzer.output.rich_console import console
-from yaralyzer.output.rich_layout_elements import bytes_hashes_table
 from yaralyzer.util.logging import log
 
 from pdfalyzer.binary.binary_scanner import BinaryScanner
-from pdfalyzer.output.layout import get_label_style
-from pdfalyzer.helpers.rich_text_helper import get_type_style
+from pdfalyzer.helpers.rich_text_helper import get_label_style, get_type_style
 from pdfalyzer.helpers.string_helper import pp
 from pdfalyzer.output.layout import print_section_subheader, print_headline_panel, subheading_width
-from pdfalyzer.util.adobe_strings import (FONT, FONT_DESCRIPTOR, FONT_FILE, FONT_LENGTHS, RESOURCES, SUBTYPE,
-     TO_UNICODE, TYPE, W, WIDTHS)
+from pdfalyzer.util.adobe_strings import (FONT, FONT_DESCRIPTOR, FONT_FILE, FONT_LENGTHS, RESOURCES,
+     SUBTYPE, TO_UNICODE, TYPE, W, WIDTHS)
 
 CHARMAP_TITLE = 'Character Mapping (As Extracted By PyPDF2)'
 CHARMAP_TITLE_PADDING = (1, 0, 0, 2)

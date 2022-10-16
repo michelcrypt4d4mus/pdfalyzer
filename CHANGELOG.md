@@ -1,7 +1,8 @@
 # NEXT RELEASE
+* Launchable with `python -m pdfalyzer` for those who can't get `pdfalyze` script to work (h/t @MartinThoma)
 
 ### 1.11.5
-* Last ditch attempt to place indeterminate nodes according to which node has most descendants
+* Last ditch attempt to place indeterminate nodes according to which node has most descendants catches almost everything
 * Refactor `PdfalyzerPresenter` class to handle output formatting.
 
 ### 1.11.4
