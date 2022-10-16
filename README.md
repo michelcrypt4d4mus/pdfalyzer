@@ -119,7 +119,7 @@ This tool is by no means complete. It was built to handle a specific use case wh
 If that does happen and you run into an issue using this tool on a particular PDF it will most likely be an issue with relationships between objects within the PDF that are not meant to be parent/child in the tree structure made visible by this tool. There's not so many of these kinds of object references in any given file but there's a whole galaxy of possibilities and they must each be manually configured to prevent the tool from building an invalid tree.  If you run into that kind of problem take a look at these list constants in the code:
 
 * `NON_TREE_REFERENCES`
-* `INDETERMINATE_REFERENCES`
+* `INDETERMINATE_REF_KEYS`
 
 You might be able to easily fix your problem by adding the Adobe object's reference key to the appropriate list.
 

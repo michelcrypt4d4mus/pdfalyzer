@@ -15,7 +15,6 @@ LOG_DIR_ENV_VAR = 'PDFALYZER_LOG_DIR'
 # 3rd part pdf-parser.py
 PDF_PARSER_EXECUTABLE_ENV_VAR = 'PDFALYZER_PDF_PARSER_PY_PATH'
 
-
 YaralyzerConfig.LOG_DIR = environ.get(LOG_DIR_ENV_VAR)
 YaralyzerConfig.LOG_LEVEL = logging.getLevelName(environ.get(LOG_LEVEL_ENV_VAR, 'WARN'))
 

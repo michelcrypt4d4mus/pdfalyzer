@@ -29,6 +29,7 @@ from pdfalyzer.decorators.document_model_printer import print_with_header
 from pdfalyzer.decorators.pdf_tree_node import DECODE_FAILURE_LEN, PdfTreeNode
 from pdfalyzer.detection.yaralyzer_helper import get_file_yaralyzer
 from pdfalyzer.font_info import FontInfo
+from pdfalyzer.helpers.pdf_object_helper import has_indeterminate_prefix, have_same_non_digit_chars
 from pdfalyzer.helpers.string_helper import is_prefixed_by_any, pp
 from pdfalyzer.detection.yaralyzer_helper import get_bytes_yaralyzer
 from pdfalyzer.output.layout import print_section_header, print_section_subheader, print_section_sub_subheader
@@ -51,7 +52,7 @@ class Pdfalyzer:
         self.pdf_reader = PdfReader(pdf_file)
         self.yaralyzer = get_file_yaralyzer(pdf_path)
         # Initialize tracking variables
-        self.indeterminate_ids = set()  # See INDETERMINATE_REFERENCES comment
+        self.indeterminate_ids = set()  # See INDETERMINATE_REF_KEYS comment
         self.traversed_nodes: Dict[int, PdfTreeNode] = {}  # Nodes we've seen already
         self.font_infos: List[FontInfo] = []  # Font summary objects
         self.max_generation = 0  # PDF revisions are "generations"; this is the max generation encountered
@@ -234,11 +235,11 @@ class Pdfalyzer:
 
     def _process_relationship(self, relationship: PdfObjectRelationship) -> List[PdfTreeNode]:
         """
-        Place the relationshipd 'node' in the tree. Returns a list of nodes to walk next.
+        Place the relationship 'node' in the tree. Returns a list of nodes to walk next.
         'address' is the key used in node.obj to refer to 'relationship' object
            plus any modifiers like [2] or [/Something]
         """
-        log.debug(f'Assessing {relationship.from_node} relationship {relationship}...')
+        log.info(f'Assessing {relationship.from_node} relationship {relationship}...')
         was_seen_before = (relationship.to_obj.idnum in self.traversed_nodes) # Must come before _build_or_find()
         from_node = relationship.from_node
         to_node = self._build_or_find_node(relationship.to_obj, relationship.address)
@@ -300,9 +301,11 @@ class Pdfalyzer:
             possible_parent_relationships = node.non_tree_relationships # TODO 'possible_parent_relationships'
             addresses = node.unique_addresses()
             # TODO: this name sucks
-            unique_labels_of_referring_nodes = set([r.from_node.label for r in node.non_tree_relationships])
+            unique_labels_of_referring_nodes = list(set([r.from_node.label for r in node.non_tree_relationships]))
             common_ancestor_among_possible_parents = node.common_ancestor_among_non_tree_relationships()
 
+            if node.idnum == 8148:
+                import pdb;pdb.set_trace()
             # TODO we should have removed the node from indeterminate_node_ids before this point
             if node.parent is not None:
                 log.info(f"{node} marked indeterminate but already has parent: {node.parent}")
@@ -322,8 +325,10 @@ class Pdfalyzer:
                 log.info(f"{node}'s other relationships are all {EXT_G_STATE} refs; linking to lowest id")
             elif len(addresses) == 2 and (addresses[0] in addresses[1] or addresses[1] in addresses[0]):
                 log.info(f"{node}'s other relationships ref keys are same except slice: {addresses}, linking to lowest id")
+            elif have_same_non_digit_chars(addresses) or have_same_non_digit_chars(unique_labels_of_referring_nodes):
+                log.info(f"Fuzzy match addresses: {addresses}    OR   same labels: {unique_labels_of_referring_nodes}")
             elif any(r.from_node.label == RESOURCES for r in node.non_tree_relationships) and \
-                    all(is_prefixed_by_any(r.from_node.label, INDETERMINATE_REFERENCES) for r in node.non_tree_relationships):
+                    all([has_indeterminate_prefix(r.from_node.label) for r in node.non_tree_relationships]):
                 msg = f"{node} referred to from {RESOURCES} labeled node; all other relationships are indeterminate. "
                 msg += f"Choosing lowest id {RESOURCES} node among them as parent..."
                 possible_parent_relationships = [r for r in node.non_tree_relationships if r.from_node.label == RESOURCES]
@@ -336,7 +341,7 @@ class Pdfalyzer:
             else:
                 possible_parent_relationships = [
                     r for r in node.non_tree_relationships
-                    if r.from_node.label not in INDETERMINATE_REFERENCES
+                    if r.from_node.label not in INDETERMINATE_REF_KEYS
                 ]
 
                 determinate_refkeys = set([r.from_node.label for r in possible_parent_relationships])

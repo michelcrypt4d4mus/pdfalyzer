@@ -177,9 +177,9 @@ class PdfTreeNode(NodeMixin, PdfObjectProperties):
             #       NON_STANDARD_ADDRESS_NODES string to refer here, print a warning about multiple refs.
             if not (is_prefixed_by_any(from_node.label, NON_STANDARD_ADDRESS_NODES) or \
                         all(ref.address in NON_STANDARD_ADDRESS_NODES for ref in refs_to_this_node)):
-                refs_to_this_node_str = comma_join([str(r) for r in refs_to_this_node])
-                msg = f"Multiple refs from {from_node} to {self}: {refs_to_this_node_str}"
-                log.warning(msg + f", using {address}")
+                refs_to_this_node_str = "\n   ".join([f"{i + 1}. {r}" for i, r in enumerate(refs_to_this_node)])
+                msg = f"Multiple refs from {from_node} to {self}:\n   {refs_to_this_node_str}"
+                log.warning(msg + f"\nCommon address of refs: {address}")
 
             return address
 

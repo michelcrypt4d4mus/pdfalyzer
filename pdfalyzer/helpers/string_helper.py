@@ -10,6 +10,7 @@ from yaralyzer.output.rich_console import console_width
 
 INDENT_DEPTH = 4
 PRETTY_PRINT_WIDTH = 60
+DIGIT_REGEX = re.compile("\d+")
 
 # Pretty Printer
 pp = PrettyPrinter(
@@ -57,4 +58,10 @@ def is_prefixed_by_any(_string: str, prefixes: List[str]) -> bool:
 
 
 def bracketed(index: Union[int, str]) -> str:
+    """Surround index with [ and ]."""
     return f"[{index}]"
+
+
+def replace_digits(string_with_digits: str) -> str:
+    """Turn all digits to X chars in a string."""
+    return DIGIT_REGEX.sub('x', string_with_digits)

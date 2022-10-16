@@ -32,7 +32,13 @@ class PdfObjectRelationship:
         self.address = address
 
         # Compute tree placement logic booleans
-        self.is_indeterminate = reference_key in INDETERMINATE_REFERENCES
+        if (is_prefixed_by_any(from_node.type, INDETERMINATE_REF_KEYS) and not isinstance(self.from_node.obj, dict)) \
+            or reference_key in INDETERMINATE_REF_KEYS:
+            log.info(f"Indeterminate node: {from_node}")
+            self.is_indeterminate = True
+        else:
+            self.is_indeterminate = False
+
         self.is_link = reference_key in NON_TREE_KEYS or is_prefixed_by_any(from_node.label, LINK_NODE_KEYS)
         self.is_parent = reference_key == PARENT or (from_node.type == STRUCT_ELEM and reference_key == P)
 

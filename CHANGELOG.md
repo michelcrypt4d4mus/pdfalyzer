@@ -1,4 +1,5 @@
 # NEXT RELEASE
+* Fix parent/child issue with `/Annots` arrays being indeterminate
 
 ### 1.11.3
 * Add `sub_type` to node label

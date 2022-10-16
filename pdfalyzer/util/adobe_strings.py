@@ -97,7 +97,7 @@ NON_TREE_REFERENCES = [
 ]
 
 # Some PdfObjects can't be properly placed in the tree until the entire tree is parsed
-INDETERMINATE_REFERENCES = [
+INDETERMINATE_REF_KEYS = [
     ANNOTS,  # At least when it appears in a page
     COLOR_SPACE,
     D,
@@ -114,6 +114,7 @@ INDETERMINATE_REFERENCES = [
     UNLABELED, # TODO: this might be wrong? maybe this is where the /Resources actually live?
 ]
 
+INDETERMINATE_PREFIXES = [p for p in INDETERMINATE_REF_KEYS if len(p) > 2]
 NON_TREE_KEYS = LINK_NODE_KEYS + NON_TREE_REFERENCES
 EXTERNAL_GRAPHICS_STATE_REGEX = re.compile('/Resources\\[/ExtGState\\]\\[/GS\\d+\\]')
 
