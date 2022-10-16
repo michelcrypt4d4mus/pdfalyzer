@@ -65,19 +65,6 @@ class PdfTreeNode(NodeMixin, PdfObjectProperties):
             log.warning(msg)
             return cls(ref, address, ref.idnum)
 
-    @classmethod
-    def find_common_ancestor_among_nodes(cls, nodes: List['PdfTreeNode']) -> Optional['PdfTreeNode']:
-        """If any of 'nodes' is a common ancestor of the rest of the 'nodes', return it."""
-        for possible_ancestor in nodes:
-            log.debug(f"  Checking possible common ancestor: {possible_ancestor}")
-            other_nodes = [n for n in nodes if n != possible_ancestor]
-
-            # Look for a common ancestor; if there is one choose it as the parent.
-            if all(possible_ancestor in node.ancestors for node in other_nodes):
-                other_nodes_str = comma_join([str(node) for node in other_nodes])
-                log.info(f"{possible_ancestor} is the common ancestor of {other_nodes_str}")
-                return possible_ancestor
-
     def set_parent(self, parent: 'PdfTreeNode') -> None:
         """Set the parent of this node."""
         if self.parent is not None and self.parent != parent:
@@ -117,11 +104,8 @@ class PdfTreeNode(NodeMixin, PdfObjectProperties):
             log.debug(f"Removing relationship {relationship} from {self}")
             self.non_tree_relationships.remove(relationship)
 
-    def common_ancestor_among_non_tree_relationships(self) -> Optional['PdfTreeNode']:
-        """Return the node in non_tree_relationships that is a common ancestor of the other non_tree_relationships"""
-        return type(self).find_common_ancestor_among_nodes(self.nodes_with_non_tree_references_to_self())
-
-    def nodes_with_non_tree_references_to_self(self) -> List['PdfTreeNode']:
+    def nodes_with_here_references(self) -> List['PdfTreeNode']:
+        """Return a list of nodes that contain this nodes PDF object as an IndirectObject reference"""
         return [r.from_node for r in self.non_tree_relationships if r.from_node]
 
     def non_tree_relationship_count(self) -> int:
@@ -241,15 +225,3 @@ class PdfTreeNode(NodeMixin, PdfObjectProperties):
     def __repr__(self) -> str:
         return self.__str__()
 
-
-
-def find_node_with_lowest_id(list_of_nodes: List[PdfTreeNode]) -> PdfTreeNode:
-    """Find node in list_of_nodes_with_lowest ID"""
-    lowest_idnum = min([n.idnum for n in list_of_nodes])
-    return next(n for n in list_of_nodes if n.idnum == lowest_idnum)
-
-
-def find_node_with_most_descendants(list_of_nodes: List[PdfTreeNode]) -> PdfTreeNode:
-    """Find node in list_of_nodes_with most descendants"""
-    max_descendants = max([node.descendants_count() for node in list_of_nodes])
-    return find_node_with_lowest_id([n for n in list_of_nodes if n.descendants_count() == max_descendants])

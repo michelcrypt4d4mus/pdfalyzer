@@ -28,7 +28,3 @@ def test_referenced_by_keys(analyzing_malicious_pdfalyzer, page_node):
     assert node.unique_addresses() == ['/Resources[/ExtGState][/GS7]']
     assert sorted(page_node.unique_addresses()) ==  ['/Dest[0]', '/Kids[0]', '/Pg']
 
-
-def test_find_common_ancestor_among_nodes(analyzing_malicious_pdfalyzer):
-    nodes = [analyzing_malicious_pdfalyzer.find_node_by_idnum(id) for id in [2, 4, 12, 417]]
-    assert PdfTreeNode.find_common_ancestor_among_nodes(nodes) == nodes[0]

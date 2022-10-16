@@ -21,7 +21,8 @@ from yaralyzer.output.rich_console import console
 from yaralyzer.util.logging import log, set_log_level
 
 from pdfalyzer.decorators.document_model_printer import print_with_header
-from pdfalyzer.decorators.pdf_tree_node import PdfTreeNode, find_node_with_most_descendants
+from pdfalyzer.decorators.indeterminate_node import IndeterminateNode
+from pdfalyzer.decorators.pdf_tree_node import PdfTreeNode
 from pdfalyzer.font_info import FontInfo
 from pdfalyzer.helpers.string_helper import all_strings_are_same_ignoring_numbers, has_a_common_substring
 from pdfalyzer.pdf_object_relationship import PdfObjectRelationship
@@ -112,9 +113,8 @@ class Pdfalyzer:
 
     def _process_relationship(self, relationship: PdfObjectRelationship) -> Optional[PdfTreeNode]:
         """
-        Place the relationship 'node' in the tree. Returns a list of nodes to walk next.
-        'address' is the key used in node.obj to refer to 'relationship' object
-           plus any modifiers like [2] or [/Something]
+        Place the relationship 'node' in the tree. Returns an optional node that should be
+        placed in the PDF node processing queue.
         """
         log.info(f'Assessing relationship {relationship}...')
         was_seen_before = (relationship.to_obj.idnum in self.nodes_encountered) # Must come before _build_or_find()
@@ -135,10 +135,11 @@ class Pdfalyzer:
             if relationship.is_parent:
                 from_node.set_parent(to_node)
             elif to_node.parent is not None:
+                # Some StructElem nodes I have seen use /P or /K despire not being the real parent/child
                 if relationship.from_node.type.startswith(STRUCT_ELEM):# reference_key != relationship.address:
-                    log.info(f"{relationship} to {to_node} has different key v. address. Not placed; parent is {to_node.parent}")
+                    log.info(f"{relationship} fail: {to_node} parent is already {to_node.parent}")
                 else:
-                    log.warning(f"{relationship} cound not become parent of {to_node} bc parent is {to_node.parent}")
+                    log.warning(f"{relationship} fail: {to_node} parent is already {to_node.parent}")
             else:
                 from_node.add_child(to_node)
 
@@ -147,6 +148,8 @@ class Pdfalyzer:
                 log.info(f"  Found {relationship} => {to_node} was marked indeterminate but now placed")
                 self.indeterminate_ids.remove(relationship.to_obj.idnum)
         elif relationship.is_indeterminate or relationship.is_link or was_seen_before:
+            # If the relationship is indeterminate or we've seen the PDF object before, add it as
+            # a non-tree relationship for now. An attempt to place the node will be made at the end.
             to_node.add_non_tree_relationship(relationship)
 
             if was_seen_before:
@@ -169,97 +172,18 @@ class Pdfalyzer:
         return to_node
 
     def _resolve_indeterminate_nodes(self) -> None:
-        """
-        Some nodes cannot be placed until we have walked the rest of the tree. For instance
-        if we encounter a /Page that relationships /Resources we need to know if there's a
-        /Pages parent of the /Page before committing to a tree structure.
-        """
+        """Place all unplaced nodes in the tree."""
         #set_log_level('INFO')
         indeterminate_nodes = [self.nodes_encountered[idnum] for idnum in self.indeterminate_ids]
         indeterminate_nodes_string = "\n   ".join([f"{node}" for node in indeterminate_nodes])
         log.info(f"Resolving {len(indeterminate_nodes)} indeterminate nodes: {indeterminate_nodes_string}")
 
-        # Looking for situations where we can pick the node with the most descendants that
-        # has a relationship to the indeterminate node as the parent
         for node in indeterminate_nodes:
             if node.parent is not None:
                 log.info(f"{node} marked indeterminate but has parent: {node.parent}")
                 continue
-            elif self._attempt_tree_placement(node):
-                continue
 
-            log.debug(f"Attempting to resolve indeterminate node: {node}")
-            unique_refferer_labels = node.unique_labels_of_referring_nodes()
-            unique_addresses = node.unique_addresses()
-            possible_parent_relationships = node.non_tree_relationships.copy()
-
-            explicit_tree_relationships = [
-                r for r in possible_parent_relationships
-                if r.reference_key in [K, KIDS]
-            ]
-
-            if len(explicit_tree_relationships) == 1:
-                log.info(f"Explicit child relationship: {explicit_tree_relationships[0]}")
-                node.set_parent(explicit_tree_relationships[0].from_node)
-                continue
-
-            # Note this checks the from_node.type, not the reference key
-            page_relationships = [
-                r for r in possible_parent_relationships
-                if r.from_node.type in PAGE_AND_PAGES
-            ]
-
-            if len(page_relationships) == 1:
-                log.info(f"Preferentially choosing /Page(s) as parent: {page_relationships[0]}")
-                node.set_parent(page_relationships[0].from_node)
-                continue
-
-            # Check addresses and referring node labels to see if they are all the same
-            reference_keys_or_nodes_are_same = any([
-                all_strings_are_same_ignoring_numbers(_list) or has_a_common_substring(_list)
-                for _list in [unique_addresses, unique_refferer_labels]
-            ])
-
-            possible_parents = [r.from_node for r in possible_parent_relationships]
-            parent = find_node_with_most_descendants(possible_parents)
-
-            # Clauses that don't 'raise' or 'continue' result in related node with lowest ID being made parent
-            if reference_keys_or_nodes_are_same:
-                log.info(f"Fuzzy match addresses: {unique_addresses} / labels: {unique_refferer_labels}")
-            elif node.type == COLOR_SPACE:
-                log.info("Color space node found; placing at lowest ID")
-            else:
-                log.warning(f"Indeterminate {node} parent {escape(str(parent))} chosen based on descendant count, not PDF logic.")
-                node.log_non_tree_relationships()
-
-            node.set_parent(parent)
-
-    def _attempt_tree_placement(self, node: PdfTreeNode) -> bool:
-        """Attempt to find place for node in self.pdf_tree."""
-        # As opposed to INDETERMINITE
-        determinate_relationships = [
-            r for r in node.non_tree_relationships
-            if r.from_node.type not in NON_TREE_KEYS
-        ]
-
-        common_ancestor_among_possible_parents = node.common_ancestor_among_non_tree_relationships()
-        log.info(f"Found {len(determinate_relationships)} determinate relationships...")
-
-        if common_ancestor_among_possible_parents is not None:
-            log.info(f"  Found common ancestor: {common_ancestor_among_possible_parents}")
-            node.set_parent(common_ancestor_among_possible_parents)
-        elif len(determinate_relationships) == 1:
-            log.info(f"  Single determinate_relationship {determinate_relationships[0]}; making it the parent")
-            node.set_parent(determinate_relationships[0].from_node)
-        elif set(node.unique_labels_of_referring_nodes()) == set(PAGE_AND_PAGES):
-            # An edge case seen in the wild involving a PDF that doesn't conform to the PDF spec
-            log.warning(f"  Failed to place {node}; seems to be a loose {PAGE}. Linking to first {PAGES}")
-            pages_nodes = [n for n in node.nodes_with_non_tree_references_to_self() if node.type == PAGES]
-            node.set_parent(sorted(pages_nodes, key=lambda n: n.idnum)[0])
-        else:
-            return False  # Then we didn't manage to place it.
-
-        return True
+            IndeterminateNode(node).place_node()
 
     def _extract_font_infos(self) -> None:
         """Extract information about fonts in the tree and place it in self.font_infos"""
