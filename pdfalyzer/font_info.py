@@ -2,36 +2,22 @@
 Unify font information spread across a bunch of PdfObjects (Font, FontDescriptor,
 and FontFile) into a single class.
 """
-from typing import Union
 
 from PyPDF2._cmap import build_char_map, prepare_cm
 from PyPDF2.generic import IndirectObject, PdfObject
-from rich.columns import Columns
-from rich.padding import Padding
-from rich.table import Table
 from rich.text import Text
-from yaralyzer.helpers.bytes_helper import print_bytes
 from yaralyzer.output.rich_console import console
 from yaralyzer.util.logging import log
 
 from pdfalyzer.binary.binary_scanner import BinaryScanner
-from pdfalyzer.helpers.rich_text_helper import get_label_style, get_type_style
-from pdfalyzer.helpers.string_helper import pp
-from pdfalyzer.output.layout import print_section_subheader, print_headline_panel, subheading_width
+from pdfalyzer.helpers.rich_text_helper import get_label_style
+from pdfalyzer.output.character_mapping import print_character_mapping, print_prepared_charmap
+from pdfalyzer.output.font_summary_table import font_summary_table
+from pdfalyzer.output.layout import print_section_subheader
 from pdfalyzer.util.adobe_strings import (FONT, FONT_DESCRIPTOR, FONT_FILE, FONT_LENGTHS, RESOURCES,
      SUBTYPE, TO_UNICODE, TYPE, W, WIDTHS)
 
-CHARMAP_TITLE = 'Character Mapping (As Extracted By PyPDF2)'
-CHARMAP_TITLE_PADDING = (1, 0, 0, 2)
-CHARMAP_PADDING = (0, 2, 0, 10)
 FONT_SECTION_PREVIEW_LEN = 30
-
-ATTRIBUTES_TO_SHOW_IN_SUMMARY_TABLE = [
-    'sub_type',
-    'base_font',
-    'flags',
-    'bounding_box',
-]
 
 
 class FontInfo:
@@ -150,43 +136,13 @@ class FontInfo:
     def print_summary(self):
         """Prints a table of info about the font drawn from the various PDF objects. quote_type of None means all."""
         print_section_subheader(str(self), style='font.title')
-        #console.print(Panel(self.display_title, width=subheading_width(), padding=(1, 1)), style='font.title')
-        console.print(self._summary_table())
+        console.print(font_summary_table(self))
         console.line()
-        self.print_character_mapping()
-        self.print_prepared_charmap()
-        console.line()
-
-    def print_character_mapping(self):
-        """Prints the character mapping extracted by PyPDF2._charmap in tidy columns"""
-        if self.character_mapping is None or len(self.character_mapping) == 0:
-            log.info(f"No character map found in {self}")
-            return
-
-        print_headline_panel(f"{self} {CHARMAP_TITLE}", style='charmap.title')
-        charmap_entries = [_format_charmap_entry(k, v) for k, v in self.character_mapping.items()]
-
-        charmap_columns = Columns(
-            charmap_entries,
-            column_first=True,
-            padding=CHARMAP_PADDING,
-            equal=True,
-            align='right')
-
-        console.print(Padding(charmap_columns, CHARMAP_TITLE_PADDING), width=subheading_width())
+        print_character_mapping(self)
+        print_prepared_charmap(self)
         console.line()
 
-    def print_prepared_charmap(self):
-        """Prints the prepared_charmap returned by PyPDF2"""
-        if self.prepared_char_map is None:
-            log.info(f"No prepared_charmap found in {self}")
-            return
-
-        headline = f"{self} Adobe PostScript charmap prepared by PyPDF2"
-        print_headline_panel(headline, style='charmap.prepared_title')
-        print_bytes(self.prepared_char_map, style='charmap.prepared')
-        console.print('')
-
+    # TODO: currently unused
     def preview_bytes_at_advertised_lengths(self):
         """Show the bytes at the boundaries provided by /Length1, /Length2, and /Length3, if they exist"""
         lengths = self.lengths or []
@@ -201,64 +157,6 @@ class FontInfo:
 
         print(f"\nfinal bytes back from {self.stream_data.lengths[2]} + 10: {self.stream_data[-10 - -f.lengths[2]:]}")
 
-    def _summary_table(self):
-        """Build a Rich Table with important info about the font"""
-        table = Table('', '', show_header=False)
-        table.columns[0].style = 'font.property'
-        table.columns[0].justify = 'right'
-
-        def add_table_row(name, value):
-            table.add_row(name, Text(str(value), get_type_style(type(value))))
-
-        for attr in ATTRIBUTES_TO_SHOW_IN_SUMMARY_TABLE:
-            attr_value = getattr(self, attr)
-            add_table_row(attr, attr_value)
-
-        add_table_row('/Length properties', self.lengths)
-        add_table_row('total advertised length', self.advertised_length)
-
-        if self.binary_scanner is not None:
-            add_table_row('actual length', self.binary_scanner.stream_length)
-
-        if self.prepared_char_map is not None:
-            add_table_row('prepared charmap length', len(self.prepared_char_map))
-
-        if self._char_map is not None:
-            add_table_row('character mapping count', len(self.character_mapping))
-
-        if self.widths is not None:
-            for k, v in self.width_stats().items():
-                add_table_row(f"char width {k}", v)
-
-        if self.widths is not None:
-            if len(set(self.widths)) == 1:
-                table.add_row(
-                    'char widths',
-                    Text(f"{self.widths[0]} (single value repeated {len(self.widths)} times)", style=get_type_style(list)))
-            else:
-                add_table_row('char widths', self.widths)
-                add_table_row('char widths(sorted)', sorted(self.widths))
-
-        col_0_width = max([len(entry) for entry in table.columns[0]._cells]) + 4
-        table.columns[1].max_width = subheading_width() - col_0_width - 3
-        return table
-
     def __str__(self) -> str:
         return self.display_title
 
-
-def _format_charmap_entry(k: str, v: str) -> Text:
-    key = pp.pformat(k)
-
-    for quote_char in ['"', "'"]:
-        if len(key) > 1 and key.startswith(quote_char) and key.endswith(quote_char):
-            key = key[1:-1]
-
-    return quoted_text(key, 'charmap.byte') + Text(' => ') + quoted_text(str(v), 'charmap.char')
-
-
-def quoted_text(_string, style: Union[str, None]=None, quote_char_style='white', quote_char="'") -> Text:
-    quote_char = Text(quote_char, style=quote_char_style)
-    txt = quote_char + Text(_string, style=style or '') + quote_char
-    txt.justify = 'center'
-    return txt

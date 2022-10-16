@@ -161,3 +161,10 @@ LABEL_STYLES += [
 def get_label_style(label: str) -> str:
     """Lookup a style based on the label string"""
     return next((ls[1] for ls in LABEL_STYLES if ls[0].search(label)), DEFAULT_LABEL_STYLE)
+
+
+def quoted_text(_string, style: Union[str, None]=None, quote_char_style='white', quote_char="'") -> Text:
+    quote_char = Text(quote_char, style=quote_char_style)
+    txt = quote_char + Text(_string, style=style or '') + quote_char
+    txt.justify = 'center'
+    return txt
