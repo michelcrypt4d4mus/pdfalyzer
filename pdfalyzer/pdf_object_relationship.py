@@ -13,12 +13,6 @@ INCOMPARABLE_PROPS = ['from_obj', 'to_obj']
 
 
 class PdfObjectRelationship:
-    """
-    In the case of easy key/value pairs the reference_key and the address are the same but
-    for more complicated references the address will be the reference_key plus sub references.
-    e.g. a reference_key for a /Font labeled /F1 could be '/Resources' but the address
-    might be '/Resources[/Font][/F1] if the /Font is a directly embedded reference instead of a remote one.
-    """
     def __init__(
             self,
             from_node: 'PdfTreeNode',
@@ -26,6 +20,12 @@ class PdfObjectRelationship:
             reference_key: str,
             address: str
         ) -> None:
+        """
+        In the case of easy key/value pairs the reference_key and the address are the same but
+        for more complicated references the address will be the reference_key plus sub references.
+        e.g. a reference_key for a /Font labeled /F1 could be '/Resources' but the address
+        might be '/Resources[/Font][/F1] if the /Font is a directly embedded reference instead of a remote one.
+        """
         self.from_node = from_node
         self.to_obj = to_obj
         self.reference_key = reference_key
@@ -36,12 +36,11 @@ class PdfObjectRelationship:
         self.is_link = reference_key in NON_TREE_KEYS or is_prefixed_by_any(from_node.label, LINK_NODE_KEYS)
         self.is_parent = reference_key == PARENT or (from_node.type == STRUCT_ELEM and reference_key == P)
 
-        if reference_key == KIDS or (from_node.type == STRUCT_ELEM and reference_key == K):
-            log.debug(f"Explicit child reference in {from_node} at {reference_key}")
-            self.is_child = True
         # TODO: there can be multiple OBJR refs to the same object... which wouldn't work w/this code
-        elif from_node.type == OBJR and reference_key == OBJ:
+        if from_node.type == OBJR and reference_key == OBJ:
             log.info(f"Explicit (theoretically) child reference found for {OBJ} in {from_node}")
+            self.is_child = True
+        elif reference_key == KIDS or (from_node.type == STRUCT_ELEM and reference_key == K):
             self.is_child = True
         else:
             self.is_child = False

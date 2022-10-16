@@ -73,7 +73,12 @@ class Pdfalyzer:
         self._extract_font_infos()
         self._verify_all_traversed_nodes_are_in_tree()
         self._verify_untraversed_nodes_are_untraversable()
-        self._symlink_non_tree_relationships()  # Create symlinks for non parent/child relationships between nodes
+
+        # Create SymlinkNodes for relationships between PDF objects that are not parent/child relationships"""
+        for node in self.level_order_node_iterator():
+            if not isinstance(node, SymlinkNode):
+                node.symlink_non_tree_relationships()
+
         log.info(f"Walk complete.")
 
     def walk_node(self, node: PdfTreeNode) -> None:
@@ -248,15 +253,14 @@ class Pdfalyzer:
         if relationship.is_parent or relationship.is_child:
             if relationship.is_parent:
                 from_node.set_parent(to_node)
+                log.debug(f"  Explicit parent link: {relationship}")
             else:
                 from_node.add_child(to_node)
+                log.debug(f"  Explicit child link: {relationship}")
 
             if relationship.to_obj.idnum in self.indeterminate_ids:
-                log.info(f"  Found relationship {relationship} => {from_node} of previously indeterminate node {to_node}")
+                log.info(f"  Found {relationship} => {to_node} was marked indeterminate but now placed")
                 self.indeterminate_ids.remove(relationship.to_obj.idnum)
-
-            if was_seen_before:
-                return []
         elif relationship.is_indeterminate or relationship.is_link or was_seen_before:
             to_node.add_non_tree_relationship(relationship)
 
@@ -271,26 +275,11 @@ class Pdfalyzer:
                 raise PdfWalkError(f"{relationship} - ref has no parent and is not indeterminate")
             else:
                 log.debug(f"  Already saw {relationship}; not scanning next")
-                return []
-        # If no other conditions are met, add the relationship as a child
         else:
+            # If no other conditions are met, add the relationship as a child
             from_node.add_child(to_node)
 
-        log.debug(f"Node to walk next: {to_node}")
-        return [to_node]
-
-    def _symlink_non_tree_relationships(self) -> None:
-        """Create SymlinkNodes for relationships between PDF objects that are not parent/child relationships"""
-        for node in self.level_order_node_iterator():
-            if node.non_tree_relationship_count() == 0 or isinstance(node, SymlinkNode):
-                continue
-
-            log.info(f"Symlinking {node}'s {node.non_tree_relationship_count()} other relationships...")
-
-            # TODO: this should probably be in the PdfTreeNode class
-            for relationship in node.non_tree_relationships:
-                log.debug(f"   Linking {relationship} to {node}")
-                SymlinkNode(node, parent=relationship.from_node)
+        return [] if was_seen_before else [to_node]
 
     def _resolve_indeterminate_nodes(self) -> None:
         """

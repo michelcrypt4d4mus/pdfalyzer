@@ -8,7 +8,7 @@ hooks)
 """
 from typing import Callable, List, Optional, Set
 
-from anytree import NodeMixin
+from anytree import NodeMixin, SymlinkNode
 from PyPDF2.errors import PdfReadError
 from PyPDF2.generic import IndirectObject, PdfObject, StreamObject
 from rich.markup import escape
@@ -82,20 +82,11 @@ class PdfTreeNode(NodeMixin, PdfObjectProperties):
         log.info(f"  Added {parent} as parent of {self}")
 
     def add_child(self, child: 'PdfTreeNode') -> None:
-        """Add a child to this node"""
-        existing_child = next((c for c in self.children if c.idnum == child.idnum), None)
-
-        if existing_child is not None:
-            if existing_child == child:
-                log.debug(f"{child} is already child of {self}")
-                return
-            else:
-                raise PdfWalkError(f"{self} already has child w/this ID: {child}")
-
-        self.children += (child,)
-        child.remove_non_tree_relationship(self)
-        child.known_to_parent_as = child.address_of_this_node_in_other(self) or child.first_address
-        log.info(f"  Added {child} as child of {self}")
+        """Add a child to this node."""
+        if next((c for c in self.children if c.idnum == child.idnum), None) is not None:
+            log.debug(f"{child} is already child of {self}")
+        else:
+            child.set_parent(self)
 
     def add_non_tree_relationship(self, relationship: PdfObjectRelationship) -> None:
         """Add a relationship that points at this node's PDF object. TODO: doesn't include parent/child"""
@@ -191,6 +182,21 @@ class PdfTreeNode(NodeMixin, PdfObjectProperties):
                 log.warning(msg + f", using {address}")
 
             return address
+
+    def tree_relationships(self) -> List['PdfTreeNode']:
+        """Returns parents and children."""
+        return list(self.children) + ([self.parent] if self.parent is not None else [])
+
+    def symlink_non_tree_relationships(self):
+        """Create SymlinkNodes for this node's non parent/child (non-tree) relationships."""
+        log.info(f"Symlinking {self}'s {self.non_tree_relationship_count()} other relationships...")
+
+        for relationship in self.non_tree_relationships:
+            if relationship.from_node in self.tree_relationships():
+                log.warning(f"  {relationship} is still 'non-tree' but is a parent or child of {self}")
+            else:
+                log.debug(f"   SymLinking {relationship} to {self}")
+                SymlinkNode(self, parent=relationship.from_node)
 
     def print_non_tree_relationships(self) -> None:
         """console.print this node's non tree relationships (represented by SymlinkNodes in the tree)."""

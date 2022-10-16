@@ -43,6 +43,7 @@ class PdfObjectProperties:
                 self.type = root_address(self.type)
                 self.label = root_address(self.label)
         else:
+            # If it's not a DictionaryObject all we have as far as naming is the address passed in.
             self.label = address
             self.type = root_address(address) if isinstance(address, str) else None
 
@@ -75,8 +76,13 @@ class PdfObjectProperties:
             return obj
 
     @classmethod
-    def to_table_row(cls, reference_key: str, obj: PdfObject, is_single_row_table=False) -> List[Union[Text, str]]:
-        """PDF object property becomes a formatted 3-tuple for use in Rich tables."""
+    def to_table_row(
+            cls,
+            reference_key: str,
+            obj: PdfObject,
+            is_single_row_table: bool = False
+        ) -> List[Union[Text, str]]:
+        """PDF object property at reference_key becomes a formatted 3-tuple for use in Rich tables."""
         return [
             Text(f"{reference_key}", style='grey' if isinstance(reference_key, int) else ''),
             Text(f"{escape(str(cls.resolve_references(reference_key, obj)))}", style=get_type_style(type(obj))),
