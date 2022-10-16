@@ -6,7 +6,7 @@
 
 # THE PDFALYZER
 
-![](https://raw.githubusercontent.com/michelcrypt4d4mus/pdfalyzer/master/doc/svgs/rendered_images/basic_tree.png)
+![](https://github.com/michelcrypt4d4mus/pdfalyzer/raw/master/doc/svgs/rendered_images/basic_tree.png)
 
 A PDF analysis tool for [visualizing](#example-output) the inner tree-like data structure[^1] of a PDF in [spectacularly large and colorful diagrams](#example-output) as well as scanning the binary streams embedded in the PDF for hidden potentially malicious content. The Pdfalyzer makes heavy use of YARA (via [The Yaralyzer](https://github.com/michelcrypt4d4mus/yaralyzer)) for matching/extracting byte patterns. [The Yaralyzer](https://github.com/michelcrypt4d4mus/yaralyzer) actually began its life as The Pdfalyzer's matching engine.
 
@@ -61,7 +61,7 @@ If your python scripts setup is less than ideal and you can't get the `pdfalyze`
 
 Run `pdfalyze --help` to see usage instructions. As of right now these are the options:
 
-![](https://raw.githubusercontent.com/michelcrypt4d4mus/pdfalyzer/master/doc/svgs/rendered_images/pdfalyze_help_prince_theme.png)
+![](https://github.com/michelcrypt4d4mus/pdfalyzer/raw/doc/svgs/rendered_images/pdfalyze_help_prince_theme.png)
 
 Note that The Pdfalyzer output is _extremely_ verbose if you don't limit the output sections (See `ANALYSIS SELECTION` in the `--help`). Almost all of the verbosity comes from the `--stream` option pulling things that _could be_ (but are almost certainly not) malicious. To get everything _except_ the stream option, use these flags
 
@@ -137,14 +137,14 @@ As you can see the suspicious `/OpenAction` relationship is highlighted bright r
 
 The dimmer (as in "harder to see") nodes[^5] marked with `Non Child Reference` give you a way to visualize the relationships between PDF objects that exist outside of the tree structure's parent/child relationships.
 
-![](https://raw.githubusercontent.com/michelcrypt4d4mus/pdfalyzer/master/doc/svgs/rendered_images/basic_tree.png)
+![](https://github.com/michelcrypt4d4mus/pdfalyzer/raw/master/doc/svgs/rendered_images/basic_tree.png)
 
 That's a pretty basic document. [Here's the basic tree for a more complicated PDF containing an NMAP cheat sheet](doc/svgs/rendered_images/NMAP_Commands_Cheat_Sheet_and_Tutorial.pdf.tree.svg.png).
 
 ### Rich Tree View
 This image shows a more in-depth view of of the PDF tree for the same document shown above. This tree (AKA the "rich" tree) has almost everything. Shows all PDF object properties, all relationships between objects, and sizable previews of any binary data streams embedded or encrypted in the document. Note that in addition to `/OpenAction`, the Adobe Type1 font binary is also red (Google's project zero regards any Adobe Type1 font as "mad sus").
 
-![](https://raw.githubusercontent.com/michelcrypt4d4mus/pdfalyzer/master/doc/svgs/rendered_images/rich_table_tree.png)
+![](https://github.com/michelcrypt4d4mus/pdfalyzer/raw/master/doc/svgs/rendered_images/rich_table_tree.png)
 
 [And here's the rich tree for the same more complicated NMAP cheat sheet PDF linked instead of shown directly in the previous section](doc/svgs/rendered_images/NMAP_Commands_Cheat_Sheet_and_Tutorial.pdf.rich_table_tree.png).
 
@@ -153,29 +153,29 @@ This image shows a more in-depth view of of the PDF tree for the same document s
 
 **View the properties of the fonts in the PDF**. Comes with a preview of the beginning and end of the font's raw binary data stream (at least if it's that kind of font).
 
-![](https://raw.githubusercontent.com/michelcrypt4d4mus/pdfalyzer/master/doc/svgs/rendered_images/font_summary_with_byte_preview.png)
+![](https://github.com/michelcrypt4d4mus/pdfalyzer/raw/master/doc/svgs/rendered_images/font_summary_with_byte_preview.png)
 
 **Extract character mappings from ancient Adobe font formats:** It's actually `PyPDF2` doing the lifting here but we're happy to take the credit.
 
-![](https://raw.githubusercontent.com/michelcrypt4d4mus/pdfalyzer/master/doc/svgs/rendered_images/font_character_mapping.png)
+![](https://github.com/michelcrypt4d4mus/pdfalyzer/raw/master/doc/svgs/rendered_images/font_character_mapping.png)
 
 **Search Internal Binary Data for Sus Content No Malware Scanner Will Catch[^6]:** Things like, say, a hidden binary `/F` (PDF instruction meaning "URL") followed by a `JS` (I'll let you guess what "JS" stands for) and then a binary `»` character (AKA "the character the PDF specification uses to close a section of the PDF's logical structure"). Put all that together and it says that you're looking at a secret JavaScript instruction embedded in the encrypted part of a font binary. A secret instruction that causes the PDF renderer to pop out of its frame prematurely as it renders the font.
 
-![](https://raw.githubusercontent.com/michelcrypt4d4mus/pdfalyzer/master/doc/svgs/rendered_images/font29.js.1.png)
+![](https://github.com/michelcrypt4d4mus/pdfalyzer/raw/master/doc/svgs/rendered_images/font29.js.1.png)
 
 **Extract And Decode Binary Patterns:** Like, say, bytes between common regular expression markers that you might want to force a decode of in a lot of different encodings.
 
-![](https://raw.githubusercontent.com/michelcrypt4d4mus/pdfalyzer/master/doc/svgs/rendered_images/font_34_frontslash_scan.png)
+![](https://github.com/michelcrypt4d4mus/pdfalyzer/raw/master/doc/svgs/rendered_images/font_34_frontslash_scan.png)
 
 **See stats:** When all is said and done you can see some stats that may help you figure out what the character encoding may or may not be for the bytes matched by those patterns:
 
-![](https://raw.githubusercontent.com/michelcrypt4d4mus/pdfalyzer/master/doc/svgs/rendered_images/font29_summary_stats.png)
+![](https://github.com/michelcrypt4d4mus/pdfalyzer/raw/master/doc/svgs/rendered_images/font29_summary_stats.png)
 
 
 #### Now There's Even A Fancy Table To Tell You What The `chardet` Library Would Rank As The Most Likely Encoding For A Chunk Of Binary Data
 Behold the beauty:
 
-![](https://raw.githubusercontent.com/michelcrypt4d4mus/pdfalyzer/master/doc/svgs/rendered_images/decoding_and_chardet_table_2.png)
+![](https://github.com/michelcrypt4d4mus/pdfalyzer/raw/master/doc/svgs/rendered_images/decoding_and_chardet_table_2.png)
 
 
 
