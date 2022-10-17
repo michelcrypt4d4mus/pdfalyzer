@@ -52,18 +52,20 @@ See [PyPDF2 installation notes](https://github.com/py-pdf/PyPDF2#installation) a
 # Usage
 
 Run `pdfalyze --help` to see usage instructions. As of right now these are the options:
-![](https://github.com/michelcrypt4d4mus/pdfalyzer/raw/master/doc/svgs/rendered_images/pdfalyze_help_prince_theme.png)
+![](https://github.com/michelcrypt4d4mus/pdfalyzer/raw/master/doc/svgs/rendered_images/pdfalyze_help.png)
 
-Note that The Pdfalyzer output is _extremely_ verbose if you don't limit the output sections (See `ANALYSIS SELECTION` in the `--help`). Almost all of the verbosity comes from the `--stream` option pulling things that _could be_ (but are almost certainly not) malicious. To get everything _except_ the stream option, use these flags
+### Choosing Which Analyses To Perform / Limiting Output
+**The Pdfalyzer output is _extremely_ verbose if you don't limit the output sections!** Almost all of the verbosity comes from the `--stream` option pulling things that _could be_ (but are almost certainly not) malicious. See `ANALYSIS SELECTION` in the `--help` to choose a subset of PDF analyses. If you want everything _except_ the stream option, use these flags:
 
 ```sh
 pdfalyzer lacan_buys_the_dip.pdf -d -t -r -f -y -c
 ```
 
-Beyond that there's [a few scripts](scripts/) in the repo that may be of interest.
-
 ### Setting Command Line Options Permanently With A `.pdfalyzer` File
-If you find yourself specificying the same options over and over you may be able to automate that with a [dotenv](https://pypi.org/project/python-dotenv/) setup. When you run `pdfalyze` on some PDF the tool will check for a file called `.pdfalyzer` first in the current directory and then in the home directory. If it finds a file in either such place it will load options from it. Documentation on the options that can be configured with these files lives in [`.pdfalyzer.example`](.pdfalyzer.example) which doubles as an example file you can copy into place and edit to your needs. Even if don't configure your own `.pdfalyzer` file you may still glean some insight from reading the descriptions of the various variables in [.pdfalyzer.example](.pdfalyzer.example); there's a little more exposition there than in the output of `pdfalyze -h`.
+When you run `pdfalyze` on some PDF the tool will check for a file called `.pdfalyzer` first in the current directory and then in the home directory. If it finds a file in either such place it will load configuration options from it. Documentation on the options that can be configured with these files lives in [`.pdfalyzer.example`](.pdfalyzer.example) which doubles as an example file you can copy into place and edit to your needs. Handy if you find yourself typing the same command line options over and over again.
+
+#### Command Line Options / Environment Variables
+Even if don't configure your own `.pdfalyzer` file you may still glean some insight from reading the descriptions of the various variables in [.pdfalyzer.example](.pdfalyzer.example); there's a little more exposition there than in the output of `pdfalyze -h`.
 
 ### Colors And Themes
 Run `pdfalyzer_show_color_theme` to see the color theme employed.
@@ -140,6 +142,11 @@ This image shows a more in-depth view of of the PDF tree for the same document s
 
 ![](https://github.com/michelcrypt4d4mus/pdfalyzer/raw/master/doc/svgs/rendered_images/font_summary_with_byte_preview.png)
 
+**Check your PDF against a library of PDF related YARA rules.**
+
+![](https://github.com/michelcrypt4d4mus/pdfalyzer/raw/master/doc/svgs/rendered_images/yara_matches.png)
+
+
 **Extract character mappings from ancient Adobe font formats:** It's actually `PyPDF2` doing the lifting here but we're happy to take the credit.
 
 ![](https://github.com/michelcrypt4d4mus/pdfalyzer/raw/master/doc/svgs/rendered_images/font_character_mapping.png)
@@ -161,8 +168,6 @@ This image shows a more in-depth view of of the PDF tree for the same document s
 Behold the beauty:
 
 ![](https://github.com/michelcrypt4d4mus/pdfalyzer/raw/master/doc/svgs/rendered_images/decoding_and_chardet_table_2.png)
-
-
 
 
 # PDF Resources
