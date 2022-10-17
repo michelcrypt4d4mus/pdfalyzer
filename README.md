@@ -228,6 +228,8 @@ scripts/install_t1utils.sh
 * [`t1disasm` Manual](https://www.lcdf.org/type/t1disasm.1.html) - Probably the most useful part of the T1Utils suite because it can decompile encrypted ancient Adobe Type 1 fonts into something human readable.
 * [PDF Flaws 101](https://github.com/RUB-NDS/PDF101) from Black Hat 2020.
 * [A Curious Exploration of Malicious PDF Documents](https://www.scitepress.org/Papers/2020/89923/89923.pdf) by Julian Lindenhofer, Rene Offenthaler and Martin Pirker, 2020. Overview of all the possible execution paths that can lead to a PDF executing JavaScript, opening loca/remote files, or making web requests.
+* [Malicious PDF Generator](https://github.com/jonaslejon/malicious-pdf) is a well maintained GitHub project that does what it says on the tin.
+* [PDF is Broken, and so is this file](https://blog.trailofbits.com/2021/02/02/pdf-is-broken-a-justctf-challenge/) is a 2021 report on what happens when you challenge cybersecurity teams to turn PDFs into weapons. (Among other things they managed to create a PDF that launches a webserver when you open it.)
 
 
 ## Did The World Really Need Another PDF Tool?

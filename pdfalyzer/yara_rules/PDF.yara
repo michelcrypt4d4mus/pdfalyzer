@@ -1,7 +1,25 @@
 import "math"
 
 
-rule Cobaltgang_PDF_Metadata_Rev_A {
+// rule pdf: PDF
+// {
+//     meta:
+//         author = "Jaume Martin"
+//         description = "Matches '%PDF' to '%%EOF'. Works even on raw bytes (e.g. raw dd image of a drive)"
+
+//     strings:
+//         $pdf_start = {25 50 44 46}
+//         $eof1 = {0A 25 25 45 4F 46 (??|0A)}
+//         $eof2 = {0D 0A 25 25 45 4F 46 0D 0A}
+//         $eof3 = {0D 25 25 45 4F 46 0D}
+
+//     condition:
+//        $pdf_start and for any of ($eof1, $eof2, $eof3): ( @ > @pdf_start )
+// }
+
+
+rule Cobaltgang_PDF_Metadata_Rev_A
+{
    meta:
         description = "Find documents saved from the same potential Cobalt Gang PDF template"
         author = "Palo Alto Networks Unit 42"
