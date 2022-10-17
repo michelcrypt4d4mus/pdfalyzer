@@ -20,8 +20,8 @@ from pdfalyzer.decorators.pdf_tree_node import DECODE_FAILURE_LEN
 from pdfalyzer.detection.yaralyzer_helper import get_bytes_yaralyzer, get_file_yaralyzer
 from pdfalyzer.helpers.string_helper import pp
 from pdfalyzer.output.layout import print_section_header, print_section_subheader, print_section_sub_subheader
-from pdfalyzer.output.pdf_node_rich_table import generate_rich_tree, get_symlink_representation
-from pdfalyzer.output.stream_objects_table import stream_objects_table
+from pdfalyzer.output.tables.pdf_node_rich_table import generate_rich_tree, get_symlink_representation
+from pdfalyzer.output.tables.stream_objects_table import stream_objects_table
 from pdfalyzer.output.tables.decoding_stats_table import build_decoding_stats_table
 from pdfalyzer.pdfalyzer import Pdfalyzer
 from pdfalyzer.util.adobe_strings import *
