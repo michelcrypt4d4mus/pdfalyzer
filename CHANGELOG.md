@@ -1,5 +1,10 @@
 # NEXT RELEASE
 
+### 1.12.3
+* Fix PER ENCODING METRICS subtable in decodings stats table
+* Add percentage calculations to decoding attempts table
+* `--log-level` option (from `yaralyzer`)
+
 ### 1.12.2
 * Refactor `PdfTreeVerifier` and `IndeterminateNode` out of `Pdfalyzer` class
 

@@ -25,7 +25,7 @@ python-versions = ">=3.5"
 dev = ["cloudpickle", "coverage[toml] (>=5.0.2)", "furo", "hypothesis", "mypy (>=0.900,!=0.940)", "pre-commit", "pympler", "pytest (>=4.3.0)", "pytest-mypy-plugins", "sphinx", "sphinx-notfound-page", "zope.interface"]
 docs = ["furo", "sphinx", "sphinx-notfound-page", "zope.interface"]
 tests = ["cloudpickle", "coverage[toml] (>=5.0.2)", "hypothesis", "mypy (>=0.900,!=0.940)", "pympler", "pytest (>=4.3.0)", "pytest-mypy-plugins", "zope.interface"]
-tests_no_zope = ["cloudpickle", "coverage[toml] (>=5.0.2)", "hypothesis", "mypy (>=0.900,!=0.940)", "pympler", "pytest (>=4.3.0)", "pytest-mypy-plugins"]
+tests-no-zope = ["cloudpickle", "coverage[toml] (>=5.0.2)", "hypothesis", "mypy (>=0.900,!=0.940)", "pympler", "pytest (>=4.3.0)", "pytest-mypy-plugins"]
 
 [[package]]
 name = "chardet"
@@ -55,7 +55,7 @@ python-versions = "*"
 test = ["flake8 (==3.7.8)", "hypothesis (==3.55.3)"]
 
 [[package]]
-name = "Deprecated"
+name = "deprecated"
 version = "1.2.13"
 description = "Python @deprecated decorator to deprecate old python classes, functions or methods."
 category = "main"
@@ -108,7 +108,7 @@ optional = false
 python-versions = ">=2.7, !=3.0.*, !=3.1.*, !=3.2.*, !=3.3.*, !=3.4.*"
 
 [[package]]
-name = "Pygments"
+name = "pygments"
 version = "2.13.0"
 description = "Pygments is a syntax highlighting package written in Python."
 category = "main"
@@ -130,7 +130,7 @@ python-versions = ">=3.6.8"
 diagrams = ["jinja2", "railroad-diagrams"]
 
 [[package]]
-name = "PyPDF2"
+name = "pypdf2"
 version = "2.11.1"
 description = "A pure-python PDF library capable of splitting, merging, cropping, and transforming PDF files"
 category = "main"
@@ -204,7 +204,7 @@ pygments = ">=2.6.0,<3.0.0"
 jupyter = ["ipywidgets (>=7.5.1,<8.0.0)"]
 
 [[package]]
-name = "rich_argparse_plus"
+name = "rich-argparse-plus"
 version = "0.3.1.4"
 description = "A rich text formatter for argparse help with export and default features"
 category = "main"
@@ -260,7 +260,7 @@ python-versions = "*"
 
 [[package]]
 name = "yaralyzer"
-version = "0.7.1"
+version = "0.8.0"
 description = "Visualize and force decode YARA and regex matches found in a file or byte stream. With colors. Lots of colors."
 category = "main"
 optional = false
@@ -276,7 +276,7 @@ yara-python = ">=4.2.3,<5.0.0"
 [metadata]
 lock-version = "1.1"
 python-versions = "^3.9"
-content-hash = "019351e4ccccc4e357d92fb55115d7206c79c5f8642608576b4cb23f55807e5b"
+content-hash = "feaced84e092fdee31195c5c829fad4405c5e12ca64208e4a26aa4d601837e1c"
 
 [metadata.files]
 anytree = [
@@ -299,7 +299,7 @@ commonmark = [
     {file = "commonmark-0.9.1-py2.py3-none-any.whl", hash = "sha256:da2f38c92590f83de410ba1a3cbceafbc74fee9def35f9251ba9a971d6d66fd9"},
     {file = "commonmark-0.9.1.tar.gz", hash = "sha256:452f9dc859be7f06631ddcb328b6919c67984aca654e5fefb3914d54691aed60"},
 ]
-Deprecated = [
+deprecated = [
     {file = "Deprecated-1.2.13-py2.py3-none-any.whl", hash = "sha256:64756e3e14c8c5eea9795d93c524551432a0be75629f8f29e67ab8caf076c76d"},
     {file = "Deprecated-1.2.13.tar.gz", hash = "sha256:43ac5335da90c31c24ba028af536a91d41d53f9e6901ddb021bcc572ce44e38d"},
 ]
@@ -319,7 +319,7 @@ py = [
     {file = "py-1.11.0-py2.py3-none-any.whl", hash = "sha256:607c53218732647dff4acdfcd50cb62615cedf612e72d1724fb1a0cc6405b378"},
     {file = "py-1.11.0.tar.gz", hash = "sha256:51c75c4126074b472f746a24399ad32f6053d1b34b68d2fa41e558e6f4a98719"},
 ]
-Pygments = [
+pygments = [
     {file = "Pygments-2.13.0-py3-none-any.whl", hash = "sha256:f643f331ab57ba3c9d89212ee4a2dabc6e94f117cf4eefde99a0574720d14c42"},
     {file = "Pygments-2.13.0.tar.gz", hash = "sha256:56a8508ae95f98e2b9bdf93a6be5ae3f7d8af858b43e02c5a2ff083726be40c1"},
 ]
@@ -327,7 +327,7 @@ pyparsing = [
     {file = "pyparsing-3.0.9-py3-none-any.whl", hash = "sha256:5026bae9a10eeaefb61dab2f09052b9f4307d44aee4eda64b309723d8d206bbc"},
     {file = "pyparsing-3.0.9.tar.gz", hash = "sha256:2b020ecf7d21b687f219b71ecad3631f644a47f01403fa1d1036b0c6416d70fb"},
 ]
-PyPDF2 = [
+pypdf2 = [
     {file = "PyPDF2-2.11.1-py3-none-any.whl", hash = "sha256:7291a552ead2e7c2d556cce03bf71842fbbab478fcba13ae75ab1d59746b4dcb"},
     {file = "PyPDF2-2.11.1.tar.gz", hash = "sha256:3c7badd512c21711eb1789c2eadbf96279289c0f94452ee54a86473bfbefd732"},
 ]
@@ -347,7 +347,7 @@ rich = [
     {file = "rich-12.6.0-py3-none-any.whl", hash = "sha256:a4eb26484f2c82589bd9a17c73d32a010b1e29d89f1604cd9bf3a2097b81bb5e"},
     {file = "rich-12.6.0.tar.gz", hash = "sha256:ba3a3775974105c221d31141f2c116f4fd65c5ceb0698657a11e9f295ec93fd0"},
 ]
-rich_argparse_plus = [
+rich-argparse-plus = [
     {file = "rich_argparse_plus-0.3.1.4-py3-none-any.whl", hash = "sha256:74772572b852b7fefe28e44c5fe0e6491354b2594dae33ccec3860b349f96b21"},
     {file = "rich_argparse_plus-0.3.1.4.tar.gz", hash = "sha256:aab9e49b4ba98ff501705678330eda8e9bc07d933edc5cac5f38671ee53f9998"},
 ]
@@ -445,6 +445,6 @@ yara-python = [
     {file = "yara_python-4.2.3-cp39-cp39-win_amd64.whl", hash = "sha256:87125ede7fbc18ae65aab550f1a36f4ebf73bb828c5d7a3dd2bb99176f0faa15"},
 ]
 yaralyzer = [
-    {file = "yaralyzer-0.7.1-py3-none-any.whl", hash = "sha256:0f32c70bea11997d72a139e13455ca9d4496ec708e53016a9e9759f47b3f079d"},
-    {file = "yaralyzer-0.7.1.tar.gz", hash = "sha256:19bc559d4623aa3f09822ae2cfd8ee2542ff7020e442d1b6c3901d020eceb579"},
+    {file = "yaralyzer-0.8.0-py3-none-any.whl", hash = "sha256:f70e6449ca7afa69c9acb634c2315b04d91c8c23c00cb66857faca18a19ded20"},
+    {file = "yaralyzer-0.8.0.tar.gz", hash = "sha256:691c569caee92cd960511049c32ea05a6b9924caf9545edc9a4ecd0567a730ae"},
 ]

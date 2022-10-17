@@ -22,6 +22,7 @@ from pdfalyzer.helpers.string_helper import pp
 from pdfalyzer.output.layout import print_section_header, print_section_subheader, print_section_sub_subheader
 from pdfalyzer.output.pdf_node_rich_table import generate_rich_tree, get_symlink_representation
 from pdfalyzer.output.stream_objects_table import stream_objects_table
+from pdfalyzer.output.tables.decoding_stats_table import build_decoding_stats_table
 from pdfalyzer.pdfalyzer import Pdfalyzer
 from pdfalyzer.util.adobe_strings import *
 
@@ -105,7 +106,8 @@ class PdfalyzerPresenter:
                 binary_scanner.check_for_boms()
                 binary_scanner.force_decode_all_quoted_bytes()
 
-            binary_scanner.print_decoding_stats_table()
+            decoding_stats_table = build_decoding_stats_table(binary_scanner)
+            console.print(decoding_stats_table, justify='center')
 
     def print_yara_results(self) -> None:
         print_section_header(f"YARA Scan of PDF rules for '{self.pdfalyzer.pdf_basename}'")

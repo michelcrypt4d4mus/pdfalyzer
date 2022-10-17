@@ -22,14 +22,14 @@ pdfalyze heidegger_-_being_illmatic.pdf
 1. **Generate in depth visualizations of PDF tree structures**[^1]. Shows every property of every PDF object at a glance. See [the examples below](#example-output) to get an idea.
 1. **Scan for mad sus content with a bunch of PDF specific [YARA](https://github.com/VirusTotal/yara-python) rules.**
 1. **Forcibly decode suspicious byte patterns with many character encodings.** [The Yaralyzer](https://github.com/michelcrypt4d4mus/yaralyzer), a separate tool which began its life as The Pdfalyzer's matching engine, does the heavy lifting.
-1. **Display detailed information for all embedded fonts.** And charmaps.
+1. **Display detailed information about embedded fonts.** With character maps.
 1. **Usable as a library for your own PDF related code.**
 
 If you're looking for one of these things this may be the tool for you.
 
 
 ### What It Don't Do
-This tool is mostly about examining a PDF's logical structure and assisting with the discovery of malicious content. As such it doesn't have much to offer as far as extracting text from PDFs, rendering PDFs[^3], writing new PDFs, or many of the more conventional things one might do with a portable document.
+This tool is mostly for examining/working with a PDF's data and logical structure. As such it doesn't have much to offer as far as extracting text, rendering[^3], writing, etc. etc.
 
 
 # Installation

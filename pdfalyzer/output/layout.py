@@ -4,7 +4,7 @@ Methods to help with the design of the output
 from rich import box
 from rich.padding import Padding
 from rich.panel import Panel
-from rich.table import Table
+from rich.table import Column, Table
 from yaralyzer.output.rich_console import console, console_width
 
 DEFAULT_SUBTABLE_COL_STYLES = ['white', 'bright_white']
@@ -17,16 +17,17 @@ def generate_subtable(cols, header_style='subtable') -> Table:
         box=box.SIMPLE,
         show_edge=False,
         collapse_padding=True,
+        padding=(0, 0, 0, 0),
         header_style=header_style,
         show_lines=False,
         border_style='grey.dark',
         expand=True)
 
     for i, col in enumerate(cols):
-        if i + 1 < len(cols):
+        if i == 0:
             table.add_column(col, style=DEFAULT_SUBTABLE_COL_STYLES[0], justify='left')
         else:
-            table.add_column(col, style='off_white', justify='right')
+            table.add_column(col, style='bright_white', justify='right')
 
     return table
 

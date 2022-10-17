@@ -38,3 +38,13 @@ def node_label(idnum: int, label: str, pdf_object: PdfObject, underline: bool = 
 
 def comma_join_txt(text_objs: List[Text]) -> Text:
     return Text(", ").join(text_objs)
+
+
+def number_and_pct(_number: int, total: int, digits: int = 1) -> Text:
+    """Return e.g. '8 (80%)'."""
+    return Text(str(_number), style='bright_white').append_text(pct_txt(_number, total, digits))
+
+
+def pct_txt(_number: int, total: int, digits: int = 1) -> Text:
+    pct = (100 * float(_number) / float(total)).__round__(digits)
+    return Text(f"({pct}%)", style='blue')

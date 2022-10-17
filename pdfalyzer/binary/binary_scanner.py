@@ -33,10 +33,6 @@ from pdfalyzer.output.layout import (generate_subtable, half_width, pad_header, 
      print_section_sub_subheader)
 from pdfalyzer.util.adobe_strings import CONTENTS, CURRENTFILE_EEXEC
 
-# For rainbow colors
-CHAR_ENCODING_1ST_COLOR_NUMBER = 203
-NOT_FOUND_MSG = Text('(not found)', style='grey.dark_italic')
-
 
 class BinaryScanner:
     def __init__(self, _bytes: bytes, owner: Union['FontInfo', 'PdfTreeNode'], label: Optional[Text] = None):
@@ -126,46 +122,14 @@ class BinaryScanner:
         console.print(generate_hyphen_line(title=title), style='dim')
         console.line()
 
-    def print_decoding_stats_table(self) -> None:
-        """Diplay aggregate results on the decoding attempts we made on subsets of self.bytes"""
-        stats_table = new_decoding_stats_table(self.label.plain if self.label else '')
-        regexes_not_found_in_stream = []
-
-        for matcher, stats in self.regex_extraction_stats.items():
-            # Set aside the regexes we didn't find so that the ones we did find are at the top of the table
-            if stats.match_count == 0:
-                regexes_not_found_in_stream.append([str(matcher), NOT_FOUND_MSG, na_txt()])
-                continue
-
-            regex_subtable = generate_subtable(cols=['Metric', 'Value'])
-            decodes_subtable = generate_subtable(cols=['Encoding', 'Decoded', 'Forced', 'Failed'])
-
-            for metric, measure in vars(stats).items():
-                if isinstance(measure, Number):
-                    regex_subtable.add_row(metric, str(measure))
-
-            for i, (encoding, count) in enumerate(stats.was_match_decodable.items()):
-                decodes_subtable.add_row(
-                    Text(encoding, style=f"color({CHAR_ENCODING_1ST_COLOR_NUMBER + 2 * i})"),
-                    str(count),
-                    str(self.regex_extraction_stats[matcher].was_match_force_decoded[encoding]),
-                    str(self.regex_extraction_stats[matcher].was_match_undecodable[encoding]))
-
-            stats_table.add_row(str(matcher), regex_subtable, decodes_subtable)
-
-        for row in regexes_not_found_in_stream:
-            row[0] = Text(row[0], style='color(235)')
-            stats_table.add_row(*row, style='color(232)')
-
-        console.line(2)
-        console.print(stats_table, justify='center')
-
     def process_yara_matches(self, yaralyzer: Yaralyzer, pattern: str, force: bool = False) -> None:
         """Decide whether to attempt to decode the matched bytes, track stats. force param ignores min/max length"""
         for bytes_match, bytes_decoder in yaralyzer.match_iterator():
+            log.debug(f"Pattern match: {pattern}, bytes_match: {bytes_match}")
             self.regex_extraction_stats[pattern].match_count += 1
             self.regex_extraction_stats[pattern].bytes_matched += bytes_match.match_length
             self.regex_extraction_stats[pattern].bytes_match_objs.append(bytes_match)
+            log.debug(f"  regex_extraction_stats[{pattern}]: {self.regex_extraction_stats[pattern]}")
 
             # Send suppressed decodes to a queue and track the reason for the suppression in the stats
             if not ((YaralyzerConfig.MIN_DECODE_LENGTH < bytes_match.match_length < YaralyzerConfig.MAX_DECODE_LENGTH) \
@@ -191,6 +155,15 @@ class BinaryScanner:
         for i, match in enumerate(regex.finditer(self.bytes, self._eexec_idx())):
             yield(BytesMatch.from_regex_match(self.bytes, match, i + 1))
 
+    def _quote_yaralyzer(self, quote_pattern: str, quote_type: str):
+        """Helper method to build a Yaralyzer for a quote_pattern"""
+        label = f"{quote_type}_Quoted"
+
+        if quote_type == GUILLEMET:
+            return self._pattern_yaralyzer(quote_pattern, HEX, label, label)
+        else:
+            return self._pattern_yaralyzer(quote_pattern, REGEX, label, label)
+
     def _pattern_yaralyzer(
             self,
             pattern: str,
@@ -208,30 +181,22 @@ class BinaryScanner:
             pattern_label=safe_label(pattern_label or pattern)
         )
 
-    def _quote_yaralyzer(self, quote_pattern: str, quote_type: str):
-        """Helper method to build a Yaralyzer for a quote_pattern"""
-        label = f"{quote_type}_Quoted"
-
-        if quote_type == GUILLEMET:
-            return self._pattern_yaralyzer(quote_pattern, HEX, label, label)
-        else:
-            return self._pattern_yaralyzer(quote_pattern, REGEX, label, label)
-
-    def _record_decode_stats(self, bytes_match: BytesMatch, decoder: BytesDecoder, label: str) -> None:
+    def _record_decode_stats(self, bytes_match: BytesMatch, decoder: BytesDecoder, pattern: str) -> None:
         """Attempt to decode _bytes with all configured encodings and print a table of the results"""
         # Track stats on whether the bytes were decodable or not w/a given encoding
-        self.regex_extraction_stats[bytes_match.label].matches_decoded += 1
+        log.debug(f"  Recording stats for {bytes_match} (pattern: {pattern})")
+        self.regex_extraction_stats[pattern].matches_decoded += 1
 
         for encoding, count in decoder.was_match_decodable.items():
-            decode_stats = self.regex_extraction_stats[bytes_match.label].was_match_decodable
+            decode_stats = self.regex_extraction_stats[pattern].was_match_decodable
             decode_stats[encoding] = decode_stats.get(encoding, 0) + count
 
         for encoding, count in decoder.was_match_undecodable.items():
-            failure_stats = self.regex_extraction_stats[bytes_match.label].was_match_undecodable
+            failure_stats = self.regex_extraction_stats[pattern].was_match_undecodable
             failure_stats[encoding] = failure_stats.get(encoding, 0) + count
 
         for encoding, count in decoder.was_match_force_decoded.items():
-            forced_stats = self.regex_extraction_stats[bytes_match.label].was_match_force_decoded
+            forced_stats = self.regex_extraction_stats[pattern].was_match_force_decoded
             forced_stats[encoding] = forced_stats.get(encoding, 0) + count
 
     def _queue_suppression_notice(self, bytes_match: BytesMatch, quote_type: str) -> None:
@@ -261,27 +226,3 @@ class BinaryScanner:
     def _eexec_idx(self) -> int:
         """Returns the location of CURRENTFILES_EEXEC within the binary stream dataor 0"""
         return self.bytes.find(CURRENTFILE_EEXEC) if CURRENTFILE_EEXEC in self.bytes else 0
-
-
-def new_decoding_stats_table(title) -> Table:
-    """Build an empty table for displaying decoding stats"""
-    title = prefix_with_plain_text_obj(title, style='blue underline')
-    title.append(": Decoding Attempts Summary Statistics", style='bright_white bold')
-
-    table = Table(
-        title=title,
-        min_width=half_width(),
-        show_lines=True,
-        padding=(0, 1),
-        style='color(18)',
-        border_style='color(111) dim',
-        header_style='color(235) on color(249) reverse',
-        title_style='color(249) bold')
-
-    def add_column(header, **kwargs):
-        table.add_column(pad_header(header.upper()), **kwargs)
-
-    add_column('Byte Pattern', vertical='middle', style='color(25) bold reverse', justify='right')
-    add_column('Aggregate Metrics', overflow='fold', justify=CENTER)
-    add_column('Per Encoding Metrics', justify=CENTER)
-    return table
