@@ -15,7 +15,7 @@ A PDF analysis tool for [visualizing](#example-output) the inner tree-like data 
 ### Quick Start
 ```sh
 pipx install pdfalyzer
-pdfalyze heidegger_-_being_illmatic.pdf
+pdfalyze "martin_heidegger-being_illmatic.pdf"
 ```
 
 ### What It Do
@@ -57,11 +57,12 @@ Run `pdfalyze --help` to see usage instructions. As of right now these are the o
 ![](https://github.com/michelcrypt4d4mus/pdfalyzer/raw/master/doc/svgs/rendered_images/pdfalyze_help.png)
 
 ## Runtime Options
-**The Pdfalyzer output is _extremely_ verbose if you don't limit the output sections!** Almost all of the verbosity comes from the `--stream` option pulling things that _could be_ (but are almost certainly not) malicious. See `ANALYSIS SELECTION` in the `--help` to choose a subset of PDF analyses. If you want everything _except_ the stream option, use these flags:
+If you provide none of the flags in the `ANALYSIS SELECTION` section of the `--help` then all of the analyses will be done _except_ the `--streams`.  In other words, these two commands are equivalent:
 
-```sh
-pdfalyzer lacan_buys_the_dip.pdf -d -t -r -f -y -c
-```
+1. `pdfalyzer lacan_buys_the_dip.pdf`
+1. `pdfalyzer lacan_buys_the_dip.pdf -d -t -r -f -y -c`
+
+The `--streams` output is the one used to hunt for patterns in the embedded bytes and can be _extremely_ verbose depending on the `--quote-char` options chosen (or not chosen) and contents of the PDF. [The Yaralyzer](https://github.com/michelcrypt4d4mus/yaralyzer)) handles this task; if you want to hunt for patterns in the bytes other than bytes surrounded by backticks/frontslashes/brackets/quotes/etc. you may want to use The Yaralyzer directly. As The Yaralyzer is a prequisite for The Pdfalyzer you may already have the `yaralyze` command installed and available.
 
 ### Setting Command Line Options Permanently With A `.pdfalyzer` File
 When you run `pdfalyze` on some PDF the tool will check for a file called `.pdfalyzer` first in the current directory and then in the home directory. If it finds a file in either such place it will load configuration options from it. Documentation on the options that can be configured with these files lives in [`.pdfalyzer.example`](.pdfalyzer.example) which doubles as an example file you can copy into place and edit to your needs. Handy if you find yourself typing the same command line options over and over again.
@@ -225,6 +226,8 @@ scripts/install_t1utils.sh
 * [Analyzing Malicious PDFs Cheat Sheet](https://zeltser.com/media/docs/analyzing-malicious-document-files.pdf) - Like it says on the tin. If that link fails there's a copy [here in the repo](doc/analyzing-malicious-document-files.pdf).
 * [T1Utils Github Repo](https://github.com/kohler/t1utils) - Suite of tools for manipulating Type1 fonts.
 * [`t1disasm` Manual](https://www.lcdf.org/type/t1disasm.1.html) - Probably the most useful part of the T1Utils suite because it can decompile encrypted ancient Adobe Type 1 fonts into something human readable.
+* [PDF Flaws 101](https://github.com/RUB-NDS/PDF101) from Black Hat 2020.
+* [A Curious Exploration of Malicious PDF Documents](https://www.scitepress.org/Papers/2020/89923/89923.pdf) by Julian Lindenhofer, Rene Offenthaler and Martin Pirker, 2020. Overview of all the possible execution paths that can lead to a PDF executing JavaScript, opening loca/remote files, or making web requests.
 
 
 ## Did The World Really Need Another PDF Tool?

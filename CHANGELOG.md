@@ -1,5 +1,8 @@
 # NEXT RELEASE
 
+### 1.13.1
+* Add **all** the possible PDF internal commands that can lead to JavaScript execution or local/remote command exection to `DANGEROUS_PDF_KEYS` list.
+
 # 1.13.0
 * New `--extract-quoted` argument can be specified to have `yaralyzer` extract and decode all bytes between the specified quote chars.
 * Quoted bytes are no longer force decoded by default.

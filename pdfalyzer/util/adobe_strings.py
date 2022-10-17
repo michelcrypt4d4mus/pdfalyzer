@@ -31,12 +31,17 @@ FONT_FILE       = '/FontFile'
 FONT_FILE2      = FONT_FILE + '2'
 FONT_FILE3      = FONT_FILE + '3'
 FONT_DESCRIPTOR = '/FontDescriptor'
+GO_TO_E         = '/GoTo'  # Remote go-to action
+GO_TO_R         = '/GoTo'  # Remote go-to action
 GROUP           = '/Group'
+IMPORT_DATA     = '/ImportData'
 JAVASCRIPT      = '/JavaScript'
 JS              = '/JS'
 K               = '/K'  # Equivalent of /Kids for /StructElem
 KIDS            = PagesAttributes.KIDS
 LAST            = '/Last'
+LAUNCH          = '/Launch'
+NAMED           = '/Named'
 NAMES           = '/Names'
 NEXT            = '/Next'
 NUMS            = '/Nums'
@@ -52,11 +57,14 @@ PARENT          = PagesAttributes.PARENT
 PARENT_TREE     = '/ParentTree'
 PG              = '/Pg'  # Page ref for OBJR
 PREV            = '/Prev'
+RENDITION       = '/Rendition'
 RESOURCES       = PageAttributes.RESOURCES
 S               = '/S'  # Equivalent of /Subtype for /StructElem
 SIZE            = '/Size'
 STRUCT_ELEM     = '/StructElem'
+SUBMIT_FORM     = '/SubmitForm'
 SUBTYPE         = ImageAttributes.SUBTYPE
+THREAD          = '/Thread'
 TO_UNICODE      = '/ToUnicode'
 TYPE            = PageAttributes.TYPE
 TYPE1_FONT      = '/Type1'
@@ -76,9 +84,16 @@ FONT_LENGTHS = [f'/Length{i + 1}' for i in range(3)]
 DANGEROUS_PDF_KEYS = [
     # AA,  # AA is too generic; can't afford to remove the frontslash
     ACRO_FORM,
+    GO_TO_E,
+    GO_TO_R,
+    IMPORT_DATA,
     JAVASCRIPT,
     JS,
-    OPEN_ACTION
+    LAUNCH,
+    OPEN_ACTION,
+    RENDITION,
+    THREAD,
+    SUBMIT_FORM
 ]
 
 # Adobe font instruction that begins the binary (usually encrypted) section of the font definition

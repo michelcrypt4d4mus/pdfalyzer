@@ -43,14 +43,14 @@ def test_pdfalyze_CLI_yara_scan(adobe_type1_fonts_pdf_path):
 
 
 def test_pdfalyze_CLI_streams_scan(adobe_type1_fonts_pdf_path):
-    _assert_args_yield_lines(1274, adobe_type1_fonts_pdf_path, '-s')
-    _assert_args_yield_lines(879, adobe_type1_fonts_pdf_path, '--suppress-boms', '-s')
-    _assert_args_yield_lines(113, adobe_type1_fonts_pdf_path, '-s', '48')
+    _assert_args_yield_lines(1560, adobe_type1_fonts_pdf_path, '-s')
+    _assert_args_yield_lines(1165, adobe_type1_fonts_pdf_path, '--suppress-boms', '-s')
+    _assert_args_yield_lines(135, adobe_type1_fonts_pdf_path, '-s', '48')
 
 
 @pytest.mark.slow
 def test_quote_extraction(adobe_type1_fonts_pdf_path):
-    _assert_args_yield_lines(4493, adobe_type1_fonts_pdf_path, '--extract-quoted', 'backtick', '-s')
+    _assert_args_yield_lines(4779, adobe_type1_fonts_pdf_path, '--extract-quoted', 'backtick', '-s')
     _assert_args_yield_lines(9189, adobe_type1_fonts_pdf_path, '--extract-quoted', 'backtick', '--extract-quoted', 'frontslash', '-s')
 
 
