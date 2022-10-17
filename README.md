@@ -19,9 +19,9 @@ pdfalyze heidegger_-_being_illmatic.pdf
 ```
 
 ### What It Do
-1. **Generate in depth visualizations of PDF tree structures**[^1]. Shows every property of every PDF object at a glance. See [the examples below](#example-output) to get an idea.
+1. **Generate in depth visualizations of PDF tree structures**[^1]. Shows every property of every PDF object at a glance. See the [Example Output](#example-output) section below for details.
 1. **Scan for mad sus content with a bunch of PDF specific [YARA](https://github.com/VirusTotal/yara-python) rules.**
-1. **Forcibly decode suspicious byte patterns with many character encodings.** [The Yaralyzer](https://github.com/michelcrypt4d4mus/yaralyzer), a separate tool which began its life as The Pdfalyzer's matching engine, does the heavy lifting.
+1. **Forcibly decode suspect bytes**. [The Yaralyzer](https://github.com/michelcrypt4d4mus/yaralyzer) does the heavy lifting.
 1. **Display detailed information about embedded fonts.** With character maps.
 1. **Usable as a library for your own PDF related code.**
 
@@ -98,17 +98,16 @@ from pdfalyzer.pdfalyzer import Pdfalyzer
 
 # Load a PDF and parse its nodes into the tree.
 pdfalyzer = Pdfalyzer("/path/to/the/evil_or_non_evil.pdf")
-actual_pdf_tree = pdfalyzer.pdf_tree
+actual_pdf_tree: PdfTreeNode = pdfalyzer.pdf_tree
 
-# Find a PDF object by its ID in the PDF
-node = pdfalyzer.find_node_by_idnum(44)
-pdf_object = node.obj
+# The PdfalyzerPresenter handles formatting/prettifying output
+PdfalyzerPresenter(pdfalyzer).print_everything()
 
-# Use anytree's findall_by_attr to find nodes with a given property
-from anytree.search import findall_by_attr
-page_nodes = findall_by_attr(pdfalyzer.pdf_tree, name='type', value='/Page')
+# Iterate over all nodes in the PDF tree
+for node in pdfalyzer.node_iterator():
+    do_stuff(node)
 
-# Do stuff with the fonts
+# Iterate over the fonts
 for font in pdfalyzer.font_infos:
     do_stuff(font)
 
@@ -116,11 +115,19 @@ for font in pdfalyzer.font_infos:
 for node in pdfalyzer.stream_nodes():
     do_stuff(node.stream_data)
 
+# Find an internal PDF object by its ID in the PDF
+node = pdfalyzer.find_node_by_idnum(44)
+pdf_object: PdfObject = node.obj
+
+# Use anytree's findall_by_attr to find nodes with a given property
+from anytree.search import findall_by_attr
+page_nodes = findall_by_attr(pdfalyzer.pdf_tree, name='type', value='/Page')
+
 # Iterate over backtick quoted strings from a font binary and process them
-font = pdfalyzer.font_infos[0]
+font_info: FontInfo = pdfalyzer.font_infos[0]
 
 for backtick_quoted_string in font.binary_scanner.extract_backtick_quoted_bytes():
-    process(backtick_quoted_string)
+    do_stuff(backtick_quoted_string)
 ```
 
 
