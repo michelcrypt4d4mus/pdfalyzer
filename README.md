@@ -218,17 +218,20 @@ One easy way of contributing is to run [the script to test against all the PDFs 
 
 Beyond that see [CONTRIBUTING.md](CONTRIBUTING.md).
 
-### Glossary
+### Code Glossary
 These are the naming conventions at play in The Pdfalyzer code base:
 
-* `reference_key` - string found in a PDF node that names the property (e.g. `/BaseFont` or `/Subtype`)
-* `address` - `reference_key` plus a hash key or numerical array index if that's how the reference works. e.g. if node A has a reference key `/Resources` pointing to a dict `{'/Font2': [IndirectObject(55), IndirectObject(2)]}` the address of `IndirectObject(55)` from node A would be `/Resources[/Font2][0]`
-* `tree_address` - like the `address` but starting at the root of the tree, all concatenated
-* `relationship` - any link between nodes created by addresses/reference keys
-* `reference` - any link _from_ node A _to_ other nodes (outward facing relationships for node A, basically)
-* `non_tree_relationship` - any link between nodes that is not considered a parent/child tree relationship
-* `indeterminate node`  - any node whose place in the tree can only be determined when the whole tree has been scanned
-* `link node` - nodes like `/Dest` that just contain a pointer to another node
+| Term  | Meaning |
+| ----------------- | ---------------- |
+| **`PDF Object`** | Instance of a `PyPDF2` class that represents the information stored in the PDF binary between open and close guillemet quotes (« and ») |
+| **`reference_key`** | String found in a PDF object that names a property (e.g. `/BaseFont` or `/Subtype`) |
+| **`reference`** | Link _from_ a PDF object _to_ another node. Outward facing relationships, basically. |
+| **`address`** | `reference_key` plus a hash key or numerical array index if that's how the reference works. e.g. if node A has a reference key `/Resources` pointing to a dict `{'/Font2': [IndirectObject(55), IndirectObject(2)]}` the address of `IndirectObject(55)` from node A would be `/Resources[/Font2][0]` |
+| **`tree_address`** | Like the `address` but starting at the root of the tree. Describes the series of objects you would step through if you walked the tree from the root to this node. |
+| **`relationship`** | Any link between nodes created by addresses/reference keys |
+| **`non_tree_relationship`** | any link between nodes that is not considered a parent/child tree relationship |
+| **`indeterminate_node`** | any node whose place in the tree cannot be decided until every node has been seen |
+| **`link_node`** | nodes like `/Dest` that just contain a pointer to another node |
 
 # TODO
 * Highlight decodes with a lot of Javascript keywords
