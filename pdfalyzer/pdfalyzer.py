@@ -74,7 +74,7 @@ class Pdfalyzer:
     def walk_node(self, node: PdfTreeNode) -> None:
         """Recursively walk the PDF's tree structure starting at a given node"""
         log.info(f'walk_node() called with {node}. Object dump:\n{print_with_header(node.obj, node.label)}')
-        nodes_to_walk_next = [self._process_relationship(r) for r in node.references_to_other_nodes()]
+        nodes_to_walk_next = [self._add_relationship_to_pdf_tree(r) for r in node.references_to_other_nodes()]
         node.all_references_processed = True
 
         for next_node in [n for n in nodes_to_walk_next if not (n is None or n.all_references_processed) ]:
@@ -97,11 +97,7 @@ class Pdfalyzer:
 
     def is_in_tree(self, search_for_node: PdfTreeNode) -> bool:
         """Returns true if search_for_node is in the tree already."""
-        for node in self.node_iterator():
-            if node == search_for_node:
-                return True
-
-        return False
+        return any([node == search_for_node for node in self.node_iterator()])
 
     def node_iterator(self) -> Iterator[PdfTreeNode]:
         """Iterate over nodes, grouping them by distance from the root."""
@@ -112,7 +108,7 @@ class Pdfalyzer:
         stream_filter = lambda node: node.contains_stream() and not isinstance(node, SymlinkNode)
         return sorted(findall(self.pdf_tree, stream_filter), key=lambda r: r.idnum)
 
-    def _process_relationship(self, relationship: PdfObjectRelationship) -> Optional[PdfTreeNode]:
+    def _add_relationship_to_pdf_tree(self, relationship: PdfObjectRelationship) -> Optional[PdfTreeNode]:
         """
         Place the relationship 'node' in the tree. Returns an optional node that should be
         placed in the PDF node processing queue.

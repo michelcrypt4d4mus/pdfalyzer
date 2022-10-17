@@ -40,18 +40,16 @@ pipx install pdfalyzer
 
 See [PyPDF2 installation notes](https://github.com/py-pdf/PyPDF2#installation) about `PyCryptodome` if you plan to `pdfalyze` any files that use AES encryption.
 
-For info on how to setup a dev environment, see [Contributing](#contributing) section at the end of this file.
-
 ### Troubleshooting The Installation
-1. If you used regular `pip3` instead of `pipx` to install it and ran into issues you should try to install with `pipx`. If you aren't looking to write python code that `import`s stuff from The Pdfalyzer package `pipx` is a much better answer all around.
-1. If you run into an issue about missing YARA try to install [yara-python](https://pypi.org/project/yara-python/). If that doesn't work you may have to install the YARA executable separately.
+1. If you used `pip3` instead of `pipx` and have an issue you should try to install with `pipx`.
+1. If you run into an issue about missing YARA try to install [yara-python](https://pypi.org/project/yara-python/).
 1. If you encounter an error building the python `cryptography` package check your `pip` version (`pip --version`). If it's less than 22.0, upgrade `pip` with `pip install --upgrade pip`.
-2. On linux if you encounter an error building `wheel` or `cffi` you may need to install some packages like a compiler for the `rust` language or some SSL libraries. `sudo apt-get install build-essential libssl-dev libffi-dev rustc` may help.
-1. While `poetry.lock` is checked into this repo the versions "required" there aren't really "required" so feel free to delete or downgrade if you need to.
-
+1. On Linux if you encounter an error building `wheel` or `cffi` you may need to install some packages:
+   ```bash
+   sudo apt-get install build-essential libssl-dev libffi-dev rustc
+   ```
 
 # Usage
-If your python scripts setup is less than ideal and you can't get the `pdfalyze` command to work, `python -m pdfalyzer` should be an equivalent, more portable version of the same command.
 
 Run `pdfalyze --help` to see usage instructions. As of right now these are the options:
 ![](https://github.com/michelcrypt4d4mus/pdfalyzer/raw/master/doc/svgs/rendered_images/pdfalyze_help_prince_theme.png)
@@ -71,6 +69,8 @@ If you find yourself specificying the same options over and over you may be able
 Run `pdfalyzer_show_color_theme` to see the color theme employed.
 
 ### As A Code Library
+For info about setting up a dev environment see [Contributing](#contributing) below.
+
 At its core The Pdfalyzer is taking PDF internal objects gathered by [PyPDF2](https://github.com/py-pdf/PyPDF2) and wrapping them in [AnyTree](https://github.com/c0fec0de/anytree)'s `NodeMixin` class.  Given that things like searching the tree or accessing internal PDF properties will be done through those packages' code it may be helpful to review their documentation.
 
 As far as The Pdfalyzer's unique functionality goes, [`Pdfalyzer`](pdfalyzer/pdfalyzer.py) is the class at the heart of the operation. It holds the PDF's logical tree as well as a few other data structures. Chief among these are the [`FontInfo`](pdfalyzer/font_info.py) class which pulls together various properties of a font strewn across 3 or 4 different PDF objects and the [`BinaryScanner`](pdfalyzer/binary/binary_scanner.py) class which lets you dig through the embedded streams' bytes looking for suspicious patterns.
@@ -109,11 +109,12 @@ for backtick_quoted_string in font.binary_scanner.extract_backtick_quoted_bytes(
 
 
 ### Troubleshooting
-While The Pdfalyzer has been tested on quite a few large and very complicated PDFs there are no doubt a bunch of edge cases that will trip up the code. If that does happen and you hit an error, please open [a GitHub issue](https://github.com/michelcrypt4d4mus/pdfalyzer/issues) with the compressed (`.zip`, `.gz`, whatever) PDF that is causing the problem attached (if possible) and I'll take a look when I can. I will _not_ take a look at any uncompressed PDFs due to the security risks so make sure you zip it before you ship it.
+1. If you can't get the `pdfalyze` command to work try `python -m pdfalyzer`. It's an equivalent but more portable version of the same command that does not rely on your python script paths being set up in a sane way.
+1. While The Pdfalyzer has been tested on quite a few large and very complicated PDFs there are no doubt a bunch of edge cases that will trip up the code. If that does happen and you hit an error, please open [a GitHub issue](https://github.com/michelcrypt4d4mus/pdfalyzer/issues) with the compressed (`.zip`, `.gz`, whatever) PDF that is causing the problem attached (if possible) and I'll take a look when I can. I will _not_ take a look at any uncompressed PDFs due to the security risks so make sure you zip it before you ship it.
 
 
 # Example Output
-The Pdfalyzer can export visualizations to HTML, ANSI colored text, and SVG images using the file export functionality that comes with [Rich](https://github.com/Textualize/rich). SVGs can be turned into `png` format images with a tool like Inkscape or `cairosvg` (Inkscape works a lot better in our experience).
+The Pdfalyzer can export visualizations to HTML, ANSI colored text, and SVG images using the file export functionality that comes with [Rich](https://github.com/Textualize/rich). SVGs can be turned into `png` format images with a tool like Inkscape or `cairosvg` (Inkscape works a lot better in our experience). See `pdfalyze --help` for the specifics.
 
 
 ### Basic Tree View
@@ -213,6 +214,8 @@ One easy way of contributing is to run [the script to test against all the PDFs 
 Beyond that see [CONTRIBUTING.md](CONTRIBUTING.md).
 
 ### Glossary
+These are the naming conventions at play in The Pdfalyzer code base:
+
 * `reference_key` - string found in a PDF node that names the property (e.g. `/BaseFont` or `/Subtype`)
 * `address` - `reference_key` plus a hash key or numerical array index if that's how the reference works. e.g. if node A has a reference key `/Resources` pointing to a dict `{'/Font2': [IndirectObject(55), IndirectObject(2)]}` the address of `IndirectObject(55)` from node A would be `/Resources[/Font2][0]`
 * `tree_address` - like the `address` but starting at the root of the tree, all concatenated
@@ -223,12 +226,9 @@ Beyond that see [CONTRIBUTING.md](CONTRIBUTING.md).
 * `link node` - nodes like `/Dest` that just contain a pointer to another node
 
 # TODO
-* highlight decodes done at `chardet`s behest
 * Highlight decodes with a lot of Javascript keywords
-* deal with repetitive matches
+* https://github.com/mandiant/flare-floss (https://github.com/mandiant/flare-floss/releases/download/v2.1.0/floss-v2.1.0-linux.zip)
 * https://github.com/1Project/Scanr/blob/master/emulator/emulator.py
-* https://github.com/mandiant/flare-floss
-
 
 
 [^1]: The official Adobe PDF specification calls this tree the PDF's "logical structure", which is a good example of nomenclature that does not help those who see it understand anything about what is being described. I can forgive them given that they named this thing back in the 80s, though it's a good example of why picking good names for things at the beginning is so important.
