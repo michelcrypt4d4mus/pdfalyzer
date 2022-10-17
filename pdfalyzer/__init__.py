@@ -5,6 +5,8 @@ from os import environ, getcwd, path
 
 from dotenv import load_dotenv
 
+from pdfalyzer.config import PdfalyzerConfig
+
 # load_dotenv() should be called as soon as possible (before parsing local classes) but not for pytest
 if not environ.get('INVOKED_BY_PYTEST', False):
     for dotenv_file in [path.join(dir, '.pdfalyzer') for dir in [getcwd(), path.expanduser('~')]]:
@@ -32,6 +34,7 @@ MAX_THEME_COL_SIZE = 35
 
 def pdfalyze():
     args = parse_arguments()
+    PdfalyzerConfig._parsed_args = args
     pdfalyzer = Pdfalyzer(args.file_to_scan_path)
     pdfalyzer = PdfalyzerPresenter(pdfalyzer)
     output_basepath = None
@@ -56,8 +59,8 @@ def pdfalyze():
 
             output_basename += f"_maxdecode{YaralyzerConfig.MAX_DECODE_LENGTH}"
 
-            if args.quote_type:
-                output_basename += f"_quote_{args.quote_type}"
+            if args.extract_quoteds:
+                output_basename += f"_quote_{','.join(args.extract_quoteds)}"
 
         output_basename += args.file_suffix
         return path.join(args.output_dir, output_basename + f"___pdfalyzed_{args.invoked_at_str}")

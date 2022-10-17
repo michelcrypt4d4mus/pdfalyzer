@@ -1,5 +1,10 @@
 # NEXT RELEASE
 
+# 1.13.0
+* New `--extract-quoted` argument can be specified to have `yaralyzer` extract and decode all bytes between the specified quote chars.
+* Quoted bytes are no longer force decoded by default.
+* New `--suppress-boms` argument suppresses BOM search.
+
 ### 1.12.3
 * Fix PER ENCODING METRICS subtable in decodings stats table
 * Add percentage calculations to decoding attempts table

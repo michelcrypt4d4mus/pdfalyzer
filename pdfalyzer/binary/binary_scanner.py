@@ -66,11 +66,17 @@ class BinaryScanner:
             yaralyzer.highlight_style = 'BOM'
             self.process_yara_matches(yaralyzer, bom_name, force=True)
 
-    def force_decode_all_quoted_bytes(self) -> None:
-        """Find all strings matching QUOTE_PATTERNS (AKA between quote chars) and decode them with various encodings"""
-        quote_types = QUOTE_PATTERNS.keys() if PdfalyzerConfig.QUOTE_TYPE is None else [PdfalyzerConfig.QUOTE_TYPE]
+    def force_decode_quoted_bytes(self) -> None:
+        """
+        Find all strings matching QUOTE_PATTERNS (AKA between quote chars) and decode them with various encodings.
+        The --quote-type arg will limit this decode to just one kind of quote.
+        """
+        quote_selections = PdfalyzerConfig.args().extract_quoteds
 
-        for quote_type in quote_types:
+        if len(quote_selections) == 0:
+            console.print("\nNo --extract-quoted options provided. Skipping extract/decode of quoted bytes.")
+
+        for quote_type in quote_selections:
             if self.owner and self.owner.type == CONTENTS and quote_type in [FRONTSLASH, GUILLEMET]:
                 msg = f"Not attempting {quote_type} decode for {CONTENTS} node type..."
                 print_headline_panel(msg, style='dim')
@@ -83,7 +89,7 @@ class BinaryScanner:
 
     # -------------------------------------------------------------------------------
     # These extraction iterators will iterate over all matches for a specific pattern.
-    # extract_regex_capture_bytes() is the generalized method that acccepts any regex.
+    # YARA rules are written on the fly and then YARA does the matching.
     # -------------------------------------------------------------------------------
     def extract_guillemet_quoted_bytes(self) -> Iterator[Tuple[BytesMatch, BytesDecoder]]:
         """Iterate on all strings surrounded by Guillemet quotes, e.g. «string»"""
@@ -125,11 +131,10 @@ class BinaryScanner:
     def process_yara_matches(self, yaralyzer: Yaralyzer, pattern: str, force: bool = False) -> None:
         """Decide whether to attempt to decode the matched bytes, track stats. force param ignores min/max length"""
         for bytes_match, bytes_decoder in yaralyzer.match_iterator():
-            log.debug(f"Pattern match: {pattern}, bytes_match: {bytes_match}")
+            log.debug(f"Trackings stats for match: {pattern}, bytes_match: {bytes_match}")
             self.regex_extraction_stats[pattern].match_count += 1
             self.regex_extraction_stats[pattern].bytes_matched += bytes_match.match_length
             self.regex_extraction_stats[pattern].bytes_match_objs.append(bytes_match)
-            log.debug(f"  regex_extraction_stats[{pattern}]: {self.regex_extraction_stats[pattern]}")
 
             # Send suppressed decodes to a queue and track the reason for the suppression in the stats
             if not ((YaralyzerConfig.MIN_DECODE_LENGTH < bytes_match.match_length < YaralyzerConfig.MAX_DECODE_LENGTH) \
@@ -148,12 +153,6 @@ class BinaryScanner:
     def bytes_after_eexec_statement(self) -> bytes:
         """Get the bytes after the 'eexec' demarcation line (if it appears). See Adobe docs for details."""
         return self.bytes.split(CURRENTFILE_EEXEC)[1] if CURRENTFILE_EEXEC in self.bytes else self.bytes
-
-    @deprecated(version='1.7.0', reason="Use process_yara_matches() instead")
-    def extract_regex_capture_bytes(self, regex: Pattern[bytes]) -> Iterator[BytesMatch]:
-        """Finds all matches of regex_with_one_capture in self.bytes and calls yield() with BytesMatch tuples"""
-        for i, match in enumerate(regex.finditer(self.bytes, self._eexec_idx())):
-            yield(BytesMatch.from_regex_match(self.bytes, match, i + 1))
 
     def _quote_yaralyzer(self, quote_pattern: str, quote_type: str):
         """Helper method to build a Yaralyzer for a quote_pattern"""
@@ -177,7 +176,7 @@ class BinaryScanner:
             patterns_type=pattern_type,
             scannable=self.bytes,
             scannable_label=self.label.plain,
-            rules_label=safe_label(rules_label or pattern),
+            rules_label=safe_label(rules_label or pattern),  # TODO: maybe safe_label() belongs in yaralyzer
             pattern_label=safe_label(pattern_label or pattern)
         )
 

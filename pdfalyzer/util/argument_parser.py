@@ -1,5 +1,5 @@
 import sys
-from argparse import ArgumentParser
+from argparse import ArgumentError, ArgumentParser
 from collections import namedtuple
 from functools import partial, update_wrapper
 from importlib.metadata import version
@@ -29,6 +29,17 @@ EPILOG = "Values for various config options can be set permanently by a .pdfalyz
          f"A registry of previous pdfalyzer invocations will be incribed to a file if the '{LOG_DIR_ENV_VAR}' " + \
          "environment variable is configured."
 
+# Analysis selection sections
+DOCINFO = 'docinfo'
+TREE = 'tree'
+RICH = 'rich'
+FONTS = 'fonts'
+COUNTS = 'counts'
+YARA = 'yara'
+STREAMS = 'streams'
+DEFAULT_SECTIONS = [DOCINFO, TREE, RICH, FONTS, COUNTS, YARA]
+ALL_SECTIONS = DEFAULT_SECTIONS + [STREAMS]
+
 ALL_STREAMS = -1
 
 # Positional args, version, help, etc. Note that we extend the yaralyzer's parser and export
@@ -49,7 +60,7 @@ parser = ArgumentParser(
 # Output section selection
 select = parser.add_argument_group(
     'ANALYSIS SELECTION',
-    "Multiselect. Choosing nothing is choosing everything.")
+    "Multiselect. Choosing nothing is choosing everything except --streams.")
 
 select.add_argument('-d', '--docinfo', action='store_true',
                     help='show embedded document info (author, title, timestamps, etc.), streams overview, and MD5/SHA hashes')
@@ -79,9 +90,16 @@ select.add_argument('-s', '--streams',
                     metavar='OBJ_ID',
                     type=int)
 
-select.add_argument('--quote-type',
-                    help='optionally limit stream extraction of quoted bytes to this quote type only',
-                    choices=list(QUOTE_PATTERNS.keys()))
+select.add_argument('--extract-quoted',
+                    help="extract and force decode all bytes found between this kind of quotation marks " + \
+                         "(requires --streams. can be specified more than once)",
+                    choices=list(QUOTE_PATTERNS.keys()),
+                    dest='extract_quoteds',
+                    action='append')
+
+select.add_argument('--suppress-boms', action='store_true',
+                    help="don't scan streams for byte order marks (suppresses some of the --streams output)")
+
 
 # Make sure the selection section is at the top
 parser._action_groups = parser._action_groups[:2] + [parser._action_groups[-1]] + parser._action_groups[2:-1]
@@ -98,8 +116,11 @@ def parse_arguments():
     args = parse_yaralyzer_args(args)
     log_invocation()
 
-    if args.quote_type:
-        PdfalyzerConfig.QUOTE_TYPE = args.quote_type
+    if not args.streams:
+        if args.extract_quoteds:
+            raise ArgumentError(None, "--extract-quoted does nothing if --streams is not selected")
+        if args.suppress_boms:
+            log.warning("--suppress-boms has nothing to suppress if --streams is not selected")
 
     # File export options
     if args.export_svg or args.export_txt or args.export_html or args.extract_binary_streams:
@@ -110,6 +131,7 @@ def parse_arguments():
     elif args.output_dir:
         log.warning('--output-dir provided but no export option was chosen')
 
+    args.extract_quoteds = args.extract_quoteds or []
     log_argparse_result(args)
     log_current_config()
     return args
@@ -129,19 +151,24 @@ def output_sections(args, pdfalyzer) -> List[OutputSection]:
     # The first element string matches the argument in 'select' group.
     # Top to bottom is the default order of output.
     possible_output_sections = [
-        OutputSection('docinfo', pdfalyzer.print_document_info),
-        OutputSection('tree', pdfalyzer.print_tree),
-        OutputSection('rich', pdfalyzer.print_rich_table_tree),
-        OutputSection('fonts', pdfalyzer.print_font_info),
-        OutputSection('counts', pdfalyzer.print_summary),
-        OutputSection('yara', pdfalyzer.print_yara_results),
-        OutputSection('streams', stream_scan),
+        OutputSection(DOCINFO, pdfalyzer.print_document_info),
+        OutputSection(TREE, pdfalyzer.print_tree),
+        OutputSection(RICH, pdfalyzer.print_rich_table_tree),
+        OutputSection(FONTS, pdfalyzer.print_font_info),
+        OutputSection(COUNTS, pdfalyzer.print_summary),
+        OutputSection(YARA, pdfalyzer.print_yara_results),
+        OutputSection(STREAMS, stream_scan),
     ]
 
     output_sections = [section for section in possible_output_sections if vars(args)[section.argument]]
 
     if len(output_sections) == 0:
-        log_and_print("No output section specified so outputting all sections...")
-        return possible_output_sections
+        log_and_print("No output section specified so outputting all sections except --streams...")
+        return [section for section in possible_output_sections if section.argument != STREAMS]
     else:
         return output_sections
+
+
+def all_sections_chosen(args):
+    """Returns true if all flags are set or no flags are set."""
+    return len([s for s in ALL_SECTIONS if vars(args)[s]]) == len(ALL_SECTIONS)

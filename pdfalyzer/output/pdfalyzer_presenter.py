@@ -16,6 +16,7 @@ from yaralyzer.output.rich_layout_elements import bytes_hashes_table
 from yaralyzer.util.logging import log
 
 from pdfalyzer.binary.binary_scanner import BinaryScanner
+from pdfalyzer.config import PdfalyzerConfig
 from pdfalyzer.decorators.pdf_tree_node import DECODE_FAILURE_LEN
 from pdfalyzer.detection.yaralyzer_helper import get_bytes_yaralyzer, get_file_yaralyzer
 from pdfalyzer.helpers.string_helper import pp
@@ -70,16 +71,26 @@ class PdfalyzerPresenter:
         console.print(generate_rich_tree(self.pdfalyzer.pdf_tree))
 
     def print_summary(self) -> None:
+        """Print node type counts and so on."""
         print_section_header(f'PDF Node Summary for {self.pdfalyzer.pdf_basename}')
         console.print_json(data=self._analyze_tree(), sort_keys=True)
 
     def print_font_info(self, font_idnum=None) -> None:
+        """Print informatin about all fonts that appear in this PDF."""
         print_section_header(f'{len(self.pdfalyzer.font_infos)} fonts found in {self.pdfalyzer.pdf_basename}')
 
         for font_info in [fi for fi in self.pdfalyzer.font_infos if font_idnum is None or font_idnum == fi.idnum]:
             font_info.print_summary()
 
     def print_streams_analysis(self, idnum: Optional[int] = None) -> None:
+        """
+        For each binary stream,
+          1. Scan decompressed binary with YARA ruels we applied to whole PDF (the ones in pdfalyzer/yara_rules/)
+          2. Check for (and force decode) dangerous PDF instructions like /JavaScript and /OpenAction
+          3. Check for (and force decode) any BOMs (byte order marks)
+          4. Check for (and force decode) any sequences of bytes between quotes
+
+        """
         print_section_header(f'Binary Stream Analysis / Extraction')
         console.print(self._stream_objects_table())
 
@@ -103,11 +114,13 @@ class PdfalyzerPresenter:
             binary_scanner.check_for_dangerous_instructions()
 
             if not YaralyzerConfig.SUPPRESS_DECODES:
-                binary_scanner.check_for_boms()
-                binary_scanner.force_decode_all_quoted_bytes()
+                if not PdfalyzerConfig.args().suppress_boms:
+                    binary_scanner.check_for_boms()
+                if PdfalyzerConfig.args().extract_quoteds:
+                    binary_scanner.force_decode_quoted_bytes()
 
-            decoding_stats_table = build_decoding_stats_table(binary_scanner)
-            console.print(decoding_stats_table, justify='center')
+            console.line(2)
+            console.print(build_decoding_stats_table(binary_scanner), justify='center')
 
     def print_yara_results(self) -> None:
         print_section_header(f"YARA Scan of PDF rules for '{self.pdfalyzer.pdf_basename}'")

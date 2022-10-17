@@ -1,6 +1,6 @@
 [tool.poetry]
 name = "pdfalyzer"
-version = "1.12.3"
+version = "1.13.0"
 description = "A PDF analysis toolkit. Scan a PDF with relevant YARA rules, visualize its inner tree-like data structure in living color (lots of colors), force decodes of suspicious font binaries, and more."
 authors = ["Michel de Cryptadamus <michel@cryptadamus.com>"]
 license = "GPL-3.0-or-later"
