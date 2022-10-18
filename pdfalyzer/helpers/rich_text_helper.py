@@ -18,7 +18,7 @@ def quoted_text(
     ) -> Text:
     """Wrap _string in 'quote_char'. Style 'quote_char' with 'quote_char_style'."""
     quote_char_txt = Text(quote_char, style=quote_char_style)
-    txt = quote_char_txt.append(_string, style=style).append_text(quote_char_txt)
+    txt = quote_char_txt + Text(_string, style=style) + quote_char_txt
     txt.justify = 'center'
     return txt
 

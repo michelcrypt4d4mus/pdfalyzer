@@ -1,5 +1,7 @@
 # NEXT RELEASE
 
+### 1.13.2
+
 ### 1.13.1
 * Add **all** the possible PDF internal commands that can lead to JavaScript execution or local/remote command exection to `DANGEROUS_PDF_KEYS` list.
 

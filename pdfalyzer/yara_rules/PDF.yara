@@ -6,6 +6,7 @@ import "math"
 //     meta:
 //         author = "Jaume Martin"
 //         description = "Matches '%PDF' to '%%EOF'. Works even on raw bytes (e.g. raw dd image of a drive)"
+//         reference = "https://github.com/Xumeiquer/yara-forensics/blob/bccefe4bac824956cd0694b6681a2d555bf6b0fe/raw/pdf.yar"
 
 //     strings:
 //         $pdf_start = {25 50 44 46}

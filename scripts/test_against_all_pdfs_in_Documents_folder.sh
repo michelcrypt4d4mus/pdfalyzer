@@ -17,7 +17,7 @@ pdfalyze_doc() {
         return
     fi
 
-    cmd="$PDFALYZER_EXECUTABLE -r -t -d \"$pdf_full_path\""
+    cmd="$PDFALYZER_EXECUTABLE -f -t \"$pdf_full_path\""
     echo -e "\nCommand to run: $cmd"
 
     eval $cmd
