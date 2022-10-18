@@ -54,10 +54,10 @@ def test_quote_extraction(adobe_type1_fonts_pdf_path):
     _assert_args_yield_lines(9189, adobe_type1_fonts_pdf_path, '--extract-quoted', 'backtick', '--extract-quoted', 'frontslash', '-s')
 
 
-# maybe setting environ causes issues w/other tests???
-# def test_pdfalyze_CLI_font_scan(adobe_type1_fonts_pdf_path):
-#     environ[MAX_DECODE_LENGTH_ENV_VAR] = '2'
-#     _assert_args_yield_lines(188, adobe_type1_fonts_pdf_path, '-f')
+
+def test_pdfalyze_CLI_font_scan(adobe_type1_fonts_pdf_path, analyzing_malicious_pdf_path):
+    _assert_args_yield_lines(197, adobe_type1_fonts_pdf_path, '-f')
+    _assert_args_yield_lines(205, analyzing_malicious_pdf_path, '-f')
 
 
 def _assert_args_yield_lines(line_count, file, *args) -> bool:
