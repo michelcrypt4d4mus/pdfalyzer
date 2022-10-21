@@ -4,7 +4,8 @@
 # the application above and beyond providing command line options.  Useful if you want to permanently
 # configure options you tend to reuse (e.g. '--maximize-width') so you can stop remembering to type them.
 #
-# Almost all of the yaralyzer command line options can be configured in this file by capitalizing them and
+# Almost all of the yaralyzer (yes, you read that right - The Pdfalyzer uses The Yaralyzer for all
+# kinds of backend functionality) command line options can be configured in this file by capitalizing them and
 # prefixing 'YARALYZER'. e.g. to configure the --maximize-width option for every invocation, you would set:
 # YARALYZER_MAXIMIZE_WIDTH=True
 
@@ -16,7 +17,7 @@
 #    YARALYZER_MAXIMIZE_WIDTH=True
 
 # Suppress all PDF binary regex matching/scanning/etc
-#    YARALYZER_SUPPRESS_DECODE = False
+#    YARALYZER_SUPPRESS_DECODES_TABLE=False
 
 # Suppress the display of the table showing the the encoding assessments given by `chardet.detect()`
 # about a particular chunk of binary data. (The most important data in the chardet confidence table is
@@ -46,7 +47,7 @@
 #      This is true even with the -D option.
 #   2. The default log_level will be decreased from WARN (extremely spartan) to INFO (fairly verbose).
 #      The -D option, which sets the log level to DEBUG, will be respected whether or not
-#      PDFALYZER_LOG_DIR is configured.
+#      YARALYZER_LOG_DIR is configured.
 #
 #     YARALYZER_LOG_DIR=/path/to/pdfalyzer/log_dir/
 

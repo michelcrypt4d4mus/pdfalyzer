@@ -7,11 +7,12 @@ from os import environ, getcwd, path
 from typing import List
 
 from rich_argparse_plus import RichHelpFormatterPlus
+from yaralyzer.config import YaralyzerConfig
 from yaralyzer.helpers.rich_text_helper import console
 from yaralyzer.util.argument_parser import export, parser, parse_arguments as parse_yaralyzer_args
 from yaralyzer.util.logging import log, log_and_print, log_argparse_result, log_current_config, log_invocation
 
-from pdfalyzer.config import ALL_STREAMS, LOG_DIR_ENV_VAR, PdfalyzerConfig
+from pdfalyzer.config import ALL_STREAMS, PdfalyzerConfig
 from pdfalyzer.detection.constants.binary_regexes import QUOTE_PATTERNS
 
 # NamedTuple to keep our argument selection orderly
@@ -26,8 +27,8 @@ DESCRIPTION = "Explore PDF's inner data structure with absurdly large and in dep
 
 EPILOG = "Values for various config options can be set permanently by a .pdfalyzer file in your home directory; " + \
          "see the documentation for details. " + \
-         f"A registry of previous pdfalyzer invocations will be incribed to a file if the '{LOG_DIR_ENV_VAR}' " + \
-         "environment variable is configured."
+         f"A registry of previous pdfalyzer invocations will be incribed to a file if the " + \
+         "{YaralyzerConfig.LOG_DIR_ENV_VAR} environment variable is configured."
 
 # Analysis selection sections
 DOCINFO = 'docinfo'

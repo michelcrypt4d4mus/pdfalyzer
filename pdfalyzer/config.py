@@ -1,26 +1,17 @@
 import importlib.resources
-import logging
 from argparse import Namespace
 from os import environ, pardir, path
 
 from yaralyzer.config import YaralyzerConfig, is_env_var_set_and_not_false, is_invoked_by_pytest
-from yaralyzer.util.logging import log, set_log_level
 
 PDFALYZE = 'pdfalyze'
 ALL_STREAMS = -1
 PYTEST_FLAG = 'INVOKED_BY_PYTEST'
 PROJECT_ROOT = path.join(str(importlib.resources.files('pdfalyzer')), pardir)
 
-# Configuring PDFALYZER_LOG_DIR has side effects; see .pdfalyzer.example in repo for specifics.
-LOG_LEVEL_ENV_VAR = 'PDFALYZER_LOG_LEVEL'
-LOG_DIR_ENV_VAR = 'PDFALYZER_LOG_DIR'
-
 # 3rd part pdf-parser.py
 PDF_PARSER_EXECUTABLE_ENV_VAR = 'PDFALYZER_PDF_PARSER_PY_PATH'
 DEFAULT_PDF_PARSER_EXECUTABLE = path.join(PROJECT_ROOT, 'tools', 'pdf-parser.py')
-
-YaralyzerConfig.LOG_DIR = environ.get(LOG_DIR_ENV_VAR)
-YaralyzerConfig.LOG_LEVEL = logging.getLevelName(environ.get(LOG_LEVEL_ENV_VAR, 'WARN'))
 
 
 class PdfalyzerConfig:
@@ -47,7 +38,7 @@ class PdfalyzerConfig:
             if cls._args.streams != ALL_STREAMS:
                 output_basename += f"_streamid{cls._args.streams}"
 
-            output_basename += f"_maxdecode{YaralyzerConfig.MAX_DECODE_LENGTH}"
+            output_basename += f"_maxdecode{YaralyzerConfig.args.max_decode_length}"
 
             if cls._args.extract_quoteds:
                 output_basename += f"_extractquoteds-{','.join(cls._args.extract_quoteds)}"
