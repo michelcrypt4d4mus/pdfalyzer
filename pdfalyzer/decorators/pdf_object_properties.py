@@ -7,6 +7,7 @@ from anytree import NodeMixin
 from PyPDF2.generic import DictionaryObject, IndirectObject, NumberObject, PdfObject
 from rich.markup import escape
 from rich.text import Text
+from yaralyzer.util.logging import log
 
 from pdfalyzer.helpers.pdf_object_helper import pypdf_class_name
 from pdfalyzer.helpers.rich_text_helper import comma_join_txt, node_label
@@ -57,6 +58,9 @@ class PdfObjectProperties:
             self.first_address = f"[{address}]"
         else:
             self.first_address = address
+
+        log.debug(f"Node ID: {self.idnum}, type: {self.type}, subtype: {self.sub_type}, " + \
+                  f"label: {self.label}, first_address: {self.first_address}")
 
     @classmethod
     def from_reference(cls, reference: IndirectObject, address: str) -> 'PdfObjectProperties':

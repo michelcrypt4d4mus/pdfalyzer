@@ -11,8 +11,10 @@ from deprecated import deprecated
 from pdfalyzer.util.adobe_strings import DANGEROUS_PDF_KEYS
 
 DANGEROUS_JAVASCRIPT_INSTRUCTIONS = ['eval']
-DANGEROUS_PDF_KEYS_TO_HUNT_WITH_SLASH = ['/AA', '/F', '/URI']
-HEX_ENCODED_PEF_KEYS_TO_HUNT = [
+DANGEROUS_PDF_KEYS_TO_HUNT_WITH_SLASH = ['/URI']
+DANGEROUS_PDF_KEYS_TO_HUNT_ONLY_IN_FONTS = ['/AA', '/F']
+
+HEX_ENCODED_PDF_KEYS_TO_HUNT = [
     '/#55#52#49',  # URI
 ]
 

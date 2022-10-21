@@ -1,14 +1,15 @@
-from argparse import Namespace
 import importlib.resources
 import logging
+from argparse import Namespace
 from os import environ, pardir, path
 
 from yaralyzer.config import YaralyzerConfig, is_env_var_set_and_not_false, is_invoked_by_pytest
 from yaralyzer.util.logging import log, set_log_level
 
 PDFALYZE = 'pdfalyze'
-PROJECT_ROOT = path.join(str(importlib.resources.files('pdfalyzer')), pardir)
+ALL_STREAMS = -1
 PYTEST_FLAG = 'INVOKED_BY_PYTEST'
+PROJECT_ROOT = path.join(str(importlib.resources.files('pdfalyzer')), pardir)
 
 # Configuring PDFALYZER_LOG_DIR has side effects; see .pdfalyzer.example in repo for specifics.
 LOG_LEVEL_ENV_VAR = 'PDFALYZER_LOG_LEVEL'
@@ -23,12 +24,7 @@ YaralyzerConfig.LOG_LEVEL = logging.getLevelName(environ.get(LOG_LEVEL_ENV_VAR, 
 
 
 class PdfalyzerConfig:
-    _parsed_args: Namespace = Namespace()
-
-    @classmethod
-    def args(cls):
-        """Args parsed by argparse at startup."""
-        return cls._parsed_args
+    _args: Namespace = Namespace()
 
     # Path to Didier Stevens's pdf-parser.py
     if is_env_var_set_and_not_false(PDF_PARSER_EXECUTABLE_ENV_VAR):
@@ -40,3 +36,23 @@ class PdfalyzerConfig:
             PDF_PARSER_EXECUTABLE = DEFAULT_PDF_PARSER_EXECUTABLE
         else:
             PDF_PARSER_EXECUTABLE = None
+
+    @classmethod
+    def get_output_basepath(cls, export_method):
+        """Build the path to an output file - everything but the extension"""
+        export_type = export_method.__name__.removeprefix('print_')
+        output_basename = f"{cls._args.output_basename}.{export_type}"
+
+        if export_type == 'streams_analysis':
+            if cls._args.streams != ALL_STREAMS:
+                output_basename += f"_streamid{cls._args.streams}"
+
+            output_basename += f"_maxdecode{YaralyzerConfig.MAX_DECODE_LENGTH}"
+
+            if cls._args.extract_quoteds:
+                output_basename += f"_extractquoteds-{','.join(cls._args.extract_quoteds)}"
+
+        return path.join(
+            cls._args.output_dir,
+            output_basename + cls._args.file_suffix + f"___pdfalyzed_{cls._args.invoked_at_str}"
+        )

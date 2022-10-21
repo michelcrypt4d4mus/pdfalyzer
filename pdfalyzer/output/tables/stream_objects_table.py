@@ -6,7 +6,7 @@ from typing import List
 
 from rich.table import Table
 from yaralyzer.helpers.rich_text_helper import size_in_bytes_text
-from yaralyzer.output.rich_layout_elements import LEFT
+from yaralyzer.output.file_hashes_table import LEFT
 
 from pdfalyzer.decorators.pdf_tree_node import PdfTreeNode
 

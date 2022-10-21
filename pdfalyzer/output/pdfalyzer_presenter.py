@@ -12,7 +12,7 @@ from rich.table import Table
 from rich.text import Text
 from yaralyzer.config import YaralyzerConfig
 from yaralyzer.output.rich_console import BYTES_HIGHLIGHT, console
-from yaralyzer.output.rich_layout_elements import bytes_hashes_table
+from yaralyzer.output.file_hashes_table import bytes_hashes_table
 from yaralyzer.util.logging import log
 
 from pdfalyzer.binary.binary_scanner import BinaryScanner
@@ -113,18 +113,20 @@ class PdfalyzerPresenter:
             binary_scanner.print_stream_preview()
             binary_scanner.check_for_dangerous_instructions()
 
-            if not YaralyzerConfig.SUPPRESS_DECODES:
-                if not PdfalyzerConfig.args().suppress_boms:
-                    binary_scanner.check_for_boms()
-                if PdfalyzerConfig.args().extract_quoteds:
-                    binary_scanner.force_decode_quoted_bytes()
+            if not PdfalyzerConfig._args.suppress_boms:
+                binary_scanner.check_for_boms()
 
-            console.line(2)
-            console.print(build_decoding_stats_table(binary_scanner), justify='center')
+            if not YaralyzerConfig.args.suppress_decodes_table:
+                binary_scanner.force_decode_quoted_bytes()
+                console.line(2)
+                console.print(build_decoding_stats_table(binary_scanner), justify='center')
 
     def print_yara_results(self) -> None:
+        """Scan the overall PDF and each individual binary stream in it with yara_rules/ files"""
         print_section_header(f"YARA Scan of PDF rules for '{self.pdfalyzer.pdf_basename}'")
+        YaralyzerConfig.args.standalone_mode = True  # TODO: this sucks
         self.yaralyzer.yaralyze()
+        YaralyzerConfig.args.standalone_mode = False
         console.line(2)
 
         for node in self.pdfalyzer.stream_nodes():

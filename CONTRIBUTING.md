@@ -37,12 +37,15 @@ pdfalyzer()
 
 
 # Testing
-Run all tests by typing `pytest`. Test coverage is relatively spartan but should throw failures if you really mess something up. See [How To Invoke pytest](https://docs.pytest.org/en/7.1.x/how-to/usage.html) official docs for other options.
+Test coverage is relatively spartan but should throw failures if you really mess something up. See [How To Invoke pytest](https://docs.pytest.org/en/7.1.x/how-to/usage.html) official docs for other options.
 
 ```bash
-# include slow tests:
+# Run tests (but not the slow ones):
+pytest
+
+# Run all tests (including the slow ones):
 pytest -v --slow
 
-# only slow tests:
+# Run only the slow tests:
 pytest -m slow --slow:
 ```

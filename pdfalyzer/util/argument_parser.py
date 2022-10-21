@@ -11,7 +11,7 @@ from yaralyzer.helpers.rich_text_helper import console
 from yaralyzer.util.argument_parser import export, parser, parse_arguments as parse_yaralyzer_args
 from yaralyzer.util.logging import log, log_and_print, log_argparse_result, log_current_config, log_invocation
 
-from pdfalyzer.config import LOG_DIR_ENV_VAR, PdfalyzerConfig
+from pdfalyzer.config import ALL_STREAMS, LOG_DIR_ENV_VAR, PdfalyzerConfig
 from pdfalyzer.detection.constants.binary_regexes import QUOTE_PATTERNS
 
 # NamedTuple to keep our argument selection orderly
@@ -40,15 +40,14 @@ STREAMS = 'streams'
 DEFAULT_SECTIONS = [DOCINFO, TREE, RICH, FONTS, COUNTS, YARA]
 ALL_SECTIONS = DEFAULT_SECTIONS + [STREAMS]
 
-ALL_STREAMS = -1
-
-# Positional args, version, help, etc. Note that we extend the yaralyzer's parser and export
+# Add one more option to yaralyzer's export options
 export.add_argument('-bin', '--extract-binary-streams',
                     action='store_const',
                     const='bin',
                     help='extract all binary streams in the PDF to separate files (requires pdf-parser.py)')
 
 
+#  Note that we extend the yaralyzer's parser and export
 parser = ArgumentParser(
     formatter_class=RichHelpFormatterPlus,
     description=DESCRIPTION,
@@ -87,7 +86,7 @@ select.add_argument('-s', '--streams',
                          "argument position related piccadilly.",
                     nargs='?',
                     const=ALL_STREAMS,
-                    metavar='OBJ_ID',
+                    metavar='ID',
                     type=int)
 
 select.add_argument('--extract-quoted',
@@ -100,6 +99,10 @@ select.add_argument('--extract-quoted',
 select.add_argument('--suppress-boms', action='store_true',
                     help="don't scan streams for byte order marks (suppresses some of the --streams output)")
 
+select.add_argument('--preview-stream-length',
+                    help='number of bytes at the beginning and end of stream data to show as a preview',
+                    metavar='BYTES',
+                    type=int)
 
 # Make sure the selection section is at the top
 parser._action_groups = parser._action_groups[:2] + [parser._action_groups[-1]] + parser._action_groups[2:-1]
@@ -132,7 +135,8 @@ def parse_arguments():
         log.warning('--output-dir provided but no export option was chosen')
 
     args.extract_quoteds = args.extract_quoteds or []
-    log_argparse_result(args)
+    PdfalyzerConfig._args = args
+    log_argparse_result(args, 'parsed')
     log_current_config()
     return args
 

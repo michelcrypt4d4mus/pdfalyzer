@@ -13,15 +13,15 @@ from anytree import LevelOrderIter, SymlinkNode
 from anytree.search import findall, findall_by_attr
 from PyPDF2 import PdfReader
 from PyPDF2.generic import IndirectObject
-from yaralyzer.helpers.bytes_helper import get_bytes_info
+from yaralyzer.output.file_hashes_table import compute_file_hashes
 from yaralyzer.helpers.file_helper import load_binary_data
 from yaralyzer.output.rich_console import console
 from yaralyzer.util.logging import log
 
 from pdfalyzer.decorators.document_model_printer import print_with_header
-from pdfalyzer.decorators.pdf_tree_verifier import PdfTreeVerifier
 from pdfalyzer.decorators.indeterminate_node import IndeterminateNode
 from pdfalyzer.decorators.pdf_tree_node import PdfTreeNode
+from pdfalyzer.decorators.pdf_tree_verifier import PdfTreeVerifier
 from pdfalyzer.font_info import FontInfo
 from pdfalyzer.pdf_object_relationship import PdfObjectRelationship
 from pdfalyzer.util.adobe_strings import *
@@ -35,7 +35,7 @@ class Pdfalyzer:
         self.pdf_path = pdf_path
         self.pdf_basename = basename(pdf_path)
         self.pdf_bytes = load_binary_data(pdf_path)
-        self.pdf_bytes_info = get_bytes_info(self.pdf_bytes)
+        self.pdf_bytes_info = compute_file_hashes(self.pdf_bytes)
         pdf_file = open(pdf_path, 'rb')  # Filehandle must be left open for PyPDF2 to perform seeks
         self.pdf_reader = PdfReader(pdf_file)
 

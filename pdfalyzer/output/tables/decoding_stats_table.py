@@ -11,7 +11,8 @@ from pdfalyzer.output.layout import generate_subtable, half_width, pad_header
 # Start rainbow colors here
 CHAR_ENCODING_1ST_COLOR_NUMBER = 203
 NOT_FOUND_MSG = Text('(not found)', style='grey.dark_italic')
-
+REGEX_SUBTABLE_COLS = ['Metric', 'Value']
+DECODES_SUBTABLE_COLS = ['Encoding', '#', 'Decoded', '#', 'Forced', '#', 'Failed']
 
 def build_decoding_stats_table(scanner: 'BinaryScanner') -> Table:
     """Diplay aggregate results on the decoding attempts we made on subsets of scanner.bytes"""
@@ -24,24 +25,23 @@ def build_decoding_stats_table(scanner: 'BinaryScanner') -> Table:
             regexes_not_found_in_stream.append([str(pattern), NOT_FOUND_MSG, na_txt()])
             continue
 
-        per_encoding_pattern_stats = scanner.regex_extraction_stats[pattern]
-        regex_subtable = generate_subtable(cols=['Metric', 'Value'])
-        decodes_subtable = generate_subtable(cols=['Encoding', '#', 'Decoded', '#', 'Forced', '#', 'Failed'])
+        regex_subtable = generate_subtable(cols=REGEX_SUBTABLE_COLS)
+        decodes_subtable = generate_subtable(cols=DECODES_SUBTABLE_COLS)
 
         # Bootstrap regex_table with match_count, bytes_count, easy_decode_count, etc.
         for metric, measure in vars(stats).items():
             if isinstance(measure, Number):
                 regex_subtable.add_row(metric, str(measure))
 
-        for i, (encoding, count) in enumerate(stats.was_match_decodable.items()):
+        for i, (encoding, encoding_stats) in enumerate(stats.per_encoding_stats.items()):
             decodes_subtable.add_row(
                 Text(encoding, style=f"color({CHAR_ENCODING_1ST_COLOR_NUMBER + 2 * i})"),
-                str(count),
-                pct_txt(count, stats.match_count),
-                str(per_encoding_pattern_stats.was_match_force_decoded[encoding]),
-                pct_txt(per_encoding_pattern_stats.was_match_force_decoded[encoding], stats.match_count),
-                str(per_encoding_pattern_stats.was_match_undecodable[encoding]),
-                pct_txt(per_encoding_pattern_stats.was_match_undecodable[encoding], stats.match_count))
+                str(encoding_stats.match_count),
+                pct_txt(encoding_stats.match_count, stats.match_count),
+                str(encoding_stats.forced_decode_count),
+                pct_txt(encoding_stats.forced_decode_count, stats.match_count),
+                str(encoding_stats.undecodable_count),
+                pct_txt(encoding_stats.undecodable_count, stats.match_count))
 
         # Add the outer table row - the one with the encoding name and two subtables
         stats_table.add_row(str(pattern), regex_subtable, decodes_subtable)

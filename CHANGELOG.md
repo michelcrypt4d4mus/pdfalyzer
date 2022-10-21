@@ -1,6 +1,12 @@
 # NEXT RELEASE
 
+# 1.14.0
+* Add `--preview-stream-length` option
+* Store parsed `args` on `PdfalyzerConfig` class
+* Yaralyzer CLI options all configurable with env vars.
+
 ### 1.13.2
+* Fix infinite loop bug encountered when building some char maps
 
 ### 1.13.1
 * Add **all** the possible PDF internal commands that can lead to JavaScript execution or local/remote command exection to `DANGEROUS_PDF_KEYS` list.

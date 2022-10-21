@@ -7,8 +7,6 @@ from math import isclose
 from os import environ
 from subprocess import CalledProcessError, check_output
 
-from yaralyzer.config import MAX_DECODE_LENGTH_ENV_VAR
-
 from pdfalyzer.config import PDFALYZE
 
 
@@ -50,9 +48,8 @@ def test_pdfalyze_CLI_streams_scan(adobe_type1_fonts_pdf_path):
 
 @pytest.mark.slow
 def test_quote_extraction(adobe_type1_fonts_pdf_path):
-    _assert_args_yield_lines(4779, adobe_type1_fonts_pdf_path, '--extract-quoted', 'backtick', '-s')
-    _assert_args_yield_lines(9189, adobe_type1_fonts_pdf_path, '--extract-quoted', 'backtick', '--extract-quoted', 'frontslash', '-s')
-
+    _assert_args_yield_lines(2914, adobe_type1_fonts_pdf_path, '--extract-quoted', 'backtick', '-s')
+    _assert_args_yield_lines(5736, adobe_type1_fonts_pdf_path, '--extract-quoted', 'backtick', '--extract-quoted', 'frontslash', '-s')
 
 
 def test_pdfalyze_CLI_font_scan(adobe_type1_fonts_pdf_path, analyzing_malicious_pdf_path):

@@ -79,6 +79,7 @@ XREF_STREAM     = '/XRefStm'
 # They indicate points in the binary stream where different sections of the font definition
 # can be found.
 FONT_LENGTHS = [f'/Length{i + 1}' for i in range(3)]
+FONT_FILE_KEYS = [FONT_FILE, FONT_FILE2, FONT_FILE3]
 
 # Instructions to flag when scanning stream data for malicious content.
 DANGEROUS_PDF_KEYS = [
