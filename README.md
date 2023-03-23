@@ -1,6 +1,7 @@
 <!-- ![Tests](https://img.shields.io/github/workflow/status/michelcrypt4d4mus/pdfalyzer/tests?label=tests) -->
 ![Python Version](https://img.shields.io/pypi/pyversions/pdfalyzer)
-![Release](https://img.shields.io/github/v/release/michelcrypt4d4mus/pdfalyzer?sort=semver)
+[![Release](https://img.shields.io/github/v/release/michelcrypt4d4mus/pdfalyzer?sort=semver)](https://pypi.org/project/pdfalyzer/)
+[![GitHub last commit](https://img.shields.io/github/last-commit/michelcrypt4d4mus/pdfalyzer)](https://github.com/michelcrypt4d4mus/pdfalyzer)
 ![Downloads](https://img.shields.io/pypi/dm/pdfalyzer)
 
 
