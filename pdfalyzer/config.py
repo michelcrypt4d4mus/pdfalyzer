@@ -29,7 +29,7 @@ class PdfalyzerConfig:
             PDF_PARSER_EXECUTABLE = None
 
     @classmethod
-    def get_output_basepath(cls, export_method):
+    def get_output_basepath(cls, export_method: str) -> str:
         """Build the path to an output file - everything but the extension"""
         export_type = export_method.__name__.removeprefix('print_')
         output_basename = f"{cls._args.output_basename}.{export_type}"

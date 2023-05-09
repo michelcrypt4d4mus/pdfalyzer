@@ -15,7 +15,6 @@ SVG_DIR = path.join(DOCUMENTATION_DIR, 'svgs')
 RENDERED_IMAGES_DIR = path.join(SVG_DIR, 'rendered_images')
 
 
-
 # Full paths to PDF test fixtures
 @pytest.fixture(scope='session')
 def adobe_type1_fonts_pdf_path():
@@ -24,6 +23,7 @@ def adobe_type1_fonts_pdf_path():
 @pytest.fixture(scope='session')
 def analyzing_malicious_pdf_path():
     return _pdf_in_doc_dir('analyzing-malicious-document-files.pdf')
+
 
 # Some obj ids for use with -f when you want to limit yourself to the font
 @pytest.fixture(scope="session")
