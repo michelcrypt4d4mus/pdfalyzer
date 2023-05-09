@@ -1,5 +1,8 @@
 # NEXT RELEASE
 
+### 1.14.4
+* Bump version for pypi tag / shield image (@MartinThoma)
+
 ### 1.14.3
 * Bump version for release
 
