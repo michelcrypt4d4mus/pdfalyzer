@@ -1,5 +1,8 @@
 # NEXT RELEASE
 
+### 1.14.2
+* Bump `yaralyzer` version to handle `yara-python` breaking change
+
 ### 1.14.1
 * Fix export filename
 

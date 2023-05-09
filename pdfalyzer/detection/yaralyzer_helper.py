@@ -25,6 +25,7 @@ def get_bytes_yaralyzer(scannable: bytes, label: str) -> Yaralyzer:
 
 
 def _build_yaralyzer(scannable: Union[bytes, str], label: Optional[str] = None) -> Yaralyzer:
+    """Build a yaralyzer for .yara rules files stored in the yara_rules/ dir in this package."""
     # TODO: ugh this sucks (handling to extract .yara files from a python pkg zip)
     with as_file(YARA_RULES_DIR.joinpath(YARA_RULES_FILES[0])) as yara0:
         with as_file(YARA_RULES_DIR.joinpath(YARA_RULES_FILES[1])) as yara1:

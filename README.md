@@ -1,6 +1,6 @@
-<!-- ![Tests](https://img.shields.io/github/workflow/status/michelcrypt4d4mus/pdfalyzer/tests?label=tests) -->
+<!-- ![Tests](https://img.shields.io/github/workflow/status/michelcrypt4d4mus/pdfalyzer/tests?label=tests)  -->
 ![Python Version](https://img.shields.io/pypi/pyversions/pdfalyzer)
-![Release](https://img.shields.io/github/v/release/michelcrypt4d4mus/pdfalyzer?sort=semver)
+![Release](https://img.shields.io/pypi/v/pdfalyzer)
 ![Downloads](https://img.shields.io/pypi/dm/pdfalyzer)
 
 
