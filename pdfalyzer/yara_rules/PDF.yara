@@ -339,17 +339,16 @@ rule invalid_XObject_js : PDF
 rule invalid_trailer_structure : PDF
 {
 	meta:
-		author = "Glenn Edwards (@hiddenillusion)"
-		version = "0.1"
+		author = "Glenn Edwards (@hiddenillusion), @malvidin"
+		version = "0.2"
 		weight = 1
 
     strings:
-        $magic = { 25 50 44 46 }
-        // Required for a valid PDF
-        $reg0 = /trailer\r?\n?.*\/Size.*\r?\n?\.*/
-        $reg1 = /\/Root.*\r?\n?.*startxref\r?\n?.*\r?\n?%%EOF/
-    condition:
-        $magic at 0 and not $reg0 and not $reg1
+		$magic = "%PDF"  // Required for a valid PDF
+		$reg0 = /trailer[ \r\n]*<<.{0,1000}\/Size\b/s
+		$reg1 = /\/Root\b.{0,1000}[ \r\n]*.{0,500}startxref[ \r\n]*.{0,500}[ \r\n]*%%EOF/s
+	condition:
+		$magic in (0..1024) and not ($reg0 or $reg1)
 }
 
 
