@@ -1,4 +1,5 @@
 # NEXT RELEASE
+* Update PDF matching YARA rules file (@anotherbridge)
 
 ### 1.14.4
 * Bump version for pypi tag / shield image (@MartinThoma)
