@@ -1,4 +1,6 @@
 # NEXT RELEASE
+
+### 1.14.6
 * Fix issue where additional YARA rules supplied with `--yara-file` option were not being used
 
 ### 1.14.5
