@@ -64,7 +64,7 @@ If you provide none of the flags in the `ANALYSIS SELECTION` section of the `--h
 1. `pdfalyzer lacan_buys_the_dip.pdf`
 1. `pdfalyzer lacan_buys_the_dip.pdf -d -t -r -f -y -c`
 
-The `--streams` output is the one used to hunt for patterns in the embedded bytes and can be _extremely_ verbose depending on the `--quote-char` options chosen (or not chosen) and contents of the PDF. [The Yaralyzer](https://github.com/michelcrypt4d4mus/yaralyzer)) handles this task; if you want to hunt for patterns in the bytes other than bytes surrounded by backticks/frontslashes/brackets/quotes/etc. you may want to use The Yaralyzer directly. As The Yaralyzer is a prequisite for The Pdfalyzer you may already have the `yaralyze` command installed and available.
+The `--streams` output is the one used to hunt for patterns in the embedded bytes and can be _extremely_ verbose depending on the `--quote-char` options chosen (or not chosen) and contents of the PDF. [The Yaralyzer](https://github.com/michelcrypt4d4mus/yaralyzer) handles this task; if you want to hunt for patterns in the bytes other than bytes surrounded by backticks/frontslashes/brackets/quotes/etc. you may want to use The Yaralyzer directly. As The Yaralyzer is a prequisite for The Pdfalyzer you may already have the `yaralyze` command installed and available.
 
 ### Setting Command Line Options Permanently With A `.pdfalyzer` File
 When you run `pdfalyze` on some PDF the tool will check for a file called `.pdfalyzer` first in the current directory and then in the home directory. If it finds a file in either such place it will load configuration options from it. Documentation on the options that can be configured with these files lives in [`.pdfalyzer.example`](.pdfalyzer.example) which doubles as an example file you can copy into place and edit to your needs. Handy if you find yourself typing the same command line options over and over again.
@@ -278,4 +278,3 @@ These are the naming conventions at play in The Pdfalyzer code base:
 [^5]: Technically they are `SymlinkNodes`, a really nice feature of [AnyTree](https://github.com/c0fec0de/anytree).
 
 [^6]: At least they weren't catching it as of September 2022.
-
