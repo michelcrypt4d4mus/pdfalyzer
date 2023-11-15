@@ -70,7 +70,7 @@ The `--streams` output is the one used to hunt for patterns in the embedded byte
 When you run `pdfalyze` on some PDF the tool will check for a file called `.pdfalyzer` first in the current directory and then in the home directory. If it finds a file in either such place it will load configuration options from it. Documentation on the options that can be configured with these files lives in [`.pdfalyzer.example`](.pdfalyzer.example) which doubles as an example file you can copy into place and edit to your needs. Handy if you find yourself typing the same command line options over and over again.
 
 ### Environment Variables
-Even if you don't configure your own `.pdfalyzer` file you may still glean some insight from reading the descriptions of the various variables in [.pdfalyzer.example](.pdfalyzer.example); there's a little more exposition there than in the output of `pdfalyze -h`.
+Even if you don't configure your own `.pdfalyzer` file you may still glean some insight from reading the descriptions of the various variables in [`.pdfalyzer.example`](.pdfalyzer.example); there's a little more exposition there than in the output of `pdfalyze -h`.
 
 ### Colors And Themes
 Run `pdfalyzer_show_color_theme` to see the color theme employed.
