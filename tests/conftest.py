@@ -1,6 +1,6 @@
-from os import environ, path, pardir, remove
 import importlib.resources
-import pathlib
+from os import environ, path, pardir, remove
+from pathlib import Path
 environ['INVOKED_BY_PYTEST'] = 'True'
 
 import pytest
@@ -13,6 +13,7 @@ PROJECT_DIR = path.join(str(importlib.resources.files('pdfalyzer')), pardir)
 DOCUMENTATION_DIR = path.join(PROJECT_DIR, 'doc')
 SVG_DIR = path.join(DOCUMENTATION_DIR, 'svgs')
 RENDERED_IMAGES_DIR = path.join(SVG_DIR, 'rendered_images')
+FIXTURES_DIR = Path(PROJECT_DIR).joinpath('tests', 'fixtures')
 
 
 # Full paths to PDF test fixtures
@@ -55,6 +56,11 @@ def pages_node(analyzing_malicious_pdfalyzer):
 @pytest.fixture(scope="session")
 def font_info(analyzing_malicious_pdfalyzer):
     return next(fi for fi in analyzing_malicious_pdfalyzer.font_infos if fi.idnum == 5)
+
+
+@pytest.fixture(scope="session")
+def additional_yara_rules_path():
+    return FIXTURES_DIR.joinpath('additional_yara_rules.yara')
 
 
 @pytest.fixture

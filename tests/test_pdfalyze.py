@@ -36,6 +36,7 @@ def test_pdfalyze_CLI_rich_tree(adobe_type1_fonts_pdf_path, analyzing_malicious_
     _assert_args_yield_lines(952, adobe_type1_fonts_pdf_path, '-r')
     _assert_args_yield_lines(6970, analyzing_malicious_pdf_path, '-r')
 
+
 def test_pdfalyze_CLI_yara_scan(adobe_type1_fonts_pdf_path):
     _assert_args_yield_lines(774, adobe_type1_fonts_pdf_path, '-y')
 
@@ -44,6 +45,10 @@ def test_pdfalyze_CLI_streams_scan(adobe_type1_fonts_pdf_path):
     _assert_args_yield_lines(1560, adobe_type1_fonts_pdf_path, '-s')
     _assert_args_yield_lines(1165, adobe_type1_fonts_pdf_path, '--suppress-boms', '-s')
     _assert_args_yield_lines(135, adobe_type1_fonts_pdf_path, '-s', '48')
+
+
+def test_yara_rules_option(adobe_type1_fonts_pdf_path, additional_yara_rules_path):
+    _assert_args_yield_lines(1560, adobe_type1_fonts_pdf_path, '-Y', additional_yara_rules_path)
 
 
 @pytest.mark.slow

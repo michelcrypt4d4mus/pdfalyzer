@@ -4,6 +4,7 @@ Class to help with the pre-configured YARA rules in /yara.
 from importlib.resources import as_file, files
 from typing import Optional, Union
 
+from yaralyzer.config import YaralyzerConfig
 from yaralyzer.yaralyzer import Yaralyzer
 
 YARA_RULES_DIR = files('pdfalyzer').joinpath('yara_rules')
@@ -31,4 +32,5 @@ def _build_yaralyzer(scannable: Union[bytes, str], label: Optional[str] = None) 
         with as_file(YARA_RULES_DIR.joinpath(YARA_RULES_FILES[1])) as yara1:
             with as_file(YARA_RULES_DIR.joinpath(YARA_RULES_FILES[2])) as yara2:
                 rules_paths = [str(y) for y in [yara0, yara1, yara2]]
+                rules_paths += YaralyzerConfig.args.yara_rules_files or []
                 return Yaralyzer.for_rules_files(rules_paths, scannable, label)

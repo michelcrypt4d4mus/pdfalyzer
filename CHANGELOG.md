@@ -1,4 +1,5 @@
 # NEXT RELEASE
+* Fix issue where additional YARA rules supplied with `--yara-file` option were not being used
 
 ### 1.14.5
 * Update PDF matching YARA rules file (@anotherbridge)
