@@ -1,4 +1,6 @@
 # NEXT RELEASE
+
+### 1.14.5
 * Update PDF matching YARA rules file (@anotherbridge)
 
 ### 1.14.4
