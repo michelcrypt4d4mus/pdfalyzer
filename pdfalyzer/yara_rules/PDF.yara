@@ -26,6 +26,7 @@ rule Cobaltgang_PDF_Metadata_Rev_A
         author = "Palo Alto Networks Unit 42"
         date = "2018-10-25"
         reference = "https://researchcenter.paloaltonetworks.com/2018/10/unit42-new-techniques-uncover-attribute-cobalt-gang-commodity-builders-infrastructure-revealed/"
+
    strings:
         $ = "<xmpMM:DocumentID>uuid:31ac3688-619c-4fd4-8e3f-e59d0354a338" ascii wide
    condition:
@@ -53,6 +54,7 @@ rule SUSP_Bad_PDF {
         reference = "Internal Research"
         date = "2018-05-03"
         hash1 = "d8c502da8a2b8d1c67cb5d61428f273e989424f319cfe805541304bdb7b921a8"
+
    strings:
         $s1 = "         /F (http//" ascii
         $s2 = "        /F (\\\\\\\\" ascii
@@ -68,13 +70,14 @@ rule malicious_author : PDF
 		author = "Glenn Edwards (@hiddenillusion)"
 		version = "0.1"
 		weight = 5
+
 	strings:
 		$magic = { 25 50 44 46 }
 		$reg0 = /Creator.?\(yen vaw\)/
 		$reg1 = /Title.?\(who cis\)/
 		$reg2 = /Author.?\(ser pes\)/
 	condition:
-		$magic at 0 and all of ($reg*)
+		$magic in (0..1024) and all of ($reg*)
 }
 
 
@@ -84,11 +87,12 @@ rule suspicious_version : PDF
 		author = "Glenn Edwards (@hiddenillusion)"
 		version = "0.1"
 		weight = 3
+
 	strings:
 		$magic = { 25 50 44 46 }
 		$ver = /%PDF-1.\d{1}/
 	condition:
-		$magic at 0 and not $ver
+		$magic in (0..1024) and not $ver
 }
 
 
@@ -98,13 +102,14 @@ rule suspicious_creation : PDF
 		author = "Glenn Edwards (@hiddenillusion)"
 		version = "0.1"
 		weight = 2
+
 	strings:
 		$magic = { 25 50 44 46 }
 		$header = /%PDF-1\.(3|4|6)/
 		$create0 = /CreationDate \(D:20101015142358\)/
 		$create1 = /CreationDate \(2008312053854\)/
 	condition:
-		$magic at 0 and $header and 1 of ($create*)
+		$magic in (0..1024) and $header and 1 of ($create*)
 }
 
 
@@ -123,7 +128,7 @@ rule suspicious_title : PDF
 		$title1 = "P66N7FF"
 		$title2 = "Fohcirya"
 	condition:
-		$magic at 0 and $header and 1 of ($title*)
+		$magic in (0..1024) and $header and 1 of ($title*)
 }
 
 
@@ -133,6 +138,7 @@ rule suspicious_author : PDF
 		author = "Glenn Edwards (@hiddenillusion)"
 		version = "0.1"
 		weight = 4
+
 	strings:
 		$magic = { 25 50 44 46 }
 		$header = /%PDF-1\.(3|4|6)/
@@ -141,7 +147,7 @@ rule suspicious_author : PDF
 		$author2 = "Miekiemoes"
 		$author3 = "Nsarkolke"
 	condition:
-		$magic at 0 and $header and 1 of ($author*)
+		$magic in (0..1024) and $header and 1 of ($author*)
 }
 
 
@@ -159,7 +165,7 @@ rule suspicious_producer : PDF
 		$producer0 = /Producer \(Scribus PDF Library/
 		$producer1 = "Notepad"
 	condition:
-		$magic at 0 and $header and 1 of ($producer*)
+		$magic in (0..1024) and $header and 1 of ($producer*)
 }
 
 
@@ -178,7 +184,7 @@ rule suspicious_creator : PDF
 		$creator1 = "Scribus"
 		$creator2 = "Viraciregavi"
 	condition:
-		$magic at 0 and $header and 1 of ($creator*)
+		$magic in (0..1024) and $header and 1 of ($creator*)
 }
 
 
@@ -204,7 +210,7 @@ rule possible_exploit : PDF
 
 		$nop = "%u9090%u9090"
 	condition:
-		$magic at 0 and (2 of ($attrib*)) or ($action0 and #shell > 10 and 1 of ($cond*)) or ($action1 and $cond0 and $nop)
+		$magic in (0..1024) and (2 of ($attrib*)) or ($action0 and #shell > 10 and 1 of ($cond*)) or ($action1 and $cond0 and $nop)
 }
 
 
@@ -215,6 +221,7 @@ rule shellcode_blob_metadata : PDF
         version = "0.1"
         description = "When there's a large Base64 blob inserted into metadata fields it often indicates shellcode to later be decoded"
         weight = 4
+
     strings:
         $magic = { 25 50 44 46 }
         $reg_keyword = /\/Keywords.?\(([a-zA-Z0-9]{200,})/ //~6k was observed in BHEHv2 PDF exploits holding the shellcode
@@ -224,7 +231,7 @@ rule shellcode_blob_metadata : PDF
         $reg_creator = /\/Creator.?\(([a-zA-Z0-9]{300,})/
         $reg_create = /\/CreationDate.?\(([a-zA-Z0-9]{200,})/
     condition:
-        $magic at 0 and 1 of ($reg*)
+        $magic in (0..1024) and 1 of ($reg*)
 }
 
 rule multiple_filtering : PDF
@@ -233,12 +240,13 @@ rule multiple_filtering : PDF
         author = "Glenn Edwards (@hiddenillusion)"
         version = "0.2"
         weight = 3
+
     strings:
         $magic = { 25 50 44 46 }
         $attrib = /\/Filter.*?(\/ASCIIHexDecode\W+?|\/LZWDecode\W+?|\/ASCII85Decode\W+?|\/FlateDecode\W+?|\/RunLengthDecode){2}?/
         // left out: /CCITTFaxDecode, JBIG2Decode, DCTDecode, JPXDecode, Crypt
     condition:
-        $magic at 0 and $attrib
+        $magic in (0..1024) and $attrib
 }
 
 rule suspicious_js : PDF
@@ -256,7 +264,7 @@ rule suspicious_js : PDF
 		$js1 = "Array"
 		$js2 = "String.fromCharCode"
 	condition:
-		$magic at 0 and all of ($attrib*) and 2 of ($js*)
+		$magic in (0..1024) and all of ($attrib*) and 2 of ($js*)
 }
 
 
@@ -266,6 +274,7 @@ rule suspicious_launch_action : PDF
 		author = "Glenn Edwards (@hiddenillusion)"
 		version = "0.1"
 		weight = 2
+
 	strings:
 		$magic = { 25 50 44 46 }
 		$attrib0 = /\/Launch/
@@ -273,7 +282,7 @@ rule suspicious_launch_action : PDF
 		$attrib2 = /\/Action/
 		$attrib3 = /\/F /
 	condition:
-		$magic at 0 and 3 of ($attrib*)
+		$magic in (0..1024) and 3 of ($attrib*)
 }
 
 
@@ -293,9 +302,8 @@ rule suspicious_embed : PDF
 		$attrib0 = /\/URL /
 		$attrib1 = /\/Action/
 		$attrib2 = /\/Filespec/
-
 	condition:
-		$magic at 0 and 1 of ($meth*) and 2 of ($attrib*)
+		$magic in (0..1024) and 1 of ($meth*) and 2 of ($attrib*)
 }
 
 
@@ -309,9 +317,8 @@ rule suspicious_obfuscation : PDF
 	strings:
 		$magic = { 25 50 44 46 }
 		$reg = /\/\w#[a-zA-Z0-9]{2}#[a-zA-Z0-9]{2}/
-
 	condition:
-		$magic at 0 and #reg > 5
+		$magic in (0..1024) and #reg > 5
 }
 
 
@@ -330,26 +337,24 @@ rule invalid_XObject_js : PDF
 
 		$attrib0 = /\/XObject/
 		$attrib1 = /\/JavaScript/
-
 	condition:
-		$magic at 0 and not $ver and all of ($attrib*)
+		$magic in (0..1024) and not $ver and all of ($attrib*)
 }
 
 
 rule invalid_trailer_structure : PDF
 {
 	meta:
-		author = "Glenn Edwards (@hiddenillusion)"
-		version = "0.1"
+		author = "Glenn Edwards (@hiddenillusion), @malvidin"
+		version = "0.2"
 		weight = 1
 
     strings:
-        $magic = { 25 50 44 46 }
-        // Required for a valid PDF
-        $reg0 = /trailer\r?\n?.*\/Size.*\r?\n?\.*/
-        $reg1 = /\/Root.*\r?\n?.*startxref\r?\n?.*\r?\n?%%EOF/
-    condition:
-        $magic at 0 and not $reg0 and not $reg1
+		$magic = "%PDF"  // Required for a valid PDF
+		$reg0 = /trailer[ \r\n]*<<.{0,1000}\/Size\b/s
+		$reg1 = /\/Root\b.{0,1000}[ \r\n]*.{0,500}startxref[ \r\n]*.{0,500}[ \r\n]*%%EOF/s
+	condition:
+		$magic in (0..1024) and not ($reg0 or $reg1)
 }
 
 
@@ -360,12 +365,13 @@ rule multiple_versions : PDF
 		version = "0.1"
         description = "Written very generically and doesn't hold any weight - just something that might be useful to know about to help show incremental updates to the file being analyzed"
 		weight = 0
+
     strings:
         $magic = { 25 50 44 46 }
         $trailer = "trailer"
         $eof = "%%EOF"
     condition:
-        $magic at 0 and #trailer > 1 and #eof > 1
+        $magic in (0..1024) and #trailer > 1 and #eof > 1
 }
 
 
@@ -382,9 +388,8 @@ rule js_wrong_version : PDF
         $magic = { 25 50 44 46 }
         $js = /\/JavaScript/
         $ver = /%PDF-1\.[3-9]/
-
     condition:
-        $magic at 0 and $js and not $ver
+        $magic in (0..1024) and $js and not $ver
 }
 
 
@@ -401,9 +406,8 @@ rule JBIG2_wrong_version : PDF
         $magic = { 25 50 44 46 }
         $js = /\/JBIG2Decode/
         $ver = /%PDF-1\.[4-9]/
-
     condition:
-        $magic at 0 and $js and not $ver
+        $magic in (0..1024) and $js and not $ver
 }
 
 
@@ -415,12 +419,13 @@ rule FlateDecode_wrong_version : PDF
 		ref = "http://wwwimages.adobe.com/www.adobe.com/content/dam/Adobe/en/devnet/pdf/pdfs/pdf_reference_1-7.pdf"
 		version = "0.1"
 		weight = 1
+
     strings:
         $magic = { 25 50 44 46 }
         $js = /\/FlateDecode/
         $ver = /%PDF-1\.[2-9]/
     condition:
-        $magic at 0 and $js and not $ver
+        $magic in (0..1024) and $js and not $ver
 }
 
 
@@ -432,12 +437,13 @@ rule embed_wrong_version : PDF
 		ref = "http://wwwimages.adobe.com/www.adobe.com/content/dam/Adobe/en/devnet/pdf/pdfs/pdf_reference_1-7.pdf"
 		version = "0.1"
 		weight = 1
+
     strings:
         $magic = { 25 50 44 46 }
         $embed = /\/EmbeddedFiles/
         $ver = /%PDF-1\.[3-9]/
     condition:
-        $magic at 0 and $embed and not $ver
+        $magic in (0..1024) and $embed and not $ver
 }
 
 
@@ -449,12 +455,13 @@ rule invalid_xref_numbers : PDF
         description = "The first entry in a cross-reference table is always free and has a generation number of 65,535"
         notes = "This can be also be in a stream..."
         weight = 1
+
     strings:
         $magic = { 25 50 44 46 }
         $reg0 = /xref\r?\n?.*\r?\n?.*65535\sf/
         $reg1 = /endstream.*?\r??\n??endobj.*?\r??\n??startxref/
     condition:
-        $magic at 0 and not $reg0 and not $reg1
+        $magic in (0..1024) and not $reg0 and not $reg1
 }
 
 
@@ -465,6 +472,7 @@ rule js_splitting : PDF
         version = "0.1"
         description = "These are commonly used to split up JS code"
         weight = 2
+
     strings:
         $magic = { 25 50 44 46 }
         $js = /\/JavaScript/
@@ -473,7 +481,7 @@ rule js_splitting : PDF
         $s2 = "getPageNthWord"
         $s3 = "this.info"
     condition:
-        $magic at 0 and $js and 1 of ($s*)
+        $magic in (0..1024) and $js and 1 of ($s*)
 }
 
 
@@ -504,9 +512,8 @@ rule BlackHole_v2 : PDF
 	strings:
 		$magic = { 25 50 44 46 }
 		$content = "Index[5 1 7 1 9 4 23 4 50"
-
 	condition:
-		$magic at 0 and $content
+		$magic in (0..1024) and $content
 }
 
 rule blackhole2_pdf : EK PDF{
@@ -519,6 +526,7 @@ rule blackhole2_pdf : EK PDF{
         yaragenerator = "https://github.com/Xen0ph0n/YaraGenerator"
         weight = 6
         tag = "attack.initial"
+
     strings:
         $string0 = "/StructTreeRoot 5 0 R/Type/Catalog>>"
         $string1 = "0000036095 00000 n"
@@ -557,7 +565,6 @@ rule XDP_embedded_PDF : PDF
 		$s3 = "</pdf>"
 		$header0 = "%PDF"
 		$header1 = "JVBERi0"
-
 	condition:
 		all of ($s*) and 1 of ($header*)
 }
@@ -718,6 +725,7 @@ rule APT_APT29_NOBELIUM_BoomBox_PDF_Masq_May21_1 {
         reference = "https://www.microsoft.com/security/blog/2021/05/27/new-sophisticated-email-based-attack-from-nobelium/"
         date = "2021-05-27"
         score = 70
+
     strings:
         $ah1 = { 25 50 44 46 2d 31 2e 33 0a 25 } /* PDF Header */
         $af1 = { 0a 25 25 45 4f 46 0a } /* EOF */
@@ -744,6 +752,7 @@ rule Adobe_Type_1_Font {
         project_zero_link = "https://googleprojectzero.github.io/0days-in-the-wild/0day-RCAs/2020/CVE-2020-27930.html"
         labs_pivot        = "N/A"
         samples           = "64f2c43f3d01eae65125024797d5a40d2fdc9c825c7043f928814b85cd8201a2"
+
 	strings:
         $pdf = "%PDF-"
         $magic_classic = "%!FontType1-1."
@@ -766,12 +775,10 @@ rule PDF_Containing_JavaScript {
         samples        = "c82e29dcaed3c71e05449cb9463f3efb7114ea22b6f45b16e09eae32db9f5bef"
 
 	strings:
-
 		$pdf_tag1 = /\x25\x50\x44\x46\x2d/
 		$js_tag1  = "/JavaScript" fullword
 		$js_tag2  = "/JS"		  fullword
 	condition:
-
 		$pdf_tag1 in (0..1024) and ($js_tag1 or $js_tag2)
 
 }
@@ -787,6 +794,7 @@ rule JS_PDF_Data_Submission {
         labs_reference = "N/A"
         labs_pivot     = "N/A"
         samples        = "a0adbe66e11bdeaf880b81b41cd63964084084a413069389364c98da0c4d2a13"
+
 	strings:
         $pdf_header = "%PDF-"
         $js = /(\/JS|\/JavaScript)/ nocase
@@ -809,6 +817,7 @@ rule PDF_Launch_Action_EXE {
         labs_reference = "N/A"
         labs_pivot     = "N/A"
         samples        = "cb5e659c4ac93b335c77c9b389d8ef65d8c20ab8b0ad08e5f850cc5055e564c3"
+
 	strings:
         /* 8 0 obj
         <<
@@ -841,6 +850,7 @@ rule PDF_Launch_Function {
         labs_reference = "N/A"
         labs_pivot     = "N/A"
         samples        = "c2f2d1de6bf973b849725f1069c649ce594a907c1481566c0411faba40943ee5"
+
 	strings:
 		$pdf_header = "%PDF-"
 		$launch = "/Launch" nocase
@@ -923,6 +933,7 @@ rule NTLM_Credential_Theft_via_PDF {
         Author      = "InQuest Labs"
         URL         = "https://github.com/InQuest/yara-rules"
         Description = "This signature detects Adobe PDF files that reference a remote UNC object for the purpose of leaking NTLM hashes."
+
     strings:
         // we have three regexes here so that we catch all possible orderings but still meet the requirement of all three parts.
         $badness1 = /\s*\/AA\s*<<\s*\/[OC]\s*<<((\s*\/\D\s*\[[^\]]+\])(\s*\/S\s*\/GoTo[ER])|(\s*\/S\s*\/GoTo[ER])(\s*\/\D\s*\[[^\]]+\]))\s*\/F\s*\((\\\\\\\\[a-z0-9]+\.[^\\]+\\\\[a-z0-9]+|https?:\/\/[^\)]+)\)/ nocase
@@ -944,6 +955,7 @@ rule PDF_with_Launch_Action_Function
         labs_reference = "N/A"
         labs_pivot     = "N/A"
         samples        = "a9fbb50dedfd84e1f4a3507d45b1b16baa43123f5ae98dae6aa9a5bebeb956a8"
+
 	strings:
 		$pdf_header = "%PDF-"
 		$a = "<</S/Launch/Type/Action/Win<</F"
@@ -963,6 +975,7 @@ rule PDF_JS_guillemet_close_in_Adobe_Type1_font
         breach_description = "https://cryptadamus.substack.com/p/the-hack-at-the-end-of-the-universe"
         samples            = "61d47fbfe855446d77c7da74b0b3d23dbcee4e4e48065a397bbf09a7988f596e"
         in_the_wild        = true
+
 	strings:
         // "/FJS`\xbb`"
 		$url_js_backtick_close_obj = {2F 46 4A 53 60 BB 60}
