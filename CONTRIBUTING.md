@@ -1,6 +1,6 @@
 Contributions are welcome, just make sure that before you open a pull request:
 
-1. The test suite passes (run by typing `pytest`)
+1. [The test suite passes](#Testing)
 1. You add a description of your changes to [the changelog](CHANGELOG.md)
 
 If your pull request includes some `pytest` setup/unit testing you'll be my new favorite person.
