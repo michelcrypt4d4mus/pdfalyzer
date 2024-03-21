@@ -37,7 +37,7 @@ pdfalyzer()
 
 
 # Testing
-Test coverage is relatively spartan but should throw failures if you really mess something up. See [How To Invoke pytest](https://docs.pytest.org/en/7.1.x/how-to/usage.html) official docs for other options.
+Test coverage is relatively spartan but should throw failures if you really mess something up. See [pytest's official docs](https://docs.pytest.org/en/7.1.x/how-to/usage.html) for other instantiation options.
 
 ```bash
 # Run tests (but not the slow ones):
