@@ -11,7 +11,7 @@ If your pull request includes some `pytest` setup/unit testing you'll be my new 
 
 After that there's a forking path depending on whether or not you use [poetry](https://python-poetry.org) to manage your python lifestyle.
 
-Note that the minimum versions for each package were chosen because that's what worked on my machine and not because that version had some critical bug fix or feature so it's entirely possible that using earlier versions than are specified in [pyproject.toml](pyproject.toml) or [requirements.txt](requirements.txt) will work just fine. Feel free to experiment if there's some kind of version conflict for you.
+Note that the minimum versions for each package were chosen because that's what worked on my machine and not because that version had some critical bug fix or feature so it's entirely possible that using earlier versions than are specified in [pyproject.toml](pyproject.toml) will work just fine. Feel free to experiment if there's some kind of version conflict for you.
 
 #### With Python Poetry
 These commands are the `poetry` equivalent of the traditional virtualenv installation followed by `source venv/bin/activate` but there's a lot of ways to run a python script in a virtualenv with `poetry` so you do you if you prefer another approach.

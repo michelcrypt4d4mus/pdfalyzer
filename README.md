@@ -240,7 +240,7 @@ This tool was built to fill a gap in the PDF assessment landscape following [my 
 Thus I felt the world might be slightly improved if I strung together a couple of more stable/well known/actively maintained open source projects ([AnyTree](https://github.com/c0fec0de/anytree), [PyPDF2](https://github.com/py-pdf/PyPDF2), [Rich](https://github.com/Textualize/rich), and [YARA](https://github.com/VirusTotal/yara-python) via [The Yaralyzer](https://github.com/michelcrypt4d4mus/yaralyzer)) into this tool.
 
 # Contributing
-One easy way of contributing is to run [the script to test against all the PDFs in `~/Documents`](scripts/test_against_all_pdfs_in_Documents_folder.sh) and reporting any issues.
+One easy way of contributing is to run [the script to test against all the PDFs in your `~/Documents` folder](scripts/test_against_all_pdfs_in_Documents_folder.sh) and report any issues.
 
 Beyond that see [CONTRIBUTING.md](CONTRIBUTING.md).
 
