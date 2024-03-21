@@ -1,4 +1,5 @@
 # NEXT RELEASE
+* Remove unused imports, remove unused `requirements.txt` file.
 
 ### 1.14.6
 * Fix issue where additional YARA rules supplied with `--yara-file` option were not being used
