@@ -9,7 +9,7 @@ If your pull request includes some `pytest` setup/unit testing you'll be my new 
 1. `git clone https://github.com/michelcrypt4d4mus/pdfalyzer.git`
 1. `cd pdfalyzer`
 
-After that there's a forking path depending on whether or not you use [poetry](https://python-poetry.org) to manage your python lifestyle.
+After that there's a forking path depending on whether or not you use [poetry](https://python-poetry.org) (which is what we use) to manage your python lifestyle.
 
 Note that the minimum versions for each package were chosen because that's what worked on my machine and not because that version had some critical bug fix or feature so it's entirely possible that using earlier versions than are specified in [pyproject.toml](pyproject.toml) will work just fine. Feel free to experiment if there's some kind of version conflict for you.
 
@@ -25,7 +25,7 @@ source $(poetry env info --path)/bin/activate
 ```sh
 python -m venv .venv              # Create a virtualenv in .venv
 . .venv/bin/activate              # Activate the virtualenv
-pip install -r requirements.txt   # Install packages
+pip install .                     # Install packages
 ```
 
 Note that I'm not sure exactly how to get the `pdfalyze` command installed when developing outside of a `poetry` env, but creating a simple `run_pdfalyzer.py` file with these contents would do the same thing:
