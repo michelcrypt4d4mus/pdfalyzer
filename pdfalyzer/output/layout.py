@@ -4,7 +4,7 @@ Methods to help with the design of the output
 from rich import box
 from rich.padding import Padding
 from rich.panel import Panel
-from rich.table import Column, Table
+from rich.table import Table
 from yaralyzer.output.rich_console import console, console_width
 
 DEFAULT_SUBTABLE_COL_STYLES = ['white', 'bright_white']

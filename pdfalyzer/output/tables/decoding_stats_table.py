@@ -3,7 +3,6 @@ from numbers import Number
 from rich.table import Table
 from rich.text import Text
 from yaralyzer.helpers.rich_text_helper import CENTER, na_txt, prefix_with_plain_text_obj
-from yaralyzer.util.logging import log
 
 from pdfalyzer.helpers.rich_text_helper import pct_txt
 from pdfalyzer.output.layout import generate_subtable, half_width, pad_header

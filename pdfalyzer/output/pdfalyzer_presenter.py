@@ -1,5 +1,5 @@
 """
-Handles formatting output of for Pdfalyzezr() class. Split out this way makes Pdfalyzer more of a pure tree
+Handles formatting of console text output for Pdfalyzer class.
 """
 from collections import defaultdict
 from typing import Optional

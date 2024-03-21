@@ -10,7 +10,6 @@ from PyPDF2.generic import (ArrayObject, ByteStringObject, EncodedStreamObject, 
      StreamObject, TextStringObject)
 from yaralyzer.output.rich_console import YARALYZER_THEME_DICT
 
-from pdfalyzer.helpers.pdf_object_helper import pypdf_class_name
 from pdfalyzer.output.styles.rich_theme import PDF_ARRAY
 from pdfalyzer.util import adobe_strings
 

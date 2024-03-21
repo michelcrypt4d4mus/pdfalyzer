@@ -2,7 +2,7 @@
 PDF node decorator - wraps actual PDF objects to make them anytree nodes.
 Also adds decorators/generators for Rich text representation.
 
-Child/parent relationships should be set using the add_child()/set_parent()
+Child/parent relationships should be set using the add_child() and set_parent()
 methods and not set directly. (TODO: this could be done better with anytree
 hooks)
 """
@@ -13,7 +13,6 @@ from PyPDF2.errors import PdfReadError
 from PyPDF2.generic import IndirectObject, PdfObject, StreamObject
 from rich.markup import escape
 from rich.text import Text
-from yaralyzer.helpers.string_helper import comma_join
 from yaralyzer.output.rich_console import console
 from yaralyzer.util.logging import log
 
@@ -224,4 +223,3 @@ class PdfTreeNode(NodeMixin, PdfObjectProperties):
 
     def __repr__(self) -> str:
         return self.__str__()
-

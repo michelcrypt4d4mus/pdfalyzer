@@ -1,8 +1,6 @@
 """
 String constants specified in the Adobe specs for PDFs, fonts, etc.
 """
-import re
-from tarfile import ENCODING
 
 from PyPDF2.constants import (CatalogDictionary, ImageAttributes, PageAttributes,
      PagesAttributes, Ressources as Resources)

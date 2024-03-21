@@ -3,12 +3,10 @@ from argparse import ArgumentError, ArgumentParser
 from collections import namedtuple
 from functools import partial, update_wrapper
 from importlib.metadata import version
-from os import environ, getcwd, path
+from os import getcwd, path
 from typing import List
 
 from rich_argparse_plus import RichHelpFormatterPlus
-from yaralyzer.config import YaralyzerConfig
-from yaralyzer.helpers.rich_text_helper import console
 from yaralyzer.util.argument_parser import export, parser, parse_arguments as parse_yaralyzer_args
 from yaralyzer.util.logging import log, log_and_print, log_argparse_result, log_current_config, log_invocation
 

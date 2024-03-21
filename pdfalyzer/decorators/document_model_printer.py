@@ -10,7 +10,6 @@ from rich.markup import escape
 from pdfalyzer.helpers.pdf_object_helper import pypdf_class_name
 from pdfalyzer.helpers.string_helper import pp, INDENT_DEPTH
 
-
 INDENT_SPACES = ' ' * INDENT_DEPTH
 INDENT_JOIN = "\n" + INDENT_SPACES
 VALUE_WIDTH = 30

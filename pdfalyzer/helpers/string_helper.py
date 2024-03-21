@@ -5,9 +5,7 @@ import re
 from pprint import PrettyPrinter
 from typing import List, Pattern, Union
 
-from PyPDF2.generic import PdfObject
 from yaralyzer.output.rich_console import console_width
-from yaralyzer.util.logging import log
 
 INDENT_DEPTH = 4
 PRETTY_PRINT_WIDTH = 60
