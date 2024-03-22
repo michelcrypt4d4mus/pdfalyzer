@@ -122,7 +122,7 @@ for node in pdfalyzer.stream_nodes():
 node = pdfalyzer.find_node_by_idnum(44)
 pdf_object: PdfObject = node.obj
 
-# Use anytree's findall_by_attr to find nodes with a given property
+# Use anytree's findall_by_attr() to find nodes with a given property
 from anytree.search import findall_by_attr
 page_nodes = findall_by_attr(pdfalyzer.pdf_tree, name='type', value='/Page')
 
