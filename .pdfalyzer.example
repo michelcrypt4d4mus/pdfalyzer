@@ -18,16 +18,22 @@
 # Expand the width of the output to the fit the display window (same as the --maximize-width options)
 #    YARALYZER_MAXIMIZE_WIDTH=True
 
+# yara-python internal options passed through to yara.set_config() as the stack_size and max_match_data arguments
+#    YARALYZER_STACK_SIZE=10485760
+#    YARALYZER_MAX_MATCH_LENGTH=10737418240
+
 # Suppress all PDF binary regex matching/scanning/etc
 #    YARALYZER_SUPPRESS_DECODES_TABLE=False
 
 # Suppress the display of the table showing the the encoding assessments given by `chardet.detect()`
 # about a particular chunk of binary data. (The most important data in the chardet confidence table is
 # redunandant anyways. Only the low likelihood encodings are hidden from the usef)
-#    YARALYZER_SUPPRESS_CHARDET_TABLE
+#    YARALYZER_SUPPRESS_CHARDET_TABLE=False
+# Minimum confidence to display an encoding in the chardet results table
+#    YARALYZER_MIN_CHARDET_CONFIDENCE=2.0
 
 # Configure how many bytes before and after any binary data should be included in scans and visualizations
-#    YARAlYZER_SURROUNDING_BYTES=64
+#    YARALYZER_SURROUNDING_BYTES=64
 
 # Size thresholds (in bytes) under/over which pdfalyzer will NOT make attempts to decode a match.
 # Longer byte sequences are for obvious reasons slower to decode by force.
