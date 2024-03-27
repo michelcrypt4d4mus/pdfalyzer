@@ -8,10 +8,12 @@
 # kinds of backend functionality) command line options can be configured in this file by capitalizing them and
 # prefixing 'YARALYZER'. e.g. to configure the --maximize-width option for every invocation, you would set:
 # YARALYZER_MAXIMIZE_WIDTH=True
-
+#
 # Note that many of these options are actually configuring the yaralyzer, which is a separate tool leveraged
 # by the Pdfalyzer to actually do the work of finding patterns. More info can be found at
 # https://github.com/michelcrypt4d4mus/yaralyzer
+
+
 
 # Expand the width of the output to the fit the display window (same as the --maximize-width options)
 #    YARALYZER_MAXIMIZE_WIDTH=True
