@@ -1,4 +1,6 @@
 # NEXT RELEASE
+
+### 1.14.8
 * Handle internal YARA errors more gracefully with error messages instead of crashes (currently seeing `ERROR_TOO_MANY_RE_FIBERS` on macOS on some files for unknown reasons that we hope will go away eventually)
 
 ### 1.14.7
