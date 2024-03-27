@@ -1,4 +1,5 @@
 # NEXT RELEASE
+* Bump `yaralyzer` version to 0.9.4 (and thus bump `yara-python` to 4.3.0+)
 * Remove unused imports, remove unused `requirements.txt` file.
 
 ### 1.14.6

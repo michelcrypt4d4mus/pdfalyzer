@@ -51,6 +51,7 @@ See [PyPDF2 installation notes](https://github.com/py-pdf/PyPDF2#installation) a
    ```bash
    sudo apt-get install build-essential libssl-dev libffi-dev rustc
    ```
+1. If you get a YARA internal error number you can look up what it actually means [here](https://github.com/VirusTotal/yara/blob/master/libyara/include/yara/error.h).
 
 # Usage
 
