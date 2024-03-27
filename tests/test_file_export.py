@@ -9,6 +9,7 @@ from pdfalyzer.config import PDFALYZE
 
 
 @pytest.mark.slow
+@pytest.mark.skip(reason="YARA is throwing internal error 46 about 'too many fibers' on macOS")
 def test_file_export(analyzing_malicious_pdf_path, tmp_dir):
     args = [
         '--min-decode-length', '50',

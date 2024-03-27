@@ -65,5 +65,9 @@ def print_headline_panel(headline, style: str = ''):
     _print_header_panel(headline, style, False, console_width())
 
 
+def print_fatal_error_panel(headline):
+    print_headline_panel(headline, style='red blink')
+
+
 def _print_header_panel(headline: str, style: str, expand: bool, width: int, padding: tuple = (0,)) -> None:
     console.print(Panel(headline, style=style, expand=expand, width=width or subheading_width(), padding=padding))

@@ -72,7 +72,7 @@ def pdfalyze():
 
 
 def pdfalyzer_show_color_theme() -> None:
-    """Utility method to show pdfalyzer's color theme. Invocable with 'pdfalyzer_show_colors'."""
+    """Utility method to show pdfalyzer's color theme. Invocable with 'pdfalyzer_show_color_theme'."""
     console.print(Panel('The Pdfalyzer Color Theme', style='reverse'))
 
     colors = [

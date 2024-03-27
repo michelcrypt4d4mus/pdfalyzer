@@ -4,6 +4,7 @@ Handles formatting of console text output for Pdfalyzer class.
 from collections import defaultdict
 from typing import Optional
 
+import yara
 from anytree import LevelOrderIter, RenderTree, SymlinkNode
 from anytree.render import DoubleStyle
 from rich.markup import escape
@@ -20,7 +21,8 @@ from pdfalyzer.config import PdfalyzerConfig
 from pdfalyzer.decorators.pdf_tree_node import DECODE_FAILURE_LEN
 from pdfalyzer.detection.yaralyzer_helper import get_bytes_yaralyzer, get_file_yaralyzer
 from pdfalyzer.helpers.string_helper import pp
-from pdfalyzer.output.layout import print_section_header, print_section_subheader, print_section_sub_subheader
+from pdfalyzer.output.layout import (print_fatal_error_panel, print_section_header, print_section_subheader,
+     print_section_sub_subheader)
 from pdfalyzer.output.tables.pdf_node_rich_table import generate_rich_tree, get_symlink_representation
 from pdfalyzer.output.tables.stream_objects_table import stream_objects_table
 from pdfalyzer.output.tables.decoding_stats_table import build_decoding_stats_table
@@ -124,8 +126,15 @@ class PdfalyzerPresenter:
     def print_yara_results(self) -> None:
         """Scan the overall PDF and each individual binary stream in it with yara_rules/ files"""
         print_section_header(f"YARA Scan of PDF rules for '{self.pdfalyzer.pdf_basename}'")
-        YaralyzerConfig.args.standalone_mode = True  # TODO: this sucks
-        self.yaralyzer.yaralyze()
+        YaralyzerConfig.args.standalone_mode = True  # TODO: using 'standalone mode' like this kind of sucks
+
+        try:
+            self.yaralyzer.yaralyze()
+        except yara.Error as e:
+            console.print_exception()
+            print_fatal_error_panel("Internal YARA error! YARA's error codes can be checked here: https://github.com/VirusTotal/yara/blob/master/libyara/include/yara/error.h")
+            return
+
         YaralyzerConfig.args.standalone_mode = False
         console.line(2)
 
