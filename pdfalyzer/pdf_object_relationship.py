@@ -6,7 +6,6 @@ from typing import List, Optional, Union
 from PyPDF2.generic import IndirectObject, PdfObject
 from yaralyzer.util.logging import log
 
-#from pdfalyzer.he import has_indeterminate_prefix
 from pdfalyzer.helpers.string_helper import bracketed, is_prefixed_by_any
 from pdfalyzer.util.adobe_strings import *
 

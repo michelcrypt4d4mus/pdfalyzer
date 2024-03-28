@@ -1,4 +1,6 @@
-"""Some simple math helpers."""
+"""
+Some simple math helpers.
+"""
 
 
 def is_divisible_by(n: int, divisor: int) -> bool:
