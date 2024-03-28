@@ -1,13 +1,7 @@
 """
 Configuration of what to scan for in binary data. Regexes here will be matched against binary streams
-and then force decoded
+and then force decoded.
 """
-
-import re
-from typing import Union
-
-from deprecated import deprecated
-
 from pdfalyzer.util.adobe_strings import DANGEROUS_PDF_KEYS
 
 DANGEROUS_JAVASCRIPT_INSTRUCTIONS = ['eval']
