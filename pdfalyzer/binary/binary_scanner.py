@@ -20,9 +20,8 @@ from yaralyzer.util.logging import log
 
 from pdfalyzer.config import PdfalyzerConfig
 from pdfalyzer.decorators.pdf_tree_node import PdfTreeNode
-from pdfalyzer.detection.constants.binary_regexes import (BACKTICK,
-     DANGEROUS_PDF_KEYS_TO_HUNT_ONLY_IN_FONTS, DANGEROUS_STRINGS, FRONTSLASH, GUILLEMET,
-     QUOTE_PATTERNS)
+from pdfalyzer.detection.constants.binary_regexes import (BACKTICK, DANGEROUS_PDF_KEYS_TO_HUNT_ONLY_IN_FONTS,
+     DANGEROUS_PDF_KEYS_TO_HUNT_ONLY_IN_FONTS, DANGEROUS_STRINGS, FRONTSLASH, GUILLEMET, QUOTE_PATTERNS)
 from pdfalyzer.helpers.string_helper import generate_hyphen_line
 from pdfalyzer.output.layout import print_headline_panel, print_section_sub_subheader
 from pdfalyzer.util.adobe_strings import CONTENTS, CURRENTFILE_EEXEC, FONT_FILE_KEYS
