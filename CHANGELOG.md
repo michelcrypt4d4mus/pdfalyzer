@@ -1,4 +1,5 @@
 # NEXT RELEASE
+* Remove unused `Deprecated` dependency
 
 ### 1.14.10
 * Add `malware_MaldocinPDF` YARA rule
