@@ -1026,7 +1026,7 @@ rule malware_MaldocinPDF {
         author         = "Yuma Masubuchi and Kota Kino"
         description    = "Search for embeddings of malicious Word files into a PDF file."
         created_date   = "2023-08-15"
-        blog_reference = "https://malware.news/t/maldoc-in-pdf-detection-bypass-by-embedding-a-malicious-word-file-into-a-pdf-file/72815"
+        blog_reference = "https://blogs.jpcert.or.jp/en/2023/08/maldocinpdf.html"
         labs_reference = "N/A"
         labs_pivot     = "N/A"
         samples        = "ef59d7038cfd565fd65bae12588810d5361df938244ebad33b71882dcf683058"
