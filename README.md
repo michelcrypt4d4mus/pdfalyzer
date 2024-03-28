@@ -47,11 +47,14 @@ See [PyPDF2 installation notes](https://github.com/py-pdf/PyPDF2#installation) a
 1. If you used `pip3` instead of `pipx` and have an issue you should try to install with `pipx`.
 1. If you run into an issue about missing YARA try to install [yara-python](https://pypi.org/project/yara-python/).
 1. If you encounter an error building the python `cryptography` package check your `pip` version (`pip --version`). If it's less than 22.0, upgrade `pip` with `pip install --upgrade pip`.
+1. If you get a YARA internal error number you can look up what it actually means [here](https://github.com/VirusTotal/yara/blob/master/libyara/include/yara/error.h).
+1. If you can't get the `pdfalyze` command to work try `python -m pdfalyzer`. It's an equivalent but more portable version of the same command that does not rely on your python script paths being set up in a sane way.
+1. While The Pdfalyzer has been tested on quite a few large and very complicated PDFs there are no doubt a bunch of edge cases that will trip up the code. If that does happen and you hit an error, please open [a GitHub issue](https://github.com/michelcrypt4d4mus/pdfalyzer/issues) with the compressed (`.zip`, `.gz`, whatever) PDF that is causing the problem attached (if possible) and I'll take a look when I can. I will _not_ take a look at any uncompressed PDFs due to the security risks so make sure you zip it before you ship it.
 1. On Linux if you encounter an error building `wheel` or `cffi` you may need to install some packages:
    ```bash
    sudo apt-get install build-essential libssl-dev libffi-dev rustc
    ```
-1. If you get a YARA internal error number you can look up what it actually means [here](https://github.com/VirusTotal/yara/blob/master/libyara/include/yara/error.h).
+
 
 # Usage
 
@@ -79,11 +82,6 @@ Run `pdfalyzer_show_color_theme` to see the color theme employed.
 
 ## Guarantees
 Warnings will be printed if any PDF object ID between 1 and the `/Size` reported by the PDF itself could not be successfully placed in the tree. If you do not get any warnings then all[^2] of the inner PDF objects should be seen in the output.
-
-
-## Troubleshooting
-1. If you can't get the `pdfalyze` command to work try `python -m pdfalyzer`. It's an equivalent but more portable version of the same command that does not rely on your python script paths being set up in a sane way.
-1. While The Pdfalyzer has been tested on quite a few large and very complicated PDFs there are no doubt a bunch of edge cases that will trip up the code. If that does happen and you hit an error, please open [a GitHub issue](https://github.com/michelcrypt4d4mus/pdfalyzer/issues) with the compressed (`.zip`, `.gz`, whatever) PDF that is causing the problem attached (if possible) and I'll take a look when I can. I will _not_ take a look at any uncompressed PDFs due to the security risks so make sure you zip it before you ship it.
 
 
 -------------
