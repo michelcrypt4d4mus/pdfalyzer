@@ -1019,3 +1019,28 @@ rule rule_pdf_activemime {
     condition:
         $pdf at 0 and any of ($base64_ActiveMim*)
 }
+
+
+rule malware_MaldocinPDF {
+    meta:
+        author         = "Yuma Masubuchi and Kota Kino"
+        description    = "Search for embeddings of malicious Word files into a PDF file."
+        created_date   = "2023-08-15"
+        blog_reference = "https://malware.news/t/maldoc-in-pdf-detection-bypass-by-embedding-a-malicious-word-file-into-a-pdf-file/72815"
+        labs_reference = "N/A"
+        labs_pivot     = "N/A"
+        samples        = "ef59d7038cfd565fd65bae12588810d5361df938244ebad33b71882dcf683058"
+
+    strings:
+        $docfile2 = "<w:WordDocument>" ascii nocase
+        $xlsfile2 = "<x:ExcelWorkbook>" ascii nocase
+        $mhtfile0 = "mime" ascii nocase
+        $mhtfile1 = "content-location:" ascii nocase
+        $mhtfile2 = "content-type:" ascii nocase
+
+     condition:
+        (uint32(0) == 0x46445025) and
+        (1 of ($mhtfile*)) and
+        ( (1 of ($docfile*)) or
+          (1 of ($xlsfile*)) )
+}

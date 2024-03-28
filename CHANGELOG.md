@@ -1,4 +1,5 @@
 # NEXT RELEASE
+* Add `malware_MaldocinPDF` YARA rule
 
 ### 1.14.9
 * Add [ActiveMime YARA rule](https://blog.didierstevens.com/2023/08/29/quickpost-pdf-activemime-maldocs-yara-rule/)
