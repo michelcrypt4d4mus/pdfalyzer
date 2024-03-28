@@ -1,4 +1,6 @@
 # NEXT RELEASE
+
+### 1.14.10
 * Add `malware_MaldocinPDF` YARA rule
 
 ### 1.14.9
