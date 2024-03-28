@@ -29,7 +29,7 @@ class PdfTreeVerifier:
             log.warning(msg)
 
     def verify_unencountered_are_untraversable(self) -> None:
-        """Make sure any PDF object IDs we can't find in tree are /ObjStm or /Xref nodes"""
+        """Make sure any PDF object IDs we can't find in tree are /ObjStm or /Xref nodes."""
         if self.pdfalyzer.pdf_size is None:
             log.warning(f"{SIZE} not found in PDF trailer; cannot verify all nodes are in tree")
             return

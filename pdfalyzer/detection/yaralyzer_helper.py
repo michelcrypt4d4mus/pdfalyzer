@@ -1,5 +1,5 @@
 """
-Class to help with the pre-configured YARA rules in /yara.
+Class to help with the pre-configured YARA rules in the /yara directory.
 """
 from importlib.resources import as_file, files
 from sys import exit

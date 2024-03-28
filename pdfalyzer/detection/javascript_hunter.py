@@ -1,5 +1,5 @@
 """
-Count the Javascript (at least the 3+ letter words, record big matches
+Count the Javascript (at least the 3+ letter words, record big matches.
 """
 import re
 

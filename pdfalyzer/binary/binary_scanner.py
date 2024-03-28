@@ -30,7 +30,7 @@ from pdfalyzer.util.adobe_strings import CONTENTS, CURRENTFILE_EEXEC, FONT_FILE_
 
 class BinaryScanner:
     def __init__(self, _bytes: bytes, owner: PdfTreeNode, label: Optional[Text] = None):
-        """owner is an optional link back to the object containing this binary"""
+        """'owner' arg is an optional link back to the object containing this binary."""
         self.bytes = _bytes
         self.label = label
         self.owner = owner
@@ -43,8 +43,8 @@ class BinaryScanner:
         self.regex_extraction_stats = defaultdict(lambda: RegexMatchMetrics())
 
     def check_for_dangerous_instructions(self) -> None:
-        """Scan for all the strings in DANGEROUS_INSTRUCTIONS list and decode bytes around them"""
-        subheader = "Scanning Binary For Anything That Could Be Described As 'Sus'..."
+        """Scan for all the strings in DANGEROUS_INSTRUCTIONS list and decode bytes around them."""
+        subheader = "Scanning Binary For Anything That Could Be Described As 'sus'..."
         print_section_sub_subheader(subheader, style=f"bright_red")
 
         for instruction in DANGEROUS_STRINGS:
@@ -62,7 +62,7 @@ class BinaryScanner:
                 self.process_yara_matches(yaralyzer, instruction, force=True)
 
     def check_for_boms(self) -> None:
-        """Check the binary data for BOMs"""
+        """Check the binary data for BOMs."""
         print_section_sub_subheader("Scanning Binary for any BOMs...", style='BOM')
 
         for bom_bytes, bom_name in BOMS.items():
@@ -105,11 +105,11 @@ class BinaryScanner:
         return self._quote_yaralyzer(QUOTE_PATTERNS[BACKTICK], BACKTICK).match_iterator()
 
     def extract_front_slash_quoted_bytes(self) -> Iterator[Tuple[BytesMatch, BytesDecoder]]:
-        """Returns an interator over all strings surrounded by front_slashes (hint: regular expressions)"""
+        """Returns an interator over all strings surrounded by front_slashes (hint: regular expressions)."""
         return self._quote_yaralyzer(QUOTE_PATTERNS[FRONTSLASH], FRONTSLASH).match_iterator()
 
     def print_stream_preview(self, num_bytes=None, title_suffix=None) -> None:
-        """Print a preview showing the beginning and end of the embedded stream data"""
+        """Print a preview showing the beginning and end of the embedded stream data."""
         num_bytes = num_bytes or PdfalyzerConfig._args.preview_stream_length or console_width()
         snipped_byte_count = self.stream_length - (num_bytes * 2)
         console.line()
@@ -134,7 +134,7 @@ class BinaryScanner:
         console.line()
 
     def process_yara_matches(self, yaralyzer: Yaralyzer, pattern: str, force: bool = False) -> None:
-        """Decide whether to attempt to decode the matched bytes, track stats. force param ignores min/max length"""
+        """Decide whether to attempt to decode the matched bytes, track stats. force param ignores min/max length."""
         for bytes_match, decoder in yaralyzer.match_iterator():
             log.debug(f"Trackings stats for match: {pattern}, bytes_match: {bytes_match}, is_decodable: {bytes_match.is_decodable()}")
 
@@ -185,7 +185,7 @@ class BinaryScanner:
         )
 
     def _print_suppression_notices(self) -> None:
-        """Print notices in queue in a single panel; empty queue"""
+        """Print the notices in queue in a single display panel and then empty the queue."""
         if len(self.suppression_notice_queue) == 0:
             return
 
@@ -195,5 +195,5 @@ class BinaryScanner:
         self.suppression_notice_queue = []
 
     def _eexec_idx(self) -> int:
-        """Returns the location of CURRENTFILES_EEXEC within the binary stream dataor 0"""
+        """Returns the location of CURRENTFILES_EEXEC within the binary stream data (or 0 if it's not there)."""
         return self.bytes.find(CURRENTFILE_EEXEC) if CURRENTFILE_EEXEC in self.bytes else 0

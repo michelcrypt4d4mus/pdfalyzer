@@ -1,5 +1,5 @@
 """
-Deprecated pre-tree, more rawformat reader.
+Deprecated old, pre-tree, more rawformat reader.
 """
 from io import StringIO
 

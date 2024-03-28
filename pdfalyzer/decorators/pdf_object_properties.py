@@ -47,7 +47,7 @@ class PdfObjectProperties:
             self.label = address
             self.type = root_address(address) if isinstance(address, str) else None
 
-        # Force a string. TODO this sucks.
+        # Force self.label to be a string. TODO this sucks.
         if isinstance(self.label, int):
             self.label = f"{UNLABELED}[{self.label}]"
 
