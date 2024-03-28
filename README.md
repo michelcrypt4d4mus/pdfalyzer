@@ -158,7 +158,7 @@ This image shows a more in-depth view of of the PDF tree for the same document s
 
 ## Fonts
 
-#### **Extract character mappings from ancient Adobe font formats:** It's actually `PyPDF2` doing the lifting here but we're happy to take the credit.
+#### **Extract character mappings from ancient Adobe font formats**. It's actually `PyPDF2` doing the lifting here but we're happy to take the credit.
 
 ![](https://github.com/michelcrypt4d4mus/pdfalyzer/raw/master/doc/svgs/rendered_images/font_character_mapping.png)
 
