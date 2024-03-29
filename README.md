@@ -33,6 +33,7 @@ If you're looking for one of these things this may be the tool for you.
 ### What It Don't Do
 This tool is mostly for examining/working with a PDF's data and logical structure. As such it doesn't have much to offer as far as extracting text, rendering[^3], writing, etc. etc.
 
+-------------
 
 # Installation
 
@@ -57,6 +58,7 @@ If you are on macOS someone out there was kind enough to make [The Pdfalyzer ava
    sudo apt-get install build-essential libssl-dev libffi-dev rustc
    ```
 
+-------------
 
 # Usage
 
@@ -81,8 +83,7 @@ Even if you don't configure your own `.pdfalyzer` file you may still glean some 
 ### Colors And Themes
 Run `pdfalyzer_show_color_theme` to see the color theme employed.
 
-
-## Guarantees
+### Guarantees
 Warnings will be printed if any PDF object ID between 1 and the `/Size` reported by the PDF itself could not be successfully placed in the tree. If you do not get any warnings then all[^2] of the inner PDF objects should be seen in the output.
 
 
@@ -135,6 +136,7 @@ for backtick_quoted_string in font.binary_scanner.extract_backtick_quoted_bytes(
     do_stuff(backtick_quoted_string)
 ```
 
+-------------
 
 # Example Output
 The Pdfalyzer can export visualizations to HTML, ANSI colored text, and SVG images using the file export functionality that comes with [Rich](https://github.com/Textualize/rich). SVGs can be turned into `png` format images with a tool like Inkscape or `cairosvg` (Inkscape works a lot better in our experience). See `pdfalyze --help` for the specifics.
@@ -194,6 +196,7 @@ Things like, say, a hidden binary `/F` (PDF instruction meaning "URL") followed 
 
 ![](https://github.com/michelcrypt4d4mus/pdfalyzer/raw/master/doc/svgs/rendered_images/decoding_and_chardet_table_2.png)
 
+-------------
 
 # PDF Resources
 
@@ -240,6 +243,8 @@ scripts/install_t1utils.sh
 This tool was built to fill a gap in the PDF assessment landscape following [my own recent experience trying to find malicious content in a PDF file](https://twitter.com/Cryptadamist/status/1570167937381826560). Didier Stevens's [pdfid.py](https://github.com/DidierStevens/DidierStevensSuite/blob/master/pdfid.py) and [pdf-parser.py](https://github.com/DidierStevens/DidierStevensSuite/blob/master/pdf-parser.py) are still the best game in town when it comes to PDF analysis tools but they lack in the visualization department and also don't give you much to work with as far as giving you a data model you can write your own code around. [Peepdf](https://github.com/jesparza/peepdf) seemed promising but turned out to be in a buggy, out of date, and more or less unfixable state. And neither of them offered much in the way of tooling for embedded binary analysis.
 
 Thus I felt the world might be slightly improved if I strung together a couple of more stable/well known/actively maintained open source projects ([AnyTree](https://github.com/c0fec0de/anytree), [PyPDF2](https://github.com/py-pdf/PyPDF2), [Rich](https://github.com/Textualize/rich), and [YARA](https://github.com/VirusTotal/yara-python) via [The Yaralyzer](https://github.com/michelcrypt4d4mus/yaralyzer)) into this tool.
+
+-------------
 
 # Contributing
 One easy way of contributing is to run [the script to test against all the PDFs in your `~/Documents` folder](scripts/test_against_all_pdfs_in_Documents_folder.sh) and report any issues.
