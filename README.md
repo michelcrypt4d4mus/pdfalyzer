@@ -105,6 +105,7 @@ pdfalyzer = Pdfalyzer("/path/to/the/evil_or_non_evil.pdf")
 actual_pdf_tree: PdfTreeNode = pdfalyzer.pdf_tree
 
 # The PdfalyzerPresenter handles formatting/prettifying output
+from pdfalyzer.output.pdfalyzer_presenter import PdfalyzerPresenter
 PdfalyzerPresenter(pdfalyzer).print_everything()
 
 # Iterate over all nodes in the PDF tree
