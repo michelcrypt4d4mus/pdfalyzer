@@ -22,6 +22,7 @@ class IndeterminateNode:
         self.node = node
 
     def place_node(self) -> None:
+        """Attempt to find the appropriate parent/child relationships for this node."""
         log.debug(f"Attempting to resolve indeterminate node: {self.node}")
 
         if self._check_for_common_ancestor():
@@ -34,7 +35,7 @@ class IndeterminateNode:
         parent = self.find_node_with_most_descendants()
         parent_str = escape(str(parent))
 
-        # Any branch that doesn't return or raise will end with parent being node w/most descendants
+        # Any if/else branch that doesn't return or raise will decide parent to be the node w/most descendants
         if self._has_only_similar_relationships():
             log.info(f"  Fuzzy match addresses or labels; placing under node w/most descendants: {parent_str}")
         elif self._make_parent_if_one_remains(lambda r: r.from_node.type in PAGE_AND_PAGES):
@@ -63,7 +64,7 @@ class IndeterminateNode:
     def _has_only_similar_relationships(self) -> bool:
         """
         Returns True if all the nodes w/references to this one have the same type or if all the
-        reference_keys that point to this node are the same
+        reference_keys that point to this node are the same.
         """
         unique_refferer_labels = self.node.unique_labels_of_referring_nodes()
         unique_addresses = self.node.unique_addresses()
@@ -123,6 +124,6 @@ class IndeterminateNode:
 
 
 def find_node_with_lowest_id(list_of_nodes: List[PdfTreeNode]) -> PdfTreeNode:
-    """Find node in list_of_nodes_with_lowest ID"""
+    """Find node in list_of_nodes_with_lowest ID."""
     lowest_idnum = min([n.idnum for n in list_of_nodes])
     return next(n for n in list_of_nodes if n.idnum == lowest_idnum)
