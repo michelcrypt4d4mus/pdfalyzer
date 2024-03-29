@@ -37,7 +37,7 @@ This tool is mostly for examining/working with a PDF's data and logical structur
 
 # Installation
 
-Installation with [pipx](https://pypa.github.io/pipx/)[^4] is preferred though `pip3` should also work.
+Installation with [pipx](https://pypa.github.io/pipx/)[^4] is preferred though `pip3` / `pip` should also work.
 ```sh
 pipx install pdfalyzer
 ```
@@ -46,7 +46,7 @@ See [PyPDF2 installation notes](https://github.com/py-pdf/PyPDF2#installation) a
 
 If you are on macOS someone out there was kind enough to make [The Pdfalyzer available via homebrew](https://formulae.brew.sh/formula/pdfalyzer) so `brew install pdfalyzer` should work.
 
-### Troubleshooting The Installation
+### Troubleshooting
 1. If you used `pip3` instead of `pipx` and have an issue you should try to install with `pipx`.
 1. If you run into an issue about missing YARA try to install [yara-python](https://pypi.org/project/yara-python/).
 1. If you encounter an error building the python `cryptography` package check your `pip` version (`pip --version`). If it's less than 22.0, upgrade `pip` with `pip install --upgrade pip`.
