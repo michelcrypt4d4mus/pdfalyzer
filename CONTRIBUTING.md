@@ -49,3 +49,7 @@ pytest -v --slow
 # Run only the slow tests:
 pytest -m slow --slow:
 ```
+
+
+# YARA Rules
+We love any and all PDF malware related YARA rules so send them our way.
