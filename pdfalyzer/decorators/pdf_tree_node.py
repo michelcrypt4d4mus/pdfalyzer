@@ -108,6 +108,7 @@ class PdfTreeNode(NodeMixin, PdfObjectProperties):
         return [r.from_node for r in self.non_tree_relationships if r.from_node]
 
     def non_tree_relationship_count(self) -> int:
+        """Number of non parent/child relationships containing this node."""
         return len(self.non_tree_relationships)
 
     def unique_addresses(self) -> List[str]:
@@ -193,6 +194,7 @@ class PdfTreeNode(NodeMixin, PdfObjectProperties):
         return len(self.children) + sum([child.descendants_count() for child in self.children])
 
     def unique_labels_of_referring_nodes(self) -> List[str]:
+        """Unique label strings of nodes referring here outside the parent/child hierarchy."""
         return list(set([r.from_node.label for r in self.non_tree_relationships]))
 
     def print_non_tree_relationships(self) -> None:

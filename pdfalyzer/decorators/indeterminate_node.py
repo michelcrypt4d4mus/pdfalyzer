@@ -44,7 +44,8 @@ class IndeterminateNode:
         elif self.node.type == COLOR_SPACE:
             log.info(f"  Color space node found; placing under node w/most descendants: {parent_str}")
         elif set(self.node.unique_labels_of_referring_nodes()) == set(PAGE_AND_PAGES):
-            # An edge case seen in the wild involving a PDF that doesn't conform to the PDF spec
+            # Handle an edge case seen in the wild involving a PDF that doesn't conform to the PDF spec
+            # in a particular way.
             log.warning(f"  {self.node} seems to be a loose {PAGE}. Linking to first {PAGES}")
             pages_nodes = [n for n in self.node.nodes_with_here_references() if self.node.type == PAGES]
             self.node.set_parent(self.find_node_with_most_descendants(pages_nodes))
@@ -100,7 +101,7 @@ class IndeterminateNode:
                 log.info(f"{possible_ancestor} is the common ancestor of {other_nodes_str}")
                 return possible_ancestor
 
-    def _check_single_relation_rules(self):
+    def _check_single_relation_rules(self) -> bool:
         """Check various ways of narrowing down the list of potential parents to one node."""
         if self._make_parent_if_one_remains(lambda r: r.reference_key in [K, KIDS]):
             log.info("  Found single explicit /K or /Kids ref")
@@ -112,7 +113,7 @@ class IndeterminateNode:
         return True
 
     def _make_parent_if_one_remains(self, is_possible_parent: Callable) -> bool:
-        """Relationships are filtered w/filter_parents(). If only one remains it's made the parent"""
+        """Relationships are filtered w/is_possible_parent(); if there's only one possibility it's made the parent."""
         remaining_relationships = [r for r in self.node.non_tree_relationships if is_possible_parent(r)]
 
         if len(remaining_relationships) == 1:
