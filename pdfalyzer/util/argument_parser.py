@@ -25,7 +25,7 @@ DESCRIPTION = "Explore PDF's inner data structure with absurdly large and in dep
 
 EPILOG = "Values for various config options can be set permanently by a .pdfalyzer file in your home directory; " + \
          "see the documentation for details. " + \
-         f"A registry of previous pdfalyzer invocations will be incribed to a file if the " + \
+         f"A registry of previous pdfalyzer invocations will be inscribed to a file if the " + \
          "{YaralyzerConfig.LOG_DIR_ENV_VAR} environment variable is configured."
 
 # Analysis selection sections

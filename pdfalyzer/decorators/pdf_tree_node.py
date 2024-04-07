@@ -104,7 +104,7 @@ class PdfTreeNode(NodeMixin, PdfObjectProperties):
             self.non_tree_relationships.remove(relationship)
 
     def nodes_with_here_references(self) -> List['PdfTreeNode']:
-        """Return a list of nodes that contain this nodes PDF object as an IndirectObject reference."""
+        """Return a list of nodes that contain this node's PDF object as an IndirectObject reference."""
         return [r.from_node for r in self.non_tree_relationships if r.from_node]
 
     def non_tree_relationship_count(self) -> int:
@@ -129,7 +129,7 @@ class PdfTreeNode(NodeMixin, PdfObjectProperties):
         return isinstance(self.obj, StreamObject)
 
     def tree_address(self, max_length: Optional[int] = DEFAULT_MAX_ADDRESS_LENGTH) -> str:
-        """Creates a string like '/Catalog/Pages/Resources[2]/Font' truncated to max_length (if given)"""
+        """Creates a string like '/Catalog/Pages/Resources[2]/Font' truncated to max_length (if given)."""
         if self.label == TRAILER:
             return '/'
         elif self.parent is None:
@@ -164,7 +164,7 @@ class PdfTreeNode(NodeMixin, PdfObjectProperties):
         else:
             address = refs_to_this_node[0].address
             # If other node's label doesn't start with a NON_STANDARD_ADDRESS string
-            #   and any of the relationships pointing at this nod use something other than a
+            #   and any of the relationships pointing at this node use something other than a
             #       NON_STANDARD_ADDRESS_NODES string to refer here, print a warning about multiple refs.
             if not (is_prefixed_by_any(from_node.label, NON_STANDARD_ADDRESS_NODES) or \
                         all(ref.address in NON_STANDARD_ADDRESS_NODES for ref in refs_to_this_node)):
