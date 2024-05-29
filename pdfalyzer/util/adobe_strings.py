@@ -79,7 +79,8 @@ XREF_STREAM     = '/XRefStm'
 FONT_LENGTHS = [f'/Length{i + 1}' for i in range(3)]
 FONT_FILE_KEYS = [FONT_FILE, FONT_FILE2, FONT_FILE3]
 
-# Instructions to flag when scanning stream data for malicious content.
+# Instructions to flag when scanning stream data for malicious content. The leading
+# front slash will be removed when pattern matching.
 DANGEROUS_PDF_KEYS = [
     # AA,  # AA is too generic; can't afford to remove the frontslash
     ACRO_FORM,
