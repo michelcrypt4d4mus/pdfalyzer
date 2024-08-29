@@ -5,7 +5,6 @@ try:
     import resource  # Windows doesn't have this package / doesn't need to bump up the ulimit (??)
 except ImportError:
     res = None
-
 import re
 from pathlib import Path
 
