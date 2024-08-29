@@ -26,7 +26,7 @@ from yaralyzer.output.file_export import invoke_rich_export
 from yaralyzer.output.rich_console import console
 from yaralyzer.util.logging import log, log_and_print
 
-from pdfalyzer.helpers.filesystem_helper import set_max_open_files
+from pdfalyzer.helpers.filesystem_helper import file_size_in_mb, set_max_open_files
 from pdfalyzer.helpers.rich_text_helper import print_highlighted
 from pdfalyzer.output.pdfalyzer_presenter import PdfalyzerPresenter
 from pdfalyzer.output.styles.rich_theme import PDFALYZER_THEME_DICT
@@ -121,7 +121,6 @@ def combine_pdfs():
     print_highlighted(f"\nWriting '{args.output_file}'...", style='cyan')
     merger.write(args.output_file)
     merger.close()
-    num_mb_written = round(Path(args.output_file).stat().st_size / 1024.0 / 1024.0, 2)
-    txt = Text('').append(f"  -> Wrote ", style='bold bright_white')
-    txt.append(str(num_mb_written), style='cyan').append(" megabytes\n", style='bold bright_white')
+    txt = Text('').append(f"  -> Wrote ")
+    txt.append(str(file_size_in_mb(args.output_file)), style='cyan').append(" megabytes\n")
     print_highlighted(txt)

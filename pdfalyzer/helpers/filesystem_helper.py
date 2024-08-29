@@ -88,3 +88,8 @@ def extract_page_number(file_path: str | Path) -> int|None:
     """Extract the page number from the end of a filename if it exists."""
     match = NUMBERED_PAGE_REGEX.match(str(file_path))
     return int(match.group(1)) if match else None
+
+
+def file_size_in_mb(file_path: str | Path) -> float:
+    """Return the size of 'file_path' in MB rounded to 2 decimal places,"""
+    return round(Path(file_path).stat().st_size / 1024.0 / 1024.0, 2)
