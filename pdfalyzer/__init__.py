@@ -1,5 +1,4 @@
 import code
-import re
 import sys
 from os import environ, getcwd, path
 from pathlib import Path
@@ -21,24 +20,22 @@ if not environ.get('INVOKED_BY_PYTEST', False):
 
 from rich.columns import Columns
 from rich.panel import Panel
-from rich.prompt import Confirm
 from rich.text import Text
 from yaralyzer.helpers.rich_text_helper import prefix_with_plain_text_obj
 from yaralyzer.output.file_export import invoke_rich_export
 from yaralyzer.output.rich_console import console
 from yaralyzer.util.logging import log, log_and_print
 
-from pdfalyzer.helpers.filesystem_helper import do_all_files_exist, file_exists, is_pdf, set_max_open_files, with_pdf_extension
+from pdfalyzer.helpers.filesystem_helper import set_max_open_files
 from pdfalyzer.helpers.rich_text_helper import print_highlighted
 from pdfalyzer.output.pdfalyzer_presenter import PdfalyzerPresenter
 from pdfalyzer.output.styles.rich_theme import PDFALYZER_THEME_DICT
 from pdfalyzer.pdfalyzer import Pdfalyzer
-from pdfalyzer.util.argument_parser import combine_pdfs_parser, output_sections, parse_arguments
+from pdfalyzer.util.argument_parser import output_sections, parse_arguments, parse_combine_pdfs_args
 from pdfalyzer.util.pdf_parser_manager import PdfParserManager
 
 # For the table shown by running pdfalyzer_show_color_theme
 MAX_THEME_COL_SIZE = 35
-NUMBERED_PAGE_REGEX = re.compile(r'.*_(\d+)\.pdf$')
 
 
 def pdfalyze():
@@ -96,33 +93,11 @@ def pdfalyzer_show_color_theme() -> None:
 
 def combine_pdfs():
     """Utility method to combine multiple PDFs into one. Invocable with 'combine_pdfs PDF1 [PDF2...]'."""
-    args = combine_pdfs_parser.parse_args()
-    args.output_file = with_pdf_extension(args.output_file)
-    confirm_overwrite_txt = Text("Overwrite '").append(args.output_file, style='cyan').append("'?")
-    number_of_pdfs = len(args.pdfs)
+
+    args = parse_combine_pdfs_args()
+    print_highlighted(f"\nMerging {args.number_of_pdfs} individual PDFs into '{args.output_file}'...")
+    set_max_open_files(args.number_of_pdfs)
     merger = PdfMerger()
-
-    if number_of_pdfs < 2:
-        _exit_with_error(f"Need at least 2 PDFs to merge.")
-    elif not do_all_files_exist(args.pdfs):
-        _exit_with_error()
-    elif file_exists(args.output_file) and not Confirm.ask(confirm_overwrite_txt):
-        _exit_with_error()
-
-    if all(is_pdf(pdf) for pdf in args.pdfs):
-        if all(NUMBERED_PAGE_REGEX.match(pdf) for pdf in args.pdfs):
-            print_highlighted("PDFs appear to have page number suffixes so sorting numerically...", style='dim')
-            args.pdfs.sort(key=lambda p: int(NUMBERED_PAGE_REGEX.match(p).group(1)))
-        else:
-            print_highlighted("PDFs don't seem to end in page numbers so using provided order...", style='yellow')
-    else:
-        print_highlighted("WARNING: At least one of the PDF args doesn't end in '.pdf'", style='bright_yellow')
-
-        if not Confirm.ask(Text("Proceed anyway?")):
-            _exit_with_error()
-
-    print_highlighted(f"\nMerging {number_of_pdfs} individual PDFs into '{args.output_file}'...")
-    set_max_open_files(number_of_pdfs)
 
     for pdf in args.pdfs:
         print_highlighted(f"  -> Merging '{pdf}'...", style='dim')
@@ -134,13 +109,9 @@ def combine_pdfs():
         print_highlighted(f"\nCompressing content streams with zlib level {args.compression_level}...")
 
         for i, page in enumerate(merger.pages):
+            # TODO: enable image quality reduction + zlib level once PyPDF is upgraded to 4.x and option is available
+            # See https://pypdf.readthedocs.io/en/latest/user/file-size.html#reducing-image-quality
             print_highlighted(f"  -> Compressing page {i + 1}...", style='dim')
-            # TODO: enable image compression once PyPDF is upgraded to 4.x and it's supported as an option
-            # image_quality = 100 - (args.compression_level * 10)
-            # for img in page.pagedata.images:
-            #     import pdb; pdb.set_trace()
-            #     img.replace(img.image, quality=image_quality)
-
             page.pagedata.compress_content_streams()  # This is CPU intensive!
 
     print_highlighted(f"\nWriting '{args.output_file}'...", style='cyan')
@@ -150,12 +121,3 @@ def combine_pdfs():
     txt = Text('').append(f"  -> Wrote ", style='bold bright_white')
     txt.append(str(num_mb_written), style='cyan').append(" megabytes\n", style='bold bright_white')
     print_highlighted(txt)
-
-
-def _exit_with_error(error_message: str|None = None) -> None:
-    """Print 'error_message' and exit with status code 1."""
-    if error_message:
-        print_highlighted(error_message, style='bold red')
-
-    print_highlighted('Exiting...', style='red')
-    sys.exit(1)
