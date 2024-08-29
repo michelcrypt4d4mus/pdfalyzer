@@ -1,11 +1,14 @@
 import code
 import logging
+import re
 import sys
 from os import environ, getcwd, path
 
 from dotenv import load_dotenv
 from PyPDF2 import PdfMerger
+from PyPDF2.errors import PdfReadError
 
+# Should be first import before load_dotenv()  (TODO: Is that true?)
 from pdfalyzer.config import PdfalyzerConfig
 
 # load_dotenv() should be called as soon as possible (before parsing local classes) but not for pytest
@@ -22,6 +25,7 @@ from yaralyzer.output.file_export import invoke_rich_export
 from yaralyzer.output.rich_console import console
 from yaralyzer.util.logging import log, log_and_print
 
+from pdfalyzer.helpers.filesystem_helper import set_max_open_files
 from pdfalyzer.output.pdfalyzer_presenter import PdfalyzerPresenter
 from pdfalyzer.output.styles.rich_theme import PDFALYZER_THEME_DICT
 from pdfalyzer.pdfalyzer import Pdfalyzer
@@ -30,6 +34,7 @@ from pdfalyzer.util.pdf_parser_manager import PdfParserManager
 
 # For the table shown by running pdfalyzer_show_color_theme
 MAX_THEME_COL_SIZE = 35
+NUMBERED_PAGE_REGEX = re.compile(r'.*_(\d+)\.pdf$')
 
 
 def pdfalyze():
@@ -87,17 +92,23 @@ def pdfalyzer_show_color_theme() -> None:
 
 def combine_pdfs():
     args = combine_pdfs_parser.parse_args()
+    number_of_pdfs = len(args.pdfs)
     merger = PdfMerger()
+
+    if all(f.endswith('.pdf') for f in args.pdfs):
+        console.print("Appears to be page number suffixes so sorting...", style='dim')
+        args.pdfs.sort(key=lambda x: int(NUMBERED_PAGE_REGEX.match(x).group(1)))
 
     if not args.output_file.endswith('.pdf'):
         args.output_file += '.pdf'
 
-    console.print(f"Compiling {len(args.pdfs)} to '{args.output_file}'...")
+    console.print(f"Compiling {number_of_pdfs} individual PDFs to '{args.output_file}'...")
+    set_max_open_files(number_of_pdfs)
 
     for pdf in args.pdfs:
         console.print(f"Adding '{pdf}'...")
         merger.append(pdf)
 
-    console.print(f"Writing '{args.output_file}'...")
+    console.print(f"Writing '{args.output_file}'...", style='bright_green')
     merger.write(args.output_file)
     merger.close()
