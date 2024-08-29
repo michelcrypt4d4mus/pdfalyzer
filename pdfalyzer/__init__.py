@@ -26,7 +26,7 @@ from yaralyzer.output.file_export import invoke_rich_export
 from yaralyzer.output.rich_console import console
 from yaralyzer.util.logging import log, log_and_print
 
-from pdfalyzer.helpers.filesystem_helper import set_max_open_files
+from pdfalyzer.helpers.filesystem_helper import PDF_EXT, is_pdf, set_max_open_files, with_pdf_extension
 from pdfalyzer.helpers.rich_text_helper import print_highlighted
 from pdfalyzer.output.pdfalyzer_presenter import PdfalyzerPresenter
 from pdfalyzer.output.styles.rich_theme import PDFALYZER_THEME_DICT
@@ -94,23 +94,22 @@ def pdfalyzer_show_color_theme() -> None:
 
 def combine_pdfs():
     args = combine_pdfs_parser.parse_args()
+    args.output_file = with_pdf_extension(args.output_file)
     number_of_pdfs = len(args.pdfs)
     merger = PdfMerger()
 
-    if all(f.endswith('.pdf') for f in args.pdfs):
-        console.print("Appears to be page number suffixes so sorting...", style='dim')
+    if all(is_pdf(pdf) for pdf in args.pdfs):
+        console.print("PDFs appear to have page number suffixes so sorting numerically...", style='dim')
         args.pdfs.sort(key=lambda x: int(NUMBERED_PAGE_REGEX.match(x).group(1)))
 
-    if not args.output_file.endswith('.pdf'):
-        args.output_file += '.pdf'
-
-    print_highlighted(f"Compiling {number_of_pdfs} individual PDFs to '{args.output_file}'...")
+    print_highlighted(f"Compiling {number_of_pdfs} individual PDFs to '{args.output_file}'...", style='bright_cyan')
     set_max_open_files(number_of_pdfs)
 
     for pdf in args.pdfs:
-        print_highlighted(f"Adding '{pdf}'...")
+        print_highlighted(f"  -> Adding '{pdf}'...", style='dim')
         merger.append(pdf)
 
-    print_highlighted(f"Writing '{args.output_file}'...", style='bright_green')
+    print_highlighted(f"\nWriting '{args.output_file}'...", style='bright_cyan')
     merger.write(args.output_file)
     merger.close()
+    print_highlighted(f"  Done.\n", style='dim')
