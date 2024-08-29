@@ -275,6 +275,7 @@ These are the naming conventions at play in The Pdfalyzer code base:
 
 
 # TODO
+* Upgrade `PyPDF` to latest and expand `combine_pdfs` compression command line option
 * Highlight decodes with a lot of Javascript keywords
 * https://github.com/mandiant/flare-floss (https://github.com/mandiant/flare-floss/releases/download/v2.1.0/floss-v2.1.0-linux.zip)
 * https://github.com/1Project/Scanr/blob/master/emulator/emulator.py

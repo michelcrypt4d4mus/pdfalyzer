@@ -26,7 +26,7 @@ from yaralyzer.output.file_export import invoke_rich_export
 from yaralyzer.output.rich_console import console
 from yaralyzer.util.logging import log, log_and_print
 
-from pdfalyzer.helpers.filesystem_helper import file_exists, is_pdf, set_max_open_files, with_pdf_extension
+from pdfalyzer.helpers.filesystem_helper import do_all_files_exist, file_exists, is_pdf, set_max_open_files, with_pdf_extension
 from pdfalyzer.helpers.rich_text_helper import print_highlighted
 from pdfalyzer.output.pdfalyzer_presenter import PdfalyzerPresenter
 from pdfalyzer.output.styles.rich_theme import PDFALYZER_THEME_DICT
@@ -101,14 +101,11 @@ def combine_pdfs():
     merger = PdfMerger()
 
     if number_of_pdfs < 2:
-        print_highlighted(f"Need at least 2 PDFs to combine (only {number_of_pdfs} provided)", style='red')
-        sys.exit(1)
-    elif not all(map(file_exists, args.pdfs)):
-        print_highlighted("At least one of the PDF args doesn't exist. Exiting...", style='red')
-        sys.exit(1)
+        _exit_with_error(f"Need at least 2 PDFs to combine (only {number_of_pdfs} provided)")
+    elif not do_all_files_exist(args.pdfs):
+        _exit_with_error()
     elif file_exists(args.output_file) and not Confirm.ask(confirm_overwrite_txt):
-        print_highlighted("Exiting...", style='red')
-        sys.exit(1)
+        _exit_with_error()
 
     if all(is_pdf(pdf) for pdf in args.pdfs):
         if all(NUMBERED_PAGE_REGEX.match(pdf) for pdf in args.pdfs):
@@ -120,8 +117,7 @@ def combine_pdfs():
         print_highlighted("WARNING: At least one of the PDF args doesn't end in '.pdf'", style='bright_yellow')
 
         if not Confirm.ask(Text("Proceed anyway?")):
-            print_highlighted("Exiting...", style='red')
-            sys.exit(1)
+            _exit_with_error()
 
     print_highlighted(f"Compiling {number_of_pdfs} individual PDFs to '{args.output_file}'...", style='bright_cyan')
     set_max_open_files(number_of_pdfs)
@@ -149,3 +145,12 @@ def combine_pdfs():
     merger.write(args.output_file)
     merger.close()
     print_highlighted(f"  Done.\n", style='yellow')
+
+
+def _exit_with_error(error_message: str|None = None) -> None:
+    """Print 'error_message' and exit with status code 1."""
+    if error_message:
+        print_highlighted(error_message, style='bold red')
+
+    print_highlighted('Exiting...', style='red')
+    sys.exit(1)

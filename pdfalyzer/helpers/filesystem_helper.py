@@ -65,3 +65,15 @@ def is_pdf(file_path: str|Path) -> bool:
 def file_exists(file_path: str|Path) -> bool:
     """Return True if 'file_path' exists."""
     return Path(file_path).exists()
+
+
+def do_all_files_exist(file_paths: list[str|Path]) -> bool:
+    """Return True if all 'file_paths' exist."""
+    all_files_exist = True
+
+    for file_path in file_paths:
+        if not file_exists(file_path):
+            console.print(f"File not found: '{file_path}'", style='error')
+            all_files_exist = False
+
+    return all_files_exist
