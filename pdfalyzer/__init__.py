@@ -31,7 +31,7 @@ from pdfalyzer.helpers.rich_text_helper import print_highlighted
 from pdfalyzer.output.pdfalyzer_presenter import PdfalyzerPresenter
 from pdfalyzer.output.styles.rich_theme import PDFALYZER_THEME_DICT
 from pdfalyzer.pdfalyzer import Pdfalyzer
-from pdfalyzer.util.argument_parser import output_sections, parse_arguments, parse_combine_pdfs_args
+from pdfalyzer.util.argument_parser import ask_to_proceed, output_sections, parse_arguments, parse_combine_pdfs_args
 from pdfalyzer.util.pdf_parser_manager import PdfParserManager
 
 # For the table shown by running pdfalyzer_show_color_theme
@@ -100,8 +100,12 @@ def combine_pdfs():
     merger = PdfMerger()
 
     for pdf in args.pdfs:
-        print_highlighted(f"  -> Merging '{pdf}'...", style='dim')
-        merger.append(pdf)
+        try:
+            print_highlighted(f"  -> Merging '{pdf}'...", style='dim')
+            merger.append(pdf)
+        except PdfReadError as e:
+            print_highlighted(f"      -> Failed to merge '{pdf}'! {e}", style='red')
+            ask_to_proceed()
 
     if args.compression_level == 0:
         print_highlighted("\nSkipping content stream compression...")

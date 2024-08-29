@@ -217,11 +217,11 @@ def parse_combine_pdfs_args() -> Namespace:
     args.number_of_pdfs = len(args.pdfs)
 
     if args.number_of_pdfs < 2:
-        _exit_with_error(f"Need at least 2 PDFs to merge.")
+        exit_with_error(f"Need at least 2 PDFs to merge.")
     elif not do_all_files_exist(args.pdfs):
-        _exit_with_error()
+        exit_with_error()
     elif file_exists(args.output_file) and not Confirm.ask(confirm_overwrite_txt):
-        _exit_with_error()
+        exit_with_error()
 
     if all(is_pdf(pdf) for pdf in args.pdfs):
         if all(extract_page_number(pdf) for pdf in args.pdfs):
@@ -231,14 +231,18 @@ def parse_combine_pdfs_args() -> Namespace:
             print_highlighted("PDFs don't seem to end in page numbers so using provided order...", style='yellow')
     else:
         print_highlighted("WARNING: At least one of the PDF args doesn't end in '.pdf'", style='bright_yellow')
-
-        if not Confirm.ask(Text("Proceed anyway?")):
-            _exit_with_error()
+        ask_to_proceed()
 
     return args
 
 
-def _exit_with_error(error_message: str|None = None) -> None:
+def ask_to_proceed() -> None:
+    """Exit if user doesn't confirm they want to proceed."""
+    if not Confirm.ask(Text("Proceed anyway?")):
+        exit_with_error()
+
+
+def exit_with_error(error_message: str|None = None) -> None:
     """Print 'error_message' and exit with status code 1."""
     if error_message:
         print_highlighted(error_message, style='bold red')
