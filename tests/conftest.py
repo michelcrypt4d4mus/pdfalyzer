@@ -8,7 +8,6 @@ from yaralyzer.helpers.file_helper import files_in_dir
 
 from pdfalyzer.pdfalyzer import Pdfalyzer
 
-
 PROJECT_DIR = path.join(str(importlib.resources.files('pdfalyzer')), pardir)
 DOCUMENTATION_DIR = path.join(PROJECT_DIR, 'doc')
 SVG_DIR = path.join(DOCUMENTATION_DIR, 'svgs')
