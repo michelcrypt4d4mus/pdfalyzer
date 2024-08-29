@@ -23,6 +23,7 @@ def set_max_open_files(max_open_files: int = DEFAULT_MAX_OPEN_FILES):
     Sets the OS level max open files soft limit to at least max_open_files. Required when you might be opening
     more than DEFAULT_MAX_OPEN_FILES file handles simultaneously (e.g. when you are merging a lot of small images or PDFs).
     Equivalent of something like 'default ulimit -n 1024' on macOS. Does nothing on Windows (I think)
+    NOTE: This mostly came from somewhere on stackoverflow but I lost the link.
     """
     max_open_files = max_open_files + OPEN_FILES_BUFFER
 
