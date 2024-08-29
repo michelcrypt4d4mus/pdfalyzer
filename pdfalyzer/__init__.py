@@ -134,7 +134,7 @@ def combine_pdfs():
 
         for i, page in enumerate(merger.pages):
             print_highlighted(f"  -> Compressing page {i + 1}...", style='dim')
-            # TODO: enable this once PyPDF is upgraded to 4.x
+            # TODO: enable image compression once PyPDF is upgraded to 4.x and it's supported as an option
             # image_quality = 100 - (args.compression_level * 10)
             # for img in page.pagedata.images:
             #     import pdb; pdb.set_trace()
