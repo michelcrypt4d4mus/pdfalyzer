@@ -1,13 +1,25 @@
 """
 Functions for miscellaneous Rich text/string operations.
 """
+from functools import partial
 from typing import List
 
 from PyPDF2.generic import PdfObject
+from rich.console import Console
+from rich.highlighter import RegexHighlighter, JSONHighlighter
 from rich.text import Text
+from yaralyzer.output.rich_console import console
 
 from pdfalyzer.helpers.pdf_object_helper import pypdf_class_name
 from pdfalyzer.output.styles.node_colors import get_label_style, get_class_style_italic
+
+# Usually we use the yaralyzer console but that has no highlighter
+pdfalyzer_console = Console(color_system='256')
+
+
+def print_highlighted(msg: str|Text, **kwargs) -> None:
+    """Print 'msg' with Rich highlighting."""
+    pdfalyzer_console.print(msg, highlight=True, **kwargs)
 
 
 def quoted_text(

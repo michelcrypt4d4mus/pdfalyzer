@@ -1,4 +1,5 @@
 # NEXT RELEASE
+* Add `combine_pdfs` command line script to merge a bunch of PDFs into one
 * Remove unused `Deprecated` dependency
 
 ### 1.14.10

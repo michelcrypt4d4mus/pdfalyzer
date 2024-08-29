@@ -1,5 +1,5 @@
 import sys
-from argparse import ArgumentError, ArgumentParser
+from argparse import ArgumentError, ArgumentParser, Namespace
 from collections import namedtuple
 from functools import partial, update_wrapper
 from importlib.metadata import version
@@ -7,11 +7,16 @@ from os import getcwd, path
 from typing import List
 
 from rich_argparse_plus import RichHelpFormatterPlus
+from rich.prompt import Confirm
+from rich.text import Text
 from yaralyzer.util.argument_parser import export, parser, parse_arguments as parse_yaralyzer_args
 from yaralyzer.util.logging import log, log_and_print, log_argparse_result, log_current_config, log_invocation
 
 from pdfalyzer.config import ALL_STREAMS, PdfalyzerConfig
 from pdfalyzer.detection.constants.binary_regexes import QUOTE_PATTERNS
+from pdfalyzer.helpers.filesystem_helper import (do_all_files_exist, extract_page_number, file_exists, is_pdf,
+     with_pdf_extension)
+from pdfalyzer.helpers.rich_text_helper import print_highlighted
 
 # NamedTuple to keep our argument selection orderly
 OutputSection = namedtuple('OutputSection', ['argument', 'method'])
@@ -107,7 +112,9 @@ select.add_argument('--preview-stream-length',
 parser._action_groups = parser._action_groups[:2] + [parser._action_groups[-1]] + parser._action_groups[2:-1]
 
 
-# The Parsening Begins
+################################
+# Main argument parsing begins #
+################################
 def parse_arguments():
     """Parse command line args. Most settings are communicated to the app by setting env vars"""
     if '--version' in sys.argv:
@@ -175,3 +182,71 @@ def output_sections(args, pdfalyzer) -> List[OutputSection]:
 def all_sections_chosen(args):
     """Returns true if all flags are set or no flags are set."""
     return len([s for s in ALL_SECTIONS if vars(args)[s]]) == len(ALL_SECTIONS)
+
+
+###############################################
+# Separate arg parser for combine_pdfs script #
+###############################################
+combine_pdfs_parser = ArgumentParser(
+    description="Combine multiple PDFs into one.",
+    epilog="If all PDFs end in a number (e.g. 'xyz_1.pdf', 'xyz_2.pdf', etc. sort the files as if those were" \
+           " page numebrs prior to merging.",
+    formatter_class=RichHelpFormatterPlus)
+
+combine_pdfs_parser.add_argument('pdfs',
+                                 help='two or more PDFs to combine',
+                                 metavar='PDF_PATH',
+                                 nargs='+')
+
+combine_pdfs_parser.add_argument('-c', '--compression-level',
+                                 help='zlib image compression level (0=none, max=1 until PyPDF is upgraded)',
+                                 choices=range(0, 2),
+                                 default=1,
+                                 type=int)
+
+combine_pdfs_parser.add_argument('-o', '--output-file',
+                                 help='path to write the combined PDFs to',
+                                 required=True)
+
+
+def parse_combine_pdfs_args() -> Namespace:
+    """Parse command line args for combine_pdfs script."""
+    args = combine_pdfs_parser.parse_args()
+    args.output_file = with_pdf_extension(args.output_file)
+    confirm_overwrite_txt = Text("Overwrite '").append(args.output_file, style='cyan').append("'?")
+    args.number_of_pdfs = len(args.pdfs)
+
+    if args.number_of_pdfs < 2:
+        exit_with_error(f"Need at least 2 PDFs to merge.")
+    elif not do_all_files_exist(args.pdfs):
+        exit_with_error()
+    elif file_exists(args.output_file) and not Confirm.ask(confirm_overwrite_txt):
+        exit_with_error()
+
+    if all(is_pdf(pdf) for pdf in args.pdfs):
+        if all(extract_page_number(pdf) for pdf in args.pdfs):
+            print_highlighted("PDFs appear to have page number suffixes so sorting numerically...")
+            args.pdfs.sort(key=lambda pdf: extract_page_number(pdf))
+        else:
+            print_highlighted("PDFs don't seem to end in page numbers so using provided order...", style='yellow')
+    else:
+        print_highlighted("WARNING: At least one of the PDF args doesn't end in '.pdf'", style='bright_yellow')
+        ask_to_proceed()
+
+    print_highlighted(f"\nMerging {args.number_of_pdfs} individual PDFs into '{args.output_file}'...")
+    return args
+
+
+def ask_to_proceed() -> None:
+    """Exit if user doesn't confirm they want to proceed."""
+    if not Confirm.ask(Text("Proceed anyway?")):
+        exit_with_error()
+
+
+def exit_with_error(error_message: str|None = None) -> None:
+    """Print 'error_message' and exit with status code 1."""
+    if error_message:
+        print_highlighted(error_message, style='bold red')
+
+    print_highlighted('Exiting...', style='red')
+    sys.exit(1)
