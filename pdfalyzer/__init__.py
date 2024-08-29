@@ -103,7 +103,7 @@ def combine_pdfs():
     merger = PdfMerger()
 
     if number_of_pdfs < 2:
-        _exit_with_error(f"Need at least 2 PDFs to combine (only {number_of_pdfs} provided)")
+        _exit_with_error(f"Need at least 2 PDFs to merge.")
     elif not do_all_files_exist(args.pdfs):
         _exit_with_error()
     elif file_exists(args.output_file) and not Confirm.ask(confirm_overwrite_txt):
@@ -121,7 +121,7 @@ def combine_pdfs():
         if not Confirm.ask(Text("Proceed anyway?")):
             _exit_with_error()
 
-    print_highlighted(f"Merging {number_of_pdfs} individual PDFs into '{args.output_file}'...", style='bright_cyan')
+    print_highlighted(f"\nMerging {number_of_pdfs} individual PDFs into '{args.output_file}'...")
     set_max_open_files(number_of_pdfs)
 
     for pdf in args.pdfs:

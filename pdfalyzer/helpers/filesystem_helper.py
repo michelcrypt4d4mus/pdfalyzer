@@ -24,7 +24,7 @@ def set_max_open_files(max_open_files=DEFAULT_MAX_OPEN_FILES):
         print_highlighted(f"No resource module; cannot set max open files to {max_open_files} on this platform...", style='warning')
         return (None,) * 2
     elif max_open_files <= DEFAULT_MAX_OPEN_FILES:
-        print_highlighted(f"Max open files already set to at least {max_open_files}...", style='dim')
+        # Then the ulimit max open files is already sufficient.
         return (DEFAULT_MAX_OPEN_FILES, DEFAULT_MAX_OPEN_FILES)
 
     # %% (0) what is current ulimit -n setting?
@@ -42,7 +42,7 @@ def set_max_open_files(max_open_files=DEFAULT_MAX_OPEN_FILES):
         except (ValueError, res.error):
             try:
                hard = soft
-               print_highlighted('Trouble with max limit, retrying with soft,hard = ({}, {})'.format(soft, hard), style='warning')
+               print_highlighted(f"Retrying setting ulimit with (soft, hard)=({soft}, {hard})", style='warning')
                res.setrlimit(res.RLIMIT_NOFILE, (soft, hard))
             except Exception:
                print_highlighted('Failed to set ulimit, giving up!', style='error')
