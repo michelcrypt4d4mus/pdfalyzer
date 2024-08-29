@@ -18,6 +18,45 @@ OPEN_FILES_BUFFER = 30        # we might have some files open already so we need
 PDF_EXT = '.pdf'
 
 
+def with_pdf_extension(file_path: str | Path) -> str:
+    """Append '.pdf' to 'file_path' if it doesn't already end with '.pdf'."""
+    file_path = str(file_path)
+    return file_path + ('' if is_pdf(file_path) else PDF_EXT)
+
+
+def is_pdf(file_path: str | Path) -> bool:
+    """Return True if 'file_path' ends with '.pdf'."""
+    return str(file_path).endswith(PDF_EXT)
+
+
+def file_exists(file_path: str | Path) -> bool:
+    """Return True if 'file_path' exists."""
+    return Path(file_path).exists()
+
+
+def do_all_files_exist(file_paths: list[str | Path]) -> bool:
+    """Print an error for each element of 'file_paths' that's not a file. Return True if all 'file_paths' exist."""
+    all_files_exist = True
+
+    for file_path in file_paths:
+        if not file_exists(file_path):
+            console.print(f"File not found: '{file_path}'", style='error')
+            all_files_exist = False
+
+    return all_files_exist
+
+
+def extract_page_number(file_path: str | Path) -> int|None:
+    """Extract the page number from the end of a filename if it exists."""
+    match = NUMBERED_PAGE_REGEX.match(str(file_path))
+    return int(match.group(1)) if match else None
+
+
+def file_size_in_mb(file_path: str | Path) -> float:
+    """Return the size of 'file_path' in MB rounded to 2 decimal places,"""
+    return round(Path(file_path).stat().st_size / 1024.0 / 1024.0, 2)
+
+
 def set_max_open_files(max_open_files: int = DEFAULT_MAX_OPEN_FILES) -> tuple[int | None, int | None]:
     """
     Sets the OS level max open files to at least max_open_files. Current value can be seen with 'ulimit -a'.
@@ -59,42 +98,3 @@ def set_max_open_files(max_open_files: int = DEFAULT_MAX_OPEN_FILES) -> tuple[in
                soft,hard = resource.getrlimit(resource.RLIMIT_NOFILE)
 
     return (soft, hard)
-
-
-def with_pdf_extension(file_path: str | Path) -> str:
-    """Append '.pdf' to 'file_path' if it doesn't already end with '.pdf'."""
-    file_path = str(file_path)
-    return file_path + ('' if is_pdf(file_path) else PDF_EXT)
-
-
-def is_pdf(file_path: str | Path) -> bool:
-    """Return True if 'file_path' ends with '.pdf'."""
-    return str(file_path).endswith(PDF_EXT)
-
-
-def file_exists(file_path: str | Path) -> bool:
-    """Return True if 'file_path' exists."""
-    return Path(file_path).exists()
-
-
-def do_all_files_exist(file_paths: list[str | Path]) -> bool:
-    """Print an error for each element of 'file_paths' that's not a file. Return True if all 'file_paths' exist."""
-    all_files_exist = True
-
-    for file_path in file_paths:
-        if not file_exists(file_path):
-            console.print(f"File not found: '{file_path}'", style='error')
-            all_files_exist = False
-
-    return all_files_exist
-
-
-def extract_page_number(file_path: str | Path) -> int|None:
-    """Extract the page number from the end of a filename if it exists."""
-    match = NUMBERED_PAGE_REGEX.match(str(file_path))
-    return int(match.group(1)) if match else None
-
-
-def file_size_in_mb(file_path: str | Path) -> float:
-    """Return the size of 'file_path' in MB rounded to 2 decimal places,"""
-    return round(Path(file_path).stat().st_size / 1024.0 / 1024.0, 2)
