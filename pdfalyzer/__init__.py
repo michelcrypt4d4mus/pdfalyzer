@@ -2,6 +2,7 @@ import code
 import re
 import sys
 from os import environ, getcwd, path
+from pathlib import Path
 
 from dotenv import load_dotenv
 from PyPDF2 import PdfMerger, PdfWriter  # TODO: PdfMerger is deprecated at 3.9.1 (see https://pypdf.readthedocs.io/en/latest/user/merging-pdfs.html#basic-example)
@@ -123,7 +124,7 @@ def combine_pdfs():
     set_max_open_files(number_of_pdfs)
 
     for pdf in args.pdfs:
-        print_highlighted(f"  -> Adding '{pdf}'...", style='dim')
+        print_highlighted(f"  -> Merging '{pdf}'...", style='dim')
         merger.append(pdf)
 
     if args.compression_level == 0:
@@ -144,7 +145,10 @@ def combine_pdfs():
     print_highlighted(f"\nWriting '{args.output_file}'...", style='cyan')
     merger.write(args.output_file)
     merger.close()
-    print_highlighted(f"  Done.\n", style='yellow')
+    num_bytes_written = Path(args.output_file).stat().st_size
+    txt = Text('').append(f"  Done", style='magenta')
+    txt.append(" (wrote ", style='dim').append(str(num_bytes_written), style='cyan').append(" bytes)", style='dim')
+    print_highlighted(txt)
 
 
 def _exit_with_error(error_message: str|None = None) -> None:

@@ -17,7 +17,7 @@ from pdfalyzer.output.styles.node_colors import get_label_style, get_class_style
 pdfalyzer_console = Console(color_system='256')
 
 
-def print_highlighted(msg: str, **kwargs) -> None:
+def print_highlighted(msg: str|Text, **kwargs) -> None:
     """Print 'msg' with Rich highlighting."""
     pdfalyzer_console.print(msg, highlight=True, **kwargs)
 
