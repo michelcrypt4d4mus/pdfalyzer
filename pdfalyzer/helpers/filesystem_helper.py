@@ -20,8 +20,9 @@ PDF_EXT = '.pdf'
 
 def set_max_open_files(max_open_files: int = DEFAULT_MAX_OPEN_FILES):
     """
-    Sets nofile soft limit to at least max_open_files. Useful for combining many PDFs compared to bash command
-    default ulimit -n 1024 or OS X El Captian 256 temporary setting extinguishing with Python session.
+    Sets the OS level max open files soft limit to at least max_open_files. Required when you might be opening
+    more than DEFAULT_MAX_OPEN_FILES file handles simultaneously (e.g. when you are merging a lot of small images or PDFs).
+    Equivalent of something like 'default ulimit -n 1024' on macOS. Does nothing on Windows (I think)
     """
     max_open_files = max_open_files + OPEN_FILES_BUFFER
 

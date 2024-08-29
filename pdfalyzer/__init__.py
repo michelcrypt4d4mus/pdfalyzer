@@ -93,9 +93,7 @@ def pdfalyzer_show_color_theme() -> None:
 
 def combine_pdfs():
     """Utility method to combine multiple PDFs into one. Invocable with 'combine_pdfs PDF1 [PDF2...]'."""
-
     args = parse_combine_pdfs_args()
-    print_highlighted(f"\nMerging {args.number_of_pdfs} individual PDFs into '{args.output_file}'...")
     set_max_open_files(args.number_of_pdfs)
     merger = PdfMerger()
 

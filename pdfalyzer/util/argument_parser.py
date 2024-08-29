@@ -233,6 +233,7 @@ def parse_combine_pdfs_args() -> Namespace:
         print_highlighted("WARNING: At least one of the PDF args doesn't end in '.pdf'", style='bright_yellow')
         ask_to_proceed()
 
+    print_highlighted(f"\nMerging {args.number_of_pdfs} individual PDFs into '{args.output_file}'...")
     return args
 
 
