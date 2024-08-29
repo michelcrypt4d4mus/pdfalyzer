@@ -4,7 +4,7 @@ Some helpers for stuff with the local filesystem.
 try:
     import resource  # Windows doesn't have this package / doesn't need to bump up the ulimit (??)
 except ImportError:
-    res = None
+    resource = None
 import re
 from pathlib import Path
 from typing import Union
