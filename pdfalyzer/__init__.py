@@ -103,14 +103,25 @@ def combine_pdfs():
     if number_of_pdfs < 2:
         print_highlighted(f"Need at least 2 PDFs to combine (only {number_of_pdfs} provided)", style='red')
         sys.exit(1)
-
-    if file_exists(args.output_file) and not Confirm.ask(confirm_overwrite_txt):
+    elif not all(map(file_exists, args.pdfs)):
+        print_highlighted("At least one of the PDF args doesn't exist. Exiting...", style='red')
+        sys.exit(1)
+    elif file_exists(args.output_file) and not Confirm.ask(confirm_overwrite_txt):
         print_highlighted("Exiting...", style='red')
         sys.exit(1)
 
     if all(is_pdf(pdf) for pdf in args.pdfs):
-        console.print("PDFs appear to have page number suffixes so sorting numerically...", style='dim')
-        args.pdfs.sort(key=lambda x: int(NUMBERED_PAGE_REGEX.match(x).group(1)))
+        if all(NUMBERED_PAGE_REGEX.match(pdf) for pdf in args.pdfs):
+            print_highlighted("PDFs appear to have page number suffixes so sorting numerically...", style='dim')
+            args.pdfs.sort(key=lambda x: int(NUMBERED_PAGE_REGEX.match(x).group(1)))
+        else:
+            print_highlighted("PDFs don't seem to end in page numbers so using provided order...", style='yellow')
+    else:
+        print_highlighted("WARNING: At least one of the PDF args doesn't end in '.pdf'", style='bright_yellow')
+
+        if not Confirm.ask(Text("Proceed anyway?")):
+            print_highlighted("Exiting...", style='red')
+            sys.exit(1)
 
     print_highlighted(f"Compiling {number_of_pdfs} individual PDFs to '{args.output_file}'...", style='bright_cyan')
     set_max_open_files(number_of_pdfs)
