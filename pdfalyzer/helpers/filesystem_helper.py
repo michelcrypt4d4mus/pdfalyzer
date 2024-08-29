@@ -27,7 +27,7 @@ def set_max_open_files(max_open_files: int = DEFAULT_MAX_OPEN_FILES):
     max_open_files = max_open_files + OPEN_FILES_BUFFER
 
     if resource is None:
-        print_highlighted(f"No resource module; cannot set max open files to {max_open_files} on this platform...", style='warning')
+        print_highlighted(f"No resource module; cannot set max open files on this platform...", style='yellow')
         return (None,) * 2
     elif max_open_files <= DEFAULT_MAX_OPEN_FILES:
         # Then the ulimit max open files is already sufficient.
@@ -48,7 +48,7 @@ def set_max_open_files(max_open_files: int = DEFAULT_MAX_OPEN_FILES):
         except (ValueError, resource.error):
             try:
                hard = soft
-               print_highlighted(f"Retrying setting max open files (soft, hard)=({soft}, {hard})", style='warning')
+               print_highlighted(f"Retrying setting max open files (soft, hard)=({soft}, {hard})", style='yellow')
                resource.setrlimit(resource.RLIMIT_NOFILE, (soft, hard))
             except Exception:
                print_highlighted('Failed to set max open files / ulimit, giving up!', style='error')
