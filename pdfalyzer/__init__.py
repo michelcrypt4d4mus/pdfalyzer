@@ -20,6 +20,7 @@ if not environ.get('INVOKED_BY_PYTEST', False):
 from rich.columns import Columns
 from rich.panel import Panel
 from rich.prompt import Confirm
+from rich.text import Text
 from yaralyzer.helpers.rich_text_helper import prefix_with_plain_text_obj
 from yaralyzer.output.file_export import invoke_rich_export
 from yaralyzer.output.rich_console import console
@@ -95,6 +96,7 @@ def combine_pdfs():
     """Utility method to combine multiple PDFs into one. Invocable with 'combine_pdfs PDF1 [PDF2...]'."""
     args = combine_pdfs_parser.parse_args()
     args.output_file = with_pdf_extension(args.output_file)
+    confirm_overwrite_txt = Text("Overwrite '").append(args.output_file, style='cyan').append("'?")
     number_of_pdfs = len(args.pdfs)
     merger = PdfMerger()
 
@@ -102,7 +104,7 @@ def combine_pdfs():
         print_highlighted(f"Need at least 2 PDFs to combine (only {number_of_pdfs} provided)", style='red')
         sys.exit(1)
 
-    if file_exists(args.output_file) and not Confirm.ask(f"Overwrite '{args.output_file}'?"):
+    if file_exists(args.output_file) and not Confirm.ask(confirm_overwrite_txt):
         print_highlighted("Exiting...", style='red')
         sys.exit(1)
 
