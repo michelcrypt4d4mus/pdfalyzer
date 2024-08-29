@@ -121,7 +121,7 @@ def combine_pdfs():
         if not Confirm.ask(Text("Proceed anyway?")):
             _exit_with_error()
 
-    print_highlighted(f"Compiling {number_of_pdfs} individual PDFs to '{args.output_file}'...", style='bright_cyan')
+    print_highlighted(f"Merging {number_of_pdfs} individual PDFs into '{args.output_file}'...", style='bright_cyan')
     set_max_open_files(number_of_pdfs)
 
     for pdf in args.pdfs:
