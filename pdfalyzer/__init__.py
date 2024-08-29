@@ -51,6 +51,7 @@ def pdfalyze():
         log_and_print(f"Binary stream extraction complete, files written to '{args.output_dir}'.\nExiting.\n")
         sys.exit()
 
+    # The method that gets called is related to the argument name. See 'possible_output_sections' list in argument_parser.py
     # Analysis exports wrap themselves around the methods that actually generate the analyses
     for (arg, method) in output_sections(args, pdfalyzer):
         if args.output_dir:

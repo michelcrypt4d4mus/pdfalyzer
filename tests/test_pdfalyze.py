@@ -18,13 +18,17 @@ def test_help_option():
     assert len(help_text.split('\n')) > 50
 
 
-def test_bad_args(analyzing_malicious_pdf_path):
+# Can't use match='...' because the error msg goes to STDERR and is not captured by Python
+# TODO: this test could be more accurate if we could both get the CalledProcessError AND the STDERR output?
+def test_bad_args(additional_yara_rules_path, analyzing_malicious_pdf_path):
     with pytest.raises(CalledProcessError):
         _run_with_args(analyzing_malicious_pdf_path, '--extract-quoted', 'noquotes')
     with pytest.raises(CalledProcessError):
         _run_with_args(analyzing_malicious_pdf_path, '--extract-quoted', 'backtick', '--tree')
     with pytest.raises(CalledProcessError):
         _run_with_args(analyzing_malicious_pdf_path, '--force-decode-threshold', '105')
+    with pytest.raises(CalledProcessError):
+        _run_with_args(analyzing_malicious_pdf_path, '--no-default-yara-rules')
 
 
 def test_pdfalyze_CLI_basic_tree(adobe_type1_fonts_pdf_path, analyzing_malicious_pdf_path):
@@ -49,6 +53,7 @@ def test_pdfalyze_CLI_streams_scan(adobe_type1_fonts_pdf_path):
 
 def test_yara_rules_option(adobe_type1_fonts_pdf_path, additional_yara_rules_path):
     _assert_args_yield_lines(2447, adobe_type1_fonts_pdf_path, '-Y', additional_yara_rules_path)
+    _assert_args_yield_lines(1797, adobe_type1_fonts_pdf_path, '--no-default-yara-rules', '-Y', additional_yara_rules_path)
 
 
 @pytest.mark.slow

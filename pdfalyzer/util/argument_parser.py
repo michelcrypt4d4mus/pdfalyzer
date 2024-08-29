@@ -9,7 +9,7 @@ from typing import List
 from rich_argparse_plus import RichHelpFormatterPlus
 from rich.prompt import Confirm
 from rich.text import Text
-from yaralyzer.util.argument_parser import export, parser, parse_arguments as parse_yaralyzer_args
+from yaralyzer.util.argument_parser import export, parser, parse_arguments as parse_yaralyzer_args, source
 from yaralyzer.util.logging import log, log_and_print, log_argparse_result, log_current_config, log_invocation
 
 from pdfalyzer.config import ALL_STREAMS, PdfalyzerConfig
@@ -50,8 +50,13 @@ export.add_argument('-bin', '--extract-binary-streams',
                     const='bin',
                     help='extract all binary streams in the PDF to separate files (requires pdf-parser.py)')
 
+# Add one more option to the YARA rules section
+source.add_argument('--no-default-yara-rules',
+                    action='store_true',
+                    help='if --yara is selected use only custom rules from --yara-file arg and not the default included YARA rules')
 
-#  Note that we extend the yaralyzer's parser and export
+
+# Note that we extend the yaralyzer's parser and export
 parser = ArgumentParser(
     formatter_class=RichHelpFormatterPlus,
     description=DESCRIPTION,
@@ -78,7 +83,7 @@ select.add_argument('-f', '--fonts', action='store_true',
                     help="show info about fonts included character mappings for embedded font binaries")
 
 select.add_argument('-y', '--yara', action='store_true',
-                    help="scan the PDF with YARA rules")
+                    help="scan the PDF with the included malicious PDF YARA rules and/or your custom YARA rules")
 
 select.add_argument('-c', '--counts', action='store_true',
                     help='show counts of some of the properties of the objects in the PDF')
@@ -127,9 +132,12 @@ def parse_arguments():
 
     if not args.streams:
         if args.extract_quoteds:
-            raise ArgumentError(None, "--extract-quoted does nothing if --streams is not selected")
+            exit_with_error("--extract-quoted does nothing if --streams is not selected")
         if args.suppress_boms:
             log.warning("--suppress-boms has nothing to suppress if --streams is not selected")
+
+    if args.no_default_yara_rules and not args.yara_rules_files:
+        exit_with_error("--no-default-yara-rules requires at least one --yara-file argument")
 
     # File export options
     if args.export_svg or args.export_txt or args.export_html or args.extract_binary_streams:
@@ -149,8 +157,8 @@ def parse_arguments():
 
 def output_sections(args, pdfalyzer) -> List[OutputSection]:
     """
-    Determine which of the tree visualizations, font scans, etc were requested.
-    If nothing was specified the default is to output all sections.
+    Determine which of the tree visualizations, font scans, etc should be run.
+    If nothing is specified output ALL sections other than --streams which is v. slow/verbose.
     """
     # Create a partial for print_font_info() because it's the only one that can take an argument
     # partials have no __name__ so update_wrapper() propagates the 'print_font_info' as this partial's name
@@ -158,7 +166,8 @@ def output_sections(args, pdfalyzer) -> List[OutputSection]:
     stream_scan = partial(pdfalyzer.print_streams_analysis, idnum=stream_id)
     update_wrapper(stream_scan, pdfalyzer.print_streams_analysis)
 
-    # The first element string matches the argument in 'select' group.
+    # 1st element string matches the argument in 'select' group
+    # 2nd is fxn to call if selected.
     # Top to bottom is the default order of output.
     possible_output_sections = [
         OutputSection(DOCINFO, pdfalyzer.print_document_info),
@@ -246,7 +255,7 @@ def ask_to_proceed() -> None:
 def exit_with_error(error_message: str|None = None) -> None:
     """Print 'error_message' and exit with status code 1."""
     if error_message:
-        print_highlighted(error_message, style='bold red')
+        print_highlighted(Text('').append('ERROR', style='bold red').append(f': {error_message}'))
 
-    print_highlighted('Exiting...', style='red')
+    print_highlighted('Exiting...', style='dim red')
     sys.exit(1)

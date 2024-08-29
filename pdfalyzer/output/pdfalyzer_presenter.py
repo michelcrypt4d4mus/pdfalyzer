@@ -124,7 +124,7 @@ class PdfalyzerPresenter:
                 console.print(build_decoding_stats_table(binary_scanner), justify='center')
 
     def print_yara_results(self) -> None:
-        """Scan the overall PDF and each individual binary stream in it with yara_rules/ files"""
+        """Scan the main PDF and each individual binary stream in it with yara_rules/*.yara files"""
         print_section_header(f"YARA Scan of PDF rules for '{self.pdfalyzer.pdf_basename}'")
         YaralyzerConfig.args.standalone_mode = True  # TODO: using 'standalone mode' like this kind of sucks
 

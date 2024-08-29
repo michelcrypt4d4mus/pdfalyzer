@@ -1,4 +1,5 @@
 # NEXT RELEASE
+* Add `--no-default-yara-rules` command line option so users can use _only_ their own custom YARA rules files if they want. Previously you could only use custom YARA rules _in addition to_ the default rules; now you can just skip the default rules.
 
 # 1.15.0
 * Add `combine_pdfs` command line script to merge a bunch of PDFs into one
