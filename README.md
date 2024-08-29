@@ -201,6 +201,8 @@ Things like, say, a hidden binary `/F` (PDF instruction meaning "URL") followed 
 -------------
 
 # PDF Resources
+## Included PDF Tools
+The Pdfalyzer ships with a command line tool `combine_pdfs` that combines multiple PDFs into a single PDF. Run `combine_pdfs --help` to see the options.
 
 ## 3rd Party PDF Tools
 ### Installing Didier Stevens's PDF Analysis Tools
@@ -223,7 +225,7 @@ There's [a script](scripts/install_t1utils.sh) to help you install the suite if 
 scripts/install_t1utils.sh
 ```
 
-## Documentation
+## External Documentation
 ### Official Adobe Documentation
 * [Official Adobe PDF 1.7 Specification](https://opensource.adobe.com/dc-acrobat-sdk-docs/standards/pdfstandards/pdf/PDF32000_2008.pdf) - Indispensable map when navigating a PDF forest.
 * [Adobe Type 1 Font Format Specification](https://adobe-type-tools.github.io/font-tech-notes/pdfs/T1_SPEC.pdf) - Official spec for Adobe's original font description language and file format. Useful if you have suspicions about malicious fonts. Type1 seems to be the attack vector of choice recently which isn't so surprising when you consider that it's a 30 year old technology and the code that renders these fonts probably hasn't been extensively tested in decades because almost no one uses them anymore outside of people who want to use them as attack vectors.
