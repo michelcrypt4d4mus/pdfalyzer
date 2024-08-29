@@ -99,7 +99,7 @@ def combine_pdfs():
     merger = PdfMerger()
 
     if number_of_pdfs < 2:
-        print_highlighted("Need at least 2 PDFs to combine...", style='red')
+        print_highlighted(f"Need at least 2 PDFs to combine (only {number_of_pdfs} provided)", style='red')
         sys.exit(1)
 
     if file_exists(args.output_file) and not Confirm.ask(f"Overwrite '{args.output_file}'?"):
