@@ -7,6 +7,7 @@ except ImportError:
     res = None
 import re
 from pathlib import Path
+from typing import Union
 
 from yaralyzer.output.rich_console import console
 
@@ -17,24 +18,26 @@ DEFAULT_MAX_OPEN_FILES = 256  # macOS default
 OPEN_FILES_BUFFER = 30        # we might have some files open already so we need to go beyond DEFAULT_MAX_OPEN_FILES
 PDF_EXT = '.pdf'
 
+# TODO: this kind of type alias is not supported until Python 3.12
+#type StrOrPath = Union[str, Path]
 
-def with_pdf_extension(file_path: str | Path) -> str:
+
+def with_pdf_extension(file_path: Union[str, Path]) -> str:
     """Append '.pdf' to 'file_path' if it doesn't already end with '.pdf'."""
-    file_path = str(file_path)
-    return file_path + ('' if is_pdf(file_path) else PDF_EXT)
+    return str(file_path) + ('' if is_pdf(file_path) else PDF_EXT)
 
 
-def is_pdf(file_path: str | Path) -> bool:
+def is_pdf(file_path: Union[str, Path]) -> bool:
     """Return True if 'file_path' ends with '.pdf'."""
     return str(file_path).endswith(PDF_EXT)
 
 
-def file_exists(file_path: str | Path) -> bool:
+def file_exists(file_path: Union[str, Path]) -> bool:
     """Return True if 'file_path' exists."""
     return Path(file_path).exists()
 
 
-def do_all_files_exist(file_paths: list[str | Path]) -> bool:
+def do_all_files_exist(file_paths: list[Union[str, Path]]) -> bool:
     """Print an error for each element of 'file_paths' that's not a file. Return True if all 'file_paths' exist."""
     all_files_exist = True
 
@@ -46,15 +49,15 @@ def do_all_files_exist(file_paths: list[str | Path]) -> bool:
     return all_files_exist
 
 
-def extract_page_number(file_path: str | Path) -> int|None:
+def extract_page_number(file_path: Union[str, Path]) -> int|None:
     """Extract the page number from the end of a filename if it exists."""
     match = NUMBERED_PAGE_REGEX.match(str(file_path))
     return int(match.group(1)) if match else None
 
 
-def file_size_in_mb(file_path: str | Path) -> float:
+def file_size_in_mb(file_path: Union[str, Path], decimal_places: int = 2) -> float:
     """Return the size of 'file_path' in MB rounded to 2 decimal places,"""
-    return round(Path(file_path).stat().st_size / 1024.0 / 1024.0, 2)
+    return round(Path(file_path).stat().st_size / 1024.0 / 1024.0, decimal_places)
 
 
 def set_max_open_files(max_open_files: int = DEFAULT_MAX_OPEN_FILES) -> tuple[int | None, int | None]:
