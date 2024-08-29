@@ -5,10 +5,11 @@ from os import environ, getcwd, path
 from pathlib import Path
 
 from dotenv import load_dotenv
-from PyPDF2 import PdfMerger, PdfWriter  # TODO: PdfMerger is deprecated at 3.9.1 (see https://pypdf.readthedocs.io/en/latest/user/merging-pdfs.html#basic-example)
+# TODO: PdfMerger is deprecated in favor of PdfWriter at v3.9.1 (see https://pypdf.readthedocs.io/en/latest/user/merging-pdfs.html#basic-example)
+from PyPDF2 import PdfMerger
 from PyPDF2.errors import PdfReadError
 
-# Should be first import before load_dotenv()  (TODO: Is that true?)
+# Should be first local import before load_dotenv() (or at least I think it needs to come first)
 from pdfalyzer.config import PdfalyzerConfig
 
 # load_dotenv() should be called as soon as possible (before parsing local classes) but not for pytest
@@ -111,7 +112,7 @@ def combine_pdfs():
     if all(is_pdf(pdf) for pdf in args.pdfs):
         if all(NUMBERED_PAGE_REGEX.match(pdf) for pdf in args.pdfs):
             print_highlighted("PDFs appear to have page number suffixes so sorting numerically...", style='dim')
-            args.pdfs.sort(key=lambda x: int(NUMBERED_PAGE_REGEX.match(x).group(1)))
+            args.pdfs.sort(key=lambda p: int(NUMBERED_PAGE_REGEX.match(p).group(1)))
         else:
             print_highlighted("PDFs don't seem to end in page numbers so using provided order...", style='yellow')
     else:

@@ -184,8 +184,9 @@ def all_sections_chosen(args):
 ###############################################
 combine_pdfs_parser = ArgumentParser(
     description="Combine multiple PDFs into one.",
-    formatter_class=RichHelpFormatterPlus
-)
+    epilog="If all PDFs end in a number (e.g. 'xyz_1.pdf', 'xyz_2.pdf', etc. sort the files as if those were" \
+           " page numebrs prior to merging.",
+    formatter_class=RichHelpFormatterPlus)
 
 combine_pdfs_parser.add_argument('pdfs',
                                  help='two or more PDFs to combine',
