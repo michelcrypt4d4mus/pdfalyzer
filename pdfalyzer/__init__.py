@@ -109,11 +109,12 @@ def combine_pdfs():
         print_highlighted(f"  -> Adding '{pdf}'...", style='dim')
         merger.append(pdf)
 
-    if args.compress_content_streams:
+    if args.no_compression:
+        print_highlighted("\nSkipping compression of content streams...")
+    else:
         print_highlighted("\nCompressing content streams...", style='bright_cyan')
 
         for i, page in enumerate(merger.pages):
-            # import pdb;pdb.set_trace()
             print_highlighted(f"  -> Compressing page {i + 1}...", style='dim')
             page.pagedata.compress_content_streams()  # This is CPU intensive!
 
