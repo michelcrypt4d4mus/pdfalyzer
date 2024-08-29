@@ -4,6 +4,7 @@ import sys
 from os import environ, getcwd, path
 
 from dotenv import load_dotenv
+from PyPDF2 import PdfMerger
 
 from pdfalyzer.config import PdfalyzerConfig
 
@@ -24,8 +25,8 @@ from yaralyzer.util.logging import log, log_and_print
 from pdfalyzer.output.pdfalyzer_presenter import PdfalyzerPresenter
 from pdfalyzer.output.styles.rich_theme import PDFALYZER_THEME_DICT
 from pdfalyzer.pdfalyzer import Pdfalyzer
+from pdfalyzer.util.argument_parser import combine_pdfs_parser, output_sections, parse_arguments
 from pdfalyzer.util.pdf_parser_manager import PdfParserManager
-from pdfalyzer.util.argument_parser import output_sections, parse_arguments
 
 # For the table shown by running pdfalyzer_show_color_theme
 MAX_THEME_COL_SIZE = 35
@@ -82,3 +83,21 @@ def pdfalyzer_show_color_theme() -> None:
     ]
 
     console.print(Columns(colors, column_first=True, padding=(0,3)))
+
+
+def combine_pdfs():
+    args = combine_pdfs_parser.parse_args()
+    merger = PdfMerger()
+
+    if not args.output_file.endswith('.pdf'):
+        args.output_file += '.pdf'
+
+    console.print(f"Compiling {len(args.pdfs)} to '{args.output_file}'...")
+
+    for pdf in args.pdfs:
+        console.print(f"Adding '{pdf}'...")
+        merger.append(pdf)
+
+    console.print(f"Writing '{args.output_file}'...")
+    merger.write(args.output_file)
+    merger.close()

@@ -107,7 +107,9 @@ select.add_argument('--preview-stream-length',
 parser._action_groups = parser._action_groups[:2] + [parser._action_groups[-1]] + parser._action_groups[2:-1]
 
 
-# The Parsening Begins
+################################
+# Main argument parsing begins #
+################################
 def parse_arguments():
     """Parse command line args. Most settings are communicated to the app by setting env vars"""
     if '--version' in sys.argv:
@@ -175,3 +177,11 @@ def output_sections(args, pdfalyzer) -> List[OutputSection]:
 def all_sections_chosen(args):
     """Returns true if all flags are set or no flags are set."""
     return len([s for s in ALL_SECTIONS if vars(args)[s]]) == len(ALL_SECTIONS)
+
+
+###############################################
+# Separate arg parser for combine_pdfs script #
+###############################################
+combine_pdfs_parser = ArgumentParser(formatter_class=RichHelpFormatterPlus, description="Combine PDFs to one PDF")
+combine_pdfs_parser.add_argument('pdfs', nargs='+', help='PDFs to combine', metavar='PDF_PATH')
+combine_pdfs_parser.add_argument('-o', '--output-file', help='Output file to write the combined PDFs to', required=True)
