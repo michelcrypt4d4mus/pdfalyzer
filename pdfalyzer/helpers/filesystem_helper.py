@@ -1,10 +1,6 @@
 """
 Some helpers for stuff with the local filesystem.
 """
-try:
-    import resource  # Windows doesn't have this package / doesn't need to bump up the ulimit (??)
-except ImportError:
-    resource = None
 import re
 from pathlib import Path
 from typing import Union
@@ -60,9 +56,9 @@ def file_size_in_mb(file_path: Union[str, Path], decimal_places: int = 2) -> flo
     return round(Path(file_path).stat().st_size / 1024.0 / 1024.0, decimal_places)
 
 
-def set_max_open_files(max_open_files: int = DEFAULT_MAX_OPEN_FILES) -> tuple[int | None, int | None]:
+def set_max_open_files(num_filehandles: int = DEFAULT_MAX_OPEN_FILES) -> tuple[int | None, int | None]:
     """
-    Sets the OS level max open files to at least max_open_files. Current value can be seen with 'ulimit -a'.
+    Sets the OS level max open files to at least 'num_filehandles'. Current value can be seen with 'ulimit -a'.
     Required when you might be opening more than DEFAULT_MAX_OPEN_FILES file handles simultaneously
     (e.g. when you are merging a lot of small images or PDFs). Equivalent of something like
     'default ulimit -n 1024' on macOS.
@@ -70,22 +66,25 @@ def set_max_open_files(max_open_files: int = DEFAULT_MAX_OPEN_FILES) -> tuple[in
     NOTE: Does nothing on Windows (I think).
     NOTE: This mostly came from somewhere on stackoverflow but I lost the link.
     """
-    max_open_files = max_open_files + OPEN_FILES_BUFFER
+    try:
+        import resource  # Windows doesn't have this package / doesn't need to bump up the ulimit (??)
+    except ImportError:
+        resource = None
 
     if resource is None:
         print_highlighted(f"No resource module; cannot set max open files on this platform...", style='yellow')
         return (None, None)
-    elif max_open_files <= DEFAULT_MAX_OPEN_FILES:
-        # Then the ulimit max open files is already sufficient.
+    elif num_filehandles <= DEFAULT_MAX_OPEN_FILES:
+        # Then the OS max open files value is already sufficient.
         return (DEFAULT_MAX_OPEN_FILES, DEFAULT_MAX_OPEN_FILES)
 
     # %% (0) what is current ulimit -n setting?
-    (soft, ohard) = resource.getrlimit(resource.RLIMIT_NOFILE)
-    hard = ohard
+    (soft, hard) = resource.getrlimit(resource.RLIMIT_NOFILE)
+    num_filehandles = num_filehandles + OPEN_FILES_BUFFER
 
     # %% (1) increase limit (soft and even hard) if needed
-    if soft < max_open_files:
-        soft = max_open_files
+    if soft < num_filehandles:
+        soft = num_filehandles
         hard = max(soft, hard)
         print_highlighted(f"Increasing max open files soft & hard 'ulimit -n {soft} {hard}'...")
 
