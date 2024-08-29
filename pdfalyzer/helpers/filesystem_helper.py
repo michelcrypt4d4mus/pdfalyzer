@@ -18,7 +18,7 @@ OPEN_FILES_BUFFER = 30        # we might have some files open already so we need
 PDF_EXT = '.pdf'
 
 
-def set_max_open_files(max_open_files: int = DEFAULT_MAX_OPEN_FILES):
+def set_max_open_files(max_open_files: int = DEFAULT_MAX_OPEN_FILES) -> tuple[int | None, int | None]:
     """
     Sets the OS level max open files soft limit to at least max_open_files. Required when you might be opening
     more than DEFAULT_MAX_OPEN_FILES file handles simultaneously (e.g. when you are merging a lot of small images or PDFs).
@@ -29,7 +29,7 @@ def set_max_open_files(max_open_files: int = DEFAULT_MAX_OPEN_FILES):
 
     if resource is None:
         print_highlighted(f"No resource module; cannot set max open files on this platform...", style='yellow')
-        return (None,) * 2
+        return (None, None)
     elif max_open_files <= DEFAULT_MAX_OPEN_FILES:
         # Then the ulimit max open files is already sufficient.
         return (DEFAULT_MAX_OPEN_FILES, DEFAULT_MAX_OPEN_FILES)
