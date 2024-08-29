@@ -2,10 +2,11 @@ import code
 import logging
 import re
 import sys
+from functools import partial
 from os import environ, getcwd, path
 
 from dotenv import load_dotenv
-from PyPDF2 import PdfMerger
+from PyPDF2 import PdfMerger, PdfWriter  # TODO: PdfMerger is deprecated at 3.9.1 (see https://pypdf.readthedocs.io/en/latest/user/merging-pdfs.html#basic-example)
 from PyPDF2.errors import PdfReadError
 
 # Should be first import before load_dotenv()  (TODO: Is that true?)
@@ -26,6 +27,7 @@ from yaralyzer.output.rich_console import console
 from yaralyzer.util.logging import log, log_and_print
 
 from pdfalyzer.helpers.filesystem_helper import set_max_open_files
+from pdfalyzer.helpers.rich_text_helper import print_highlighted
 from pdfalyzer.output.pdfalyzer_presenter import PdfalyzerPresenter
 from pdfalyzer.output.styles.rich_theme import PDFALYZER_THEME_DICT
 from pdfalyzer.pdfalyzer import Pdfalyzer
@@ -102,13 +104,13 @@ def combine_pdfs():
     if not args.output_file.endswith('.pdf'):
         args.output_file += '.pdf'
 
-    console.print(f"Compiling {number_of_pdfs} individual PDFs to '{args.output_file}'...")
+    print_highlighted(f"Compiling {number_of_pdfs} individual PDFs to '{args.output_file}'...")
     set_max_open_files(number_of_pdfs)
 
     for pdf in args.pdfs:
-        console.print(f"Adding '{pdf}'...")
+        print_highlighted(f"Adding '{pdf}'...")
         merger.append(pdf)
 
-    console.print(f"Writing '{args.output_file}'...", style='bright_green')
+    print_highlighted(f"Writing '{args.output_file}'...", style='bright_green')
     merger.write(args.output_file)
     merger.close()

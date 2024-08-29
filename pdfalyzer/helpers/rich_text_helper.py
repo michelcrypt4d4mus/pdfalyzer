@@ -1,13 +1,17 @@
 """
 Functions for miscellaneous Rich text/string operations.
 """
+from functools import partial
 from typing import List
 
 from PyPDF2.generic import PdfObject
 from rich.text import Text
+from yaralyzer.output.rich_console import console
 
 from pdfalyzer.helpers.pdf_object_helper import pypdf_class_name
 from pdfalyzer.output.styles.node_colors import get_label_style, get_class_style_italic
+
+print_highlighted = partial(console.print, highlight=True)
 
 
 def quoted_text(
