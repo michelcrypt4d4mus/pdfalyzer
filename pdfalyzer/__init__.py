@@ -21,12 +21,13 @@ if not environ.get('INVOKED_BY_PYTEST', False):
 
 from rich.columns import Columns
 from rich.panel import Panel
+from rich.prompt import Confirm
 from yaralyzer.helpers.rich_text_helper import prefix_with_plain_text_obj
 from yaralyzer.output.file_export import invoke_rich_export
 from yaralyzer.output.rich_console import console
 from yaralyzer.util.logging import log, log_and_print
 
-from pdfalyzer.helpers.filesystem_helper import PDF_EXT, is_pdf, set_max_open_files, with_pdf_extension
+from pdfalyzer.helpers.filesystem_helper import file_exists, is_pdf, set_max_open_files, with_pdf_extension
 from pdfalyzer.helpers.rich_text_helper import print_highlighted
 from pdfalyzer.output.pdfalyzer_presenter import PdfalyzerPresenter
 from pdfalyzer.output.styles.rich_theme import PDFALYZER_THEME_DICT
@@ -95,10 +96,12 @@ def pdfalyzer_show_color_theme() -> None:
 def combine_pdfs():
     args = combine_pdfs_parser.parse_args()
     args.output_file = with_pdf_extension(args.output_file)
-    image_quality = 100 - (args.compression_level * 10)
-
     number_of_pdfs = len(args.pdfs)
     merger = PdfMerger()
+
+    if file_exists(args.output_file) and not Confirm.ask(f"Overwrite '{args.output_file}'?"):
+        print_highlighted("Exiting without overwriting...", style='red')
+        sys.exit(1)
 
     if all(is_pdf(pdf) for pdf in args.pdfs):
         console.print("PDFs appear to have page number suffixes so sorting numerically...", style='dim')
@@ -112,21 +115,22 @@ def combine_pdfs():
         merger.append(pdf)
 
     if args.compression_level == 0:
-        print_highlighted("\nSkipping compression of content streams...")
+        print_highlighted("\nSkipping content stream compression...")
     else:
-        print_highlighted(f"\nCompressing content streams with level {args.compression_level}...", style='bright_cyan')
+        print_highlighted(f"\nCompressing content streams with zlib level {args.compression_level}...")
 
         for i, page in enumerate(merger.pages):
             print_highlighted(f"  -> Compressing page {i + 1}...", style='dim')
 
             # TODO: enable this once PyPDF is upgraded to 4.x
+            # image_quality = 100 - (args.compression_level * 10)
             # for img in page.pagedata.images:
             #     import pdb; pdb.set_trace()
             #     img.replace(img.image, quality=image_quality)
 
             page.pagedata.compress_content_streams()  # This is CPU intensive!
 
-    print_highlighted(f"\nWriting '{args.output_file}'...", style='bright_cyan')
+    print_highlighted(f"\nWriting '{args.output_file}'...", style='cyan')
     merger.write(args.output_file)
     merger.close()
-    print_highlighted(f"  Done.\n", style='dim')
+    print_highlighted(f"  Done.\n", style='yellow')

@@ -60,3 +60,8 @@ def with_pdf_extension(file_path: str|Path) -> str:
 def is_pdf(file_path: str|Path) -> bool:
     """Return True if 'file_path' ends with '.pdf'."""
     return str(file_path).endswith(PDF_EXT)
+
+
+def file_exists(file_path: str|Path) -> bool:
+    """Return True if 'file_path' exists."""
+    return Path(file_path).exists()
