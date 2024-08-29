@@ -1,8 +1,6 @@
 import code
-import logging
 import re
 import sys
-from functools import partial
 from os import environ, getcwd, path
 
 from dotenv import load_dotenv
@@ -94,13 +92,18 @@ def pdfalyzer_show_color_theme() -> None:
 
 
 def combine_pdfs():
+    """Utility method to combine multiple PDFs into one. Invocable with 'combine_pdfs PDF1 [PDF2...]'."""
     args = combine_pdfs_parser.parse_args()
     args.output_file = with_pdf_extension(args.output_file)
     number_of_pdfs = len(args.pdfs)
     merger = PdfMerger()
 
+    if number_of_pdfs < 2:
+        print_highlighted("Need at least 2 PDFs to combine...", style='red')
+        sys.exit(1)
+
     if file_exists(args.output_file) and not Confirm.ask(f"Overwrite '{args.output_file}'?"):
-        print_highlighted("Exiting without overwriting...", style='red')
+        print_highlighted("Exiting...", style='red')
         sys.exit(1)
 
     if all(is_pdf(pdf) for pdf in args.pdfs):
