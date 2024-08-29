@@ -146,8 +146,8 @@ def combine_pdfs():
     merger.write(args.output_file)
     merger.close()
     num_bytes_written = Path(args.output_file).stat().st_size
-    txt = Text('').append(f"  Done", style='magenta')
-    txt.append(" (wrote ", style='dim').append(str(num_bytes_written), style='cyan').append(" bytes)", style='dim')
+    txt = Text('').append(f"  Wrote ", style='magenta')
+    txt.append(str(num_bytes_written), style='cyan').append(" bytes.")
     print_highlighted(txt)
 
 
