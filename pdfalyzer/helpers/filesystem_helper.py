@@ -1,13 +1,19 @@
-from pathlib import Path
+"""
+Some helpers for stuff with the local filesystem.
+"""
 try:
-    import resource as res
-except ImportError: # Windows
+    import resource  # Windows doesn't have this package / doesn't need to bump up the ulimit (??)
+except ImportError:
     res = None
+
+import re
+from pathlib import Path
 
 from yaralyzer.output.rich_console import console
 
 from pdfalyzer.helpers.rich_text_helper import print_highlighted
 
+NUMBERED_PAGE_REGEX = re.compile(r'.*_(\d+)\.pdf$')
 DEFAULT_MAX_OPEN_FILES = 256  # macOS default
 OPEN_FILES_BUFFER = 30        # we might have some files open already so we need to go beyond DEFAULT_MAX_OPEN_FILES
 PDF_EXT = '.pdf'
@@ -20,7 +26,7 @@ def set_max_open_files(max_open_files=DEFAULT_MAX_OPEN_FILES):
     """
     max_open_files = max_open_files + OPEN_FILES_BUFFER
 
-    if res is None:
+    if resource is None:
         print_highlighted(f"No resource module; cannot set max open files to {max_open_files} on this platform...", style='warning')
         return (None,) * 2
     elif max_open_files <= DEFAULT_MAX_OPEN_FILES:
@@ -28,7 +34,7 @@ def set_max_open_files(max_open_files=DEFAULT_MAX_OPEN_FILES):
         return (DEFAULT_MAX_OPEN_FILES, DEFAULT_MAX_OPEN_FILES)
 
     # %% (0) what is current ulimit -n setting?
-    (soft, ohard) = res.getrlimit(res.RLIMIT_NOFILE)
+    (soft, ohard) = resource.getrlimit(resource.RLIMIT_NOFILE)
     hard = ohard
 
     # %% (1) increase limit (soft and even hard) if needed
@@ -38,15 +44,15 @@ def set_max_open_files(max_open_files=DEFAULT_MAX_OPEN_FILES):
         print_highlighted(f"Increasing max open files soft & hard 'ulimit -n {soft} {hard}'...")
 
         try:
-            res.setrlimit(res.RLIMIT_NOFILE, (soft, hard))
-        except (ValueError, res.error):
+            resource.setrlimit(resource.RLIMIT_NOFILE, (soft, hard))
+        except (ValueError, resource.error):
             try:
                hard = soft
                print_highlighted(f"Retrying setting max open files (soft, hard)=({soft}, {hard})", style='warning')
-               res.setrlimit(res.RLIMIT_NOFILE, (soft, hard))
+               resource.setrlimit(resource.RLIMIT_NOFILE, (soft, hard))
             except Exception:
                print_highlighted('Failed to set max open files / ulimit, giving up!', style='error')
-               soft,hard = res.getrlimit(res.RLIMIT_NOFILE)
+               soft,hard = resource.getrlimit(resource.RLIMIT_NOFILE)
 
     return (soft, hard)
 
@@ -77,3 +83,8 @@ def do_all_files_exist(file_paths: list[str|Path]) -> bool:
             all_files_exist = False
 
     return all_files_exist
+
+
+def extract_page_number(file_path: str|Path) -> int|None:
+    """Extract the page number from the end of a filename."""
+    return int(Path(file_path).stem.split('_')[-1])
