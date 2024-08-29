@@ -160,7 +160,7 @@ This image shows a more in-depth view of of the PDF tree for the same document s
 
 [And here's the rich tree for the same more complicated NMAP cheat sheet PDF linked instead of shown directly in the previous section](doc/svgs/rendered_images/NMAP_Commands_Cheat_Sheet_and_Tutorial.pdf.rich_table_tree.png).
 
-
+<!-- https://pypdf2.readthedocs.io/en/2.12.0/ -->
 ## Fonts
 
 #### **Extract character mappings from ancient Adobe font formats**. It's actually `PyPDF2` doing the lifting here but we're happy to take the credit.

@@ -185,3 +185,4 @@ def all_sections_chosen(args):
 combine_pdfs_parser = ArgumentParser(formatter_class=RichHelpFormatterPlus, description="Combine PDFs to one PDF")
 combine_pdfs_parser.add_argument('pdfs', nargs='+', help='PDFs to combine', metavar='PDF_PATH')
 combine_pdfs_parser.add_argument('-o', '--output-file', help='Output file to write the combined PDFs to', required=True)
+combine_pdfs_parser.add_argument('-c', '--compress-content-streams', help='compress the images in output PDF', action='store_true')
