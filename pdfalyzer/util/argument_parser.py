@@ -184,5 +184,13 @@ def all_sections_chosen(args):
 ###############################################
 combine_pdfs_parser = ArgumentParser(formatter_class=RichHelpFormatterPlus, description="Combine PDFs to one PDF")
 combine_pdfs_parser.add_argument('pdfs', nargs='+', help='PDFs to combine', metavar='PDF_PATH')
-combine_pdfs_parser.add_argument('-o', '--output-file', help='Output file to write the combined PDFs to', required=True)
-combine_pdfs_parser.add_argument('-nc', '--no-compression', help='skip compress the content streams (faster)', action='store_true')
+
+combine_pdfs_parser.add_argument('-c', '--compression-level',
+                                 help='zlib image compression level (0=none, max=1 until PyPDF is upgraded)',
+                                 choices=range(0, 2),
+                                 default=1,
+                                 type=int)
+
+combine_pdfs_parser.add_argument('-o', '--output-file',
+                                 help='Output file to write the combined PDFs to',
+                                 required=True)

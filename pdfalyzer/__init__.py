@@ -95,6 +95,8 @@ def pdfalyzer_show_color_theme() -> None:
 def combine_pdfs():
     args = combine_pdfs_parser.parse_args()
     args.output_file = with_pdf_extension(args.output_file)
+    image_quality = 100 - (args.compression_level * 10)
+
     number_of_pdfs = len(args.pdfs)
     merger = PdfMerger()
 
@@ -109,13 +111,19 @@ def combine_pdfs():
         print_highlighted(f"  -> Adding '{pdf}'...", style='dim')
         merger.append(pdf)
 
-    if args.no_compression:
+    if args.compression_level == 0:
         print_highlighted("\nSkipping compression of content streams...")
     else:
-        print_highlighted("\nCompressing content streams...", style='bright_cyan')
+        print_highlighted(f"\nCompressing content streams with level {args.compression_level}...", style='bright_cyan')
 
         for i, page in enumerate(merger.pages):
             print_highlighted(f"  -> Compressing page {i + 1}...", style='dim')
+
+            # TODO: enable this once PyPDF is upgraded to 4.x
+            # for img in page.pagedata.images:
+            #     import pdb; pdb.set_trace()
+            #     img.replace(img.image, quality=image_quality)
+
             page.pagedata.compress_content_streams()  # This is CPU intensive!
 
     print_highlighted(f"\nWriting '{args.output_file}'...", style='bright_cyan')
