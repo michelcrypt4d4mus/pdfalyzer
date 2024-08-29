@@ -35,17 +35,17 @@ def set_max_open_files(max_open_files=DEFAULT_MAX_OPEN_FILES):
     if soft < max_open_files:
         soft = max_open_files
         hard = max(soft, hard)
-        print_highlighted(f"Setting soft & hard 'ulimit -n {soft} {hard}'...")
+        print_highlighted(f"Increasing max open files soft & hard 'ulimit -n {soft} {hard}'...")
 
         try:
             res.setrlimit(res.RLIMIT_NOFILE, (soft, hard))
         except (ValueError, res.error):
             try:
                hard = soft
-               print_highlighted(f"Retrying setting ulimit with (soft, hard)=({soft}, {hard})", style='warning')
+               print_highlighted(f"Retrying setting max open files (soft, hard)=({soft}, {hard})", style='warning')
                res.setrlimit(res.RLIMIT_NOFILE, (soft, hard))
             except Exception:
-               print_highlighted('Failed to set ulimit, giving up!', style='error')
+               print_highlighted('Failed to set max open files / ulimit, giving up!', style='error')
                soft,hard = res.getrlimit(res.RLIMIT_NOFILE)
 
     return (soft, hard)
@@ -68,7 +68,7 @@ def file_exists(file_path: str|Path) -> bool:
 
 
 def do_all_files_exist(file_paths: list[str|Path]) -> bool:
-    """Return True if all 'file_paths' exist."""
+    """Print an error for each element of 'file_paths' that's not a file. Return True if all 'file_paths' exist."""
     all_files_exist = True
 
     for file_path in file_paths:
