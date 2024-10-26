@@ -42,7 +42,7 @@ Installation with [pipx](https://pypa.github.io/pipx/)[^4] is preferred though `
 pipx install pdfalyzer
 ```
 
-See [PyPDF2 installation notes](https://github.com/py-pdf/PyPDF2#installation) about `PyCryptodome` if you plan to `pdfalyze` any files that use AES encryption.
+See [PyPDF2 installation notes](https://github.com/py-pdf/pypdf#installation) about `PyCryptodome` if you plan to `pdfalyze` any files that use AES encryption.
 
 If you are on macOS someone out there was kind enough to make [The Pdfalyzer available via homebrew](https://formulae.brew.sh/formula/pdfalyzer) so `brew install pdfalyzer` should work.
 
@@ -271,7 +271,7 @@ These are the naming conventions at play in The Pdfalyzer code base:
 | **`link_node`** | nodes like `/Dest` that just contain a pointer to another node |
 
 ### Reference
-* [`PyPDF2 2.12.0` documentation](https://pypdf2.readthedocs.io/en/2.12.0/) (latest is 4.x or something so these are the relevant docs for `pdfalyze`)
+* [`PyPDF2 2.12.0` documentation](https://pypdf.readthedocs.io/en/stable/) (latest is 4.x or something so these are the relevant docs for `pdfalyze`)
 
 
 # TODO

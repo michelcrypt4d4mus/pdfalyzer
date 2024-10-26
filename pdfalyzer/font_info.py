@@ -3,8 +3,8 @@ Unify font information spread across a bunch of PdfObjects (Font, FontDescriptor
 and FontFile) into a single class.
 """
 
-from PyPDF2._cmap import build_char_map, prepare_cm
-from PyPDF2.generic import IndirectObject, PdfObject
+from pypdf._cmap import build_char_map, prepare_cm
+from pypdf.generic import IndirectObject, PdfObject
 from rich.text import Text
 from yaralyzer.output.rich_console import console
 from yaralyzer.util.logging import log

@@ -5,8 +5,8 @@ from pathlib import Path
 
 from dotenv import load_dotenv
 # TODO: PdfMerger is deprecated in favor of PdfWriter at v3.9.1 (see https://pypdf.readthedocs.io/en/latest/user/merging-pdfs.html#basic-example)
-from PyPDF2 import PdfMerger
-from PyPDF2.errors import PdfReadError
+from pypdf import PdfMerger
+from pypdf.errors import PdfReadError
 
 # Should be first local import before load_dotenv() (or at least I think it needs to come first)
 from pdfalyzer.config import PdfalyzerConfig

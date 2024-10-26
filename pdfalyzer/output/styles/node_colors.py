@@ -6,7 +6,7 @@ from collections import namedtuple
 from numbers import Number
 from typing import Any
 
-from PyPDF2.generic import (ArrayObject, ByteStringObject, EncodedStreamObject, IndirectObject,
+from pypdf.generic import (ArrayObject, ByteStringObject, EncodedStreamObject, IndirectObject,
      StreamObject, TextStringObject)
 from yaralyzer.output.rich_console import YARALYZER_THEME_DICT
 

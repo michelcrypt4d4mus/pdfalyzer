@@ -5,7 +5,7 @@ from collections import namedtuple
 from typing import List, Optional
 
 from anytree import SymlinkNode
-from PyPDF2.generic import StreamObject
+from pypdf.generic import StreamObject
 from rich.markup import escape
 from rich.panel import Panel
 from rich.table import Table

@@ -3,7 +3,7 @@ Deprecated old, pre-tree, more rawformat reader. Only used for debugging these d
 """
 from io import StringIO
 
-from PyPDF2.generic import ArrayObject, DictionaryObject, IndirectObject
+from pypdf.generic import ArrayObject, DictionaryObject, IndirectObject
 from rich.console import Console
 from rich.markup import escape
 

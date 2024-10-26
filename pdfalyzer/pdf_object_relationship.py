@@ -3,7 +3,7 @@ Simple container class for information about a link between two PDF objects.
 """
 from typing import List, Optional, Union
 
-from PyPDF2.generic import IndirectObject, PdfObject
+from pypdf.generic import IndirectObject, PdfObject
 from yaralyzer.util.logging import log
 
 from pdfalyzer.helpers.string_helper import bracketed, is_prefixed_by_any

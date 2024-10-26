@@ -3,7 +3,7 @@ Decorator for PyPDF2 PdfObject that extracts a couple of properties (type, label
 """
 from typing import Any, List, Optional, Union
 
-from PyPDF2.generic import DictionaryObject, IndirectObject, NumberObject, PdfObject
+from pypdf.generic import DictionaryObject, IndirectObject, NumberObject, PdfObject
 from rich.text import Text
 from yaralyzer.util.logging import log
 

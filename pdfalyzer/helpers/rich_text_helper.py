@@ -4,7 +4,7 @@ Functions for miscellaneous Rich text/string operations.
 from functools import partial
 from typing import List
 
-from PyPDF2.generic import PdfObject
+from pypdf.generic import PdfObject
 from rich.console import Console
 from rich.highlighter import RegexHighlighter, JSONHighlighter
 from rich.text import Text

@@ -11,8 +11,8 @@ from typing import Dict, Iterator, List, Optional
 
 from anytree import LevelOrderIter, SymlinkNode
 from anytree.search import findall, findall_by_attr
-from PyPDF2 import PdfReader
-from PyPDF2.generic import IndirectObject
+from pypdf import PdfReader
+from pypdf.generic import IndirectObject
 from yaralyzer.helpers.file_helper import load_binary_data
 from yaralyzer.output.file_hashes_table import compute_file_hashes
 from yaralyzer.output.rich_console import console

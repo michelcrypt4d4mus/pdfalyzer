@@ -51,7 +51,7 @@ pdfalyzer_show_color_theme = 'pdfalyzer:pdfalyzer_show_color_theme'
 python = "^3.9"
 anytree = "~=2.8"
 chardet = ">=5.0.0,<6.0.0"
-PyPDF2 = "^2.10"
+pypdf = "^5.0.1"
 python-dotenv = "^0.21.0"
 rich = "^12.5.1"
 rich-argparse-plus = "^0.3.1"
