@@ -1,4 +1,6 @@
 # NEXT RELEASE
+
+### 1.16.1
 * Configure a `Changelog` link for `pypi` to display
 
 # 1.16.0
