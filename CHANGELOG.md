@@ -1,5 +1,5 @@
 # NEXT RELEASE
-
+* Change `PyPDF2` dependency to `pypdf` (new name, same package) and upgrade to version `5.0.1`
 * Add `--image-quality` option to `combine_pdfs` tool
 
 ### 1.15.1
