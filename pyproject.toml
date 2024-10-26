@@ -40,6 +40,9 @@ packages = [
     { include = "pdfalyzer" }
 ]
 
+[tool.poetry.urls]
+Changelog = "https://github.com/michelcrypt4d4mus/pdfalyzer/blob/master/CHANGELOG.md"
+
 
 [tool.poetry.scripts]
 combine_pdfs = 'pdfalyzer:combine_pdfs'

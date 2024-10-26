@@ -1,4 +1,5 @@
 # NEXT RELEASE
+* Configure a `Changelog` link for `pypi` to display
 
 # 1.16.0
 * Upgrade `PyPDF2` 2.x to `pypdf` 5.0.1 (new name, same package)
