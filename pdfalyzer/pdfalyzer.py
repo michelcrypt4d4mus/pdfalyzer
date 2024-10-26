@@ -11,8 +11,8 @@ from typing import Dict, Iterator, List, Optional
 
 from anytree import LevelOrderIter, SymlinkNode
 from anytree.search import findall, findall_by_attr
-from PyPDF2 import PdfReader
-from PyPDF2.generic import IndirectObject
+from pypdf import PdfReader
+from pypdf.generic import IndirectObject
 from yaralyzer.helpers.file_helper import load_binary_data
 from yaralyzer.output.file_hashes_table import compute_file_hashes
 from yaralyzer.output.rich_console import console
@@ -36,7 +36,7 @@ class Pdfalyzer:
         self.pdf_basename = basename(pdf_path)
         self.pdf_bytes = load_binary_data(pdf_path)
         self.pdf_bytes_info = compute_file_hashes(self.pdf_bytes)
-        pdf_file = open(pdf_path, 'rb')  # Filehandle must be left open for PyPDF2 to perform seeks
+        pdf_file = open(pdf_path, 'rb')  # Filehandle must be left open for PyPDF to perform seeks
         self.pdf_reader = PdfReader(pdf_file)
 
         # Initialize tracking variables

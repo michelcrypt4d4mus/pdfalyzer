@@ -42,7 +42,7 @@ Installation with [pipx](https://pypa.github.io/pipx/)[^4] is preferred though `
 pipx install pdfalyzer
 ```
 
-See [PyPDF2 installation notes](https://github.com/py-pdf/PyPDF2#installation) about `PyCryptodome` if you plan to `pdfalyze` any files that use AES encryption.
+See [PyPDF installation notes](https://github.com/py-pdf/pypdf#installation) about `PyCryptodome` if you plan to `pdfalyze` any files that use AES encryption.
 
 If you are on macOS someone out there was kind enough to make [The Pdfalyzer available via homebrew](https://formulae.brew.sh/formula/pdfalyzer) so `brew install pdfalyzer` should work.
 
@@ -94,7 +94,7 @@ Warnings will be printed if any PDF object ID between 1 and the `/Size` reported
 ## Use As A Code Library
 For info about setting up a dev environment see [Contributing](#contributing) below.
 
-At its core The Pdfalyzer is taking PDF internal objects gathered by [PyPDF2](https://github.com/py-pdf/PyPDF2) and wrapping them in [AnyTree](https://github.com/c0fec0de/anytree)'s `NodeMixin` class.  Given that things like searching the tree or accessing internal PDF properties will be done through those packages' code it may be helpful to review their documentation.
+At its core The Pdfalyzer is taking PDF internal objects gathered by [PyPDF](https://github.com/py-pdf/pypdf) and wrapping them in [AnyTree](https://github.com/c0fec0de/anytree)'s `NodeMixin` class.  Given that things like searching the tree or accessing internal PDF properties will be done through those packages' code it may be helpful to review their documentation.
 
 As far as The Pdfalyzer's unique functionality goes, [`Pdfalyzer`](pdfalyzer/pdfalyzer.py) is the class at the heart of the operation. It holds the PDF's logical tree as well as a few other data structures. Chief among these are the [`FontInfo`](pdfalyzer/font_info.py) class which pulls together various properties of a font strewn across 3 or 4 different PDF objects and the [`BinaryScanner`](pdfalyzer/binary/binary_scanner.py) class which lets you dig through the embedded streams' bytes looking for suspicious patterns.
 
@@ -163,7 +163,7 @@ This image shows a more in-depth view of of the PDF tree for the same document s
 
 ## Fonts
 
-#### **Extract character mappings from ancient Adobe font formats**. It's actually `PyPDF2` doing the lifting here but we're happy to take the credit.
+#### **Extract character mappings from ancient Adobe font formats**. It's actually `PyPDF` doing the lifting here but we're happy to take the credit.
 
 ![](https://github.com/michelcrypt4d4mus/pdfalyzer/raw/master/doc/svgs/rendered_images/font_character_mapping.png)
 
@@ -246,7 +246,7 @@ scripts/install_t1utils.sh
 ## Did The World Really Need Another PDF Tool?
 This tool was built to fill a gap in the PDF assessment landscape following [my own recent experience trying to find malicious content in a PDF file](https://twitter.com/Cryptadamist/status/1570167937381826560). Didier Stevens's [pdfid.py](https://github.com/DidierStevens/DidierStevensSuite/blob/master/pdfid.py) and [pdf-parser.py](https://github.com/DidierStevens/DidierStevensSuite/blob/master/pdf-parser.py) are still the best game in town when it comes to PDF analysis tools but they lack in the visualization department and also don't give you much to work with as far as giving you a data model you can write your own code around. [Peepdf](https://github.com/jesparza/peepdf) seemed promising but turned out to be in a buggy, out of date, and more or less unfixable state. And neither of them offered much in the way of tooling for embedded binary analysis.
 
-Thus I felt the world might be slightly improved if I strung together a couple of more stable/well known/actively maintained open source projects ([AnyTree](https://github.com/c0fec0de/anytree), [PyPDF2](https://github.com/py-pdf/PyPDF2), [Rich](https://github.com/Textualize/rich), and [YARA](https://github.com/VirusTotal/yara-python) via [The Yaralyzer](https://github.com/michelcrypt4d4mus/yaralyzer)) into this tool.
+Thus I felt the world might be slightly improved if I strung together a couple of more stable/well known/actively maintained open source projects ([AnyTree](https://github.com/c0fec0de/anytree), [PyPDF](https://github.com/py-pdf/pypdf), [Rich](https://github.com/Textualize/rich), and [YARA](https://github.com/VirusTotal/yara-python) via [The Yaralyzer](https://github.com/michelcrypt4d4mus/yaralyzer)) into this tool.
 
 -------------
 
@@ -260,7 +260,7 @@ These are the naming conventions at play in The Pdfalyzer code base:
 
 | Term  | Meaning |
 | ----------------- | ---------------- |
-| **`PDF Object`** | Instance of a `PyPDF2` class that represents the information stored in the PDF binary between open and close guillemet quotes (« and ») |
+| **`PDF Object`** | Instance of a `PyPDF` class that represents the information stored in the PDF binary between open and close guillemet quotes (« and ») |
 | **`reference_key`** | String found in a PDF object that names a property (e.g. `/BaseFont` or `/Subtype`) |
 | **`reference`** | Link _from_ a PDF object _to_ another node. Outward facing relationships, basically. |
 | **`address`** | `reference_key` plus a hash key or numerical array index if that's how the reference works. e.g. if node A has a reference key `/Resources` pointing to a dict `{'/Font2': [IndirectObject(55), IndirectObject(2)]}` the address of `IndirectObject(55)` from node A would be `/Resources[/Font2][0]` |
@@ -271,11 +271,10 @@ These are the naming conventions at play in The Pdfalyzer code base:
 | **`link_node`** | nodes like `/Dest` that just contain a pointer to another node |
 
 ### Reference
-* [`PyPDF2 2.12.0` documentation](https://pypdf2.readthedocs.io/en/2.12.0/) (latest is 4.x or something so these are the relevant docs for `pdfalyze`)
+* [`PyPDF` documentation](https://pypdf.readthedocs.io/en/stable/) (latest is 4.x or something so these are the relevant docs for `pdfalyze`)
 
 
 # TODO
-* Upgrade `PyPDF` to latest and expand `combine_pdfs` compression command line option
 * Highlight decodes with a lot of Javascript keywords
 * https://github.com/mandiant/flare-floss (https://github.com/mandiant/flare-floss/releases/download/v2.1.0/floss-v2.1.0-linux.zip)
 * https://github.com/1Project/Scanr/blob/master/emulator/emulator.py

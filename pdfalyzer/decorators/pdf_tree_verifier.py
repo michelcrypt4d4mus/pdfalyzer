@@ -1,8 +1,8 @@
 """
 Verify that the PDF tree is complete/contains all the nodes in the PDF file.
 """
-from PyPDF2.errors import PdfReadError
-from PyPDF2.generic import IndirectObject, NameObject, NumberObject
+from pypdf.errors import PdfReadError
+from pypdf.generic import IndirectObject, NameObject, NumberObject
 from rich.markup import escape
 from yaralyzer.output.rich_console import console
 from yaralyzer.util.logging import log

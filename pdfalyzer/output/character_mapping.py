@@ -12,13 +12,13 @@ from pdfalyzer.helpers.rich_text_helper import quoted_text
 from pdfalyzer.helpers.string_helper import pp
 from pdfalyzer.output.layout import print_headline_panel, subheading_width
 
-CHARMAP_TITLE = 'Character Mapping (As Extracted By PyPDF2)'
+CHARMAP_TITLE = 'Character Mapping (As Extracted By PyPDF)'
 CHARMAP_TITLE_PADDING = (1, 0, 0, 2)
 CHARMAP_PADDING = (0, 2, 0, 10)
 
 
 def print_character_mapping(font: 'FontInfo') -> None:
-    """Prints the character mapping extracted by PyPDF2._charmap in tidy columns"""
+    """Prints the character mapping extracted by PyPDF._charmap in tidy columns"""
     if font.character_mapping is None or len(font.character_mapping) == 0:
         log.info(f"No character map found in {font}")
         return
@@ -38,12 +38,12 @@ def print_character_mapping(font: 'FontInfo') -> None:
 
 
 def print_prepared_charmap(font: 'FontInfo'):
-    """Prints the prepared_charmap returned by PyPDF2"""
+    """Prints the prepared_charmap returned by PyPDF."""
     if font.prepared_char_map is None:
         log.info(f"No prepared_charmap found in {font}")
         return
 
-    headline = f"{font} Adobe PostScript charmap prepared by PyPDF2"
+    headline = f"{font} Adobe PostScript charmap prepared by PyPDF"
     print_headline_panel(headline, style='charmap.prepared_title')
     print_bytes(font.prepared_char_map, style='charmap.prepared')
     console.line()

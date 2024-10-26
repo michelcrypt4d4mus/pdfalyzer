@@ -2,8 +2,8 @@
 String constants specified in the Adobe specs for PDFs, fonts, etc.
 """
 
-from PyPDF2.constants import (CatalogDictionary, ImageAttributes, PageAttributes,
-     PagesAttributes, Ressources as Resources)
+from pypdf.constants import (CatalogDictionary, ImageAttributes, PageAttributes,
+     PagesAttributes, Resources)
 
 from pdfalyzer.helpers.string_helper import is_prefixed_by_any
 

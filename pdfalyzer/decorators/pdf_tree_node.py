@@ -9,8 +9,8 @@ hooks)
 from typing import Callable, List, Optional, Set
 
 from anytree import NodeMixin, SymlinkNode
-from PyPDF2.errors import PdfReadError
-from PyPDF2.generic import IndirectObject, PdfObject, StreamObject
+from pypdf.errors import PdfReadError
+from pypdf.generic import IndirectObject, PdfObject, StreamObject
 from rich.markup import escape
 from rich.text import Text
 from yaralyzer.output.rich_console import console
@@ -41,7 +41,7 @@ class PdfTreeNode(NodeMixin, PdfObjectProperties):
                 self.stream_data = self.obj.get_data()
                 self.stream_length = len(self.stream_data)
             except (NotImplementedError, PdfReadError) as e:
-                msg = f"PyPDF2 failed to decode stream in {self}: {e}.\n" + \
+                msg = f"PyPDF failed to decode stream in {self}: {e}.\n" + \
                        "Trees will be unaffected but scans/extractions will not be able to check this stream."
                 console.print_exception()
                 log.warning(msg)
