@@ -1,5 +1,7 @@
 # NEXT RELEASE
 
+* Add `--image-quality` option to `combine_pdfs` tool
+
 ### 1.15.1
 * Add `--no-default-yara-rules` command line option so users can use _only_ their own custom YARA rules files if they want. Previously you could only use custom YARA rules _in addition to_ the default rules; now you can just skip the default rules.
 

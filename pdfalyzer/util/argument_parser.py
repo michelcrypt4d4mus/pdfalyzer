@@ -196,6 +196,8 @@ def all_sections_chosen(args):
 ###############################################
 # Separate arg parser for combine_pdfs script #
 ###############################################
+MAX_QUALITY = 10
+
 combine_pdfs_parser = ArgumentParser(
     description="Combine multiple PDFs into one.",
     epilog="If all PDFs end in a number (e.g. 'xyz_1.pdf', 'xyz_2.pdf', etc. sort the files as if those were" \
@@ -207,10 +209,10 @@ combine_pdfs_parser.add_argument('pdfs',
                                  metavar='PDF_PATH',
                                  nargs='+')
 
-combine_pdfs_parser.add_argument('-c', '--compression-level',
-                                 help='zlib image compression level (0=none, max=1 until PyPDF is upgraded)',
-                                 choices=range(0, 2),
-                                 default=1,
+combine_pdfs_parser.add_argument('-iq', '--image-quality',
+                                 help='image quality for embedded images (can compress PDF at loss of quality)',
+                                 choices=range(1, MAX_QUALITY + 1),
+                                 default=MAX_QUALITY,
                                  type=int)
 
 combine_pdfs_parser.add_argument('-o', '--output-file',
