@@ -120,6 +120,7 @@ def combine_pdfs():
             page.compress_content_streams()  # This is CPU intensive!
 
     print_highlighted(f"\nWriting '{args.output_file}'...", style='cyan')
+    merger.compress_identical_objects(remove_identicals=True, remove_orphans=True)
     merger.write(args.output_file)
     merger.close()
     txt = Text('').append(f"  -> Wrote ")
