@@ -47,7 +47,7 @@ class PdfalyzerPresenter:
     def print_document_info(self) -> None:
         """Print the embedded document info (author, timestamps, version, etc)."""
         print_section_header(f'Document Info for {self.pdfalyzer.pdf_basename}')
-        console.print(pp.pformat(self.pdfalyzer.pdf_reader.getDocumentInfo()))
+        console.print(pp.pformat(self.pdfalyzer.pdf_reader.metadata))
         console.line()
         console.print(bytes_hashes_table(self.pdfalyzer.pdf_bytes, self.pdfalyzer.pdf_basename))
         console.line()
