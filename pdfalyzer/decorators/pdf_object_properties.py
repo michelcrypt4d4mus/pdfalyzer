@@ -1,5 +1,5 @@
 """
-Decorator for PyPDF2 PdfObject that extracts a couple of properties (type, label, etc).
+Decorator for PyPDF PdfObject that extracts a couple of properties (type, label, etc).
 """
 from typing import Any, List, Optional, Union
 

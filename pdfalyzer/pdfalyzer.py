@@ -36,7 +36,7 @@ class Pdfalyzer:
         self.pdf_basename = basename(pdf_path)
         self.pdf_bytes = load_binary_data(pdf_path)
         self.pdf_bytes_info = compute_file_hashes(self.pdf_bytes)
-        pdf_file = open(pdf_path, 'rb')  # Filehandle must be left open for PyPDF2 to perform seeks
+        pdf_file = open(pdf_path, 'rb')  # Filehandle must be left open for PyPDF to perform seeks
         self.pdf_reader = PdfReader(pdf_file)
 
         # Initialize tracking variables

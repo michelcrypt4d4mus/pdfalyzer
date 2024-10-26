@@ -41,7 +41,7 @@ class PdfTreeNode(NodeMixin, PdfObjectProperties):
                 self.stream_data = self.obj.get_data()
                 self.stream_length = len(self.stream_data)
             except (NotImplementedError, PdfReadError) as e:
-                msg = f"PyPDF2 failed to decode stream in {self}: {e}.\n" + \
+                msg = f"PyPDF failed to decode stream in {self}: {e}.\n" + \
                        "Trees will be unaffected but scans/extractions will not be able to check this stream."
                 console.print_exception()
                 log.warning(msg)
