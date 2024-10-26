@@ -4,8 +4,7 @@ from os import environ, getcwd, path
 from pathlib import Path
 
 from dotenv import load_dotenv
-# TODO: PdfMerger is deprecated in favor of PdfWriter at v3.9.1 (see https://pypdf.readthedocs.io/en/latest/user/merging-pdfs.html#basic-example)
-from pypdf import PdfMerger
+from pypdf import PdfWriter
 from pypdf.errors import PdfReadError
 
 # Should be first local import before load_dotenv() (or at least I think it needs to come first)
@@ -93,10 +92,13 @@ def pdfalyzer_show_color_theme() -> None:
 
 
 def combine_pdfs():
-    """Utility method to combine multiple PDFs into one. Invocable with 'combine_pdfs PDF1 [PDF2...]'."""
+    """
+    Utility method to combine multiple PDFs into one. Invocable with 'combine_pdfs PDF1 [PDF2...]'.
+    Example: https://github.com/py-pdf/pypdf/blob/main/docs/user/merging-pdfs.md
+    """
     args = parse_combine_pdfs_args()
     set_max_open_files(args.number_of_pdfs)
-    merger = PdfMerger()
+    merger = PdfWriter()
 
     for pdf in args.pdfs:
         try:
@@ -115,7 +117,7 @@ def combine_pdfs():
             # TODO: enable image quality reduction + zlib level once PyPDF is upgraded to 4.x and option is available
             # See https://pypdf.readthedocs.io/en/latest/user/file-size.html#reducing-image-quality
             print_highlighted(f"  -> Compressing page {i + 1}...", style='dim')
-            page.pagedata.compress_content_streams()  # This is CPU intensive!
+            page.compress_content_streams()  # This is CPU intensive!
 
     print_highlighted(f"\nWriting '{args.output_file}'...", style='cyan')
     merger.write(args.output_file)

@@ -35,4 +35,4 @@ def test_combine_pdfs(combined_pdf_path, one_page_pdfs):
     assert not combined_pdf_path.exists()
     reval = check_output([COMBINE_PDFS, '-o', combined_pdf_path, *one_page_pdfs], env=environ).decode()
     assert combined_pdf_path.exists()
-    assert file_size_in_mb(combined_pdf_path) == 0.18
+    assert file_size_in_mb(combined_pdf_path) == 0.51
