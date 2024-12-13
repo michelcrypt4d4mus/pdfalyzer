@@ -31,6 +31,8 @@ pdfalyze_doc() {
 
 export -f pdfalyze_doc
 
-rm "$SUCCESS_LOG" 2>/dev/null
-rm "$FAILURE_LOG" 2>/dev/null
+# Remove log files if they exist, suppressing errors
+rm -f -v "${SUCCESS_LOG}" 2>/dev/null
+rm -f -v "${FAILURE_LOG}" 2>/dev/null
+
 find ~/Documents/ -iname "*.pdf" -type f -exec bash -c 'pdfalyze_doc "{}"' \;
