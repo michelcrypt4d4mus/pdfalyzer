@@ -15,7 +15,9 @@ export FAILURE_LOG="log/failed_to_parse.txt"
 
 pdfalyze_doc() {
     local pdf_full_path
+    readonly pdf_full_path
     local pdf_basename
+    readonly pdf_basename
     pdf_full_path="$(readlink -f "${1}")"
     pdf_basename="$(basename "${pdf_full_path}")"
 
