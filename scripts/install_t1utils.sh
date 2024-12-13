@@ -3,19 +3,19 @@
 # Requires autoconf and automake on macOS.
 
 if cat /etc/*release | grep ^NAME | egrep 'CentOS|Red|Fedora'; then
-    echo "Installing t1utils with yum..."
+    echo "Info: Installing t1utils with yum..."
     sudo yum install -y t1utils
     exit 0
 elif cat /etc/*release | grep ^NAME | egrep 'Ubuntu|Debian|Mint|Knoppix'; then
-    echo "Installing t1utils with apt-get..."
+    echo "Info: Installing t1utils with apt-get..."
     sudo apt-get install -y t1utils
     exit 0
 elif ! echo `uname -a` | grep Darwin 2>&1 >/dev/null; then
-    echo "OS NOT DETECTED, couldn't install t1utils"
+    echo "Warning: OS NOT DETECTED, couldn't install t1utils"
     exit 1;
 fi
 
-echo "macOS detected, building t1utils from source..."
+echo "Info: macOS detected, building t1utils from source..."
 
 
 for required_build_tool in automake autoconf make; do
@@ -26,9 +26,8 @@ done
 
 SCRIPT_PATH=$(dirname -- "$(readlink -f -- "$0";)";)
 source "$SCRIPT_PATH/lib/project_paths.sh"
-TMP_DIR="$PDFALYZER_PROJECT_PATH/tmp"
+TMP_DIR="$(mktemp -d -p "${PDFALYZER_PROJECT_PATH}" -t "tmp.XXXXXXXXXX")"
 
-mkdir -p "$TMP_DIR"
 pushd "$TMP_DIR" >/dev/null
 git clone https://github.com/kohler/t1utils.git
 
