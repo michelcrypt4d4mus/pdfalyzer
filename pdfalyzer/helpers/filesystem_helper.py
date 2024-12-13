@@ -3,7 +3,7 @@ Some helpers for stuff with the local filesystem.
 """
 import re
 from pathlib import Path
-from typing import Union
+from typing import Optional, Union
 
 from yaralyzer.output.rich_console import console
 
@@ -45,7 +45,7 @@ def do_all_files_exist(file_paths: list[Union[str, Path]]) -> bool:
     return all_files_exist
 
 
-def extract_page_number(file_path: Union[str, Path]) -> int|None:
+def extract_page_number(file_path: Union[str, Path]) -> Optional[int]:
     """Extract the page number from the end of a filename if it exists."""
     match = NUMBERED_PAGE_REGEX.match(str(file_path))
     return int(match.group(1)) if match else None
@@ -56,7 +56,7 @@ def file_size_in_mb(file_path: Union[str, Path], decimal_places: int = 2) -> flo
     return round(Path(file_path).stat().st_size / 1024.0 / 1024.0, decimal_places)
 
 
-def set_max_open_files(num_filehandles: int = DEFAULT_MAX_OPEN_FILES) -> tuple[int | None, int | None]:
+def set_max_open_files(num_filehandles: int = DEFAULT_MAX_OPEN_FILES) -> tuple[Optional[int], Optional[int]]:
     """
     Sets the OS level max open files to at least 'num_filehandles'. Current value can be seen with 'ulimit -a'.
     Required when you might be opening more than DEFAULT_MAX_OPEN_FILES file handles simultaneously

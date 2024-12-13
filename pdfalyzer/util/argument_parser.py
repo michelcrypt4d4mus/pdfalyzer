@@ -4,7 +4,7 @@ from collections import namedtuple
 from functools import partial, update_wrapper
 from importlib.metadata import version
 from os import getcwd, path
-from typing import List
+from typing import List, Optional
 
 from rich_argparse_plus import RichHelpFormatterPlus
 from rich.prompt import Confirm
@@ -254,7 +254,7 @@ def ask_to_proceed() -> None:
         exit_with_error()
 
 
-def exit_with_error(error_message: str|None = None) -> None:
+def exit_with_error(error_message: Optional[str] = None) -> None:
     """Print 'error_message' and exit with status code 1."""
     if error_message:
         print_highlighted(Text('').append('ERROR', style='bold red').append(f': {error_message}'))
