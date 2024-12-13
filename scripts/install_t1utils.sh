@@ -31,8 +31,11 @@ done
 SCRIPT_PATH="$(dirname -- "$(readlink -f -- "${BASH_SOURCE[0]}")")"
 # shellcheck source=./lib/project_paths.sh
 source "${SCRIPT_PATH}/lib/project_paths.sh"
-TMP_DIR="${PDFALYZER_PROJECT_PATH}/tmp"
 
+TMP_DIR="$(mktemp -d -p "${PDFALYZER_PROJECT_PATH}" -t "tmp.XXXXXXXXXX")" || {
+    printf "Error: Failed to create temporary directory.\n" >&2
+    exit 1
+}
 pushd "${TMP_DIR}" >/dev/null || exit 1
 git clone https://github.com/kohler/t1utils.git
 
