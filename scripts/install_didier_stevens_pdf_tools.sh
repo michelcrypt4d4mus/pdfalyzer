@@ -2,12 +2,15 @@
 # Get Didier Stevens's pdf-parser.py and pdfid.py from github, place them in tools/ dir, and make executable
 
 SCRIPT_PATH=$(dirname -- "$(readlink -f -- "$0";)";)
+readonly SCRIPT_PATH
 . "$SCRIPT_PATH/lib/project_paths.sh"
 
 TOOL_EXECUTABLES=(pdfid.py pdf-parser.py xorsearch.py)
+readonly TOOL_EXECUTABLES
 DIDIER_STEVENS_RAW_GITHUB_URL='https://raw.githubusercontent.com/DidierStevens/DidierStevensSuite/master/'
+readonly DIDIER_STEVENS_RAW_GITHUB_URL
 
-mkdir -p "$PDFALYZER_TOOLS_DIR"
+mkdir -p -v "$PDFALYZER_TOOLS_DIR"
 pushd "$PDFALYZER_TOOLS_DIR"
 
 for tool_executable in "${TOOL_EXECUTABLES[@]}"; do
