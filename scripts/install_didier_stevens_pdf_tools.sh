@@ -7,6 +7,7 @@ readonly SCRIPT_PATH
 
 TOOL_EXECUTABLES=(pdfid.py pdf-parser.py xorsearch.py)
 readonly TOOL_EXECUTABLES
+
 DIDIER_STEVENS_RAW_GITHUB_URL='https://raw.githubusercontent.com/DidierStevens/DidierStevensSuite/master/'
 readonly DIDIER_STEVENS_RAW_GITHUB_URL
 
