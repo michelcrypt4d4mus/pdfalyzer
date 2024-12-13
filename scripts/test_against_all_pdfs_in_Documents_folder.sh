@@ -22,11 +22,11 @@ pdfalyze_doc() {
     pdf_basename="$(basename "${pdf_full_path}")"
 
     if [[ "${pdf_basename}" =~ postgresql.* ]]; then
-        printf "Skipping '%s'...\n" "${pdf_basename}"  # Postgres PDF takes forever to process
+        printf "Info: Skipping '%s'...\n" "${pdf_basename}"  # Postgres PDF takes forever to process
         return
     fi
 
-    printf "\nCommand to run: %s -f -r -t \"%s\"\n" "${PDFALYZER_EXECUTABLE}" "${pdf_full_path}"
+    printf "\nInfo: Command to run: %s -f -r -t \"%s\"\n" "${PDFALYZER_EXECUTABLE}" "${pdf_full_path}"
 
     if "${PDFALYZER_EXECUTABLE}" -f -r -t "${pdf_full_path}"; then
         echo "${pdf_full_path}" >> "${SUCCESS_LOG}"
