@@ -8,7 +8,10 @@ from yaralyzer.helpers.file_helper import files_in_dir
 
 from pdfalyzer.pdfalyzer import Pdfalyzer
 
-PROJECT_DIR = path.join(str(importlib.resources.files('pdfalyzer')), pardir)
+# TODO: importlib doesn't play nice with running tests via GitHub actions
+# PROJECT_DIR = path.join(str(importlib.resources.files('pdfalyzer')), pardir)
+PYTESTS_DIR = path.dirname(__file__)
+PROJECT_DIR = path.join(PYTESTS_DIR, pardir)
 DOCUMENTATION_DIR = path.join(PROJECT_DIR, 'doc')
 SVG_DIR = path.join(DOCUMENTATION_DIR, 'svgs')
 RENDERED_IMAGES_DIR = path.join(SVG_DIR, 'rendered_images')
