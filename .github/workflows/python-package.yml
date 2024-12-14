@@ -31,6 +31,7 @@ jobs:
         pip install .
         mkdir ./tools
         curl -o ./tools/pdf-parser.py https://raw.githubusercontent.com/DidierStevens/DidierStevensSuite/master/pdf-parser.py
+        chmod +x ./tools/pdf-parser.py
     - name: Test with pytest
       run: |
         PDFALYZER_PDF_PARSER_PY_PATH=./tools/ pytest -v --slow
