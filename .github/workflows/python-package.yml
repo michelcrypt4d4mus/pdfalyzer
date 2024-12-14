@@ -33,7 +33,7 @@ jobs:
         curl -o ./tools/pdf-parser.py https://raw.githubusercontent.com/DidierStevens/DidierStevensSuite/master/pdf-parser.py
     - name: Test with pytest
       run: |
-        pytest -v --slow
+        PDFALYZER_PDF_PARSER_PY_PATH=./tools/pdf-parser.py pytest -v --slow
     # - name: Lint with flake8
     #   run: |
     #     # stop the build if there are Python syntax errors or undefined names
