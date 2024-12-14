@@ -27,7 +27,7 @@ jobs:
     - name: Install dependencies
       run: |
         python -m pip install --upgrade pip
-        python -m pip install flake8 pytest pytest-skip-slow
+        python -m pip install flake8 pytest pytest-skip-slow pypdf[image]
         pip install .
         mkdir ./tools
         curl -o ./tools/pdf-parser.py https://raw.githubusercontent.com/DidierStevens/DidierStevensSuite/master/pdf-parser.py
