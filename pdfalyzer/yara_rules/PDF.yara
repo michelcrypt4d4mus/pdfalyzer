@@ -1030,17 +1030,46 @@ rule malware_MaldocinPDF {
         labs_reference = "N/A"
         labs_pivot     = "N/A"
         samples        = "ef59d7038cfd565fd65bae12588810d5361df938244ebad33b71882dcf683058"
-
     strings:
         $docfile2 = "<w:WordDocument>" ascii nocase
         $xlsfile2 = "<x:ExcelWorkbook>" ascii nocase
         $mhtfile0 = "mime" ascii nocase
         $mhtfile1 = "content-location:" ascii nocase
         $mhtfile2 = "content-type:" ascii nocase
-
      condition:
         (uint32(0) == 0x46445025) and
         (1 of ($mhtfile*)) and
         ( (1 of ($docfile*)) or
           (1 of ($xlsfile*)) )
+}
+
+
+rule EXPLOIT_PDFJS_CVE_2024_4367 {
+    meta:
+        description = "Detects PDFs that exploit CVE-2024-4367"
+        author = "spaceraccoon, Eugene Lim"
+        blog_reference = "https://codeanlabs.com/blog/research/cve-2024-4367-arbitrary-js-execution-in-pdf-js/"
+        reference = "https://github.com/spaceraccoon/detect-cve-2024-4367"
+        date = "2024-05-23"
+        modified = "2024-05-23"
+        score = 75
+        id = "bb000216-17b5-41eb-a144-2982131fbf45"
+    strings:
+        $re1 = /\/FontMatrix\s+\[\.\-\d\s]*\(/
+    condition:
+        any of them
+}
+
+
+rule QakbotPDF {
+    meta:
+        description = "This is a rule to detect Qakbot"
+        hash = "ce0b6e49d017a570bdaa463e51893014a7378fb4586e33fabbc6c4832c355663"
+        filename = "Necessitatibus.pdf"
+        author = "Motawkkel Abdulrhman AKA RY0D4N"
+        reference = "https://github.com/xRY0D4N/Yara-Rules/blob/main/Qakbot/rule.yar"
+    strings:
+        $url = "/URI (http://gurtek.com.tr/exi/exi.php)" nocase ascii wide
+    condition:
+        $url
 }
