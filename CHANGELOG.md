@@ -1,5 +1,8 @@
 # NEXT RELEASE
 
+### 1.16.2
+* Add two more PDF related YARA rules
+
 ### 1.16.1
 * Configure a `Changelog` link for `pypi` to display
 
