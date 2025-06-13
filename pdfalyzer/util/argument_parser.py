@@ -80,7 +80,7 @@ select.add_argument('-r', '--rich', action='store_true',
                     help='show much larger / more detailed tree visualization (one row per PDF object property)')
 
 select.add_argument('-f', '--fonts', action='store_true',
-                    help="show info about fonts included character mappings for embedded font binaries")
+                    help="show info about fonts including character mappings for embedded font binaries")
 
 select.add_argument('-y', '--yara', action='store_true',
                     help="scan the PDF with the included malicious PDF YARA rules and/or your custom YARA rules")
