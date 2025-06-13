@@ -1,5 +1,8 @@
 # NEXT RELEASE
 
+### 1.16.3
+* Fix typo in help
+
 ### 1.16.2
 * Add two more PDF related YARA rules
 
