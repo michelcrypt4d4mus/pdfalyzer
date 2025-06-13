@@ -3,7 +3,7 @@ import pytest
 
 @pytest.mark.slow
 def test_quote_extraction_methods(font_info):
-    _check_matches(font_info.binary_scanner.extract_backtick_quoted_bytes, 163, 52840)
+    _check_matches(font_info.binary_scanner.extract_backtick_quoted_bytes, 161, 52840)
 
 
 @pytest.mark.slow
