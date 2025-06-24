@@ -74,6 +74,15 @@ If you provide none of the flags in the `ANALYSIS SELECTION` section of the `--h
 
 The `--streams` output is the one used to hunt for patterns in the embedded bytes and can be _extremely_ verbose depending on the `--quote-char` options chosen (or not chosen) and contents of the PDF. [The Yaralyzer](https://github.com/michelcrypt4d4mus/yaralyzer) handles this task; if you want to hunt for patterns in the bytes other than bytes surrounded by backticks/frontslashes/brackets/quotes/etc. you may want to use The Yaralyzer directly. As The Yaralyzer is a prequisite for The Pdfalyzer you may already have the `yaralyze` command installed and available.
 
+### Exporting to JSON
+Use the `-json` flag to export analysis results to structured JSON files:
+
+```sh
+pdfalyze suspicious.pdf -json --output-dir ./analysis
+```
+
+This will create JSON files for each analysis type (document info, tree structure, fonts, etc.) preserving the complete PDF structure for programmatic processing.
+
 ### Setting Command Line Options Permanently With A `.pdfalyzer` File
 When you run `pdfalyze` on some PDF the tool will check for a file called `.pdfalyzer` first in the current directory and then in the home directory. If it finds a file in either such place it will load configuration options from it. Documentation on the options that can be configured with these files lives in [`.pdfalyzer.example`](.pdfalyzer.example) which doubles as an example file you can copy into place and edit to your needs. Handy if you find yourself typing the same command line options over and over again.
 
@@ -141,7 +150,7 @@ for backtick_quoted_string in font.binary_scanner.extract_backtick_quoted_bytes(
 -------------
 
 # Example Output
-The Pdfalyzer can export visualizations to HTML, ANSI colored text, and SVG images using the file export functionality that comes with [Rich](https://github.com/Textualize/rich). SVGs can be turned into `png` format images with a tool like Inkscape or `cairosvg` (Inkscape works a lot better in our experience). See `pdfalyze --help` for the specifics.
+The Pdfalyzer can export visualizations to HTML, ANSI colored text, SVG images, and JSON data files using the file export functionality that comes with [Rich](https://github.com/Textualize/rich). SVGs can be turned into `png` format images with a tool like Inkscape or `cairosvg` (Inkscape works a lot better in our experience). JSON export preserves the complete PDF structure for programmatic analysis. See `pdfalyze --help` for the specifics.
 
 
 ## Basic Tree View

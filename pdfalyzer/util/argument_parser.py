@@ -50,6 +50,10 @@ export.add_argument('-bin', '--extract-binary-streams',
                     const='bin',
                     help='extract all binary streams in the PDF to separate files (requires pdf-parser.py)')
 
+export.add_argument('-json',
+                    action='store_true',
+                    help='export analysis results to JSON files preserving PDF structure')
+
 # Add one more option to the YARA rules section
 source.add_argument('--no-default-yara-rules',
                     action='store_true',
@@ -140,7 +144,7 @@ def parse_arguments():
         exit_with_error("--no-default-yara-rules requires at least one --yara-file argument")
 
     # File export options
-    if args.export_svg or args.export_txt or args.export_html or args.extract_binary_streams:
+    if args.export_svg or args.export_txt or args.export_html or args.json or args.extract_binary_streams:
         args.output_dir = args.output_dir or getcwd()
         file_prefix = (args.file_prefix + '__') if args.file_prefix else ''
         args.file_suffix = ('_' + args.file_suffix) if args.file_suffix else ''

@@ -27,6 +27,10 @@ def adobe_type1_fonts_pdf_path():
 def analyzing_malicious_pdf_path():
     return _pdf_in_doc_dir('analyzing-malicious-document-files.pdf')
 
+@pytest.fixture(scope='session')
+def one_page_pdf_path():
+    return str(FIXTURES_DIR / 'one_page_pdfs' / 'page_1.pdf')
+
 
 # Some obj ids for use with -f when you want to limit yourself to the font
 @pytest.fixture(scope="session")

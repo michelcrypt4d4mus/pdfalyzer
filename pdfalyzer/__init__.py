@@ -1,5 +1,6 @@
 import code
 import sys
+from datetime import datetime
 from os import environ, getcwd, path
 from pathlib import Path
 
@@ -27,6 +28,7 @@ from yaralyzer.util.logging import log, log_and_print
 
 from pdfalyzer.helpers.filesystem_helper import file_size_in_mb, set_max_open_files
 from pdfalyzer.helpers.rich_text_helper import print_highlighted
+from pdfalyzer.output.json_exporter import JsonExporter
 from pdfalyzer.output.pdfalyzer_presenter import PdfalyzerPresenter
 from pdfalyzer.output.styles.rich_theme import PDFALYZER_THEME_DICT
 from pdfalyzer.pdfalyzer import Pdfalyzer
@@ -41,8 +43,12 @@ MAX_THEME_COL_SIZE = 35
 def pdfalyze():
     args = parse_arguments()
     pdfalyzer = Pdfalyzer(args.file_to_scan_path)
-    pdfalyzer = PdfalyzerPresenter(pdfalyzer)
+    presenter = PdfalyzerPresenter(pdfalyzer)
     output_basepath = None
+    
+    # Initialize JSON exporter if needed
+    json_exporter = JsonExporter(pdfalyzer) if args.json else None
+    json_export_data = {} if args.json else None
 
     # Binary stream extraction is a special case
     if args.extract_binary_streams:
@@ -53,7 +59,7 @@ def pdfalyze():
 
     # The method that gets called is related to the argument name. See 'possible_output_sections' list in argument_parser.py
     # Analysis exports wrap themselves around the methods that actually generate the analyses
-    for (arg, method) in output_sections(args, pdfalyzer):
+    for (arg, method) in output_sections(args, presenter):
         if args.output_dir:
             output_basepath = PdfalyzerConfig.get_output_basepath(method)
             print(f'Exporting {arg} data to {output_basepath}...')
@@ -69,10 +75,52 @@ def pdfalyze():
 
         if args.export_svg:
             invoke_rich_export(console.save_svg, output_basepath)
+            
+        # Handle JSON export
+        if args.json and json_exporter:
+            json_output_path = None
+            if arg == 'docinfo':
+                json_output_path = json_exporter.export_document_info(Path(args.output_dir))
+            elif arg == 'tree':
+                json_output_path = json_exporter.export_tree(Path(args.output_dir))
+            elif arg == 'rich':
+                # For rich tree, export the detailed tree structure
+                json_output_path = json_exporter.export_tree(Path(args.output_dir))
+                # Rename file to indicate it's the rich/detailed version
+                if json_output_path.exists():
+                    rich_path = json_output_path.parent / json_output_path.name.replace('_tree.json', '_rich_tree.json')
+                    json_output_path.rename(rich_path)
+                    json_output_path = rich_path
+            elif arg == 'counts':
+                json_output_path = json_exporter.export_summary(Path(args.output_dir))
+            elif arg == 'fonts':
+                json_output_path = json_exporter.export_fonts(Path(args.output_dir))
+            elif arg == 'streams':
+                json_output_path = json_exporter.export_streams(Path(args.output_dir))
+            elif arg == 'yara':
+                # Get YARA matches from the presenter's yaralyzer
+                if hasattr(presenter, 'yaralyzer') and hasattr(presenter.yaralyzer, 'yara_matches'):
+                    json_output_path = json_exporter.export_yara_results(Path(args.output_dir), presenter.yaralyzer.yara_matches)
+            
+            if json_output_path:
+                json_export_data[arg] = str(json_output_path)
+                log_and_print(f"  -> Exported {arg} to JSON: {json_output_path}")
 
         # Clear the buffer if we have one
         if args.output_dir:
             del console._record_buffer[:]
+    
+    # If JSON export was requested, create a manifest file
+    if args.json and json_export_data:
+        manifest_path = Path(args.output_dir) / f"{pdfalyzer.pdf_basename}_manifest.json"
+        with open(manifest_path, 'w') as f:
+            import json
+            json.dump({
+                "pdf_file": pdfalyzer.pdf_basename,
+                "exports": json_export_data,
+                "timestamp": datetime.now().isoformat()
+            }, f, indent=2)
+        log_and_print(f"\nJSON export complete. Manifest written to: {manifest_path}")
 
     # Drop into interactive shell if requested
     if args.interact:
