@@ -1077,8 +1077,9 @@ rule GIFTEDCROOK {
         hash = "1974709f9af31380f055f86040ef90c71c68ceb2e14825509babf902b50a1a4b"
         reference = "https://arcticwolf.com/resources/blog/giftedcrook-strategic-pivot-from-browser-stealer-to-data-exfiltration-platform/"
     strings:
-        $str0 = "https://mega.nz/file"
+        $mega_link = "https://mega.nz/file" nocase
+        $creator = "FEFF005700720069007400650072"
     condition:
         uint32(0) == 0x25504446 and
-        all of them
+        any of them
 }
