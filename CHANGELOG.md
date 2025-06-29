@@ -1,4 +1,6 @@
 # NEXT RELEASE
+
+### 1.16.5
 * Add YARA rule for GIFTEDCROOK infostealer PDFs
 
 ### 1.16.4
