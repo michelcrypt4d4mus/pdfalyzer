@@ -15,10 +15,13 @@ keywords = [
     "color",
     "font",
     "encoding",
+    "maldoc",
     "malicious pdf",
     "malware",
     "malware analysis",
     "pdf",
+    "pdfs",
+    "pdf analysis",
     "threat assessment",
     "visualization",
     "yara"
@@ -33,7 +36,6 @@ classifiers = [
 include = [
     "CHANGELOG.md",
     "LICENSE"
-    #{ path = "doc" }
 ]
 
 packages = [

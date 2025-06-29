@@ -244,6 +244,7 @@ scripts/install_t1utils.sh
 * [linuxPDF](https://github.com/ading2210/linuxpdf) is a project that managed to embed an entire linux operating system inside a PDF document. The related [DoomPDF](https://github.com/ading2210/doompdf) managed to embed the classic video game Doom in a PDF.
 * [horrifying-pdf-experiments](https://github.com/osnr/horrifying-pdf-experiments) is a repo of horrifying things you can do with PDFs.
 
+
 ## Did The World Really Need Another PDF Tool?
 This tool was built to fill a gap in the PDF assessment landscape following [my own recent experience trying to find malicious content in a PDF file](https://twitter.com/Cryptadamist/status/1570167937381826560). Didier Stevens's [pdfid.py](https://github.com/DidierStevens/DidierStevensSuite/blob/master/pdfid.py) and [pdf-parser.py](https://github.com/DidierStevens/DidierStevensSuite/blob/master/pdf-parser.py) are still the best game in town when it comes to PDF analysis tools but they lack in the visualization department and also don't give you much to work with as far as giving you a data model you can write your own code around. [Peepdf](https://github.com/jesparza/peepdf) seemed promising but turned out to be in a buggy, out of date, and more or less unfixable state. And neither of them offered much in the way of tooling for embedded binary analysis.
 
