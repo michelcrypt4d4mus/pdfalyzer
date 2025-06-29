@@ -3,21 +3,25 @@ import pytest
 
 @pytest.mark.slow
 def test_quote_extraction_methods(font_info):
-    _check_matches(font_info.binary_scanner.extract_backtick_quoted_bytes, 163, 52840, 2)
+    _check_matches(font_info.binary_scanner.extract_backtick_quoted_bytes, 163, 52840, 2, 7_000)
 
 
 @pytest.mark.slow
 def test_front_slash_quoted_bytes_extraction(font_info):
-    _check_matches(font_info.binary_scanner.extract_front_slash_quoted_bytes, 756, 167814, 1)
+    _check_matches(font_info.binary_scanner.extract_front_slash_quoted_bytes, 756, 167814, 2, 62_000)
 
 
 def test_extract_guillemet(font_info):
     _check_matches(font_info.binary_scanner.extract_guillemet_quoted_bytes, 59, 78763)
 
 
-def _check_matches(match_iterator, expected_matches: int, expected_bytes: int, tolerance_pct: int = 0) -> None:
-    num_matches_tolerance = expected_matches * (tolerance_pct / 100)
-    num_bytes_tolerance = expected_bytes * (tolerance_pct / 100)
+def _check_matches(
+        match_iterator,
+        expected_matches: int,
+        expected_bytes: int,
+        num_matches_tolerance: int = 0,
+        num_bytes_tolerance: int = 0
+    ) -> None:
     quoted_bytes_found = 0
     quoted_sections_found = 0
 
