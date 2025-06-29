@@ -1,4 +1,6 @@
 # NEXT RELEASE
+
+### 1.16.6
 * Add the creator hash to GIFTEDCROOK rule
 
 ### 1.16.5
