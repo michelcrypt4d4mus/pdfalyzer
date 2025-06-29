@@ -1,4 +1,5 @@
 # NEXT RELEASE
+* Add the creator hash to GIFTEDCROOK rule
 
 ### 1.16.5
 * Add YARA rule for GIFTEDCROOK infostealer PDFs
