@@ -241,7 +241,7 @@ scripts/install_t1utils.sh
 * [A Curious Exploration of Malicious PDF Documents](https://www.scitepress.org/Papers/2020/89923/89923.pdf) by Julian Lindenhofer, Rene Offenthaler and Martin Pirker, 2020. Overview of all the possible execution paths that can lead to a PDF executing JavaScript, opening loca/remote files, or making web requests.
 * [Malicious PDF Generator](https://github.com/jonaslejon/malicious-pdf) is a well maintained GitHub project that does what it says on the tin.
 * [PDF is Broken, and so is this file](https://blog.trailofbits.com/2021/02/02/pdf-is-broken-a-justctf-challenge/) is a 2021 report on what happens when you challenge cybersecurity teams to turn PDFs into weapons. (Among other things they managed to create a PDF that launches a webserver when you open it.)
-* [linuxpdf](https://github.com/ading2210/linuxpdf) is a project that managed to embed an entire linux operating system inside a PDF document.
+* [linuxPDF](https://github.com/ading2210/linuxpdf) is a project that managed to embed an entire linux operating system inside a PDF document. The related [DoomPDF](https://github.com/ading2210/doompdf) managed to embed the classic video game Doom in a PDF.
 
 
 ## Did The World Really Need Another PDF Tool?
