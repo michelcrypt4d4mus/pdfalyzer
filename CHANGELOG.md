@@ -1,4 +1,5 @@
 # NEXT RELEASE
+* Add YARA rule for GIFTEDCROOK infostealer PDFs
 
 ### 1.16.4
 * Bump `PyPDF` to 5.7.0

@@ -26,7 +26,6 @@ rule Cobaltgang_PDF_Metadata_Rev_A
         author = "Palo Alto Networks Unit 42"
         date = "2018-10-25"
         reference = "https://researchcenter.paloaltonetworks.com/2018/10/unit42-new-techniques-uncover-attribute-cobalt-gang-commodity-builders-infrastructure-revealed/"
-
    strings:
         $ = "<xmpMM:DocumentID>uuid:31ac3688-619c-4fd4-8e3f-e59d0354a338" ascii wide
    condition:
@@ -293,7 +292,6 @@ rule suspicious_embed : PDF
 		version = "0.1"
 		ref = "https://feliam.wordpress.com/2010/01/13/generic-pdf-exploit-hider-embedpdf-py-and-goodbye-av-detection-012010/"
 		weight = 2
-
 	strings:
 		$magic = { 25 50 44 46 }
 
@@ -330,7 +328,6 @@ rule invalid_XObject_js : PDF
 		ref = "https://blogs.adobe.com/ReferenceXObjects/"
 		version = "0.1"
 		weight = 2
-
 	strings:
 		$magic = { 25 50 44 46 }
 		$ver = /%PDF-1\.[4-9]/
@@ -526,7 +523,6 @@ rule blackhole2_pdf : EK PDF{
         yaragenerator = "https://github.com/Xen0ph0n/YaraGenerator"
         weight = 6
         tag = "attack.initial"
-
     strings:
         $string0 = "/StructTreeRoot 5 0 R/Type/Catalog>>"
         $string1 = "0000036095 00000 n"
@@ -558,7 +554,6 @@ rule XDP_embedded_PDF : PDF
 		version = "0.1"
 		ref = "http://blog.9bplus.com/av-bypass-for-malicious-pdfs-using-xdp"
         weight = 1
-
 	strings:
 		$s1 = "<pdf xmlns="
 		$s2 = "<chunk>"
@@ -1072,4 +1067,18 @@ rule QakbotPDF {
         $url = "/URI (http://gurtek.com.tr/exi/exi.php)" nocase ascii wide
     condition:
         $url
+}
+
+
+rule GIFTEDCROOK {
+    meta:
+        date = "2025-06-29"
+        description = "Find GIFTEDCROOK PDFs"
+        hash = "1974709f9af31380f055f86040ef90c71c68ceb2e14825509babf902b50a1a4b"
+        reference = "https://arcticwolf.com/resources/blog/giftedcrook-strategic-pivot-from-browser-stealer-to-data-exfiltration-platform/"
+    strings:
+        $str0 = "https://mega.nz/file"
+    condition:
+        uint32(0) == 0x25504446 and
+        all of them
 }
