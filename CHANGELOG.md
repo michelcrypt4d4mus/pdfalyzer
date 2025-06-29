@@ -1,5 +1,8 @@
 # NEXT RELEASE
 
+### 1.16.4
+* Bump `PyPDF` to 5.7.0
+
 ### 1.16.3
 * Fix typo in help
 
