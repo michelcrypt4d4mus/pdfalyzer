@@ -1,4 +1,6 @@
 # NEXT RELEASE
+
+### 1.16.7
 * Lots of new PDF related YARA rules
 * Upgrade `yaralyzer` to 1.0.3
 * Upgrade `pypdf` to 5.9.0
