@@ -1,4 +1,6 @@
+import "hash"
 import "math"
+import "pe"
 
 
 // rule pdf: PDF
@@ -51,7 +53,6 @@ rule SUSP_Bad_PDF {
         reference = "Internal Research"
         date = "2018-05-03"
         hash1 = "d8c502da8a2b8d1c67cb5d61428f273e989424f319cfe805541304bdb7b921a8"
-
    strings:
         $s1 = "         /F (http//" ascii
         $s2 = "        /F (\\\\\\\\" ascii
@@ -266,7 +267,6 @@ rule invalid_XObject_js : PDF {
 	strings:
 		$magic = { 25 50 44 46 }
 		$ver = /%PDF-1\.[4-9]/
-
 		$attrib0 = /\/XObject/
 		$attrib1 = /\/JavaScript/
 	condition:
@@ -279,7 +279,6 @@ rule invalid_trailer_structure : PDF {
 		author = "Glenn Edwards (@hiddenillusion), @malvidin"
 		version = "0.2"
 		weight = 1
-
     strings:
 		$magic = "%PDF"  // Required for a valid PDF
 		$reg0 = /trailer[ \r\n]*<<.{0,1000}\/Size\b/s
@@ -312,7 +311,6 @@ rule js_wrong_version : PDF {
 		ref = "http://wwwimages.adobe.com/www.adobe.com/content/dam/Adobe/en/devnet/pdf/pdfs/pdf_reference_1-7.pdf"
 		version = "0.1"
 		weight = 2
-
     strings:
         $magic = { 25 50 44 46 }
         $js = /\/JavaScript/
@@ -363,7 +361,6 @@ rule embed_wrong_version : PDF {
 		ref = "http://wwwimages.adobe.com/www.adobe.com/content/dam/Adobe/en/devnet/pdf/pdfs/pdf_reference_1-7.pdf"
 		version = "0.1"
 		weight = 1
-
     strings:
         $magic = { 25 50 44 46 }
         $embed = /\/EmbeddedFiles/
@@ -396,7 +393,6 @@ rule js_splitting : PDF {
         version = "0.1"
         description = "These are commonly used to split up JS code"
         weight = 2
-
     strings:
         $magic = { 25 50 44 46 }
         $js = /\/JavaScript/
@@ -488,6 +484,7 @@ rule XDP_embedded_PDF : PDF {
 		all of ($s*) and 1 of ($header*)
 }
 
+
 // rule pdfjs_hunter
 // {
 //     strings:
@@ -507,7 +504,6 @@ rule PDF_Document_with_Embedded_IQY_File {
         Author = "InQuest Labs"
         Description = "This signature detects IQY files embedded within PDF documents which use a JavaScript OpenAction object to run the IQY."
         Reference = "https://blog.inquest.net"
-
     strings:
         $pdf_magic = "%PDF"
         $efile = /<<\/JavaScript [^\x3e]+\/EmbeddedFile/
@@ -573,7 +569,6 @@ rule Base64_Encoded_Powershell_Directives {
         Reference   = "https://inquest.net/blog/2019/07/19/base64-encoded-powershell-pivots"
         Samples     = "https://github.com/InQuest/malware-samples/tree/master/2019-07-Base64-Encoded-Powershell-Directives"
         Description = "This signature detects base64 encoded Powershell directives."
-
     strings:
         // Copy-Item
         $enc01 = /(Q\x32\x39weS\x31JdGVt[\x2b\x2f-\x39A-Za-z]|[\x2b\x2f-\x39A-Za-z][\x2b\x2f-\x39A-Za-z][\x31\x35\x39BFJNRVZdhlptx]Db\x33B\x35LUl\x30ZW[\x30-\x33]|[\x2b\x2f-\x39A-Za-z][\x30EUk]NvcHktSXRlb[Q-Za-f])/
@@ -690,14 +685,12 @@ rule PDF_Containing_JavaScript {
         labs_reference = "N/A"
         labs_pivot     = "N/A"
         samples        = "c82e29dcaed3c71e05449cb9463f3efb7114ea22b6f45b16e09eae32db9f5bef"
-
 	strings:
 		$pdf_tag1 = /\x25\x50\x44\x46\x2d/
 		$js_tag1  = "/JavaScript" fullword
 		$js_tag2  = "/JS"		  fullword
 	condition:
 		$pdf_tag1 in (0..1024) and ($js_tag1 or $js_tag2)
-
 }
 
 
@@ -711,7 +704,6 @@ rule JS_PDF_Data_Submission {
         labs_reference = "N/A"
         labs_pivot     = "N/A"
         samples        = "a0adbe66e11bdeaf880b81b41cd63964084084a413069389364c98da0c4d2a13"
-
 	strings:
         $pdf_header = "%PDF-"
         $js = /(\/JS|\/JavaScript)/ nocase
@@ -719,8 +711,8 @@ rule JS_PDF_Data_Submission {
         $inq_tail = "INQUEST-PP=pdfparser"
 	condition:
         ($pdf_header in (0..1024) or $inq_tail in (filesize-30..filesize))
-            and $js
-            and $a1
+        and $js
+        and $a1
 }
 
 
@@ -767,7 +759,6 @@ rule PDF_Launch_Function {
         labs_reference = "N/A"
         labs_pivot     = "N/A"
         samples        = "c2f2d1de6bf973b849725f1069c649ce594a907c1481566c0411faba40943ee5"
-
 	strings:
 		$pdf_header = "%PDF-"
 		$launch = "/Launch" nocase
@@ -845,12 +836,12 @@ example three:
 Multiple protocols supported for the /F include, both http and UNC.
 */
 
+
 rule NTLM_Credential_Theft_via_PDF {
     meta:
         Author      = "InQuest Labs"
         URL         = "https://github.com/InQuest/yara-rules"
         Description = "This signature detects Adobe PDF files that reference a remote UNC object for the purpose of leaking NTLM hashes."
-
     strings:
         // we have three regexes here so that we catch all possible orderings but still meet the requirement of all three parts.
         $badness1 = /\s*\/AA\s*<<\s*\/[OC]\s*<<((\s*\/\D\s*\[[^\]]+\])(\s*\/S\s*\/GoTo[ER])|(\s*\/S\s*\/GoTo[ER])(\s*\/\D\s*\[[^\]]+\]))\s*\/F\s*\((\\\\\\\\[a-z0-9]+\.[^\\]+\\\\[a-z0-9]+|https?:\/\/[^\)]+)\)/ nocase
@@ -871,7 +862,6 @@ rule PDF_with_Launch_Action_Function {
         labs_reference = "N/A"
         labs_pivot     = "N/A"
         samples        = "a9fbb50dedfd84e1f4a3507d45b1b16baa43123f5ae98dae6aa9a5bebeb956a8"
-
 	strings:
 		$pdf_header = "%PDF-"
 		$a = "<</S/Launch/Type/Action/Win<</F"
@@ -890,7 +880,6 @@ rule PDF_JS_guillemet_close_in_Adobe_Type1_font {
         breach_description = "https://cryptadamus.substack.com/p/the-hack-at-the-end-of-the-universe"
         samples            = "61d47fbfe855446d77c7da74b0b3d23dbcee4e4e48065a397bbf09a7988f596e"
         in_the_wild        = true
-
 	strings:
         // "/FJS`\xbb`"
 		$url_js_backtick_close_obj = {2F 46 4A 53 60 BB 60}
@@ -1207,22 +1196,6 @@ rule possible_exploit {
 }
 
 
-rule EXPL_PDFJS_CVE_2024_4367 {
-   meta:
-      description = "Detects PDFs that exploit CVE-2024-4367"
-      author = "spaceraccoon, Eugene Lim"
-      reference = "https://codeanlabs.com/blog/research/cve-2024-4367-arbitrary-js-execution-in-pdf-js/"
-      date = "2024-05-23"
-      modified = "2024-05-23"
-      score = 75
-      id = "bb000216-17b5-41eb-a144-2982131fbf45"
-   strings:
-      $re1 = /\/FontMatrix\s+\[\.\-\d\s]*\(/
-   condition:
-      any of them
-}
-
-
 rule Detect_JavaScript {
     meta:
         description = "Detects embedded JavaScript in PDF files"
@@ -1333,4 +1306,544 @@ rule Detect_URLs {
         $url3 = /:\/\/[0-9]+\.[0-9]+\.[0-9]+\.[0-9]+/ nocase
     condition:
         $url1 or $url2 or $url3
+}
+
+
+rule Detect_PDF_Embedded_Files {
+    meta:
+		atk_type = "Macro"
+        description = "Detects embedded files in PDF files"
+        author = "groommang"
+        date = "2024-06-25"
+    strings:
+        $pdf_header = {25 50 44 46}
+        $embedded_file = /EmbeddedFile/
+    condition:
+        $pdf_header at 0 and $embedded_file
+}
+
+
+rule Detect_PDF_Suspicious_AcroForms {
+    meta:
+      	atk_type = "Macro"
+        description = "Detects suspicious AcroForms in PDF files"
+        author = "groommang"
+        date = "2024-06-25"
+    strings:
+        $pdf_header = {25 50 44 46}
+        $acroform = /AcroForm/
+    condition:
+        $pdf_header at 0 and $acroform
+}
+
+
+rule oAuth_Phishing_PDF {
+    meta:
+        id = "789YmThaTvLDaE1V2Oqx7q"
+        fingerprint = "c367bca866de0b066e291b4e45216cbb68cc23297b002a29ca3c8d640a7db78e"
+        version = "1.0"
+        creation_date = "2022-01-01"
+        first_imported = "2022-02-03"
+        last_modified = "2022-02-03"
+        status = "RELEASED"
+        sharing = "TLP:WHITE"
+        source = "BARTBLAZE"
+        author = "@bartblaze"
+        description = "Identifies potential phishing PDFs that target oAuth."
+        category = "MALWARE"
+        reference = "https://twitter.com/ffforward/status/1484127442679836676"
+    strings:
+        $pdf = {25504446} //%PDF
+        $s1 = "/URI (https://login.microsoftonline.com/common/oauth2/" ascii wide nocase
+        $s2 = "/URI (https://login.microsoftonline.com/consumers/oauth2" ascii wide nocase
+        $s3 = "/URI (https://accounts.google.com/o/oauth2" ascii wide nocase
+    condition:
+        $pdf at 0 and any of ($s*)
+}
+
+
+rule Adobe_XMP_Identifier {
+    meta:
+        author         = "InQuest Labs"
+		description    = "This signature identifies Adobe Extensible Metadata Platform (XMP) identifiers embedded within files. Defined as a standard for mapping graphical asset relationships, XMP allows for tracking of both parent-child relationships and individual revisions. There are three categories of identifiers: original document, document, and instance. Generally, XMP data is stored in XML format, updated on save/copy, and embedded within the graphical asset. These identifiers can be used to track both malicious and benign graphics within common Microsoft and Adobe document lures."
+        created_date   = "2022-03-15"
+        updated_date   = "2022-03-15"
+        blog_reference = "http://wwwimages.adobe.com/content/dam/acom/en/products/xmp/Pdfs/XMPAssetRelationships.pdf"
+        labs_reference = "https://labs.inquest.net/dfi/sha256/1030710f6f18950f01b1a55d50a5169717e48567aa13a0a769f5451423280b4d"
+        labs_pivot     = "https://labs.inquest.net/dfi/search/ioc/xmpid/xmp.did%3AEDC9411A6A5F11E2838BB9184F90E845##eyJyZXN1bHRzIjpbIn4iLCJmaXJzdFNlZW4iLDEsIiIsW11dfQ=="
+        samples        = "1030710f6f18950f01b1a55d50a5169717e48567aa13a0a769f5451423280b4d"
+	strings:
+        $xmp_md5  = /xmp\.[dio]id[-: _][a-f0-9]{32}/  nocase ascii wide
+        $xmp_guid = /xmp\.[dio]id[-: _][a-f0-9]{36}/ nocase ascii wide
+	condition:
+		any of them
+}
+
+
+rule Generic_Phishing_PDF {
+    meta:
+        atk_type = "Generic_Phishing_PDF"
+        id = "6iE0XEqqhVGNED6Z8xIMr1"
+        fingerprint = "f3f31ec9651ee41552d41dbd6650899d7a33beea46ed1c3329c3bbd023fe128e"
+        version = "1.0"
+        creation_date = "2019-03-01"
+        first_imported = "2021-12-30"
+        last_modified = "2021-12-30"
+        status = "RELEASED"
+        sharing = "TLP:WHITE"
+        source = "BARTBLAZE"
+        author = "@bartblaze"
+        description = "Identifies generic phishing PDFs."
+        category = "MALWARE"
+        reference = "https://bartblaze.blogspot.com/2019/03/analysing-massive-office-365-phishing.html"
+    strings:
+        $pdf = {25504446}
+        $s1 = "<xmp:CreatorTool>RAD PDF</xmp:CreatorTool>"
+        $s2 = "<x:xmpmeta xmlns:x=\"adobe:ns:meta/\" x:xmptk=\"DynaPDF"
+    condition:
+        $pdf at 0 and all of ($s*)
+}
+
+
+rule Embedded_EXE_Cloaking : maldoc {
+    meta:
+        description = "Detects an embedded executable in a non-executable file"
+        author = "Florian Roth"
+        date = "2015/02/27"
+        score = 80
+    strings:
+        $noex_png = { 89 50 4E 47 }
+        $noex_pdf = { 25 50 44 46 }
+        $noex_rtf = { 7B 5C 72 74 66 31 }
+        $noex_jpg = { FF D8 FF E0 }
+        $noex_gif = { 47 49 46 38 }
+        $mz  = { 4D 5A }
+        $a1 = "This program cannot be run in DOS mode"
+        $a2 = "This program must be run under Win32"
+    condition:
+        (
+            ( $noex_png at 0 ) or
+            ( $noex_pdf at 0 ) or
+            ( $noex_rtf at 0 ) or
+            ( $noex_jpg at 0 ) or
+            ( $noex_gif at 0 )
+        )
+        and
+        for any i in (1..#mz): ( @a1 < ( @mz[i] + 200 ) or @a2 < ( @mz[i] + 200 ) )
+}
+
+
+rule PDF_EMBEDDED_DOCM {
+    meta:
+        description = "Find pdf files that have an embedded docm with openaction"
+        author = "Brian Carter"
+        last_modified = "May 11, 2017"
+    strings:
+        $magic = { 25 50 44 46 2d }
+        $txt1 = "EmbeddedFile"
+        $txt2 = "docm)"
+        $txt3 = "JavaScript" nocase
+    condition:
+        $magic at 0 and all of ($txt*)
+}
+
+
+rule pdf_fake_password {
+    meta:
+        date = "2022-11-23"
+        description = "Detects PDF obfuscated via /Encrypt and /AuthEvent/DocOpen but opens without password"
+        author = "Paul Melson @pmelson"
+        hash = "0e182afae5301ac3097ae3955aa8c894ec3a635acbec427d399ccc4aac3be3d6"
+    strings:
+        $docopen = "<</CF<</StdCF<</AuthEvent/DocOpen/" ascii
+        $ownerpass = /\/Filter\/Standard\/Length (40|128|256)\/O\(/
+        $userpass = "/StmF/StdCF/StrF/StdCF/U(" ascii
+        $perms = { 2f 50 65 72 6d 73 28 5b 07 ec 96 e8 68 ef 35 2e 75 02 16 0f 5c 5c 22 d1 29 }
+    condition:
+        uint32(0) == 0x46445025 and
+        all of them
+}
+
+
+rule pdf_mal_script {
+	strings:
+		$magic = { 25 50 44 46 }
+		$action0 = "<</S/Launch/Type/Action/Win<<" nocase ascii
+		$action1 = "/Type/Action>>" nocase ascii
+		$action2 = "/OpenAction" nocase ascii
+		$action3 = "<< /Type /Action" nocase ascii
+		$action4 = "/Type /Action" nocase ascii
+		$uri = "/S /URI /Type /Action /URI"
+		$launch = "/S /Launch /Win" nocase ascii
+		$cmd = "(cmd.exe)" nocase ascii
+		$ps = "powershell" nocase ascii
+		$pscom0 = "DownloadFile" nocase ascii
+		$pscom1 = "payload" nocase ascii
+		$homepath = "%HOMEPATH%" nocase ascii
+		$start0 = "start" nocase ascii
+		$start1 = "startxref" nocase ascii
+		$js0 = "<</S/JavaScript/JS" nocase ascii
+		$js1 = /\/JS \([^)]+?\\/
+		$js2 = "/JavaScript" nocase ascii
+		$emb0 = "/EmbeddedFiles" nocase ascii
+		$emb1 = "/EmbeddedFile" nocase ascii
+		$url0 = "https://shapeupfitnessdkk-my.sharepoint.com/:b:/g/personal/michelle_shapeupfitness_dk/Ebd2GDh2N8JErL23JmMNmw8BQA7JVpGiS_C6TGkERpma4A?e=xBbtrV"
+		$url1 = "https://ipfs.io/ipfs/QmSyYCjyTMyo1dM2dWBY6ExTmodmU1oSBWTdmEDTLrEenC#http://www.booking.com/"
+		$url2 = "https://romacul.com.br/workshop/wp-content/mail.outlookoffice365.com.html"
+		$url3 = "https://www.hitplus.fr/2018/click.php?url=https://cutt.ly/seU8MT6t#F8i_bfW"
+		$url4 = "https://etehadshipping.com/"
+		$url5 = "https://afarm.net/"
+		$url6 = "https://portals.checkfedexexp.com"
+		$url7 = "https://otcworldmedia.com"
+		$url8 = "http://tiny.cc/"
+		$url9 = "http://128.199.7.40/"
+		$invoc = "%%Invocation:" nocase ascii
+		$op0 = "-sOutputFile=" nocase ascii
+		$op1 = "-dNumRenderingThreads=" nocase ascii
+		$op2 = "-sDEVICE=" nocase ascii
+		$op3 = "-dAutoRotatePages=" nocase ascii
+		$script0 = "<script" nocase ascii
+		$script1 = "</script>" nocase ascii
+		$tag0 = "<event" nocase ascii
+		$tag1 = "</event>" nocase ascii
+		$event0 = "event.target.exportXFAData" nocase ascii
+		$event1 = "activity=" nocase ascii
+ 	condition:
+		($magic at 0 and (8 of them)) or
+		($magic at 0 and ($action0 or $action1 or $action2) and ($cmd or $ps) or ($pscom0 or $pscom1) and ($start0 or $start1) and $launch and $homepath and $js0) or
+		($magic at 0 and ($action2 or $action3) and (1 of ($emb*))) or
+		($magic at 0 and ( 1 of($url*))) or
+		($magic at 0 and $action4 and ($js1 or $js2)) or
+		($magic at 0 and $invoc and (2 of ($op*))) or
+		($magic at 0 and $uri) or
+		($magic at 0 and (2 of ($script*)) and ((2 of($event*)) and (2 of ($tag*))))
+}
+
+
+// rule IconMismatch_PE_PDF {
+//     meta:
+//         description = "Icon mismatch: PE executable with PDF icons"
+//         author = "albertzsigovits"
+//     condition:
+//         uint16(0) == 0x5A4D
+//         and uint32(uint32(0x3C)) == 0x00004550
+//         and (
+//                hash.sha256(pe.resources[0].offset, pe.resources[0].length) == "0da488a59ce7c34b5362e2c3e900ebaa48c2fa182c183166d290c0c6f10f97c1" // PDF red icon #1
+//             or hash.sha256(pe.resources[0].offset, pe.resources[0].length) == "42cb714195c0255523313f41629c9d6a123d93f9789f8a8764e52cad405ea199" // PDF red icon #2
+//             or hash.sha256(pe.resources[0].offset, pe.resources[0].length) == "56cc2dea455f34271b031b51ff2b439a8a8083f4848b5308d4b42c827ba22c1f" // PDF red icon #3
+//             or hash.sha256(pe.resources[0].offset, pe.resources[0].length) == "683370eb202be9c57e6fe038e4a234c7a4e1f353dfbfe64d8f33397a5a0f0e81" // PDF red icon #4
+//             or hash.sha256(pe.resources[0].offset, pe.resources[0].length) == "68f1550f74d5cf2a52f1cf3780037facf60a6254e133fcc503a12e1ea5106184" // PDF red icon #5
+//             or hash.sha256(pe.resources[0].offset, pe.resources[0].length) == "9f12f3b8937665385f43f28caab2ded4469cefbec166d83e57d70e5a7b380067" // PDF red icon #6
+//             or hash.sha256(pe.resources[0].offset, pe.resources[0].length) == "a27b7e5c64c784418daa27bebb7ffcedbc919649d1a5b6446cd8c02516ba6da6" // PDF red icon #7
+//             or hash.sha256(pe.resources[0].offset, pe.resources[0].length) == "f7e6bb934282eae0225f37b2d05e81c7bfa95acbf11d1eb9c9662ed3accf5708" // PDF red icon #8
+//         )
+// }
+
+
+rule PDF_Exploit_Enhanced {
+    meta:
+        description = "Detects common PDF exploits and embedded malware test files"
+    strings:
+        $aa = "/OpenAction"
+        $acroform = "/AcroForm"
+        $embedded_file = "/EmbeddedFile"
+        $js = "/JS"
+        $javascript = "/JavaScript"
+        $launch = "/Launch"
+        $eicar_pdf = "X5O!P%@AP[4\\PZX54(P^)7CC)7}$EICAR-STANDARD-ANTIVIRUS-TEST-FILE!$H+H*" nocase
+    condition:
+        (any of ($js, $javascript, $aa, $acroform, $embedded_file, $launch) or $eicar_pdf)
+}
+
+
+rule SPICA__Strings {
+    meta:
+        author = "Google TAG"
+        date = "2024-01-15"
+        description = "Rust backdoor using websockets for c2 and embedded decoy PDF"
+        hash = "37c52481711631a5c73a6341bd8bea302ad57f02199db7624b580058547fb5a9"
+    strings:
+        $s1 = "os_win.c:%d: (%lu) %s(%s) - %s"
+        $s2 = "winWrite1"
+        $s3 = "winWrite2"
+        $s4 = "DNS resolution panicked"
+        $s5 = "struct Dox"
+        $s6 = "struct Telegram"
+        $s8 = "struct Download"
+        $s9 = "spica"
+        $s10 = "Failed to open the subkey after setting the value."
+        $s11 = "Card Holder: Bull Gayts"
+        $s12 = "Card Number: 7/ 3310 0195 4865"
+        $s13 = "CVV: 592"
+        $s14 = "Card Expired: 03/28"
+
+        $a0 = "agent\\src\\archive.rs"
+        $a1 = "agent\\src\\main.rs"
+        $a2 = "agent\\src\\utils.rs"
+        $a3 = "agent\\src\\command\\dox.rs"
+        $a4 = "agent\\src\\command\\shell.rs"
+        $a5 = "agent\\src\\command\\telegram.rs"
+        $a6 = "agent\\src\\command\\mod.rs"
+        $a7 = "agent\\src\\command\\mod.rs"
+        $a8 = "agent\\src\\command\\cookie\\mod.rs"
+        $a9 = "agent\\src\\command\\cookie\\browser\\mod.rs"
+        $a10 = "agent\\src\\command\\cookie\\browser\\browser_name.rs"
+    condition:
+        7 of ($s*) or 5 of ($a*)
+}
+
+
+rule G_Backdoor_TOUGHPROGRESS_LNK_1 {
+	meta:
+		author = "GTIG"
+		date_created = "2025-04-29"
+		date_modified = "2025-04-29"
+		md5 = "65da1a9026cf171a5a7779bc5ee45fb1"
+		rev = 1
+	strings:
+		$marker = { 4C 00 00 00 }
+		$str1 = "rundll32.exe" ascii wide
+		$str2 = ".\\image\\7.jpg,plus" wide
+		$str3 = "%PDF-1"
+		$str4 = "PYL="
+	condition:
+		$marker at 0 and all of them
+}
+
+
+rule LNK_Dropper_Russian_APT_Feb2024 {
+    meta:
+        Description = "Detects LNK dropper samples used by a Russian APT during a past campaign"
+        Author = "RustyNoob619"
+        Reference = "https://blog.cluster25.duskrise.com/2024/01/30/russian-apt-opposition"
+        Hash = "114935488cc5f5d1664dbc4c305d97a7d356b0f6d823e282978792045f1c7ddb"
+        SampleTesting = "Matches all five LNK Dropper Samples from the Blog"
+    strings:
+        $lnk = { 4C 00 00 00 01 14 02 00 }
+        $pwrsh1 = "powershell.exe"
+        $pwrsh2 = "WindowsPowerShell"
+        $pwrsh3 = "powershell"
+        $cmd = "cmd.exe"
+        $ext1 = ".pdf.lnk"
+        $ext2 = ".pdfx.lnk"
+        $ext3 = "pdf.lnk" base64
+        $scrpt1 = "Select-String -pattern \"JEVycm9yQWN0aW9uUH\" "
+        $scrpt2 = "findstr /R 'JVBERi0xLjcNJeLjz9'" base64
+        $blob1 = "$ErrorActionPreference = \"Continue\"" base64
+        $blob2 = "$ProgressPreference = \"SilentlyContinue\"" base64
+        $blob3 = "New-Alias -name pwn -Value iex -Force" base64
+        $blob4 = "if ($pwd.path.toLower() -ne \"c:\\windows\\system32\")" base64
+        $blob5 = "Copy-Item $env:tmp\\Temp.jpg $env:userprofile\\Temp.jpg" base64
+        $blob6 = "attrib +h $env:userprofile\\Temp.jpg" base64
+        $blob7 = "Start-Process $env:tmp\\Important.pdf" base64
+        $net1 = "$userAgent = \"Mozilla/6.4 (Windows NT 11.1) Gecko/2010102 Firefox/99.0\"" base64
+        $net2 = "$redirectors = \"6" base64
+        $net3 = "$sleeps = 5" base64
+        $http1 = "$request.Headers[\"X-Request-ID\"] = $request_token" base64
+        $http2 = "$request.ContentType = \"application/x-www-form-urlencoded\"" base64
+        $http3 = "$response1 = $(Send-HttpRequest \"$server/api/v1/Client/Info\" \"POST\" \"Info: $getenv64\")" base64
+        $http4 = "$response = $($token = Send-HttpRequest \"$server/api/v1/Client/Token\" \"GET\")" base64
+        $server1 = "$server = \"api-gate.xyz\"" base64
+        $server2 = "$server = \"pdf-online.top\"" base64
+        $unknown = "$server = " base64
+    condition:
+        $lnk at 0                       //LNK File Header
+        and (any of ($pwrsh*) or $cmd) //searches for CMD or PowerShell execution
+        and any of ($ext*)            //Fake Double Extension mimicing a PDF
+        and any of ($scrpt*)         //Searches for a unique string to locate execution code
+        and 5 of ($blob*)           //Base64 encoded execution blob
+        and 2 of ($net*)
+        and 3 of ($http*)
+        and (any of ($server*) or $unknown) // C2 dommain config (Optional, can be removed)
+}
+
+
+private rule PDF_Structure
+{
+    meta:
+        description = "Detects valid, readable PDF files"
+        reference_files = "minimal.pdf (4a6f4ff8596321eea6fa482e7adbed01)"
+        author = "ThreatFlux"
+        date = "2024-12-31"
+        version = "1.1"
+        file_type = "PDF"
+    strings:
+        $header = "%PDF-"
+        $eof_marker = "%%EOF"
+        $startxref = "startxref"
+        $xref = "xref"
+        $trailer = "trailer"
+    condition:
+        // Header validation
+        $header at 0 and
+        uint8(5) >= 0x31 and          // Major version >= 1
+        uint8(5) <= 0x37 and          // Major version <= 7
+        uint8(7) == 0x2E and          // Decimal point
+        uint8(8) >= 0x30 and          // Minor version >= 0
+        uint8(8) <= 0x37 and          // Minor version <= 7
+        // Basic structure requirements
+        filesize > 32 and             // Minimum size for valid PDF
+        $eof_marker in (filesize-10..filesize) and  // EOF marker near end
+        // Required PDF elements
+        $xref and                     // Must have cross-reference table
+        $trailer and                  // Must have trailer
+        $startxref and                // Must have startxref pointer
+        // Basic binary check
+        uint8(1) == 0x50 and         // 'P'
+        uint8(2) == 0x44 and         // 'D'
+        uint8(3) == 0x46             // 'F'
+}
+
+
+rule DETECT_CommandShell_PDF_Execution
+{
+    meta:
+        description = "Detects Windows Command Shell execution artifacts in PDF files"
+        author = "ThreatFlux"
+        date = "2024-01-03"
+        version = "2.1"
+        // Classification
+        threat_level = "Medium"
+        category = "SUSPICIOUS_BEHAVIOR"
+        malware_type = "PDF.CommandExecution"
+        tlp = "WHITE"
+        // MITRE ATT&CK Mapping
+        mitre_attack = "T1059.003" // Windows Command Shell
+        mitre_techniques = "T1204.002" // User Execution: Malicious File
+        mitre_tactics = "Execution"
+        // Detection Details
+        detection_name = "PDF.Suspicious.CommandExecution"
+        detection_rate = "Medium-High"
+        false_positive_rate = "Medium"
+        bypass_attempts = "String obfuscation, encoding variations"
+        // File Characteristics
+        file_type = "PDF"
+        min_size = "1KB"
+        max_size = "10MB"
+        // References
+        ref1 = "https://attack.mitre.org/techniques/T1059/003/"
+        ref2 = "https://attack.mitre.org/techniques/T1204/002/"
+        // Sample Metadata
+        sample_hash1 = "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+    strings:
+        // Command Shell Artifacts
+        $cmd1 = "cmd.exe" nocase ascii
+        $cmd2 = "cmd /c" nocase ascii
+        $cmd3 = "cmd /k" nocase ascii
+        $cmd4 = "%comspec%" nocase ascii
+
+        // Suspicious PDF Elements
+        $suspc1 = "/JavaScript" ascii
+        $suspc2 = "/OpenAction" ascii
+        $suspc3 = "/Launch" ascii
+    condition:
+        PDF_Structure and
+        (
+            // Command Shell Reference
+            any of ($cmd*) and
+            // Supporting Suspicious Elements
+            any of ($suspc*)
+        )
+}
+
+
+rule apt_MuddyWater_malicious_pdf {
+    meta:
+        id = "77983aea-47cb-4436-b773-faf7be430339"
+        version = "1.0"
+        intrusion_set = "MuddyWater"
+        description = "Detects malicious PDF used by MuddyWater"
+        source = "Sekoia.io"
+        creation_date = "2024-06-10"
+        classification = "TLP:WHITE"
+    strings:
+        $ = "egnyte.com/fl/"
+        $ = "/Type/Pages/Count 1"
+    condition:
+        uint32be(0) == 0x25504446 and
+        filesize < 300KB and
+        all of them
+}
+
+
+rule Bad_PDF {
+    meta:
+        description = "Detection patterns for the tool 'Bad-PDF' taken from the ThreatHunting-Keywords github project"
+        author = "@mthcht"
+        reference = "https://github.com/mthcht/ThreatHunting-Keywords"
+        tool = "Bad-PDF"
+        rule_category = "offensive_tool_keyword"
+    strings:
+        // Description: Bad-PDF create malicious PDF file to steal NTLM(NTLMv1/NTLMv2) Hashes from windows machines. it utilize vulnerability disclosed by checkpoint team to create the malicious PDF file. Bad-Pdf reads the NTLM hashes using Responder listener.
+        // Reference: https://github.com/deepzec/Bad-Pdf
+        $string1 = "Bad-Pdf" nocase ascii wide
+    condition:
+        any of them
+}
+
+
+rule DetectMaliciousScriptInPDF {
+    meta:
+        description = "Detects a PDF containing the text 'malicious_script'"
+        author = "Kasthuri"
+        date = "2024-09-28"
+    strings:
+        $js_function = "function("
+        $eval = "eval("
+        $malicious_js = "document.write(unescape("
+    condition:
+        $js_function or $eval or $malicious_js
+}
+
+
+rule DetectMaliciousURLs {
+    meta:
+        description = "Detects potentially malicious URLs in a PDF"
+        author = "Kasthuri"
+        date = "2024-09-28"
+    strings:
+        $obfuscated_url = /%[0-9A-Fa-f]{2}/
+        $base64_encoded_url = /[a-zA-Z0-9+\/=]{20,}/
+        $phishing_url = /example\.com.*example\.com|example\.com.*secure|paypal\.com.*login/
+        $url_shortener = /bit\.ly|tinyurl\.com|goo\.gl/
+        $suspicious_extension = /\.exe|\.php\.exe|\.js\.exe/
+        $redirect_chain = /redirect\?url=/
+        $suspicious_path = /admin|config|login|wp-admin/
+    condition:
+        $obfuscated_url or $base64_encoded_url or $phishing_url or $url_shortener or $suspicious_extension or $redirect_chain or $suspicious_path
+}
+
+
+// rule MAL_DarkCloud_Phishing_PDF_IOC {
+//     meta:
+//         description = "Detects a specific malicious PDF file used in DarkCloud Stealer phishing campaigns based on its SHA256 hash."
+//         date = "2025-07-24"
+//         version = 1
+//         reference = "https://unit42.paloaltonetworks.com/darkcloud-stealer-and-obfuscated-autoit-scripting/"
+//         hash = "bf3b43f5e4398ac810f005200519e096349b2237587d920d3c9b83525bb6bafc"
+//         tags = "CRIME, INFOSTEALER, DARKCLOUD, FILE"
+//         mitre_attack = "T1566.001"
+//         malware_family = "DarkCloud"
+//         malware_type = "Infostealer"
+//     condition:
+//         // Match the specific SHA256 hash of the malicious PDF file.
+//         hash.sha256(0, filesize) == "bf3b43f5e4398ac810f005200519e096349b2237587d920d3c9b83525bb6bafc"
+// }
+
+
+rule PDF_Javascript_Exploit {
+    meta:
+        description = "Detect potentially malicious PDF with JavaScript"
+        author = "Cyberion Security"
+        date = "2025-01-01"
+        severity = "medium"
+        category = "pdf"
+    strings:
+        $pdf = "%PDF"
+        $js1 = "/JavaScript" nocase
+        $js2 = "/JS" nocase
+        $js3 = "eval(" nocase
+        $js4 = "unescape(" nocase
+    condition:
+        $pdf at 0 and (1 of ($js*))
 }
