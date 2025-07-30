@@ -9,7 +9,7 @@ If your pull request includes some `pytest` setup/unit testing you'll be my new 
 1. `git clone https://github.com/michelcrypt4d4mus/pdfalyzer.git`
 1. `cd pdfalyzer`
 
-After that there's a forking path depending on whether or not you use [poetry](https://python-poetry.org) (which is what we use) to manage your python lifestyle.
+After that there's a forking path depending on whether or not you use [poetry](https://python-poetry.org) (which is what we use, and what we recommend you also use) to manage your python lifestyle.
 
 Note that the minimum versions for each package were chosen because that's what worked on my machine and not because that version had some critical bug fix or feature so it's entirely possible that using earlier versions than are specified in [pyproject.toml](pyproject.toml) will work just fine. Feel free to experiment if there's some kind of version conflict for you.
 
