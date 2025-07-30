@@ -1,5 +1,5 @@
 # NEXT RELEASE
-* Add `Environment :: Console` to pypi classifiers
+* Add `Environment :: Console` and `Programming Language :: Python` to pypi classifiers
 
 ### 1.16.9
 * Add `Development Status :: 5 - Production/Stable` to pypi classifiers
