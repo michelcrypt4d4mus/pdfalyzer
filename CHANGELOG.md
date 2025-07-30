@@ -1,4 +1,6 @@
 # NEXT RELEASE
+
+### 1.16.10
 * Add `Environment :: Console` and `Programming Language :: Python` to pypi classifiers
 * Add `.pdfalyzer.example` to PyPi package
 
