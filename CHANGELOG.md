@@ -1,5 +1,6 @@
 # NEXT RELEASE
 * Add `Environment :: Console` and `Programming Language :: Python` to pypi classifiers
+* Add `.pdfalyzer.example` to PyPi package
 
 ### 1.16.9
 * Add `Development Status :: 5 - Production/Stable` to pypi classifiers
