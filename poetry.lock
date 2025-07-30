@@ -404,4 +404,4 @@ yara-python = ">=4.5.4,<5.0.0"
 [metadata]
 lock-version = "2.0"
 python-versions = "^3.9"
-content-hash = "8a12467b016aa1353a43d8289dbaf79a9cc09043a08f28983c29bd6ce35f4129"
+content-hash = "84f35f055aebb96a225a6ca2372986f15f743bff1ac5249de53c4943248b12c0"
