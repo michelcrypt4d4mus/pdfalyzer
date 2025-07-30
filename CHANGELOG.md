@@ -1,5 +1,7 @@
 # NEXT RELEASE
-* Add `Development Status :: 5 - Production/Stable`
+
+### 1.16.9
+* Add `Development Status :: 5 - Production/Stable` to pypi classifiers
 
 ### 1.16.8
 * Even more PDF related YARA rules
