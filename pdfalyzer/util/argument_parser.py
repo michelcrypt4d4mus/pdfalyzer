@@ -1,5 +1,8 @@
+"""
+Parse command line arguments for pdfalyzer and construct the PdfalyzerConfig object.
+"""
 import sys
-from argparse import ArgumentError, ArgumentParser, Namespace
+from argparse import ArgumentParser, Namespace
 from collections import namedtuple
 from functools import partial, update_wrapper
 from importlib.metadata import version

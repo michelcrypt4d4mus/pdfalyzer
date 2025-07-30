@@ -1,7 +1,6 @@
 """
 String constants specified in the Adobe specs for PDFs, fonts, etc.
 """
-
 from pypdf.constants import (CatalogDictionary, ImageAttributes, PageAttributes,
      PagesAttributes, Resources)
 

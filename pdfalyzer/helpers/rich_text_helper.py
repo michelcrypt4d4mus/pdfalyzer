@@ -1,13 +1,11 @@
 """
-Functions for miscellaneous Rich text/string operations.
+Functions for miscellaneous Rich text/string pretty printing operations.
 """
 from typing import List, Union
 
 from pypdf.generic import PdfObject
 from rich.console import Console
-from rich.highlighter import RegexHighlighter, JSONHighlighter
 from rich.text import Text
-from yaralyzer.output.rich_console import console
 
 from pdfalyzer.helpers.pdf_object_helper import pypdf_class_name
 from pdfalyzer.output.styles.node_colors import get_label_style, get_class_style_italic

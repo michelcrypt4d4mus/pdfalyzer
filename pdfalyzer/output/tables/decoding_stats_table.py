@@ -1,3 +1,6 @@
+"""
+Helper functions for building a table that summarizes the decoding attempts made on binary data.
+"""
 from numbers import Number
 
 from rich.table import Table
@@ -12,6 +15,7 @@ CHAR_ENCODING_1ST_COLOR_NUMBER = 203
 NOT_FOUND_MSG = Text('(not found)', style='grey.dark_italic')
 REGEX_SUBTABLE_COLS = ['Metric', 'Value']
 DECODES_SUBTABLE_COLS = ['Encoding', '#', 'Decoded', '#', 'Forced', '#', 'Failed']
+
 
 def build_decoding_stats_table(scanner: 'BinaryScanner') -> Table:
     """Diplay aggregate results on the decoding attempts we made on subsets of scanner.bytes"""

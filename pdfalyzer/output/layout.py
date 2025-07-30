@@ -1,5 +1,5 @@
 """
-Methods to help with the design of the output
+Methods to help with the formatting of the output tables, headers, panels, etc.
 """
 from rich import box
 from rich.padding import Padding

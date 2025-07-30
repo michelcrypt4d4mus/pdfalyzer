@@ -1,3 +1,7 @@
+"""
+PdfalyzerConfig object holds the unification of configuration options parsed from the command line
+as well as those set by environment variables and/or a .pdfalyzer file.
+"""
 import importlib.resources
 from argparse import Namespace
 from os import environ, pardir, path

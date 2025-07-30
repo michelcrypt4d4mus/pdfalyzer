@@ -1,7 +1,6 @@
 """
 Build a rich table to show the sizes of embedded streams.
 """
-
 from typing import List
 
 from rich.table import Table

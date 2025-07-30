@@ -2,7 +2,6 @@
 Unify font information spread across a bunch of PdfObjects (Font, FontDescriptor,
 and FontFile) into a single class.
 """
-
 from pypdf._cmap import build_char_map, prepare_cm
 from pypdf.generic import IndirectObject, PdfObject
 from rich.text import Text
@@ -11,9 +10,9 @@ from yaralyzer.util.logging import log
 
 from pdfalyzer.binary.binary_scanner import BinaryScanner
 from pdfalyzer.output.character_mapping import print_character_mapping, print_prepared_charmap
-from pdfalyzer.output.tables.font_summary_table import font_summary_table
 from pdfalyzer.output.layout import print_section_subheader
 from pdfalyzer.output.styles.node_colors import get_label_style
+from pdfalyzer.output.tables.font_summary_table import font_summary_table
 from pdfalyzer.util.adobe_strings import (FONT, FONT_DESCRIPTOR, FONT_FILE, FONT_LENGTHS, RESOURCES,
      SUBTYPE, TO_UNICODE, TYPE, W, WIDTHS)
 
