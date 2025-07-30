@@ -31,6 +31,9 @@ keywords = [
 ]
 
 classifiers = [
+    "Development Status :: 5 - Production/Stable",
+    "Intended Audience :: Information Technology",
+    "License :: OSI Approved :: GNU General Public License v3 or later (GPLv3+)",
     "Topic :: Artistic Software",
     "Topic :: Security",
     "Topic :: Scientific/Engineering :: Visualization",
