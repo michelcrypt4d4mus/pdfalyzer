@@ -277,12 +277,6 @@ These are the naming conventions at play in The Pdfalyzer code base:
 * [`PyPDF` documentation](https://pypdf.readthedocs.io/en/stable/) (latest is 4.x or something so these are the relevant docs for `pdfalyze`)
 
 
-# TODO
-* Highlight decodes with a lot of Javascript keywords
-* https://github.com/mandiant/flare-floss (https://github.com/mandiant/flare-floss/releases/download/v2.1.0/floss-v2.1.0-linux.zip)
-* https://github.com/1Project/Scanr/blob/master/emulator/emulator.py
-
-
 [^1]: The official Adobe PDF specification calls this tree the PDF's "logical structure", which is a good example of nomenclature that does not help those who see it understand anything about what is being described. I can forgive them given that they named this thing back in the 80s, though it's a good example of why picking good names for things at the beginning is so important.
 
 [^2]: An exception will be raised if there's any issue placing a node while parsing or if there are any nodes not reachable from the root of the tree at the end of parsing. If there are no exceptions then all internal PDF objects are guaranteed to exist in the tree except in these situations when warnings will be printed:
