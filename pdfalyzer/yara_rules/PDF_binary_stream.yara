@@ -5,12 +5,12 @@ rule PDF_with_XORed_JS_keywords {
         description        = "Look for Javascript keywords with XOR"
         created_date       = "2022-10-01"
         updated_date       = "2022-10-01"
-	strings:
+    strings:
         $this = "this\\s*" xor
         $require = "require" xor
-		$const = "const" xor
+        $const = "const" xor
         $eval = "eval" xor
-	condition:
+    condition:
         $this or $require or $const or $eval
 }
 
@@ -22,8 +22,8 @@ rule PDF_with_XORed_JS_keywords {
 //         description        = "Find patterns that look like an embedded regex"
 //         created_date       = "2022-10-01"
 //         updated_date       = "2022-10-01"
-// 	strings:
+//     strings:
 //         $front_slashes = /\/.*?\//
-// 	condition:
+//     condition:
 //         $front_slashes
 // }
