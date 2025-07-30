@@ -19,8 +19,7 @@ import "math"
 // }
 
 
-rule Cobaltgang_PDF_Metadata_Rev_A
-{
+rule Cobaltgang_PDF_Metadata_Rev_A {
    meta:
         description = "Find documents saved from the same potential Cobalt Gang PDF template"
         author = "Palo Alto Networks Unit 42"
@@ -33,8 +32,7 @@ rule Cobaltgang_PDF_Metadata_Rev_A
 }
 
 
-rule PDF_Embedded_Exe : PDF
-{
+rule PDF_Embedded_Exe : PDF {
 	meta:
 		ref = "https://github.com/jacobsoo/Yara-Rules/blob/master/PDF_Embedded_Exe.yar"
 	strings:
@@ -63,8 +61,7 @@ rule SUSP_Bad_PDF {
 }
 
 
-rule malicious_author : PDF
-{
+rule malicious_author : PDF {
 	meta:
 		author = "Glenn Edwards (@hiddenillusion)"
 		version = "0.1"
@@ -80,8 +77,7 @@ rule malicious_author : PDF
 }
 
 
-rule suspicious_version : PDF
-{
+rule suspicious_version : PDF {
 	meta:
 		author = "Glenn Edwards (@hiddenillusion)"
 		version = "0.1"
@@ -95,8 +91,7 @@ rule suspicious_version : PDF
 }
 
 
-rule suspicious_creation : PDF
-{
+rule suspicious_creation : PDF {
 	meta:
 		author = "Glenn Edwards (@hiddenillusion)"
 		version = "0.1"
@@ -112,8 +107,7 @@ rule suspicious_creation : PDF
 }
 
 
-rule suspicious_title : PDF
-{
+rule suspicious_title : PDF {
 	meta:
 		author = "Glenn Edwards (@hiddenillusion)"
 		version = "0.1"
@@ -131,8 +125,7 @@ rule suspicious_title : PDF
 }
 
 
-rule suspicious_author : PDF
-{
+rule suspicious_author : PDF {
 	meta:
 		author = "Glenn Edwards (@hiddenillusion)"
 		version = "0.1"
@@ -150,8 +143,7 @@ rule suspicious_author : PDF
 }
 
 
-rule suspicious_producer : PDF
-{
+rule suspicious_producer : PDF {
 	meta:
 		author = "Glenn Edwards (@hiddenillusion)"
 		version = "0.1"
@@ -168,17 +160,14 @@ rule suspicious_producer : PDF
 }
 
 
-rule suspicious_creator : PDF
-{
+rule suspicious_creator : PDF {
 	meta:
 		author = "Glenn Edwards (@hiddenillusion)"
 		version = "0.1"
 		weight = 3
-
 	strings:
 		$magic = { 25 50 44 46 }
 		$header = /%PDF-1\.(3|4|6)/
-
 		$creator0 = "yen vaw"
 		$creator1 = "Scribus"
 		$creator2 = "Viraciregavi"
@@ -187,40 +176,12 @@ rule suspicious_creator : PDF
 }
 
 
-rule possible_exploit : PDF
-{
-	meta:
-		author = "Glenn Edwards (@hiddenillusion)"
-		version = "0.1"
-		weight = 3
-
-	strings:
-		$magic = { 25 50 44 46 }
-
-		$attrib0 = /\/JavaScript /
-		$attrib3 = /\/ASCIIHexDecode/
-		$attrib4 = /\/ASCII85Decode/
-
-		$action0 = /\/Action/
-		$action1 = "Array"
-		$shell = "A"
-		$cond0 = "unescape"
-		$cond1 = "String.fromCharCode"
-
-		$nop = "%u9090%u9090"
-	condition:
-		$magic in (0..1024) and (2 of ($attrib*)) or ($action0 and #shell > 10 and 1 of ($cond*)) or ($action1 and $cond0 and $nop)
-}
-
-
-rule shellcode_blob_metadata : PDF
-{
+rule shellcode_blob_metadata : PDF {
     meta:
         author = "Glenn Edwards (@hiddenillusion)"
         version = "0.1"
         description = "When there's a large Base64 blob inserted into metadata fields it often indicates shellcode to later be decoded"
         weight = 4
-
     strings:
         $magic = { 25 50 44 46 }
         $reg_keyword = /\/Keywords.?\(([a-zA-Z0-9]{200,})/ //~6k was observed in BHEHv2 PDF exploits holding the shellcode
@@ -233,13 +194,12 @@ rule shellcode_blob_metadata : PDF
         $magic in (0..1024) and 1 of ($reg*)
 }
 
-rule multiple_filtering : PDF
-{
+
+rule multiple_filtering : PDF {
     meta:
         author = "Glenn Edwards (@hiddenillusion)"
         version = "0.2"
         weight = 3
-
     strings:
         $magic = { 25 50 44 46 }
         $attrib = /\/Filter.*?(\/ASCIIHexDecode\W+?|\/LZWDecode\W+?|\/ASCII85Decode\W+?|\/FlateDecode\W+?|\/RunLengthDecode){2}?/
@@ -248,32 +208,12 @@ rule multiple_filtering : PDF
         $magic in (0..1024) and $attrib
 }
 
-rule suspicious_js : PDF
-{
-	meta:
-		author = "Glenn Edwards (@hiddenillusion)"
-		version = "0.1"
-		weight = 3
 
-	strings:
-		$magic = { 25 50 44 46 }
-		$attrib0 = /\/OpenAction /
-		$attrib1 = /\/JavaScript /
-		$js0 = "eval"
-		$js1 = "Array"
-		$js2 = "String.fromCharCode"
-	condition:
-		$magic in (0..1024) and all of ($attrib*) and 2 of ($js*)
-}
-
-
-rule suspicious_launch_action : PDF
-{
+rule suspicious_launch_action : PDF {
 	meta:
 		author = "Glenn Edwards (@hiddenillusion)"
 		version = "0.1"
 		weight = 2
-
 	strings:
 		$magic = { 25 50 44 46 }
 		$attrib0 = /\/Launch/
@@ -285,8 +225,7 @@ rule suspicious_launch_action : PDF
 }
 
 
-rule suspicious_embed : PDF
-{
+rule suspicious_embed : PDF {
 	meta:
 		author = "Glenn Edwards (@hiddenillusion)"
 		version = "0.1"
@@ -294,7 +233,6 @@ rule suspicious_embed : PDF
 		weight = 2
 	strings:
 		$magic = { 25 50 44 46 }
-
 		$meth0 = /\/Launch/
 		$meth1 = /\/GoTo(E|R)/ //means go to embedded or remote
 		$attrib0 = /\/URL /
@@ -305,13 +243,11 @@ rule suspicious_embed : PDF
 }
 
 
-rule suspicious_obfuscation : PDF
-{
+rule suspicious_obfuscation : PDF {
 	meta:
 		author = "Glenn Edwards (@hiddenillusion)"
 		version = "0.1"
 		weight = 2
-
 	strings:
 		$magic = { 25 50 44 46 }
 		$reg = /\/\w#[a-zA-Z0-9]{2}#[a-zA-Z0-9]{2}/
@@ -320,8 +256,7 @@ rule suspicious_obfuscation : PDF
 }
 
 
-rule invalid_XObject_js : PDF
-{
+rule invalid_XObject_js : PDF {
 	meta:
 		author = "Glenn Edwards (@hiddenillusion)"
 		description = "XObject's require v1.4+"
@@ -339,8 +274,7 @@ rule invalid_XObject_js : PDF
 }
 
 
-rule invalid_trailer_structure : PDF
-{
+rule invalid_trailer_structure : PDF {
 	meta:
 		author = "Glenn Edwards (@hiddenillusion), @malvidin"
 		version = "0.2"
@@ -355,8 +289,7 @@ rule invalid_trailer_structure : PDF
 }
 
 
-rule multiple_versions : PDF
-{
+rule multiple_versions : PDF {
 	meta:
 		author = "Glenn Edwards (@hiddenillusion)"
 		version = "0.1"
@@ -372,8 +305,7 @@ rule multiple_versions : PDF
 }
 
 
-rule js_wrong_version : PDF
-{
+rule js_wrong_version : PDF {
 	meta:
 		author = "Glenn Edwards (@hiddenillusion)"
 		description = "JavaScript was introduced in v1.3"
@@ -390,8 +322,7 @@ rule js_wrong_version : PDF
 }
 
 
-rule JBIG2_wrong_version : PDF
-{
+rule JBIG2_wrong_version : PDF {
 	meta:
 		author = "Glenn Edwards (@hiddenillusion)"
 		description = "JBIG2 was introduced in v1.4"
@@ -408,8 +339,7 @@ rule JBIG2_wrong_version : PDF
 }
 
 
-rule FlateDecode_wrong_version : PDF
-{
+rule FlateDecode_wrong_version : PDF {
 	meta:
 		author = "Glenn Edwards (@hiddenillusion)"
 		description = "Flate was introduced in v1.2"
@@ -426,8 +356,7 @@ rule FlateDecode_wrong_version : PDF
 }
 
 
-rule embed_wrong_version : PDF
-{
+rule embed_wrong_version : PDF {
 	meta:
 		author = "Glenn Edwards (@hiddenillusion)"
 		description = "EmbeddedFiles were introduced in v1.3"
@@ -444,8 +373,7 @@ rule embed_wrong_version : PDF
 }
 
 
-rule invalid_xref_numbers : PDF
-{
+rule invalid_xref_numbers : PDF {
     meta:
         author = "Glenn Edwards (@hiddenillusion)"
         version = "0.1"
@@ -462,8 +390,7 @@ rule invalid_xref_numbers : PDF
 }
 
 
-rule js_splitting : PDF
-{
+rule js_splitting : PDF {
     meta:
         author = "Glenn Edwards (@hiddenillusion)"
         version = "0.1"
@@ -482,8 +409,7 @@ rule js_splitting : PDF
 }
 
 
-rule header_evasion : PDF
-{
+rule header_evasion : PDF {
     meta:
             author = "Glenn Edwards (@hiddenillusion)"
             description = "3.4.1, 'File Header' of Appendix H states that ' Acrobat viewers require only that the header appear somewhere within the first 1024 bytes of the file.'  Therefore, if you see this trigger then any other rule looking to match the magic at 0 won't be applicable"
@@ -498,8 +424,7 @@ rule header_evasion : PDF
 }
 
 
-rule BlackHole_v2 : PDF
-{
+rule BlackHole_v2 : PDF {
 	meta:
 		author = "Glenn Edwards (@hiddenillusion)"
 		version = "0.1"
@@ -547,8 +472,7 @@ rule blackhole2_pdf : EK PDF{
         18 of them
 }
 
-rule XDP_embedded_PDF : PDF
-{
+rule XDP_embedded_PDF : PDF {
 	meta:
 		author = "Glenn Edwards (@hiddenillusion)"
 		version = "0.1"
@@ -578,8 +502,7 @@ rule XDP_embedded_PDF : PDF
 // }
 
 
-rule PDF_Document_with_Embedded_IQY_File
-{
+rule PDF_Document_with_Embedded_IQY_File {
     meta:
         Author = "InQuest Labs"
         Description = "This signature detects IQY files embedded within PDF documents which use a JavaScript OpenAction object to run the IQY."
@@ -644,8 +567,7 @@ rule PDF_Document_with_Embedded_IQY_File
 // }
 
 
-rule Base64_Encoded_Powershell_Directives
-{
+rule Base64_Encoded_Powershell_Directives {
     meta:
         Author      = "InQuest Labs"
         Reference   = "https://inquest.net/blog/2019/07/19/base64-encoded-powershell-pivots"
@@ -939,8 +861,7 @@ rule NTLM_Credential_Theft_via_PDF {
 }
 
 
-rule PDF_with_Launch_Action_Function
-{
+rule PDF_with_Launch_Action_Function {
     meta:
         author         = "InQuest Labs"
         description    = "This signature detects the launch function within a PDF file. This function allows the document author to attach an executable file."
@@ -959,8 +880,7 @@ rule PDF_with_Launch_Action_Function
 }
 
 
-rule PDF_JS_guillemet_close_in_Adobe_Type1_font
-{
+rule PDF_JS_guillemet_close_in_Adobe_Type1_font {
     meta:
         author             = "Michel de Cryptadamus"
         description        = "Found in a PDF that caused a security breach. Exact mechanism unknown but /F means URL, JS is JS, backticks are backticks, and bb is the closing guillemet quote (the one used in PDF docs to close objects). Taken together the sequence is basically shorthand PDF speak for \"close the PDF object prematurely\"."
@@ -1082,4 +1002,335 @@ rule GIFTEDCROOK {
     condition:
         uint32(0) == 0x25504446 and
         any of them
+}
+
+
+rule PK_AdobePDF_hse : Adobe {
+    meta:
+        description = "Phishing Kit impersonating Adobe PDF online"
+        licence = "GPL-3.0"
+        author = "Thomas 'tAd' Damonneville"
+        date = "2021-07-25"
+        comment = "Phishing Kit - Adobe PDF Online - 'Hades Silent Exploits'"
+    strings:
+        // the zipfile working on
+        $zip_file = { 50 4b 03 04 }
+        // specific directory found in PhishingKit
+        $spec_dir = "adobe"
+        // specific file found in PhishingKit
+        $spec_file = "index.php"
+        $spec_file2 = "login.php"
+        $spec_file3 = "logg.html"
+    condition:
+        // look for the ZIP header
+        uint32(0) == 0x04034b50 and
+        // make sure we have a local file header
+        $zip_file and
+        $spec_dir and
+        // check for file
+        all of ($spec_file*)
+}
+
+
+rule PK_AdobePDF_antenna : Adobe {
+    meta:
+        description = "Phishing Kit impersonating Adobe PDF Online"
+        licence = "AGPL-3.0"
+        author = "Thomas 'tAd' Damonneville"
+        reference = ""
+        date = "2024-04-15"
+        comment = "Phishing Kit - Adobe PDF Online - contain antenna.css file"
+    strings:
+        // the zipfile working on
+        $zip_file = { 50 4b 03 04 }
+        // specific directory found in PhishingKit
+        $spec_dir = "core"
+        // specific file found in PhishingKit
+        $spec_file = "antenna.css"
+        $spec_file2 = "screenshot_23.png"
+        $spec_file3 = "fx.js"
+        $spec_file4 = "post.php"
+        $spec_file5 = "22222222222.png"
+        $spec_file6 = "gh-adobe-impersonation-scam-loginwindow.png"
+    condition:
+        // look for the ZIP header
+        uint32(0) == 0x04034b50 and
+        // make sure we have a local file header
+        $zip_file and
+        all of ($spec_dir*) and
+        // check for file
+        all of ($spec_file*)
+}
+
+
+rule PK_AdobePDF_dotloop : Adobe {
+    meta:
+        description = "Phishing Kit impersonating Adobe PDF Online"
+        licence = "AGPL-3.0"
+        author = "Thomas 'tAd' Damonneville"
+        date = "2024-08-28"
+        comment = "Phishing Kit - Adobe PDF Online - 'From: Dotloop'"
+    strings:
+        // the zipfile working on
+        $zip_file = { 50 4b 03 04 }
+        // specific directory found in PhishingKit
+        $spec_dir = "asset"
+        // specific file found in PhishingKit
+        $spec_file = "signin.php"
+        $spec_file2 = "contract.jpg"
+        $spec_file3 = "Microsoft_Edge_logo_(2019).svg.png"
+        $spec_file4 = "KYC-ENG (confidential).pdf"
+    condition:
+        // look for the ZIP header
+        uint32(0) == 0x04034b50 and
+        // make sure we have a local file header
+        $zip_file and
+        all of ($spec_dir*) and
+        // check for file
+        all of ($spec_file*)
+}
+
+
+rule APT_NGO_wuaclt_PDF{
+    meta:
+        author = "AlienVault Labs"
+        license = "GPL-2.0"
+        reference = "https://github.com/alankrit29/signature-base/blob/4f8c5d7e39ee5c369c42b89e765d552e5dbafb23/APT_NGO.yar#L30"
+    strings:
+        $pdf = "%PDF" nocase
+        $comment = {3C 21 2D 2D 0D 0A 63 57 4B 51 6D 5A 6C 61 56 56 56 56 56 56 56 56 56 56 56 56 56 63 77 53 64 63 6A 4B 7A 38 35 6D 37 4A 56 6D 37 4A 46 78 6B 5A 6D 5A 6D 52 44 63 5A 58 41 73 6D 5A 6D 5A 7A 42 4A 31 79 73 2F 4F 0D 0A}
+    condition:
+        $pdf at 0 and $comment in (0..200)
+}
+
+
+rule LokiBot_Dropper_ScanCopyPDF_Feb18 {
+   meta:
+      description = "Auto-generated rule - file Scan Copy.pdf.com (https://github.com/alankrit29/signature-base/blob/4f8c5d7e39ee5c369c42b89e765d552e5dbafb23/crime_loki_bot.yar)"
+      license = "https://creativecommons.org/licenses/by-nc/4.0/"
+      author = "Florian Roth"
+      reference = "https://app.any.run/tasks/401df4d9-098b-4fd0-86e0-7a52ce6ddbf5"
+      date = "2018-02-14"
+      hash1 = "6f8ff26a5daf47effdea5795cdadfff9265c93a0ebca0ce5a4144712f8cab5be"
+   strings:
+      $x1 = "Win32           Scan Copy.pdf   " fullword wide
+      $a1 = "C:\\Program Files (x86)\\Microsoft Visual Studio\\VB98\\VB6.OLB" fullword ascii
+      $s1 = "Compiling2.exe" fullword wide
+      $s2 = "Unstalled2" fullword ascii
+      $s3 = "Compiling.exe" fullword wide
+   condition:
+      uint16(0) == 0x5a4d and filesize < 1000KB and $x1 or
+      ( $a1 and 1 of ($s*) )
+}
+
+
+rule Docm_in_PDF {
+   meta:
+      description = "Detects an embedded DOCM in PDF combined with OpenAction"
+      license = "https://creativecommons.org/licenses/by-nc/4.0/"
+      author = "Florian Roth"
+      reference = "Internal Research https://github.com/alankrit29/signature-base/blob/4f8c5d7e39ee5c369c42b89e765d552e5dbafb23/general_officemacros.yar"
+      date = "2017-05-15"
+   strings:
+      $a1 = /<<\/Names\[\([\w]{1,12}.docm\)/ ascii
+      $a2 = "OpenAction" ascii fullword
+      $a3 = "JavaScript" ascii fullword
+   condition:
+      uint32(0) == 0x46445025 and all of them
+}
+
+
+rule HKTL_EmbeddedPDF {
+   meta:
+      description = "Detects Embedded PDFs which can start malicious content (https://github.com/alankrit29/signature-base/blob/4f8c5d7e39ee5c369c42b89e765d552e5dbafb23/thor-hacktools.yar#L4437)"
+      author = "Tobias Michalski"
+      reference = "https://twitter.com/infosecn1nja/status/1021399595899731968?s=12"
+      date = "2018-07-25"
+   strings:
+      $x1 = "/Type /Action\n /S /JavaScript\n /JS (this.exportDataObject({" fullword ascii
+      $s1 = "(This PDF document embeds file" fullword ascii
+      $s2 = "/Names << /EmbeddedFiles << /Names" fullword ascii
+      $s3 = "/Type /EmbeddedFile" fullword ascii
+   condition:
+      uint16(0) == 0x5025 and
+      2 of ($s*) and $x1
+}
+
+
+rule suspicious_js {
+	meta:
+        severity = 6
+        type = "pdf"
+		author = "Glenn Edwards (@hiddenillusion)"
+		version = "0.1"
+		weight = 3
+		description = "possible exploit"
+        reference = "https://github.com/a232319779/mmpi/blob/master/mmpi/data/yara/pdf/pdf.yara"
+	strings:
+		$magic = { 25 50 44 46 }
+		$attrib0 = /\/OpenAction /
+		$attrib1 = /\/JavaScript /
+		$js0 = "eval"
+		$js1 = "Array"
+		$js2 = "String.fromCharCode"
+	condition:
+		$magic at 0 and all of ($attrib*) and 2 of ($js*)
+}
+
+
+rule possible_exploit {
+	meta:
+        severity = 9
+        type = "pdf"
+		author = "Glenn Edwards (@hiddenillusion)"
+		version = "0.1"
+		weight = 3
+		url = "https://github.com/hiddenillusion/AnalyzePDF/blob/master/pdf_rules.yara"
+        description = "possible exploit"
+        reference = "https://github.com/a232319779/mmpi/blob/master/mmpi/data/yara/pdf/pdf.yara"
+	strings:
+		$magic = { 25 50 44 46 }
+
+		$attrib0 = /\/JavaScript /
+		$attrib3 = /\/ASCIIHexDecode/
+		$attrib4 = /\/ASCII85Decode/
+
+		$action0 = /\/Action/
+		$action1 = "Array"
+		$shell = "A"
+		$cond0 = "unescape"
+		$cond1 = "String.fromCharCode"
+
+		$nop = "%u9090%u9090"
+	condition:
+		$magic at 0 and (2 of ($attrib*)) or ($action0 and #shell > 10 and 1 of ($cond*)) or ($action1 and $cond0 and $nop)
+}
+
+
+rule EXPL_PDFJS_CVE_2024_4367 {
+   meta:
+      description = "Detects PDFs that exploit CVE-2024-4367"
+      author = "spaceraccoon, Eugene Lim"
+      reference = "https://codeanlabs.com/blog/research/cve-2024-4367-arbitrary-js-execution-in-pdf-js/"
+      date = "2024-05-23"
+      modified = "2024-05-23"
+      score = 75
+      id = "bb000216-17b5-41eb-a144-2982131fbf45"
+   strings:
+      $re1 = /\/FontMatrix\s+\[\.\-\d\s]*\(/
+   condition:
+      any of them
+}
+
+
+rule Detect_JavaScript {
+    meta:
+        description = "Detects embedded JavaScript in PDF files"
+        type = "JavaScript"
+    strings:
+        $js1 = /\/JavaScript/i
+        $js2 = /\/JS/i
+        $js3 = /\/AA\s*<<\s*\/O\s*<<\s*\/S\s*\/JavaScript\s*\/JS\s*\(/i
+        $js4 = /app\.alert/i
+        $js5 = /this\.execute/i
+        $js6 = /this\.print/i
+        $js7 = /this\.saveAs/i
+        $js8 = /util\.printd/i
+        $js9 = /app\.setTimeOut/i
+        $js10 = /event\.target/i
+    condition:
+        $js1 or $js2 or $js3 or $js4 or $js5 or $js6 or $js7 or $js8 or $js9 or $js10
+}
+
+
+rule Detect_Launch_Action {
+    meta:
+        description = "Detects Launch actions in PDF files"
+        type = "Launch"
+    strings:
+        $launch1 = /\/Launch/i
+        $launch2 = /\/Action\s*>>\s*\/Type\s*\/Action/i
+        $launch3 = /\/S\s*\/Launch/i
+        $launch4 = /\/Launch\s*<<\s*\/S\s*\/Launch/i
+        $launch5 = /\/Launch\s*<<\s*\/F\s*<<\s*\/S\s*\/Launch/i
+        $launch6 = /\/Launch\s*\/F\s*\(/i
+        $launch7 = /\/Launch\s*<<\s*\/F\s*\(/i
+        $launch8 = /\/Launch\s*<<\s*\/Win\s*\(/i
+        $launch9 = /\/Launch\s*<<\s*\/Mac\s*\(/i
+        $launch10 = /\/Launch\s*\/Win\s*\(/i
+    condition:
+        $launch1 or $launch2 or $launch3 or $launch4 or $launch5 or $launch6 or $launch7 or $launch8 or $launch9 or $launch10
+}
+
+
+rule Detect_OpenAction {
+    meta:
+        description = "Detects OpenAction in PDF files"
+        type = "OpenAction"
+    strings:
+        $openAction1 = /\/OpenAction/i
+        $openAction2 = /\/AA/i
+        $openAction3 = /\/OpenAfterSave/i
+        $openAction4 = /\/OpenDocument/i
+        $openAction5 = /\/Open/i
+        $openAction6 = /\/O\s*<<\s*\/S\s*\/JavaScript\s*\/JS\s*\(/i
+        $openAction7 = /\/O\s*<<\s*\/S\s*\/JavaScript\s*\/JS/i
+        $openAction8 = /\/O\s*<<\s*\/JS\s*\(/i
+        $openAction9 = /\/O\s*<<\s*\/JS/i
+        $openAction10 = /\/Open\s*<<\s*\/JavaScript\s*\/JS\s*\(/i
+    condition:
+        $openAction1 or $openAction2 or $openAction3 or $openAction4 or $openAction5 or $openAction6 or $openAction7 or $openAction8 or $openAction9 or $openAction10
+}
+
+
+rule Detect_Embedded_Files {
+    meta:
+        description = "Detects embedded files in PDF files"
+        type = "EmbeddedFile"
+    strings:
+        $embed1 = /\/EmbeddedFile/i
+        $embed2 = /\/FileAttachment/i
+        $embed3 = /\/Type\s*\/EmbeddedFile/i
+        $embed4 = /\/EF\s*<<\s*\/F\s*<<\s*\/Type\s*\/EmbeddedFile/i
+        $embed5 = /\/EmbeddedFile\s*<<\s*\/Type\s*\/EmbeddedFile/i
+        $embed6 = /\/Filespec\s*<<\s*\/EF\s*<<\s*\/F\s*<<\s*\/Type\s*\/EmbeddedFile/i
+        $embed7 = /\/EmbeddedFile\s*\/Filespec/i
+        $embed8 = /\/EmbeddedFile\s*\/Names/i
+        $embed9 = /\/EmbeddedFile\s*\/Names\s*<<\s*\/Type\s*\/EmbeddedFile/i
+        $embed10 = /\/EmbeddedFile\s*\/Names\s*<<\s*\/Type\s*\/EmbeddedFile\s*\/Filespec/i
+    condition:
+        $embed1 or $embed2 or $embed3 or $embed4 or $embed5 or $embed6 or $embed7 or $embed8 or $embed9 or $embed10
+}
+
+
+rule Detect_Shellcode {
+    meta:
+        description = "Detects suspicious shellcode patterns in PDF files"
+        type = "Shellcode"
+    strings:
+        $shellcode1 = { 6a 60 68 63 61 6c 63 54 59 66 83 e9 ff 33 d2 64 8b 52 30 8b 52 0c 8b 52 14 8b 72 28 }
+        $shellcode2 = { 31 c0 50 68 2e 65 78 65 68 63 61 6c 63 8b dc 88 04 24 50 53 51 52 83 ec 04 }
+        $shellcode3 = { 50 51 52 56 57 53 89 e5 83 e4 f0 31 c0 64 8b 40 30 8b 40 0c 8b 70 1c ad 8b 40 08 }
+        $shellcode4 = { 89 e5 81 ec a0 00 00 00 31 c0 50 50 50 50 40 89 e1 50 89 e2 57 51 52 50 83 ec 04 }
+        $shellcode5 = { 31 c0 50 68 2e 64 61 74 61 68 5c 64 61 74 61 68 63 61 6c 63 89 e3 8b 53 3c }
+        $shellcode6 = { 31 d2 52 68 78 2e 74 78 68 2e 64 61 74 68 5c 5c 5c 68 2e 5c 5c 5c 68 5c 5c 5c }
+        $shellcode7 = { 68 5c 61 5c 61 5c 61 68 74 2e 74 78 68 2e 64 61 74 68 5c 5c 5c 68 2e 5c 5c 5c }
+        $shellcode8 = { 68 5c 61 5c 61 5c 61 68 78 2e 74 78 68 2e 64 61 74 68 5c 5c 5c 68 2e 5c 5c 5c }
+        $shellcode9 = { 68 61 5c 61 5c 68 61 5c 68 74 2e 78 68 2e 61 74 68 5c 5c 68 2e 5c 68 5c 5c }
+        $shellcode10 = { 68 61 5c 61 5c 61 68 74 2e 74 68 2e 64 68 5c 5c 5c 68 2e 5c 5c 68 5c 5c 68 }
+    condition:
+        $shellcode1 or $shellcode2 or $shellcode3 or $shellcode4 or $shellcode5 or $shellcode6 or $shellcode7 or $shellcode8 or $shellcode9 or $shellcode10
+}
+
+
+rule Detect_URLs {
+    meta:
+        description = "Detects suspicious URLs in PDF files"
+        type = "URL"
+    strings:
+        $url1 = /ftp:\/\/[^\s]+/ nocase
+        $url2 = /file:\/\/[^\s]+/ nocase
+        $url3 = /:\/\/[0-9]+\.[0-9]+\.[0-9]+\.[0-9]+/ nocase
+    condition:
+        $url1 or $url2 or $url3
 }

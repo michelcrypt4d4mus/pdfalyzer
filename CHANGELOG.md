@@ -1,4 +1,5 @@
 # NEXT RELEASE
+* A lot of new PDF related YARA rules
 
 ### 1.16.6
 * Add the creator hash to GIFTEDCROOK rule

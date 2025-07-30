@@ -42,7 +42,7 @@ def test_pdfalyze_CLI_rich_tree(adobe_type1_fonts_pdf_path, analyzing_malicious_
 
 
 def test_pdfalyze_CLI_yara_scan(adobe_type1_fonts_pdf_path):
-    _assert_args_yield_lines(774, adobe_type1_fonts_pdf_path, '-y')
+    _assert_args_yield_lines(840, adobe_type1_fonts_pdf_path, '-y')
 
 
 def test_pdfalyze_CLI_streams_scan(adobe_type1_fonts_pdf_path):
@@ -52,7 +52,7 @@ def test_pdfalyze_CLI_streams_scan(adobe_type1_fonts_pdf_path):
 
 
 def test_yara_rules_option(adobe_type1_fonts_pdf_path, additional_yara_rules_path):
-    _assert_args_yield_lines(2447, adobe_type1_fonts_pdf_path, '-Y', additional_yara_rules_path)
+    _assert_args_yield_lines(2593, adobe_type1_fonts_pdf_path, '-Y', additional_yara_rules_path)
     _assert_args_yield_lines(1797, adobe_type1_fonts_pdf_path, '--no-default-yara-rules', '-Y', additional_yara_rules_path)
 
 
