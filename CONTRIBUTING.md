@@ -39,9 +39,9 @@ pdfalyzer()
 # What To Contribute
 
 ### The Official TODO List
-* Highlight decodes with a lot of Javascript keywords
-* https://github.com/mandiant/flare-floss (https://github.com/mandiant/flare-floss/releases/download/v2.1.0/floss-v2.1.0-linux.zip)
-* https://github.com/1Project/Scanr/blob/master/emulator/emulator.py
+1. Highlight decodes with a lot of Javascript keywords
+1. https://github.com/mandiant/flare-floss (https://github.com/mandiant/flare-floss/releases/download/v2.1.0/floss-v2.1.0-linux.zip)
+1. https://github.com/1Project/Scanr/blob/master/emulator/emulator.py
 
 ### YARA Rules
 We love any and all PDF malware related YARA rules so send them our way.
