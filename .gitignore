@@ -20,5 +20,4 @@ dist/
 # Other
 .DS_Store
 LICENSE
-parse_it.sh
 doc/ISO_32000-2-2020_sponsored_official_PDF_spec.pdf
