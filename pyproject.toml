@@ -1,13 +1,30 @@
 [tool.poetry]
 name = "pdfalyzer"
 version = "1.16.10"
-description = "A PDF analysis toolkit. Scan a PDF with relevant YARA rules, visualize its inner tree-like data structure in living color (lots of colors), force decodes of suspicious font binaries, and more."
+description = "PDF analysis tool. Scan a PDF with YARA rules, visualize its inner tree-like data structure in living color (lots of colors), force decodes of suspicious font binaries, and more."
 authors = ["Michel de Cryptadamus <michel@cryptadamus.com>"]
 license = "GPL-3.0-or-later"
 readme = "README.md"
+documentation = "https://github.com/michelcrypt4d4mus/pdfalyzer"
 homepage = "https://github.com/michelcrypt4d4mus/pdfalyzer"
 repository = "https://github.com/michelcrypt4d4mus/pdfalyzer"
-documentation = "https://github.com/michelcrypt4d4mus/pdfalyzer"
+
+classifiers = [
+    "Development Status :: 5 - Production/Stable",
+    "Environment :: Console",
+    "Intended Audience :: Information Technology",
+    "License :: OSI Approved :: GNU General Public License v3 or later (GPLv3+)",
+    "Programming Language :: Python",
+    "Topic :: Artistic Software",
+    "Topic :: Security",
+    "Topic :: Scientific/Engineering :: Visualization",
+]
+
+include = [
+    "CHANGELOG.md",
+    "LICENSE",
+    ".pdfalyzer.example"
+]
 
 keywords = [
     "ascii art",
@@ -25,26 +42,10 @@ keywords = [
     "pdf",
     "pdfs",
     "pdf analysis",
+    "pypdf",
     "threat assessment",
     "visualization",
     "yara"
-]
-
-classifiers = [
-    "Development Status :: 5 - Production/Stable",
-    "Environment :: Console",
-    "Intended Audience :: Information Technology",
-    "License :: OSI Approved :: GNU General Public License v3 or later (GPLv3+)",
-    "Programming Language :: Python",
-    "Topic :: Artistic Software",
-    "Topic :: Security",
-    "Topic :: Scientific/Engineering :: Visualization",
-]
-
-include = [
-    "CHANGELOG.md",
-    "LICENSE",
-    ".pdfalyzer.example"
 ]
 
 packages = [
