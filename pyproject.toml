@@ -43,7 +43,8 @@ classifiers = [
 
 include = [
     "CHANGELOG.md",
-    "LICENSE"
+    "LICENSE",
+    ".pdfalyzer.example"
 ]
 
 packages = [
