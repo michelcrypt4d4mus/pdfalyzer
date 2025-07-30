@@ -15,9 +15,9 @@ def test_file_export(analyzing_malicious_pdf_path, tmp_dir):
     args = [
         '--min-decode-length', '50',
         '--max-decode-length', '51',
+        '--output-dir', tmp_dir,
         '--suppress-decodes',
         '-txt',
-        '--output-dir', tmp_dir
     ]
 
     check_output([PDFALYZE, analyzing_malicious_pdf_path, *args], env=environ)
