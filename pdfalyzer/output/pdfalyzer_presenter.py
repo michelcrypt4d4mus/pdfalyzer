@@ -91,7 +91,6 @@ class PdfalyzerPresenter:
           2. Check for (and force decode) dangerous PDF instructions like /JavaScript and /OpenAction
           3. Check for (and force decode) any BOMs (byte order marks)
           4. Check for (and force decode) any sequences of bytes between quotes
-
         """
         print_section_header(f'Binary Stream Analysis / Extraction')
         console.print(self._stream_objects_table())
