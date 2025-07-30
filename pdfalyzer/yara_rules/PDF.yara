@@ -667,78 +667,6 @@ rule JS_PDF_Data_Submission {
 }
 
 
-rule PDF_Launch_Action_EXE {
-    meta:
-        author         = "InQuest Labs"
-        description    = "This signature detects PDF files that launch an executable upon being opened on a host machine. This action is performed by the Launch Action feature available in the PDF file format and is commonly abused by threat actors to execute delivered malware."
-        created_date   = "2022-03-15"
-        updated_date   = "2022-03-15"
-        blog_reference = "InQuest Labs Empirical Observations"
-        labs_reference = "N/A"
-        labs_pivot     = "N/A"
-        samples        = "cb5e659c4ac93b335c77c9b389d8ef65d8c20ab8b0ad08e5f850cc5055e564c3"
-
-	strings:
-        /* 8 0 obj
-        <<
-        /Type /Action
-        /S /Launch
-        /Win
-        <<
-        /F (cmd.exe)
-        >>
-        >>
-        endobj
-        */
-        $magic01 = "INQUEST-PP=pdfparser"
-        $magic02 = "%PDF"
-
-        $re1 = /\x2fType[ \t\r\n]*\x2fAction/ nocase wide ascii
-        $re2 = /obj[^\x3c\x3e]+<<[^\x3e]*\x2fS[ \t\r\n]*\x2fLaunch[^\x3c\x3e]*<<[^\x3e]*\x2fF[ \t\r\n]*\x28[^\x29]+\.exe[^\x29]*\x29/ nocase wide ascii
-	condition:
-        ($magic01 in (filesize-30 .. filesize) or $magic02 in (0 .. 10)) and all of ($re*)
-}
-
-
-rule PDF_Launch_Function {
-    meta:
-        author         = "InQuest Labs"
-		description    = "This signature detects the launch function within a PDF file. This function allows a document author to attach an executable file."
-        created_date   = "2022-03-15"
-        updated_date   = "2022-03-15"
-        blog_reference = "http://blog.trendmicro.com/trendlabs-security-intelligence/PDF-launch-feature-abused-to-carry-zeuszbot/"
-        labs_reference = "N/A"
-        labs_pivot     = "N/A"
-        samples        = "c2f2d1de6bf973b849725f1069c649ce594a907c1481566c0411faba40943ee5"
-	strings:
-		$pdf_header = "%PDF-"
-		$launch = "/Launch" nocase
-	condition:
-		$pdf_header in (0..1024) and $launch
-
-}
-
-
-rule PDF_with_Embedded_RTF_OLE_Newlines {
-    meta:
-        author         = "InQuest Labs"
-        description    = "This signature detects suspicious PDF files embedded with RTF files that contain embedded OLE content that injects newlines into embedded OLE contents as a means of payload obfuscation and detection evasion."
-        created_date   = "2022-03-15"
-        updated_date   = "2022-03-15"
-        blog_reference = "InQuest Internal Research"
-        labs_reference = "N/A"
-        labs_pivot     = "N/A"
-        samples        = "d784c53b8387f1e2f1bcb56a3604a37b431638642e692540ebeaeee48c1f1a07"
-
- 	strings:
-		$rtf_magic = "{\\rt"  // note that {\rtf1 is not required
-        $rtf_objdata = /\x7b[^\x7d]*\\objdata/ nocase
-        $nor = "D0CF11E0A1B11AE1" nocase
-        $obs = /D[ \r\t\n]*0[ \r\t\n]*C[ \r\t\n]*F[ \r\t\n]*1[ \r\t\n]*1[ \r\t\n]*E[ \r\t\n]*0[ \r\t\n]*A[ \r\t\n]*1[ \r\t\n]*B[ \r\t\n]*1[ \r\t\n]*1[ \r\t\n]*A[ \r\t\n]*E[ \r\t\n]*1/ nocase
-	condition:
-		$rtf_magic and $rtf_objdata and ($obs and not $nor)
-}
-
 /*
 This signature detects Adobe PDF files that reference a remote UNC object for the purpose of leaking NTLM hashes.
 New methods for NTLM hash leaks are discovered from time to time. This particular one is triggered upon opening of a
@@ -786,8 +714,6 @@ example three:
 
 Multiple protocols supported for the /F include, both http and UNC.
 */
-
-
 rule NTLM_Credential_Theft_via_PDF {
     meta:
         Author      = "InQuest Labs"
@@ -800,24 +726,6 @@ rule NTLM_Credential_Theft_via_PDF {
         $badness3 = /\s*\/AA\s*<<\s*\/[OC]\s*<<((\s*\/\D\s*\[[^\]]+\])\s*\/F\s*\((\\\\\\\\[a-z0-9]+\.[^\\]+\\\\[a-z0-9]+|https?:\/\/[^\)]+)\)(\s*\/S\s*\/GoTo[ER])|(\s*\/S\s*\/GoTo[ER])\s*\/F\s*\(\\\\\\\\[a-z0-9]+.[^\\]+\\\\[a-z0-9]+\)(\s*\/\D\s*\[[^\]]+\]))/ nocase
     condition:
         for any i in (0..1024) : (uint32be(i) == 0x25504446) and any of ($badness*)
-}
-
-
-rule PDF_with_Launch_Action_Function {
-    meta:
-        author         = "InQuest Labs"
-        description    = "This signature detects the launch function within a PDF file. This function allows the document author to attach an executable file."
-        created_date   = "2022-03-15"
-        updated_date   = "2022-03-15"
-        blog_reference = "http://blog.didierstevens.com/2010/03/29/escape-from-pdf/"
-        labs_reference = "N/A"
-        labs_pivot     = "N/A"
-        samples        = "a9fbb50dedfd84e1f4a3507d45b1b16baa43123f5ae98dae6aa9a5bebeb956a8"
-	strings:
-		$pdf_header = "%PDF-"
-		$a = "<</S/Launch/Type/Action/Win<</F"
-	condition:
-		$pdf_header in (0..1024) and $a
 }
 
 
@@ -1290,6 +1198,7 @@ rule Detect_PDF_Suspicious_AcroForms {
 
 rule oAuth_Phishing_PDF {
     meta:
+        description = "Identifies potential phishing PDFs that target oAuth."
         id = "789YmThaTvLDaE1V2Oqx7q"
         fingerprint = "c367bca866de0b066e291b4e45216cbb68cc23297b002a29ca3c8d640a7db78e"
         version = "1.0"
@@ -1300,7 +1209,6 @@ rule oAuth_Phishing_PDF {
         sharing = "TLP:WHITE"
         source = "BARTBLAZE"
         author = "@bartblaze"
-        description = "Identifies potential phishing PDFs that target oAuth."
         category = "MALWARE"
         reference = "https://twitter.com/ffforward/status/1484127442679836676"
     strings:
@@ -1310,7 +1218,6 @@ rule oAuth_Phishing_PDF {
         $s3 = "/URI (https://accounts.google.com/o/oauth2" nocase
     condition:
         $pdf at 0 and any of ($s*)
-}
 }
 
 
