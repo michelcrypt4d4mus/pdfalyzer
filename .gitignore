@@ -1,7 +1,7 @@
-private_repo_scripts/*
 .vscode/
-# Local copy of .pdfalyzer.example with cusom settings
-.pdfalyzer
+.pdfalyzer # Local copy of .pdfalyzer.example with cusom settings
+doc/ISO_32000-2-2020_sponsored_official_PDF_spec.pdf
+private_repo_scripts/*
 
 # Python
 /.venv/*
@@ -20,4 +20,3 @@ dist/
 # Other
 .DS_Store
 LICENSE
-doc/ISO_32000-2-2020_sponsored_official_PDF_spec.pdf
