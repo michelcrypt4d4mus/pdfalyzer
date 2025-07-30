@@ -1,4 +1,5 @@
 # NEXT RELEASE
+* Even more PDF related YARA rules
 
 ### 1.16.7
 * Lots of new PDF related YARA rules
