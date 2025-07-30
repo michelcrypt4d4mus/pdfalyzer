@@ -1,4 +1,5 @@
 # NEXT RELEASE
+* Add `Development Status :: 5 - Production/Stable`
 
 ### 1.16.8
 * Even more PDF related YARA rules
