@@ -1811,25 +1811,28 @@ rule document_with_embedded_executable {
     strings:
         // Document headers
         $pdf_header = "%PDF-"
-        $ole_header = { D0 CF 11 E0 A1 B1 1A E1 }
-        $rtf_header = "{\\rtf"
+        // $ole_header = { D0 CF 11 E0 A1 B1 1A E1 }
+        // $rtf_header = "{\\rtf"
+
         // Executable headers within document
         $pe_header = { 4D 5A }      // MZ header
         $elf_header = { 7F 45 4C 46 } // ELF header
         $macho_header = { FE ED FA CE } // Mach-O header
+
         // Embedded object indicators
         $embed1 = "\\objemb" nocase
         $embed2 = "/EmbeddedFile" nocase
         $embed3 = "Package" nocase
         $embed4 = "OLE Object" nocase
+
         // File streams
         $stream1 = "\\objdata" nocase
         $stream2 = "/F " nocase
         $stream3 = "/Type/EmbeddedFile" nocase
     condition:
-        (any of ($*header) at 0) and
-        (any of ($pe_header, $elf_header, $macho_header)) and
-        (any of ($embed*) or any of ($stream*))
+            $pdf_header at 0
+        and (any of ($pe_header, $elf_header, $macho_header))
+        and (any of ($embed*) or any of ($stream*))
 }
 
 
