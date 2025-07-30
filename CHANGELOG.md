@@ -1,6 +1,7 @@
 # NEXT RELEASE
 * Even more PDF related YARA rules
-* Upgrade `anytree` to 2.13.0, `yaralyzer` to 1.0.4
+* Upgrade `anytree` to 2.13.0
+* Upgrade `yaralyzer` to 1.0.4
 
 ### 1.16.7
 * Lots of new PDF related YARA rules
