@@ -371,13 +371,13 @@ files = [
 
 [[package]]
 name = "yaralyzer"
-version = "1.0.4"
+version = "1.0.5"
 description = "Visualize and force decode YARA and regex matches found in a file or byte stream. With colors. Lots of colors."
 optional = false
 python-versions = "<4.0,>=3.9"
 files = [
-    {file = "yaralyzer-1.0.4-py3-none-any.whl", hash = "sha256:22a96fd41c44d5ec0a5c47e9d9ebbccf88b87a6d465df4ccff36ea16e6ace082"},
-    {file = "yaralyzer-1.0.4.tar.gz", hash = "sha256:45af60cad7efee0502fc35e44cc2a2b0628c0cda389a768a46d41bff5e815e97"},
+    {file = "yaralyzer-1.0.5-py3-none-any.whl", hash = "sha256:46504fdd9995e315aad93664afc3588aa960421b03342fe64fa50c7988437ef9"},
+    {file = "yaralyzer-1.0.5.tar.gz", hash = "sha256:46b9c7e7e5414645eb89463bbb15a28332cc6bc8b5ab6a403a4a19f7168690c1"},
 ]
 
 [package.dependencies]
