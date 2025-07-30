@@ -27,7 +27,9 @@ from pdfalyzer.output.tables.decoding_stats_table import build_decoding_stats_ta
 from pdfalyzer.output.tables.pdf_node_rich_table import generate_rich_tree, get_symlink_representation
 from pdfalyzer.output.tables.stream_objects_table import stream_objects_table
 from pdfalyzer.pdfalyzer import Pdfalyzer
-from pdfalyzer.util.adobe_strings import *
+# from pdfalyzer.util.adobe_strings import *
+
+INTERNAL_YARA_ERROR_MSG = "Internal YARA error! YARA's error codes can be checked here: https://github.com/VirusTotal/yara/blob/master/libyara/include/yara/error.h"  # noqa: E501
 
 
 class PdfalyzerPresenter:
@@ -130,9 +132,9 @@ class PdfalyzerPresenter:
 
         try:
             self.yaralyzer.yaralyze()
-        except yara.Error as e:
+        except yara.Error:
             console.print_exception()
-            print_fatal_error_panel("Internal YARA error! YARA's error codes can be checked here: https://github.com/VirusTotal/yara/blob/master/libyara/include/yara/error.h")
+            print_fatal_error_panel(INTERNAL_YARA_ERROR_MSG)
             return
 
         YaralyzerConfig.args.standalone_mode = False

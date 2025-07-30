@@ -9,7 +9,6 @@ def test_is_prefixed_by_any():
     assert is_prefixed_by_any(TEST_TITLE, ['Lacan', 'Jac', 'Freud']) is True
 
 
-
 def test_replace_digits():
     assert replace_digits('abcd') == 'abcd'
     assert replace_digits('a1b2c3d4e5f6') == 'axbxcxdxexfx'

@@ -6,7 +6,7 @@ Child/parent relationships should be set using the add_child() and set_parent()
 methods and not set directly. (TODO: this could be done better with anytree
 hooks)
 """
-from typing import Callable, List, Optional, Set
+from typing import Callable, List, Optional
 
 from anytree import NodeMixin, SymlinkNode
 from pypdf.errors import PdfReadError
@@ -163,11 +163,14 @@ class PdfTreeNode(NodeMixin, PdfObjectProperties):
                 return None
         else:
             address = refs_to_this_node[0].address
+
             # If other node's label doesn't start with a NON_STANDARD_ADDRESS string
-            #   and any of the relationships pointing at this node use something other than a
-            #       NON_STANDARD_ADDRESS_NODES string to refer here, print a warning about multiple refs.
-            if not (is_prefixed_by_any(from_node.label, NON_STANDARD_ADDRESS_NODES) or \
-                        all(ref.address in NON_STANDARD_ADDRESS_NODES for ref in refs_to_this_node)):
+            # AND any of the relationships pointing at this node use something other than a
+            #     NON_STANDARD_ADDRESS_NODES string to refer here,
+            # then print a warning about multiple refs.
+            if not (is_prefixed_by_any(from_node.label, NON_STANDARD_ADDRESS_NODES)
+                    or
+                    all(ref.address in NON_STANDARD_ADDRESS_NODES for ref in refs_to_this_node)):
                 refs_to_this_node_str = "\n   ".join([f"{i + 1}. {r}" for i, r in enumerate(refs_to_this_node)])
                 msg = f"Multiple refs from {from_node} to {self}:\n   {refs_to_this_node_str}"
                 log.warning(msg + f"\nCommon address of refs: {address}")

@@ -16,13 +16,14 @@ from pdfalyzer.util.adobe_strings import *
 
 class PdfObjectProperties:
     """Simple class to extract critical features of a PdfObject."""
+
     def __init__(
-            self,
-            pdf_object: PdfObject,
-            address: str,
-            idnum: int,
-            indirect_object: Optional[IndirectObject] = None
-        ):
+        self,
+        pdf_object: PdfObject,
+        address: str,
+        idnum: int,
+        indirect_object: Optional[IndirectObject] = None
+    ):
         self.idnum = idnum
         self.obj = pdf_object
         self.indirect_object = indirect_object
@@ -57,7 +58,7 @@ class PdfObjectProperties:
         else:
             self.first_address = address
 
-        log.debug(f"Node ID: {self.idnum}, type: {self.type}, subtype: {self.sub_type}, " + \
+        log.debug(f"Node ID: {self.idnum}, type: {self.type}, subtype: {self.sub_type}, " +
                   f"label: {self.label}, first_address: {self.first_address}")
 
     @classmethod
@@ -80,11 +81,11 @@ class PdfObjectProperties:
 
     @classmethod
     def to_table_row(
-            cls,
-            reference_key: str,
-            obj: PdfObject,
-            is_single_row_table: bool = False
-        ) -> List[Union[Text, str]]:
+        cls,
+        reference_key: str,
+        obj: PdfObject,
+        is_single_row_table: bool = False
+    ) -> List[Union[Text, str]]:
         """PDF object property at reference_key becomes a formatted 3-tuple for use in Rich tables."""
         with_resolved_refs = cls.resolve_references(reference_key, obj)
 

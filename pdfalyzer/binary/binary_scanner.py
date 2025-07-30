@@ -21,7 +21,7 @@ from yaralyzer.util.logging import log
 from pdfalyzer.config import PdfalyzerConfig
 from pdfalyzer.decorators.pdf_tree_node import PdfTreeNode
 from pdfalyzer.detection.constants.binary_regexes import (BACKTICK, DANGEROUS_PDF_KEYS_TO_HUNT_ONLY_IN_FONTS,
-     DANGEROUS_PDF_KEYS_TO_HUNT_ONLY_IN_FONTS, DANGEROUS_STRINGS, FRONTSLASH, GUILLEMET, QUOTE_PATTERNS)
+     DANGEROUS_STRINGS, FRONTSLASH, GUILLEMET, QUOTE_PATTERNS)
 from pdfalyzer.helpers.string_helper import generate_hyphen_line
 from pdfalyzer.output.layout import print_headline_panel, print_section_sub_subheader
 from pdfalyzer.util.adobe_strings import CONTENTS, CURRENTFILE_EEXEC, FONT_FILE_KEYS
@@ -36,7 +36,7 @@ class BinaryScanner:
         self.stream_length = len(_bytes)
 
         if label is None and isinstance(owner, PdfTreeNode):
-             self.label = owner.__rich__()
+            self.label = owner.__rich__()
 
         self.suppression_notice_queue = []
         self.regex_extraction_stats = defaultdict(lambda: RegexMatchMetrics())
@@ -86,8 +86,12 @@ class BinaryScanner:
                 print_headline_panel(msg, style='dim')
                 continue
 
+            print_section_sub_subheader(
+                f"Forcing Decode of {quote_type.capitalize()} Quoted Strings",
+                style=BYTES_NO_DIM
+            )
+
             quote_pattern = QUOTE_PATTERNS[quote_type]
-            print_section_sub_subheader(f"Forcing Decode of {quote_type.capitalize()} Quoted Strings", style=BYTES_NO_DIM)
             yaralyzer = self._quote_yaralyzer(quote_pattern, quote_type)
             self.process_yara_matches(yaralyzer, f"{quote_type}_quoted")
 
@@ -135,7 +139,7 @@ class BinaryScanner:
     def process_yara_matches(self, yaralyzer: Yaralyzer, pattern: str, force: bool = False) -> None:
         """Decide whether to attempt to decode the matched bytes, track stats. force param ignores min/max length."""
         for bytes_match, decoder in yaralyzer.match_iterator():
-            log.debug(f"Trackings stats for match: {pattern}, bytes_match: {bytes_match}, is_decodable: {bytes_match.is_decodable()}")
+            log.debug(f"Trackings match stats for {pattern}, bytes_match: {bytes_match}, is_decodable: {bytes_match.is_decodable()}")  # noqa: E501
 
             # Send suppressed decodes to a queue and track the reason for the suppression in the stats
             if not (bytes_match.is_decodable() or force):
@@ -145,7 +149,7 @@ class BinaryScanner:
             # Print out any queued suppressed notices before printing non suppressed matches
             self._print_suppression_notices()
             console.print(decoder)
-            self.regex_extraction_stats[pattern].tally_match(decoder) # TODO: This call must come after print(decoder)
+            self.regex_extraction_stats[pattern].tally_match(decoder)  # TODO: This call must come after print(decoder)
 
         self._print_suppression_notices()
 
@@ -167,12 +171,12 @@ class BinaryScanner:
             return self._pattern_yaralyzer(quote_pattern, REGEX, label, label)
 
     def _pattern_yaralyzer(
-            self,
-            pattern: str,
-            pattern_type: str,
-            rules_label: Optional[str] = None,
-            pattern_label: Optional[str] = None
-        ) -> Yaralyzer:
+        self,
+        pattern: str,
+        pattern_type: str,
+        rules_label: Optional[str] = None,
+        pattern_label: Optional[str] = None
+    ) -> Yaralyzer:
         """Build a yaralyzer to scan self.bytes"""
         return Yaralyzer.for_patterns(
             patterns=[escape_yara_pattern(pattern)],

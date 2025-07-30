@@ -20,11 +20,11 @@ def print_highlighted(msg: Union[str, Text], **kwargs) -> None:
 
 
 def quoted_text(
-        _string: str,
-        style: str = '',
-        quote_char_style: str = 'white',
-        quote_char: str = "'"
-    ) -> Text:
+    _string: str,
+    style: str = '',
+    quote_char_style: str = 'white',
+    quote_char: str = "'"
+) -> Text:
     """Wrap _string in 'quote_char'. Style 'quote_char' with 'quote_char_style'."""
     quote_char_txt = Text(quote_char, style=quote_char_style)
     txt = quote_char_txt + Text(_string, style=style) + quote_char_txt

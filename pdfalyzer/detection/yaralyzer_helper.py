@@ -8,8 +8,6 @@ from typing import Optional, Union
 from yaralyzer.config import YaralyzerConfig
 from yaralyzer.yaralyzer import Yaralyzer
 
-from pdfalyzer.config import PdfalyzerConfig
-
 YARA_RULES_DIR = files('pdfalyzer').joinpath('yara_rules')
 
 YARA_RULES_FILES = [
@@ -38,7 +36,7 @@ def _build_yaralyzer(scannable: Union[bytes, str], label: Optional[str] = None) 
             with as_file(YARA_RULES_DIR.joinpath(YARA_RULES_FILES[2])) as yara2:
                 with as_file(YARA_RULES_DIR.joinpath(YARA_RULES_FILES[3])) as yara3:
                     with as_file(YARA_RULES_DIR.joinpath(YARA_RULES_FILES[4])) as yara4:
-                        # If there is a custom yara_rules argument file use that instead of the files in the yara_rules/ dir
+                        # If there is a custom yara_rules arg, use that instead of the files in the yara_rules/ dir
                         rules_paths = YaralyzerConfig.args.yara_rules_files or []
 
                         if not YaralyzerConfig.args.no_default_yara_rules:

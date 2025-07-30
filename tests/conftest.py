@@ -1,14 +1,14 @@
-import importlib.resources
 from os import environ, path, pardir, remove
 from pathlib import Path
-environ['INVOKED_BY_PYTEST'] = 'True'
 
-import pytest
-from yaralyzer.helpers.file_helper import files_in_dir
+import pytest                                           # noqa: E402
+environ['INVOKED_BY_PYTEST'] = 'True'  # Must be set before importing yaralyzer (?)
+from yaralyzer.helpers.file_helper import files_in_dir  # noqa: E402
 
-from pdfalyzer.pdfalyzer import Pdfalyzer
+from pdfalyzer.pdfalyzer import Pdfalyzer               # noqa: E402
 
 # TODO: importlib doesn't play nice with running tests via GitHub actions
+# import importlib.resources
 # PROJECT_DIR = path.join(str(importlib.resources.files('pdfalyzer')), pardir)
 PYTESTS_DIR = path.dirname(__file__)
 PROJECT_DIR = path.join(PYTESTS_DIR, pardir)

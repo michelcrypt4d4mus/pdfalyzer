@@ -1,7 +1,6 @@
 import code
 import sys
 from os import environ, getcwd, path
-from pathlib import Path
 
 from dotenv import load_dotenv
 from pypdf import PdfWriter
@@ -23,7 +22,7 @@ from rich.text import Text
 from yaralyzer.helpers.rich_text_helper import prefix_with_plain_text_obj
 from yaralyzer.output.file_export import invoke_rich_export
 from yaralyzer.output.rich_console import console
-from yaralyzer.util.logging import log, log_and_print
+from yaralyzer.util.logging import log_and_print
 
 from pdfalyzer.helpers.filesystem_helper import file_size_in_mb, set_max_open_files
 from pdfalyzer.helpers.rich_text_helper import print_highlighted
@@ -51,8 +50,8 @@ def pdfalyze():
         log_and_print(f"Binary stream extraction complete, files written to '{args.output_dir}'.\nExiting.\n")
         sys.exit()
 
-    # The method that gets called is related to the argument name. See 'possible_output_sections' list in argument_parser.py
-    # Analysis exports wrap themselves around the methods that actually generate the analyses
+    # The method that gets called is related to the argument name. See 'possible_output_sections' list in
+    # argument_parser.py. Analysis exports wrap themselves around the methods that actually generate the analyses.
     for (arg, method) in output_sections(args, pdfalyzer):
         if args.output_dir:
             output_basepath = PdfalyzerConfig.get_output_basepath(method)
@@ -89,7 +88,7 @@ def pdfalyzer_show_color_theme() -> None:
         if name not in ['reset', 'repr_url']
     ]
 
-    console.print(Columns(colors, column_first=True, padding=(0,3)))
+    console.print(Columns(colors, column_first=True, padding=(0, 3)))
 
 
 def combine_pdfs():
@@ -114,7 +113,11 @@ def combine_pdfs():
     for i, page in enumerate(merger.pages):
         if args.image_quality < MAX_QUALITY:
             for j, img in enumerate(page.images):
-                print_highlighted(f"  -> Reducing image #{j + 1} quality on page {i + 1} to {args.image_quality}...", style='dim')
+                print_highlighted(
+                    f"  -> Reducing image #{j + 1} quality on page {i + 1} to {args.image_quality}...",
+                    style='dim'
+                )
+
                 img.replace(img.image, quality=args.image_quality)
 
         print_highlighted(f"  -> Compressing page {i + 1}...", style='dim')

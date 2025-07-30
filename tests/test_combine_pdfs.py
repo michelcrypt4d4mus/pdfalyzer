@@ -1,8 +1,8 @@
-import pytest
 from os import environ
 from pathlib import Path
-from subprocess import CalledProcessError, check_output
+from subprocess import check_output
 
+import pytest
 from yaralyzer.helpers.file_helper import files_in_dir
 
 from pdfalyzer.helpers.filesystem_helper import file_size_in_mb
@@ -33,13 +33,13 @@ def combined_pdf_path(tmp_dir):
 def test_combine_pdfs(combined_pdf_path, one_page_pdfs):
     assert len(one_page_pdfs) == 3
     assert not combined_pdf_path.exists()
-    reval = check_output([COMBINE_PDFS, '-o', combined_pdf_path, *one_page_pdfs], env=environ).decode()
+    check_output([COMBINE_PDFS, '-o', combined_pdf_path, *one_page_pdfs], env=environ).decode()
     assert combined_pdf_path.exists()
     assert file_size_in_mb(combined_pdf_path) == 0.18
 
 
 def test_combine_pdfs_image_quality(combined_pdf_path, one_page_pdfs):
     assert not combined_pdf_path.exists()
-    reval = check_output([COMBINE_PDFS, '-o', combined_pdf_path, '-iq', '1', *one_page_pdfs], env=environ).decode()
+    check_output([COMBINE_PDFS, '-o', combined_pdf_path, '-iq', '1', *one_page_pdfs], env=environ).decode()
     assert combined_pdf_path.exists()
     assert file_size_in_mb(combined_pdf_path) == 0.09

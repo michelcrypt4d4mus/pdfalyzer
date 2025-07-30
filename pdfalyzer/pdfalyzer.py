@@ -77,7 +77,7 @@ class Pdfalyzer:
         nodes_to_walk_next = [self._add_relationship_to_pdf_tree(r) for r in node.references_to_other_nodes()]
         node.all_references_processed = True
 
-        for next_node in [n for n in nodes_to_walk_next if not (n is None or n.all_references_processed) ]:
+        for next_node in [n for n in nodes_to_walk_next if not (n is None or n.all_references_processed)]:
             if not next_node.all_references_processed:
                 self.walk_node(next_node)
 
@@ -105,7 +105,7 @@ class Pdfalyzer:
 
     def stream_nodes(self) -> List[PdfTreeNode]:
         """List of actual nodes (not SymlinkNodes) containing streams sorted by PDF object ID"""
-        stream_filter = lambda node: node.contains_stream() and not isinstance(node, SymlinkNode)
+        stream_filter = lambda node: node.contains_stream() and not isinstance(node, SymlinkNode)  # noqa: E731
         return sorted(findall(self.pdf_tree, stream_filter), key=lambda r: r.idnum)
 
     def _add_relationship_to_pdf_tree(self, relationship: PdfObjectRelationship) -> Optional[PdfTreeNode]:
@@ -114,7 +114,7 @@ class Pdfalyzer:
         placed in the PDF node processing queue.
         """
         log.info(f'Assessing relationship {relationship}...')
-        was_seen_before = (relationship.to_obj.idnum in self.nodes_encountered) # Must come before _build_or_find()
+        was_seen_before = (relationship.to_obj.idnum in self.nodes_encountered)  # Must come before _build_or_find()
         from_node = relationship.from_node
         to_node = self._build_or_find_node(relationship.to_obj, relationship.address)
         self.max_generation = max([self.max_generation, relationship.to_obj.generation or 0])
@@ -133,7 +133,7 @@ class Pdfalyzer:
                 from_node.set_parent(to_node)
             elif to_node.parent is not None:
                 # Some StructElem nodes I have seen use /P or /K despire not being the real parent/child
-                if relationship.from_node.type.startswith(STRUCT_ELEM):# reference_key != relationship.address:
+                if relationship.from_node.type.startswith(STRUCT_ELEM):
                     log.info(f"{relationship} fail: {to_node} parent is already {to_node.parent}")
                 else:
                     log.warning(f"{relationship} fail: {to_node} parent is already {to_node.parent}")
@@ -173,7 +173,6 @@ class Pdfalyzer:
 
     def _resolve_indeterminate_nodes(self) -> None:
         """Place all indeterminate nodes in the tree."""
-        #set_log_level('INFO')
         indeterminate_nodes = [self.nodes_encountered[idnum] for idnum in self.indeterminate_ids]
         indeterminate_nodes_string = "\n   ".join([f"{node}" for node in indeterminate_nodes])
         log.info(f"Resolving {len(indeterminate_nodes)} indeterminate nodes: {indeterminate_nodes_string}")

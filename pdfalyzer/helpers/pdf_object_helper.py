@@ -6,7 +6,6 @@ from typing import List, Optional
 from pypdf.generic import IndirectObject, PdfObject
 
 from pdfalyzer.pdf_object_relationship import PdfObjectRelationship
-from pdfalyzer.util.adobe_strings import *
 
 
 def pdf_object_id(pdf_object) -> Optional[int]:

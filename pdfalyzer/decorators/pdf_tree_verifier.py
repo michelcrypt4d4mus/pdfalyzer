@@ -37,7 +37,10 @@ class PdfTreeVerifier:
             log.warning(f"Methodd doesn't check revisions but this doc is generation {self.pdfalyzer.max_generation}")
 
         # We expect to see all ordinals up to the number of nodes /Trailer claims exist as obj. IDs.
-        missing_node_ids = [i for i in range(1, self.pdfalyzer.pdf_size) if self.pdfalyzer.find_node_by_idnum(i) is None]
+        missing_node_ids = [
+            i for i in range(1, self.pdfalyzer.pdf_size)
+            if self.pdfalyzer.find_node_by_idnum(i) is None
+        ]
 
         for idnum in missing_node_ids:
             ref = IndirectObject(idnum, self.pdfalyzer.max_generation, self.pdfalyzer.pdf_reader)
@@ -57,13 +60,13 @@ class PdfTreeVerifier:
                 log.error(f"Cannot find ref {ref} in PDF!")
                 continue
             elif isinstance(obj, (NumberObject, NameObject)):
-                log.info(f"Obj {idnum} is a {type(obj)} w/value {obj}; if relationshipd by /Length etc. this is a nonissue but maybe worth doublechecking")
+                log.info(f"Obj {idnum} is a {type(obj)} w/value {obj}; if relationshipd by /Length etc. this is a nonissue but maybe worth doublechecking")  # noqa: E501
                 continue
             elif not isinstance(obj, dict):
-                log.error(f"Obj {idnum} ({obj}) of type {type(obj)} isn't dict, cannot determine if it should be in tree")
+                log.error(f"Obj {idnum} ({obj}) of type {type(obj)} isn't dict, cannot determine if it should be in tree")  # noqa: E501
                 continue
             elif TYPE not in obj:
-                msg = f"Obj {idnum} has no {TYPE} and is not in tree. Either a loose node w/no data or an error in pdfalyzer."
+                msg = f"Obj {idnum} has no {TYPE} and is not in tree. Either a loose node w/no data or an error in pdfalyzer."  # noqa: E501
                 msg += f"\nHere's the contents for you to assess:\n{obj}"
                 log.warning(msg)
                 continue

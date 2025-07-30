@@ -1,5 +1,3 @@
-from rich.text import Text
-
 from pdfalyzer.helpers.rich_text_helper import quoted_text
 
 

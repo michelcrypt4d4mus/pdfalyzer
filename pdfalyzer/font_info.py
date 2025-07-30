@@ -142,19 +142,19 @@ class FontInfo:
         console.line()
 
     # TODO: currently unused
-    def preview_bytes_at_advertised_lengths(self):
-        """Show the bytes at the boundaries provided by /Length1, /Length2, and /Length3, if they exist"""
-        lengths = self.lengths or []
+    # def preview_bytes_at_advertised_lengths(self):
+    #     """Show the bytes at the boundaries provided by /Length1, /Length2, and /Length3, if they exist"""
+    #     lengths = self.lengths or []
 
-        if self.lengths is None or len(lengths) <= 1:
-            console.print("No length demarcations to preview.", style='grey.dark')
+    #     if self.lengths is None or len(lengths) <= 1:
+    #         console.print("No length demarcations to preview.", style='grey.dark')
 
-        for i, demarcation in enumerate(lengths[1:]):
-            console.print(f"{self.font_file} at /Length{i} ({demarcation}):")
-            print(f"\n  Stream before: {self.stream_data[demarcation - FONT_SECTION_PREVIEW_LEN:demarcation + 1]}")
-            print(f"\n  Stream after: {self.stream_data[demarcation:demarcation + FONT_SECTION_PREVIEW_LEN]}")
+    #     for i, demarcation in enumerate(lengths[1:]):
+    #         console.print(f"{self.font_file} at /Length{i} ({demarcation}):")
+    #         print(f"\n  Stream before: {self.stream_data[demarcation - FONT_SECTION_PREVIEW_LEN:demarcation + 1]}")
+    #         print(f"\n  Stream after: {self.stream_data[demarcation:demarcation + FONT_SECTION_PREVIEW_LEN]}")
 
-        print(f"\nfinal bytes back from {self.stream_data.lengths[2]} + 10: {self.stream_data[-10 - -f.lengths[2]:]}")
+    #     print(f"\nfinal bytes back from {self.stream_data.lengths[2]} + 10: {self.stream_data[-10 - -f.lengths[2]:]}")
 
     def __str__(self) -> str:
         return self.display_title

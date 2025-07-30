@@ -16,12 +16,12 @@ def test_extract_guillemet(font_info):
 
 
 def _check_matches(
-        match_iterator,
-        expected_matches: int,
-        expected_bytes: int,
-        num_matches_tolerance: int = 0,
-        num_bytes_tolerance: int = 0
-    ) -> None:
+    match_iterator,
+    expected_matches: int,
+    expected_bytes: int,
+    num_matches_tolerance: int = 0,
+    num_bytes_tolerance: int = 0
+) -> None:
     quoted_bytes_found = 0
     quoted_sections_found = 0
 

@@ -1,5 +1,4 @@
 import pytest
-from rich.text import Text
 
 
 @pytest.fixture

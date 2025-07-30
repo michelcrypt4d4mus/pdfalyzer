@@ -92,9 +92,9 @@ select.add_argument('-c', '--counts', action='store_true',
                     help='show counts of some of the properties of the objects in the PDF')
 
 select.add_argument('-s', '--streams',
-                    help="scan all the PDF's decoded/decrypted streams for sus content as well as any YARA rule matches. " + \
-                         "brute force is involved; output is verbose. a single OBJ_ID can be optionally provided to " + \
-                         "limit the output to a single internal object. try '-s -- [OTHERARGS]' if you run into an " + \
+                    help="scan all the PDF's decoded/decrypted streams for sus content as well as any YARA rule matches. " +
+                         "brute force is involved; output is verbose. a single OBJ_ID can be optionally provided to " +
+                         "limit the output to a single internal object. try '-s -- [OTHERARGS]' if you run into an " +
                          "argument position related piccadilly.",
                     nargs='?',
                     const=ALL_STREAMS,
@@ -102,7 +102,7 @@ select.add_argument('-s', '--streams',
                     type=int)
 
 select.add_argument('--extract-quoted',
-                    help="extract and force decode all bytes found between this kind of quotation marks " + \
+                    help="extract and force decode all bytes found between this kind of quotation marks " +
                          "(requires --streams. can be specified more than once)",
                     choices=list(QUOTE_PATTERNS.keys()),
                     dest='extract_quoteds',
@@ -147,7 +147,7 @@ def parse_arguments():
         args.output_dir = args.output_dir or getcwd()
         file_prefix = (args.file_prefix + '__') if args.file_prefix else ''
         args.file_suffix = ('_' + args.file_suffix) if args.file_suffix else ''
-        args.output_basename =  f"{file_prefix}{path.basename(args.file_to_scan_path)}"
+        args.output_basename = f"{file_prefix}{path.basename(args.file_to_scan_path)}"
     elif args.output_dir:
         log.warning('--output-dir provided but no export option was chosen')
 
@@ -203,7 +203,7 @@ MAX_QUALITY = 10
 
 combine_pdfs_parser = ArgumentParser(
     description="Combine multiple PDFs into one.",
-    epilog="If all PDFs end in a number (e.g. 'xyz_1.pdf', 'xyz_2.pdf', etc. sort the files as if those were" \
+    epilog="If all PDFs end in a number (e.g. 'xyz_1.pdf', 'xyz_2.pdf', etc. sort the files as if those were" +
            " page numebrs prior to merging.",
     formatter_class=RichHelpFormatterPlus)
 

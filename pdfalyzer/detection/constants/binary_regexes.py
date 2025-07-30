@@ -36,13 +36,13 @@ PARENTHESES = 'parentheses'
 
 QUOTE_PATTERNS = {
     BACKTICK: '`.+`',
-    BRACKET: '\\[.+\\]',  # { 91 [-] 93 }
-    CURLY_BRACKET: '{.+}',  # { 123 [-] 125 }
-    DOUBLE_LESS_THAN: '<<.+>>', # Hex { 60 60 [-] 62 62 }
+    BRACKET: '\\[.+\\]',         # { 91 [-] 93 }
+    CURLY_BRACKET: '{.+}',       # { 123 [-] 125 }
+    DOUBLE_LESS_THAN: '<<.+>>',  # Hex { 60 60 [-] 62 62 }
     ESCAPED_SINGLE: "\\'.+\\'",
     ESCAPED_DOUBLE: '\\".+\\"',
-    FRONTSLASH: '/.+/',  # { 47 [-] 47 }
-    GUILLEMET: 'AB [-] BB',  # Guillemet quotes are not ANSI so require byte pattern
-    LESS_THAN: '<.+>',  # Hex { 60 [-] 62 }
-    PARENTHESES: '\\(.+\\)', # Hex { 28 [-] 29 }
+    FRONTSLASH: '/.+/',          # { 47 [-] 47 }
+    GUILLEMET: 'AB [-] BB',      # Guillemet quotes are not ANSI so require byte pattern
+    LESS_THAN: '<.+>',           # Hex { 60 [-] 62 }
+    PARENTHESES: '\\(.+\\)',     # Hex { 28 [-] 29 }
 }

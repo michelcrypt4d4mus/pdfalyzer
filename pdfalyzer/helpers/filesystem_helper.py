@@ -15,7 +15,7 @@ OPEN_FILES_BUFFER = 30        # we might have some files open already so we need
 PDF_EXT = '.pdf'
 
 # TODO: this kind of type alias is not supported until Python 3.12
-#type StrOrPath = Union[str, Path]
+# type StrOrPath = Union[str, Path]
 
 
 def with_pdf_extension(file_path: Union[str, Path]) -> str:
@@ -92,11 +92,11 @@ def set_max_open_files(num_filehandles: int = DEFAULT_MAX_OPEN_FILES) -> tuple[O
             resource.setrlimit(resource.RLIMIT_NOFILE, (soft, hard))
         except (ValueError, resource.error):
             try:
-               hard = soft
-               print_highlighted(f"Retrying setting max open files (soft, hard)=({soft}, {hard})", style='yellow')
-               resource.setrlimit(resource.RLIMIT_NOFILE, (soft, hard))
+                hard = soft
+                print_highlighted(f"Retrying setting max open files (soft, hard)=({soft}, {hard})", style='yellow')
+                resource.setrlimit(resource.RLIMIT_NOFILE, (soft, hard))
             except Exception:
-               print_highlighted('Failed to set max open files / ulimit, giving up!', style='error')
-               soft,hard = resource.getrlimit(resource.RLIMIT_NOFILE)
+                print_highlighted('Failed to set max open files / ulimit, giving up!', style='error')
+                soft, hard = resource.getrlimit(resource.RLIMIT_NOFILE)
 
     return (soft, hard)

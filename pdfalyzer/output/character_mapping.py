@@ -8,6 +8,7 @@ from yaralyzer.helpers.bytes_helper import print_bytes
 from yaralyzer.output.rich_console import console
 from yaralyzer.util.logging import log
 
+# from pdfalyzer.font_info import FontInfo  # Causes circular import
 from pdfalyzer.helpers.rich_text_helper import quoted_text
 from pdfalyzer.helpers.string_helper import pp
 from pdfalyzer.output.layout import print_headline_panel, subheading_width
@@ -17,7 +18,7 @@ CHARMAP_TITLE_PADDING = (1, 0, 0, 2)
 CHARMAP_PADDING = (0, 2, 0, 10)
 
 
-def print_character_mapping(font: 'FontInfo') -> None:
+def print_character_mapping(font: 'FontInfo') -> None:  # noqa: F821
     """Prints the character mapping extracted by PyPDF._charmap in tidy columns"""
     if font.character_mapping is None or len(font.character_mapping) == 0:
         log.info(f"No character map found in {font}")
@@ -37,7 +38,7 @@ def print_character_mapping(font: 'FontInfo') -> None:
     console.line()
 
 
-def print_prepared_charmap(font: 'FontInfo'):
+def print_prepared_charmap(font: 'FontInfo'):  # noqa: F821
     """Prints the prepared_charmap returned by PyPDF."""
     if font.prepared_char_map is None:
         log.info(f"No prepared_charmap found in {font}")

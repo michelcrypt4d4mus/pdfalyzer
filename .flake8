@@ -1,0 +1,22 @@
+[flake8]
+extend-exclude =
+    dist/,
+    tools/,
+    pdfalyzer/detection/constants/javascript_reserved_keywords.py,
+    pdfalyzer/util/debugging.py
+
+extend-ignore = E127,E128,F541
+max-line-length = 120
+
+per-file-ignores =
+    pdfalyzer/decorators/indeterminate_node.py: F403,F405
+    pdfalyzer/decorators/pdf_object_properties.py: F403,F405
+    pdfalyzer/decorators/pdf_tree_node.py: F403,F405
+    pdfalyzer/decorators/pdf_tree_verifier.py: F403,F405
+    pdfalyzer/output/tables/pdf_node_rich_table.py: F403,F405
+    pdfalyzer/pdfalyzer.py: F403,F405
+    pdfalyzer/pdf_object_relationship.py: F403,F405
+    pdfalyzer/util/adobe_strings.py: E221
+    pdfalyzer/util/argument_parser.py: E501
+    tests/conftest.py: E302
+    tests/pdfalyzer/test_pdf_object_relationship.py: F403,F405

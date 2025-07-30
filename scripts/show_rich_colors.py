@@ -2,7 +2,6 @@
 # Prints examples of ~1000 ASCII colors so you can pick one.
 
 from rich.console import Console
-from rich.padding import Padding
 from rich.text import Text
 
 STYLES_TO_OUTPUT = ['', 'bold', 'dim', 'reverse']
@@ -16,7 +15,7 @@ console = Console(color_system='256', highlight=False)
 
 for i in range(256):
     texts = [
-        Text('{0: >{width}}'.format(f"{STATEMENT} {i} {style}", width=len(STATEMENT) + 5 + len(style)), style=f"color({i}) {style}")
+        Text('{0: >{width}}'.format(f"{STATEMENT} {i} {style}", width=len(STATEMENT) + 5 + len(style)), style=f"color({i}) {style}")  # noqa: E501
         for style in STYLES_TO_OUTPUT
     ]
 

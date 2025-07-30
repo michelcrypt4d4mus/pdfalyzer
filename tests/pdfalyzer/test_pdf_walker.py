@@ -1,5 +1,3 @@
-import pytest
-
 from pdfalyzer.util.pdf_parser_manager import PdfParserManager
 
 

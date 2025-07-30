@@ -14,12 +14,12 @@ INCOMPARABLE_PROPS = ['from_obj', 'to_obj']
 
 class PdfObjectRelationship:
     def __init__(
-            self,
-            from_node: 'PdfTreeNode',
-            to_obj: IndirectObject,
-            reference_key: str,
-            address: str
-        ) -> None:
+        self,
+        from_node: 'PdfTreeNode',
+        to_obj: IndirectObject,
+        reference_key: str,
+        address: str
+    ) -> None:
         """
         In the case of easy key/value pairs the reference_key and the address are the same but
         for more complicated references the address will be the reference_key plus sub references.
@@ -53,12 +53,12 @@ class PdfObjectRelationship:
 
     @classmethod
     def build_node_references(
-            cls,
-            from_node: 'PdfTreeObject',
-            from_obj: Optional[PdfObject] = None,
-            ref_key: Optional[Union[str, int]] = None,
-            address: Optional[str] = None
-        ) -> List['PdfObjectRelationship']:
+        cls,
+        from_node: 'PdfTreeObject',
+        from_obj: Optional[PdfObject] = None,
+        ref_key: Optional[Union[str, int]] = None,
+        address: Optional[str] = None
+    ) -> List['PdfObjectRelationship']:
         """
         Builds list of relationships 'from_node.obj' contains referencing other PDF objects.
         Initially called with single arg from_node. Other args are employed when recursable

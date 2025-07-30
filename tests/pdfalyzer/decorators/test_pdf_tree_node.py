@@ -1,8 +1,3 @@
-import pytest
-
-from pdfalyzer.decorators.pdf_tree_node import PdfTreeNode
-
-
 def test_pdf_node_address(analyzing_malicious_pdfalyzer):
     node41 = analyzing_malicious_pdfalyzer.find_node_by_idnum(41)
     assert node41.tree_address() == '/Root/StructTreeRoot/K[0]/K[24]/K[1]/K[3]/K[0]/K[0]/K[1]/K[0]/Obj'
@@ -26,5 +21,4 @@ def test_address_of_this_node_in_other(analyzing_malicious_pdfalyzer, page_node,
 def test_referenced_by_keys(analyzing_malicious_pdfalyzer, page_node):
     node = analyzing_malicious_pdfalyzer.find_node_by_idnum(7)
     assert node.unique_addresses() == ['/Resources[/ExtGState][/GS7]']
-    assert sorted(page_node.unique_addresses()) ==  ['/Dest[0]', '/Kids[0]', '/Pg']
-
+    assert sorted(page_node.unique_addresses()) == ['/Dest[0]', '/Kids[0]', '/Pg']

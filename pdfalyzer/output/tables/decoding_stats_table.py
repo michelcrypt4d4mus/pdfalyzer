@@ -7,6 +7,7 @@ from rich.table import Table
 from rich.text import Text
 from yaralyzer.helpers.rich_text_helper import CENTER, na_txt, prefix_with_plain_text_obj
 
+from pdfalyzer.binary.binary_scanner import BinaryScanner
 from pdfalyzer.helpers.rich_text_helper import pct_txt
 from pdfalyzer.output.layout import generate_subtable, half_width, pad_header
 
@@ -17,7 +18,7 @@ REGEX_SUBTABLE_COLS = ['Metric', 'Value']
 DECODES_SUBTABLE_COLS = ['Encoding', '#', 'Decoded', '#', 'Forced', '#', 'Failed']
 
 
-def build_decoding_stats_table(scanner: 'BinaryScanner') -> Table:
+def build_decoding_stats_table(scanner: BinaryScanner) -> Table:
     """Diplay aggregate results on the decoding attempts we made on subsets of scanner.bytes"""
     stats_table = _new_decoding_stats_table(scanner.label.plain if scanner.label else '')
     regexes_not_found_in_stream = []
