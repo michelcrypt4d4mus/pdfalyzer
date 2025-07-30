@@ -59,7 +59,7 @@ pdfalyzer_show_color_theme = 'pdfalyzer:pdfalyzer_show_color_theme'
 python = "^3.9.2"
 anytree = "~=2.13"
 pypdf = "^5.9.0"
-yaralyzer = "^1.0.3"
+yaralyzer = "^1.0.4"
 
 
 [tool.poetry.group.dev.dependencies]
