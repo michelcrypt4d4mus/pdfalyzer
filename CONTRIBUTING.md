@@ -17,13 +17,13 @@ Note that the minimum versions for each package were chosen because that's what 
 ### With Python Poetry:
 These commands are the `poetry` equivalent of the traditional virtualenv installation followed by `source venv/bin/activate` but there's a lot of ways to run a python script in a virtualenv with `poetry` so you do you if you prefer another approach.
 
-```sh
+```bash
 poetry install
 source $(poetry env info --path)/bin/activate
 ```
 
 ### With A Manual `venv`:
-```sh
+```bash
 python -m venv .venv              # Create a virtualenv in .venv
 . .venv/bin/activate              # Activate the virtualenv
 pip install .                     # Install packages
