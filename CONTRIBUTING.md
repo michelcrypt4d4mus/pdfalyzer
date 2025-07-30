@@ -53,3 +53,9 @@ pytest -m slow --slow:
 
 # YARA Rules
 We love any and all PDF malware related YARA rules so send them our way.
+
+
+#### Hashtags
+```
+#ascii #asciiArt #blueteam #cybersecurity #detectionEngineering #DFIR #forensics #FOSS #hacking #homebrew #infosec #KaliLinux #malware #malwareDetection #malwareAnalysis #openSource #pdf #pdfs #pdfalyzer #pypi #python #redteam #reverseEngineering #reversing #Threatassessment #threathunting #yaralyze #yaralyzer #YARA #YARArule #YARArules
+```
