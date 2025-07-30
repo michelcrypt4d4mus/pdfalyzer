@@ -1,5 +1,6 @@
 # NEXT RELEASE
-* A lot of new PDF related YARA rules
+* Lots of new PDF related YARA rules
+* Upgrade `yaralyzer` to 1.0.2
 
 ### 1.16.6
 * Add the creator hash to GIFTEDCROOK rule
