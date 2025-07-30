@@ -1,9 +1,10 @@
+# CONTRIBUTING
 Contributions are welcome, just make sure that before you open a pull request:
 
-1. [The test suite passes](#Testing)
-1. You add a description of your changes to [the changelog](CHANGELOG.md)
+1. The `pytest` suite passes (see [here](#Testing) for more info on running the tests).
+1. You add tests for your changes to the `pytest` test suite.
+1. You add a description of your changes to [the changelog](CHANGELOG.md).
 
-If your pull request includes some `pytest` setup/unit testing you'll be my new favorite person.
 
 # Development Environment Setup
 1. `git clone https://github.com/michelcrypt4d4mus/pdfalyzer.git`
@@ -40,11 +41,11 @@ pdfalyzer()
 Test coverage is relatively spartan but should throw failures if you really mess something up. See [pytest's official docs](https://docs.pytest.org/en/7.1.x/how-to/usage.html) for other instantiation options.
 
 ```bash
-# Run tests (but not the slow ones):
-pytest
-
 # Run all tests (including the slow ones):
 pytest -v --slow
+
+# Run tests (but not the slow ones):
+pytest
 
 # Run only the slow tests:
 pytest -m slow --slow:
