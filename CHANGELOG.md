@@ -1,5 +1,6 @@
 # NEXT RELEASE
 * Even more PDF related YARA rules
+* Upgrade `anytree` to 2.13.0
 
 ### 1.16.7
 * Lots of new PDF related YARA rules
