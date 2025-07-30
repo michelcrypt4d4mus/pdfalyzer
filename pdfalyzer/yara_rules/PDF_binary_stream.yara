@@ -1,6 +1,5 @@
 
-rule PDF_with_XORed_JS_keywords
-{
+rule PDF_with_XORed_JS_keywords {
     meta:
         author             = "Michel de Cryptadamus"
         description        = "Look for Javascript keywords with XOR"
@@ -14,7 +13,6 @@ rule PDF_with_XORed_JS_keywords
 	condition:
         $this or $require or $const or $eval
 }
-
 
 
 // rule Frontslash_regex
