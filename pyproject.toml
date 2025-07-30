@@ -58,39 +58,48 @@ packages = [
 ]
 
 
-# Dependencies
+#####################
+#   Dependencies    #
+#####################
 [tool.poetry.dependencies]
 python = "^3.9.2"
 anytree = "~=2.13"
 pypdf = "^5.9.0"
 yaralyzer = "^1.0.4"
 
-# Dev dependencies
 [tool.poetry.group.dev.dependencies]
+flake8 = "^7.3.0"
 pytest = "^7.1.2"
 pytest-skip-slow = "^0.0.3"
 
 
-# Scripts
-flake8 = "^7.3.0"
+#####################
+#      Scripts      #
+#####################
 [tool.poetry.scripts]
 combine_pdfs = 'pdfalyzer:combine_pdfs'
 pdfalyze = 'pdfalyzer:pdfalyze'
 pdfalyzer_show_color_theme = 'pdfalyzer:pdfalyzer_show_color_theme'
 
 
-# URLs for PyPi page
+#####################
+#     PyPi URLs     #
+#####################
 [tool.poetry.urls]
 Changelog = "https://github.com/michelcrypt4d4mus/pdfalyzer/blob/master/CHANGELOG.md"
 
 
-# Poetry build system
+###############################
+#     Poetry build system     #
+###############################
 [build-system]
 build-backend = "poetry.core.masonry.api"
 requires = ["poetry-core>=1.0.0"]
 
 
-# Pytest configuration
+##################
+#     pytest     #
+##################
 [tool.pytest.ini_options]
 addopts = [
     "--import-mode=importlib",
