@@ -35,14 +35,14 @@ rule Cobaltgang_PDF_Metadata_Rev_A {
 
 
 rule PDF_Embedded_Exe : PDF {
-	meta:
-		ref = "https://github.com/jacobsoo/Yara-Rules/blob/master/PDF_Embedded_Exe.yar"
-	strings:
-    	$header = {25 50 44 46}
-    	$Launch_Action = {3C 3C 2F 53 2F 4C 61 75 6E 63 68 2F 54 79 70 65 2F 41 63 74 69 6F 6E 2F 57 69 6E 3C 3C 2F 46}
+    meta:
+        ref = "https://github.com/jacobsoo/Yara-Rules/blob/master/PDF_Embedded_Exe.yar"
+    strings:
+        $header = {25 50 44 46}
+        $Launch_Action = {3C 3C 2F 53 2F 4C 61 75 6E 63 68 2F 54 79 70 65 2F 41 63 74 69 6F 6E 2F 57 69 6E 3C 3C 2F 46}
         $exe = {3C 3C 2F 45 6D 62 65 64 64 65 64 46 69 6C 65 73}
     condition:
-    	$header at 0 and $Launch_Action and $exe
+        $header at 0 and $Launch_Action and $exe
 }
 
 
@@ -63,117 +63,117 @@ rule SUSP_Bad_PDF {
 
 
 rule malicious_author : PDF {
-	meta:
-		author = "Glenn Edwards (@hiddenillusion)"
-		version = "0.1"
-		weight = 5
+    meta:
+        author = "Glenn Edwards (@hiddenillusion)"
+        version = "0.1"
+        weight = 5
 
-	strings:
-		$magic = { 25 50 44 46 }
-		$reg0 = /Creator.?\(yen vaw\)/
-		$reg1 = /Title.?\(who cis\)/
-		$reg2 = /Author.?\(ser pes\)/
-	condition:
-		$magic in (0..1024) and all of ($reg*)
+    strings:
+        $magic = { 25 50 44 46 }
+        $reg0 = /Creator.?\(yen vaw\)/
+        $reg1 = /Title.?\(who cis\)/
+        $reg2 = /Author.?\(ser pes\)/
+    condition:
+        $magic in (0..1024) and all of ($reg*)
 }
 
 
 rule suspicious_version : PDF {
-	meta:
-		author = "Glenn Edwards (@hiddenillusion)"
-		version = "0.1"
-		weight = 3
+    meta:
+        author = "Glenn Edwards (@hiddenillusion)"
+        version = "0.1"
+        weight = 3
 
-	strings:
-		$magic = { 25 50 44 46 }
-		$ver = /%PDF-1.\d{1}/
-	condition:
-		$magic in (0..1024) and not $ver
+    strings:
+        $magic = { 25 50 44 46 }
+        $ver = /%PDF-1.\d{1}/
+    condition:
+        $magic in (0..1024) and not $ver
 }
 
 
 rule suspicious_creation : PDF {
-	meta:
-		author = "Glenn Edwards (@hiddenillusion)"
-		version = "0.1"
-		weight = 2
+    meta:
+        author = "Glenn Edwards (@hiddenillusion)"
+        version = "0.1"
+        weight = 2
 
-	strings:
-		$magic = { 25 50 44 46 }
-		$header = /%PDF-1\.(3|4|6)/
-		$create0 = /CreationDate \(D:20101015142358\)/
-		$create1 = /CreationDate \(2008312053854\)/
-	condition:
-		$magic in (0..1024) and $header and 1 of ($create*)
+    strings:
+        $magic = { 25 50 44 46 }
+        $header = /%PDF-1\.(3|4|6)/
+        $create0 = /CreationDate \(D:20101015142358\)/
+        $create1 = /CreationDate \(2008312053854\)/
+    condition:
+        $magic in (0..1024) and $header and 1 of ($create*)
 }
 
 
 rule suspicious_title : PDF {
-	meta:
-		author = "Glenn Edwards (@hiddenillusion)"
-		version = "0.1"
-		weight = 4
+    meta:
+        author = "Glenn Edwards (@hiddenillusion)"
+        version = "0.1"
+        weight = 4
 
-	strings:
-		$magic = { 25 50 44 46 }
-		$header = /%PDF-1\.(3|4|6)/
+    strings:
+        $magic = { 25 50 44 46 }
+        $header = /%PDF-1\.(3|4|6)/
 
-		$title0 = "who cis"
-		$title1 = "P66N7FF"
-		$title2 = "Fohcirya"
-	condition:
-		$magic in (0..1024) and $header and 1 of ($title*)
+        $title0 = "who cis"
+        $title1 = "P66N7FF"
+        $title2 = "Fohcirya"
+    condition:
+        $magic in (0..1024) and $header and 1 of ($title*)
 }
 
 
 rule suspicious_author : PDF {
-	meta:
-		author = "Glenn Edwards (@hiddenillusion)"
-		version = "0.1"
-		weight = 4
+    meta:
+        author = "Glenn Edwards (@hiddenillusion)"
+        version = "0.1"
+        weight = 4
 
-	strings:
-		$magic = { 25 50 44 46 }
-		$header = /%PDF-1\.(3|4|6)/
-		$author0 = "Ubzg1QUbzuzgUbRjvcUb14RjUb1"
-		$author1 = "ser pes"
-		$author2 = "Miekiemoes"
-		$author3 = "Nsarkolke"
-	condition:
-		$magic in (0..1024) and $header and 1 of ($author*)
+    strings:
+        $magic = { 25 50 44 46 }
+        $header = /%PDF-1\.(3|4|6)/
+        $author0 = "Ubzg1QUbzuzgUbRjvcUb14RjUb1"
+        $author1 = "ser pes"
+        $author2 = "Miekiemoes"
+        $author3 = "Nsarkolke"
+    condition:
+        $magic in (0..1024) and $header and 1 of ($author*)
 }
 
 
 rule suspicious_producer : PDF {
-	meta:
-		author = "Glenn Edwards (@hiddenillusion)"
-		version = "0.1"
-		weight = 2
+    meta:
+        author = "Glenn Edwards (@hiddenillusion)"
+        version = "0.1"
+        weight = 2
 
-	strings:
-		$magic = { 25 50 44 46 }
-		$header = /%PDF-1\.(3|4|6)/
+    strings:
+        $magic = { 25 50 44 46 }
+        $header = /%PDF-1\.(3|4|6)/
 
-		$producer0 = /Producer \(Scribus PDF Library/
-		$producer1 = "Notepad"
-	condition:
-		$magic in (0..1024) and $header and 1 of ($producer*)
+        $producer0 = /Producer \(Scribus PDF Library/
+        $producer1 = "Notepad"
+    condition:
+        $magic in (0..1024) and $header and 1 of ($producer*)
 }
 
 
 rule suspicious_creator : PDF {
-	meta:
-		author = "Glenn Edwards (@hiddenillusion)"
-		version = "0.1"
-		weight = 3
-	strings:
-		$magic = { 25 50 44 46 }
-		$header = /%PDF-1\.(3|4|6)/
-		$creator0 = "yen vaw"
-		$creator1 = "Scribus"
-		$creator2 = "Viraciregavi"
-	condition:
-		$magic in (0..1024) and $header and 1 of ($creator*)
+    meta:
+        author = "Glenn Edwards (@hiddenillusion)"
+        version = "0.1"
+        weight = 3
+    strings:
+        $magic = { 25 50 44 46 }
+        $header = /%PDF-1\.(3|4|6)/
+        $creator0 = "yen vaw"
+        $creator1 = "Scribus"
+        $creator2 = "Viraciregavi"
+    condition:
+        $magic in (0..1024) and $header and 1 of ($creator*)
 }
 
 
@@ -211,89 +211,89 @@ rule multiple_filtering : PDF {
 
 
 rule suspicious_launch_action : PDF {
-	meta:
-		author = "Glenn Edwards (@hiddenillusion)"
-		version = "0.1"
-		weight = 2
-	strings:
-		$magic = { 25 50 44 46 }
-		$attrib0 = /\/Launch/
-		$attrib1 = /\/URL /
-		$attrib2 = /\/Action/
-		$attrib3 = /\/F /
-	condition:
-		$magic in (0..1024) and 3 of ($attrib*)
+    meta:
+        author = "Glenn Edwards (@hiddenillusion)"
+        version = "0.1"
+        weight = 2
+    strings:
+        $magic = { 25 50 44 46 }
+        $attrib0 = /\/Launch/
+        $attrib1 = /\/URL /
+        $attrib2 = /\/Action/
+        $attrib3 = /\/F /
+    condition:
+        $magic in (0..1024) and 3 of ($attrib*)
 }
 
 
 rule suspicious_embed : PDF {
-	meta:
-		author = "Glenn Edwards (@hiddenillusion)"
-		version = "0.1"
-		ref = "https://feliam.wordpress.com/2010/01/13/generic-pdf-exploit-hider-embedpdf-py-and-goodbye-av-detection-012010/"
-		weight = 2
-	strings:
-		$magic = { 25 50 44 46 }
-		$meth0 = /\/Launch/
-		$meth1 = /\/GoTo(E|R)/ //means go to embedded or remote
-		$attrib0 = /\/URL /
-		$attrib1 = /\/Action/
-		$attrib2 = /\/Filespec/
-	condition:
-		$magic in (0..1024) and 1 of ($meth*) and 2 of ($attrib*)
+    meta:
+        author = "Glenn Edwards (@hiddenillusion)"
+        version = "0.1"
+        ref = "https://feliam.wordpress.com/2010/01/13/generic-pdf-exploit-hider-embedpdf-py-and-goodbye-av-detection-012010/"
+        weight = 2
+    strings:
+        $magic = { 25 50 44 46 }
+        $meth0 = /\/Launch/
+        $meth1 = /\/GoTo(E|R)/ //means go to embedded or remote
+        $attrib0 = /\/URL /
+        $attrib1 = /\/Action/
+        $attrib2 = /\/Filespec/
+    condition:
+        $magic in (0..1024) and 1 of ($meth*) and 2 of ($attrib*)
 }
 
 
 rule suspicious_obfuscation : PDF {
-	meta:
-		author = "Glenn Edwards (@hiddenillusion)"
-		version = "0.1"
-		weight = 2
-	strings:
-		$magic = { 25 50 44 46 }
-		$reg = /\/\w#[a-zA-Z0-9]{2}#[a-zA-Z0-9]{2}/
-	condition:
-		$magic in (0..1024) and #reg > 5
+    meta:
+        author = "Glenn Edwards (@hiddenillusion)"
+        version = "0.1"
+        weight = 2
+    strings:
+        $magic = { 25 50 44 46 }
+        $reg = /\/\w#[a-zA-Z0-9]{2}#[a-zA-Z0-9]{2}/
+    condition:
+        $magic in (0..1024) and #reg > 5
 }
 
 
 rule invalid_XObject_js : PDF {
-	meta:
-		author = "Glenn Edwards (@hiddenillusion)"
-		description = "XObject's require v1.4+"
-		ref = "https://blogs.adobe.com/ReferenceXObjects/"
-		version = "0.1"
-		weight = 2
-	strings:
-		$magic = { 25 50 44 46 }
-		$ver = /%PDF-1\.[4-9]/
-		$attrib0 = /\/XObject/
-		$attrib1 = /\/JavaScript/
-	condition:
-		$magic in (0..1024) and not $ver and all of ($attrib*)
+    meta:
+        author = "Glenn Edwards (@hiddenillusion)"
+        description = "XObject's require v1.4+"
+        ref = "https://blogs.adobe.com/ReferenceXObjects/"
+        version = "0.1"
+        weight = 2
+    strings:
+        $magic = { 25 50 44 46 }
+        $ver = /%PDF-1\.[4-9]/
+        $attrib0 = /\/XObject/
+        $attrib1 = /\/JavaScript/
+    condition:
+        $magic in (0..1024) and not $ver and all of ($attrib*)
 }
 
 
 rule invalid_trailer_structure : PDF {
-	meta:
-		author = "Glenn Edwards (@hiddenillusion), @malvidin"
-		version = "0.2"
-		weight = 1
+    meta:
+        author = "Glenn Edwards (@hiddenillusion), @malvidin"
+        version = "0.2"
+        weight = 1
     strings:
-		$magic = "%PDF"  // Required for a valid PDF
-		$reg0 = /trailer[ \r\n]*<<.{0,1000}\/Size\b/s
-		$reg1 = /\/Root\b.{0,1000}[ \r\n]*.{0,500}startxref[ \r\n]*.{0,500}[ \r\n]*%%EOF/s
-	condition:
-		$magic in (0..1024) and not ($reg0 or $reg1)
+        $magic = "%PDF"  // Required for a valid PDF
+        $reg0 = /trailer[ \r\n]*<<.{0,1000}\/Size\b/s
+        $reg1 = /\/Root\b.{0,1000}[ \r\n]*.{0,500}startxref[ \r\n]*.{0,500}[ \r\n]*%%EOF/s
+    condition:
+        $magic in (0..1024) and not ($reg0 or $reg1)
 }
 
 
 rule multiple_versions : PDF {
-	meta:
-		author = "Glenn Edwards (@hiddenillusion)"
-		version = "0.1"
+    meta:
+        author = "Glenn Edwards (@hiddenillusion)"
+        version = "0.1"
         description = "Written very generically and doesn't hold any weight - just something that might be useful to know about to help show incremental updates to the file being analyzed"
-		weight = 0
+        weight = 0
 
     strings:
         $magic = { 25 50 44 46 }
@@ -305,12 +305,12 @@ rule multiple_versions : PDF {
 
 
 rule js_wrong_version : PDF {
-	meta:
-		author = "Glenn Edwards (@hiddenillusion)"
-		description = "JavaScript was introduced in v1.3"
-		ref = "http://wwwimages.adobe.com/www.adobe.com/content/dam/Adobe/en/devnet/pdf/pdfs/pdf_reference_1-7.pdf"
-		version = "0.1"
-		weight = 2
+    meta:
+        author = "Glenn Edwards (@hiddenillusion)"
+        description = "JavaScript was introduced in v1.3"
+        ref = "http://wwwimages.adobe.com/www.adobe.com/content/dam/Adobe/en/devnet/pdf/pdfs/pdf_reference_1-7.pdf"
+        version = "0.1"
+        weight = 2
     strings:
         $magic = { 25 50 44 46 }
         $js = /\/JavaScript/
@@ -321,12 +321,12 @@ rule js_wrong_version : PDF {
 
 
 rule JBIG2_wrong_version : PDF {
-	meta:
-		author = "Glenn Edwards (@hiddenillusion)"
-		description = "JBIG2 was introduced in v1.4"
-		ref = "http://wwwimages.adobe.com/www.adobe.com/content/dam/Adobe/en/devnet/pdf/pdfs/pdf_reference_1-7.pdf"
-		version = "0.1"
-		weight = 1
+    meta:
+        author = "Glenn Edwards (@hiddenillusion)"
+        description = "JBIG2 was introduced in v1.4"
+        ref = "http://wwwimages.adobe.com/www.adobe.com/content/dam/Adobe/en/devnet/pdf/pdfs/pdf_reference_1-7.pdf"
+        version = "0.1"
+        weight = 1
 
     strings:
         $magic = { 25 50 44 46 }
@@ -338,12 +338,12 @@ rule JBIG2_wrong_version : PDF {
 
 
 rule FlateDecode_wrong_version : PDF {
-	meta:
-		author = "Glenn Edwards (@hiddenillusion)"
-		description = "Flate was introduced in v1.2"
-		ref = "http://wwwimages.adobe.com/www.adobe.com/content/dam/Adobe/en/devnet/pdf/pdfs/pdf_reference_1-7.pdf"
-		version = "0.1"
-		weight = 1
+    meta:
+        author = "Glenn Edwards (@hiddenillusion)"
+        description = "Flate was introduced in v1.2"
+        ref = "http://wwwimages.adobe.com/www.adobe.com/content/dam/Adobe/en/devnet/pdf/pdfs/pdf_reference_1-7.pdf"
+        version = "0.1"
+        weight = 1
 
     strings:
         $magic = { 25 50 44 46 }
@@ -355,12 +355,12 @@ rule FlateDecode_wrong_version : PDF {
 
 
 rule embed_wrong_version : PDF {
-	meta:
-		author = "Glenn Edwards (@hiddenillusion)"
-		description = "EmbeddedFiles were introduced in v1.3"
-		ref = "http://wwwimages.adobe.com/www.adobe.com/content/dam/Adobe/en/devnet/pdf/pdfs/pdf_reference_1-7.pdf"
-		version = "0.1"
-		weight = 1
+    meta:
+        author = "Glenn Edwards (@hiddenillusion)"
+        description = "EmbeddedFiles were introduced in v1.3"
+        ref = "http://wwwimages.adobe.com/www.adobe.com/content/dam/Adobe/en/devnet/pdf/pdfs/pdf_reference_1-7.pdf"
+        version = "0.1"
+        weight = 1
     strings:
         $magic = { 25 50 44 46 }
         $embed = /\/EmbeddedFiles/
@@ -421,17 +421,17 @@ rule header_evasion : PDF {
 
 
 rule BlackHole_v2 : PDF {
-	meta:
-		author = "Glenn Edwards (@hiddenillusion)"
-		version = "0.1"
-		ref = "http://fortknoxnetworks.blogspot.no/2012/10/blackhhole-exploit-kit-v-20-url-pattern.html"
-		weight = 3
+    meta:
+        author = "Glenn Edwards (@hiddenillusion)"
+        version = "0.1"
+        ref = "http://fortknoxnetworks.blogspot.no/2012/10/blackhhole-exploit-kit-v-20-url-pattern.html"
+        weight = 3
 
-	strings:
-		$magic = { 25 50 44 46 }
-		$content = "Index[5 1 7 1 9 4 23 4 50"
-	condition:
-		$magic in (0..1024) and $content
+    strings:
+        $magic = { 25 50 44 46 }
+        $content = "Index[5 1 7 1 9 4 23 4 50"
+    condition:
+        $magic in (0..1024) and $content
 }
 
 rule blackhole2_pdf : EK PDF{
@@ -469,19 +469,19 @@ rule blackhole2_pdf : EK PDF{
 }
 
 rule XDP_embedded_PDF : PDF {
-	meta:
-		author = "Glenn Edwards (@hiddenillusion)"
-		version = "0.1"
-		ref = "http://blog.9bplus.com/av-bypass-for-malicious-pdfs-using-xdp"
+    meta:
+        author = "Glenn Edwards (@hiddenillusion)"
+        version = "0.1"
+        ref = "http://blog.9bplus.com/av-bypass-for-malicious-pdfs-using-xdp"
         weight = 1
-	strings:
-		$s1 = "<pdf xmlns="
-		$s2 = "<chunk>"
-		$s3 = "</pdf>"
-		$header0 = "%PDF"
-		$header1 = "JVBERi0"
-	condition:
-		all of ($s*) and 1 of ($header*)
+    strings:
+        $s1 = "<pdf xmlns="
+        $s2 = "<chunk>"
+        $s3 = "</pdf>"
+        $header0 = "%PDF"
+        $header1 = "JVBERi0"
+    condition:
+        all of ($s*) and 1 of ($header*)
 }
 
 
@@ -588,11 +588,9 @@ rule APT_APT29_NOBELIUM_BoomBox_PDF_Masq_May21_1 {
         reference = "https://www.microsoft.com/security/blog/2021/05/27/new-sophisticated-email-based-attack-from-nobelium/"
         date = "2021-05-27"
         score = 70
-
     strings:
         $ah1 = { 25 50 44 46 2d 31 2e 33 0a 25 } /* PDF Header */
         $af1 = { 0a 25 25 45 4f 46 0a } /* EOF */
-
         $fp1 = "endobj" ascii
         $fp2 = "endstream" ascii
         $fp3 = { 20 6F 62 6A 0A } /*  obj\x0a */
@@ -615,33 +613,32 @@ rule Adobe_Type_1_Font {
         project_zero_link = "https://googleprojectzero.github.io/0days-in-the-wild/0day-RCAs/2020/CVE-2020-27930.html"
         labs_pivot        = "N/A"
         samples           = "64f2c43f3d01eae65125024797d5a40d2fdc9c825c7043f928814b85cd8201a2"
-
-	strings:
+    strings:
         $pdf = "%PDF-"
         $magic_classic = "%!FontType1-1."
         $magic_next_generation1 = /obj\s*<<[^>]*\/Type\s*\/Font[^>]*\/Subtype\s*\/Type1/
         $magic_next_generation2 = /obj\s*<<[^>]*\/Subtype\s*\/Type1[^>]*\/Type\s*\/Font/
-	condition:
-		$magic_classic in (0..1024) or ($pdf in (0..1024) and any of ($magic_next_generation*))
+    condition:
+        $magic_classic in (0..1024) or ($pdf in (0..1024) and any of ($magic_next_generation*))
 }
 
 
 rule PDF_Containing_JavaScript {
     meta:
         author         = "InQuest Labs"
-		description    = "This signature detects a PDF file that contains JavaScript. JavaScript can be used to customize PDFs by implementing objects, methods, and properties. While not inherently malicious, embedding JavaScript inside of a PDF is often used for malicious purposes such as malware delivery or exploitation."
+        description    = "This signature detects a PDF file that contains JavaScript. JavaScript can be used to customize PDFs by implementing objects, methods, and properties. While not inherently malicious, embedding JavaScript inside of a PDF is often used for malicious purposes such as malware delivery or exploitation."
         created_date   = "2022-03-15"
         updated_date   = "2022-03-15"
         blog_reference = "www.sans.org/security-resources/malwarefaq/pdf-overview.php"
         labs_reference = "N/A"
         labs_pivot     = "N/A"
         samples        = "c82e29dcaed3c71e05449cb9463f3efb7114ea22b6f45b16e09eae32db9f5bef"
-	strings:
-		$pdf_tag1 = /\x25\x50\x44\x46\x2d/
-		$js_tag1  = "/JavaScript" fullword
-		$js_tag2  = "/JS"		  fullword
-	condition:
-		$pdf_tag1 in (0..1024) and ($js_tag1 or $js_tag2)
+    strings:
+        $pdf_tag1 = /\x25\x50\x44\x46\x2d/
+        $js_tag1  = "/JavaScript" fullword
+        $js_tag2  = "/JS"          fullword
+    condition:
+        $pdf_tag1 in (0..1024) and ($js_tag1 or $js_tag2)
 }
 
 
@@ -655,12 +652,12 @@ rule JS_PDF_Data_Submission {
         labs_reference = "N/A"
         labs_pivot     = "N/A"
         samples        = "a0adbe66e11bdeaf880b81b41cd63964084084a413069389364c98da0c4d2a13"
-	strings:
+    strings:
         $pdf_header = "%PDF-"
         $js = /(\/JS|\/JavaScript)/ nocase
         $a1 = /app\s*\.\s*doc\s*\.\s*submitForm\s*\(\s*['"]http/ nocase
         $inq_tail = "INQUEST-PP=pdfparser"
-	condition:
+    condition:
         ($pdf_header in (0..1024) or $inq_tail in (filesize-30..filesize))
         and $js
         and $a1
@@ -739,10 +736,10 @@ rule PDF_JS_guillemet_close_in_Adobe_Type1_font {
         breach_description = "https://cryptadamus.substack.com/p/the-hack-at-the-end-of-the-universe"
         samples            = "61d47fbfe855446d77c7da74b0b3d23dbcee4e4e48065a397bbf09a7988f596e"
         in_the_wild        = true
-	strings:
+    strings:
         // "/FJS`\xbb`"
-		$url_js_backtick_close_obj = {2F 46 4A 53 60 BB 60}
-	condition:
+        $url_js_backtick_close_obj = {2F 46 4A 53 60 BB 60}
+    condition:
         $url_js_backtick_close_obj and Adobe_Type_1_Font
 }
 
@@ -1006,52 +1003,52 @@ rule HKTL_EmbeddedPDF {
 
 
 rule suspicious_js {
-	meta:
+    meta:
         severity = 6
         type = "pdf"
-		author = "Glenn Edwards (@hiddenillusion)"
-		version = "0.1"
-		weight = 3
-		description = "possible exploit"
+        author = "Glenn Edwards (@hiddenillusion)"
+        version = "0.1"
+        weight = 3
+        description = "possible exploit"
         reference = "https://github.com/a232319779/mmpi/blob/master/mmpi/data/yara/pdf/pdf.yara"
-	strings:
-		$magic = { 25 50 44 46 }
-		$attrib0 = /\/OpenAction /
-		$attrib1 = /\/JavaScript /
-		$js0 = "eval"
-		$js1 = "Array"
-		$js2 = "String.fromCharCode"
-	condition:
-		$magic at 0 and all of ($attrib*) and 2 of ($js*)
+    strings:
+        $magic = { 25 50 44 46 }
+        $attrib0 = /\/OpenAction /
+        $attrib1 = /\/JavaScript /
+        $js0 = "eval"
+        $js1 = "Array"
+        $js2 = "String.fromCharCode"
+    condition:
+        $magic at 0 and all of ($attrib*) and 2 of ($js*)
 }
 
 
 rule possible_exploit {
-	meta:
+    meta:
         severity = 9
         type = "pdf"
-		author = "Glenn Edwards (@hiddenillusion)"
-		version = "0.1"
-		weight = 3
-		url = "https://github.com/hiddenillusion/AnalyzePDF/blob/master/pdf_rules.yara"
+        author = "Glenn Edwards (@hiddenillusion)"
+        version = "0.1"
+        weight = 3
+        url = "https://github.com/hiddenillusion/AnalyzePDF/blob/master/pdf_rules.yara"
         description = "possible exploit"
         reference = "https://github.com/a232319779/mmpi/blob/master/mmpi/data/yara/pdf/pdf.yara"
-	strings:
-		$magic = { 25 50 44 46 }
+    strings:
+        $magic = { 25 50 44 46 }
 
-		$attrib0 = /\/JavaScript /
-		$attrib3 = /\/ASCIIHexDecode/
-		$attrib4 = /\/ASCII85Decode/
+        $attrib0 = /\/JavaScript /
+        $attrib3 = /\/ASCIIHexDecode/
+        $attrib4 = /\/ASCII85Decode/
 
-		$action0 = /\/Action/
-		$action1 = "Array"
-		$shell = "A"
-		$cond0 = "unescape"
-		$cond1 = "String.fromCharCode"
+        $action0 = /\/Action/
+        $action1 = "Array"
+        $shell = "A"
+        $cond0 = "unescape"
+        $cond1 = "String.fromCharCode"
 
-		$nop = "%u9090%u9090"
-	condition:
-		$magic at 0 and (2 of ($attrib*)) or ($action0 and #shell > 10 and 1 of ($cond*)) or ($action1 and $cond0 and $nop)
+        $nop = "%u9090%u9090"
+    condition:
+        $magic at 0 and (2 of ($attrib*)) or ($action0 and #shell > 10 and 1 of ($cond*)) or ($action1 and $cond0 and $nop)
 }
 
 
@@ -1170,7 +1167,7 @@ rule Detect_URLs {
 
 rule Detect_PDF_Embedded_Files {
     meta:
-		atk_type = "Macro"
+        atk_type = "Macro"
         description = "Detects embedded files in PDF files"
         author = "groommang"
         date = "2024-06-25"
@@ -1184,7 +1181,7 @@ rule Detect_PDF_Embedded_Files {
 
 rule Detect_PDF_Suspicious_AcroForms {
     meta:
-      	atk_type = "Macro"
+          atk_type = "Macro"
         description = "Detects suspicious AcroForms in PDF files"
         author = "groommang"
         date = "2024-06-25"
@@ -1224,18 +1221,18 @@ rule oAuth_Phishing_PDF {
 rule Adobe_XMP_Identifier {
     meta:
         author         = "InQuest Labs"
-		description    = "This signature identifies Adobe Extensible Metadata Platform (XMP) identifiers embedded within files. Defined as a standard for mapping graphical asset relationships, XMP allows for tracking of both parent-child relationships and individual revisions. There are three categories of identifiers: original document, document, and instance. Generally, XMP data is stored in XML format, updated on save/copy, and embedded within the graphical asset. These identifiers can be used to track both malicious and benign graphics within common Microsoft and Adobe document lures."
+        description    = "This signature identifies Adobe Extensible Metadata Platform (XMP) identifiers embedded within files. Defined as a standard for mapping graphical asset relationships, XMP allows for tracking of both parent-child relationships and individual revisions. There are three categories of identifiers: original document, document, and instance. Generally, XMP data is stored in XML format, updated on save/copy, and embedded within the graphical asset. These identifiers can be used to track both malicious and benign graphics within common Microsoft and Adobe document lures."
         created_date   = "2022-03-15"
         updated_date   = "2022-03-15"
         blog_reference = "http://wwwimages.adobe.com/content/dam/acom/en/products/xmp/Pdfs/XMPAssetRelationships.pdf"
         labs_reference = "https://labs.inquest.net/dfi/sha256/1030710f6f18950f01b1a55d50a5169717e48567aa13a0a769f5451423280b4d"
         labs_pivot     = "https://labs.inquest.net/dfi/search/ioc/xmpid/xmp.did%3AEDC9411A6A5F11E2838BB9184F90E845##eyJyZXN1bHRzIjpbIn4iLCJmaXJzdFNlZW4iLDEsIiIsW11dfQ=="
         samples        = "1030710f6f18950f01b1a55d50a5169717e48567aa13a0a769f5451423280b4d"
-	strings:
+    strings:
         $xmp_md5  = /xmp\.[dio]id[-: _][a-f0-9]{32}/  nocase ascii wide
         $xmp_guid = /xmp\.[dio]id[-: _][a-f0-9]{36}/ nocase ascii wide
-	condition:
-		any of them
+    condition:
+        any of them
 }
 
 
@@ -1325,57 +1322,57 @@ rule pdf_fake_password {
 
 
 rule pdf_mal_script {
-	strings:
-		$magic = { 25 50 44 46 }
-		$action0 = "<</S/Launch/Type/Action/Win<<" nocase ascii
-		$action1 = "/Type/Action>>" nocase ascii
-		$action2 = "/OpenAction" nocase ascii
-		$action3 = "<< /Type /Action" nocase ascii
-		$action4 = "/Type /Action" nocase ascii
-		$uri = "/S /URI /Type /Action /URI"
-		$launch = "/S /Launch /Win" nocase ascii
-		$cmd = "(cmd.exe)" nocase ascii
-		$ps = "powershell" nocase ascii
-		$pscom0 = "DownloadFile" nocase ascii
-		$pscom1 = "payload" nocase ascii
-		$homepath = "%HOMEPATH%" nocase ascii
-		$start0 = "start" nocase ascii
-		$start1 = "startxref" nocase ascii
-		$js0 = "<</S/JavaScript/JS" nocase ascii
-		$js1 = /\/JS \([^)]+?\\/
-		$js2 = "/JavaScript" nocase ascii
-		$emb0 = "/EmbeddedFiles" nocase ascii
-		$emb1 = "/EmbeddedFile" nocase ascii
-		$url0 = "https://shapeupfitnessdkk-my.sharepoint.com/:b:/g/personal/michelle_shapeupfitness_dk/Ebd2GDh2N8JErL23JmMNmw8BQA7JVpGiS_C6TGkERpma4A?e=xBbtrV"
-		$url1 = "https://ipfs.io/ipfs/QmSyYCjyTMyo1dM2dWBY6ExTmodmU1oSBWTdmEDTLrEenC#http://www.booking.com/"
-		$url2 = "https://romacul.com.br/workshop/wp-content/mail.outlookoffice365.com.html"
-		$url3 = "https://www.hitplus.fr/2018/click.php?url=https://cutt.ly/seU8MT6t#F8i_bfW"
-		$url4 = "https://etehadshipping.com/"
-		$url5 = "https://afarm.net/"
-		$url6 = "https://portals.checkfedexexp.com"
-		$url7 = "https://otcworldmedia.com"
-		$url8 = "http://tiny.cc/"
-		$url9 = "http://128.199.7.40/"
-		$invoc = "%%Invocation:" nocase ascii
-		$op0 = "-sOutputFile=" nocase ascii
-		$op1 = "-dNumRenderingThreads=" nocase ascii
-		$op2 = "-sDEVICE=" nocase ascii
-		$op3 = "-dAutoRotatePages=" nocase ascii
-		$script0 = "<script" nocase ascii
-		$script1 = "</script>" nocase ascii
-		$tag0 = "<event" nocase ascii
-		$tag1 = "</event>" nocase ascii
-		$event0 = "event.target.exportXFAData" nocase ascii
-		$event1 = "activity=" nocase ascii
- 	condition:
-		($magic at 0 and (8 of them)) or
-		($magic at 0 and ($action0 or $action1 or $action2) and ($cmd or $ps) or ($pscom0 or $pscom1) and ($start0 or $start1) and $launch and $homepath and $js0) or
-		($magic at 0 and ($action2 or $action3) and (1 of ($emb*))) or
-		($magic at 0 and ( 1 of($url*))) or
-		($magic at 0 and $action4 and ($js1 or $js2)) or
-		($magic at 0 and $invoc and (2 of ($op*))) or
-		($magic at 0 and $uri) or
-		($magic at 0 and (2 of ($script*)) and ((2 of($event*)) and (2 of ($tag*))))
+    strings:
+        $magic = { 25 50 44 46 }
+        $action0 = "<</S/Launch/Type/Action/Win<<" nocase ascii
+        $action1 = "/Type/Action>>" nocase ascii
+        $action2 = "/OpenAction" nocase ascii
+        $action3 = "<< /Type /Action" nocase ascii
+        $action4 = "/Type /Action" nocase ascii
+        $uri = "/S /URI /Type /Action /URI"
+        $launch = "/S /Launch /Win" nocase ascii
+        $cmd = "(cmd.exe)" nocase ascii
+        $ps = "powershell" nocase ascii
+        $pscom0 = "DownloadFile" nocase ascii
+        $pscom1 = "payload" nocase ascii
+        $homepath = "%HOMEPATH%" nocase ascii
+        $start0 = "start" nocase ascii
+        $start1 = "startxref" nocase ascii
+        $js0 = "<</S/JavaScript/JS" nocase ascii
+        $js1 = /\/JS \([^)]+?\\/
+        $js2 = "/JavaScript" nocase ascii
+        $emb0 = "/EmbeddedFiles" nocase ascii
+        $emb1 = "/EmbeddedFile" nocase ascii
+        $url0 = "https://shapeupfitnessdkk-my.sharepoint.com/:b:/g/personal/michelle_shapeupfitness_dk/Ebd2GDh2N8JErL23JmMNmw8BQA7JVpGiS_C6TGkERpma4A?e=xBbtrV"
+        $url1 = "https://ipfs.io/ipfs/QmSyYCjyTMyo1dM2dWBY6ExTmodmU1oSBWTdmEDTLrEenC#http://www.booking.com/"
+        $url2 = "https://romacul.com.br/workshop/wp-content/mail.outlookoffice365.com.html"
+        $url3 = "https://www.hitplus.fr/2018/click.php?url=https://cutt.ly/seU8MT6t#F8i_bfW"
+        $url4 = "https://etehadshipping.com/"
+        $url5 = "https://afarm.net/"
+        $url6 = "https://portals.checkfedexexp.com"
+        $url7 = "https://otcworldmedia.com"
+        $url8 = "http://tiny.cc/"
+        $url9 = "http://128.199.7.40/"
+        $invoc = "%%Invocation:" nocase ascii
+        $op0 = "-sOutputFile=" nocase ascii
+        $op1 = "-dNumRenderingThreads=" nocase ascii
+        $op2 = "-sDEVICE=" nocase ascii
+        $op3 = "-dAutoRotatePages=" nocase ascii
+        $script0 = "<script" nocase ascii
+        $script1 = "</script>" nocase ascii
+        $tag0 = "<event" nocase ascii
+        $tag1 = "</event>" nocase ascii
+        $event0 = "event.target.exportXFAData" nocase ascii
+        $event1 = "activity=" nocase ascii
+     condition:
+        ($magic at 0 and (8 of them)) or
+        ($magic at 0 and ($action0 or $action1 or $action2) and ($cmd or $ps) or ($pscom0 or $pscom1) and ($start0 or $start1) and $launch and $homepath and $js0) or
+        ($magic at 0 and ($action2 or $action3) and (1 of ($emb*))) or
+        ($magic at 0 and ( 1 of($url*))) or
+        ($magic at 0 and $action4 and ($js1 or $js2)) or
+        ($magic at 0 and $invoc and (2 of ($op*))) or
+        ($magic at 0 and $uri) or
+        ($magic at 0 and (2 of ($script*)) and ((2 of($event*)) and (2 of ($tag*))))
 }
 
 
@@ -1453,20 +1450,20 @@ rule SPICA__Strings {
 
 
 rule G_Backdoor_TOUGHPROGRESS_LNK_1 {
-	meta:
-		author = "GTIG"
-		date_created = "2025-04-29"
-		date_modified = "2025-04-29"
-		md5 = "65da1a9026cf171a5a7779bc5ee45fb1"
-		rev = 1
-	strings:
-		$marker = { 4C 00 00 00 }
-		$str1 = "rundll32.exe" ascii wide
-		$str2 = ".\\image\\7.jpg,plus" wide
-		$str3 = "%PDF-1"
-		$str4 = "PYL="
-	condition:
-		$marker at 0 and all of them
+    meta:
+        author = "GTIG"
+        date_created = "2025-04-29"
+        date_modified = "2025-04-29"
+        md5 = "65da1a9026cf171a5a7779bc5ee45fb1"
+        rev = 1
+    strings:
+        $marker = { 4C 00 00 00 }
+        $str1 = "rundll32.exe" ascii wide
+        $str2 = ".\\image\\7.jpg,plus" wide
+        $str3 = "%PDF-1"
+        $str4 = "PYL="
+    condition:
+        $marker at 0 and all of them
 }
 
 
@@ -1711,4 +1708,171 @@ rule PDF_Javascript_Exploit {
         $js4 = "unescape(" nocase
     condition:
         $pdf at 0 and (1 of ($js*))
+}
+
+
+rule Trojan_Win32_Emotet_PDF_MTB{
+    meta:
+        description = "Trojan:Win32/Emotet.PDF!MTB,SIGNATURE_TYPE_PEHSTR_EXT,01 00 01 00 02 00 00 "
+        reference = "https://github.com/roadwy/DefenderYara/blob/63fedb45b4243e50a3f85e9e4e3e45bb6f1a6b6f/Trojan/Win32/Poison/Trojan_Win32_Poison_EM_MTB.yara"
+    strings:
+        $a_02_0 = {0f b6 cb 03 c1 99 b9 ?? ?? ?? ?? f7 f9 8a 5d 00 8d 4c 24 ?? 8a 94 14 ?? ?? ?? ?? 32 da 88 5d 00 } //1
+        $a_81_1 = {72 43 4a 67 43 63 58 4d 77 66 66 32 4f 32 32 57 54 32 7a 39 38 38 73 61 66 59 72 78 55 62 68 46 6f } //1 rCJgCcXMwff2O22WT2z988safYrxUbhFo
+    condition:
+        ((#a_02_0  & 1)*1+(#a_81_1  & 1)*1) >=1
+}
+
+
+rule Trojan_Win32_Poison_EM_MTB{
+    meta:
+        description = "Trojan:Win32/Poison.EM!MTB,SIGNATURE_TYPE_PEHSTR_EXT,05 00 05 00 05 00 00 "
+        reference = "https://github.com/roadwy/DefenderYara/blob/63fedb45b4243e50a3f85e9e4e3e45bb6f1a6b6f/Trojan/Win32/Poison/Trojan_Win32_Poison_EM_MTB.yara"
+    strings :
+        $a_01_0 = {45 5a 45 4c 5c 6e 65 77 73 6c 65 74 74 65 72 5c 56 42 36 } //1 EZEL\newsletter\VB6
+        $a_01_1 = {48 69 63 63 75 70 70 32 } //1 Hiccupp2
+        $a_01_2 = {66 72 75 6d 70 36 } //1 frump6
+        $a_01_3 = {6e 00 73 00 6c 00 74 00 2e 00 70 00 64 00 66 00 } //1 nslt.pdf
+        $a_01_4 = {57 72 69 74 65 50 72 6f 63 65 73 73 4d 65 6d 6f 72 79 } //1 WriteProcessMemory
+    condition:
+        ((#a_01_0  & 1)*1+(#a_01_1  & 1)*1+(#a_01_2  & 1)*1+(#a_01_3  & 1)*1+(#a_01_4  & 1)*1) >=5
+}
+
+
+rule TrojanSpy_Win32_Shiotob_C{
+    meta:
+        description = "TrojanSpy:Win32/Shiotob.C,SIGNATURE_TYPE_PEHSTR_EXT,05 00 05 00 05 00 00 "
+    strings :
+        $a_01_0 = {5c 42 65 73 74 2e 70 64 66 } //1 \Best.pdf
+        $a_01_1 = {68 00 74 00 74 00 70 00 3a 00 2f 00 2f 00 51 00 75 00 6f 00 74 00 69 00 65 00 } //1 http://Quotie
+        $a_01_2 = {6d 00 65 00 61 00 73 00 75 00 72 00 2e 00 54 00 75 00 72 00 6e 00 } //1 measur.Turn
+        $a_01_3 = {2e 00 53 00 69 00 6c 00 65 00 6e 00 74 00 } //1 .Silent
+        $a_03_4 = {6a 00 6a 00 6a 01 6a 00 6a 02 68 00 00 00 40 8d 8d d8 fe ff ff 51 ff 15 ?? ?? ?? ?? 89 45 f0 8b 55 ec 83 ea 1b 81 fa d5 00 00 00 76 17 8b 45 ec 03 05 ?? ?? ?? ?? 0f b7 0d ?? ?? ?? ?? 03 c1 a3 ?? ?? ?? ?? 83 7d f0 ff 74 17 6a 01 6a 00 6a 00 8d 95 d8 fe ff ff 52 6a 00 6a 00 ff 15 } //2
+    condition:
+        ((#a_01_0  & 1)*1+(#a_01_1  & 1)*1+(#a_01_2  & 1)*1+(#a_01_3  & 1)*1+(#a_03_4  & 1)*2) >=5
+}
+
+
+rule Kimsuky_Lure_PDF  {
+    meta:
+        description = "Detection rule for a PDF file created by Kimsuky / APT43"
+        author = "Alec Dhuse"
+        creation_date = "2025-07-28"
+        updated_date = "2025-07-28"
+        date = "2025-07-28"
+        in_the_wild = true
+        threat_actor = "Kimsuky"
+        hash = "ddf2832cde87548132688b28a27e6b4a0103e7d07fb88a5f10225145daa88926"
+        rule_version = "1.0"
+    strings:
+        $re1 = /<<\s*\/Author\s*\(Raizo\)\s*\/Creator\s*\(þÿ\x00?M\x00?i\x00?c\x00?r\x00?o\x00?s\x00?o\x00?f\x00?t\x00?®\x00?\s+\x00?W\x00?o\x00?r\x00?d\x00?\s+\x00?2\x00?0\x00?1\x00?3\s*\)/
+    condition:
+        $re1
+}
+
+
+rule POTENTIAL_RU_APT_LNK_DEC23 {
+    meta:
+        author = "Ryan <@IntelCorgi>"
+        date = "2024-03-20"
+        description = "Decoy LNK drops HTTP shell and fake PDF. Attributed to unknown RU-nexus threat actor."
+        source = "https://blog.cluster25.duskrise.com/2024/01/30/russian-apt-opposition"
+    strings:
+        $s0 = "CiRFcnJvckFjdGlvbl" ascii
+        $s1 = "gci $env:tmp -Name Rar*" ascii wide
+    condition:
+            uint16(0) == 0x004c
+        and filesize < 2MB
+        and any of them
+}
+
+
+rule SUS_MSC_Icon_Pdf_Jan25 {
+    meta:
+        description = "Detects MSC with suspicious PDF icon observed in use by APT"
+        note = "Categorising as SUS as unknown if this icon is unique to the actor or generic PDF stored in msc during build. Add other icon sizes for completeness."
+        author = "Matt Green - @mgreen27"
+        hash = "ca0dfda9a329f5729b3ca07c6578b3b6560e7cfaeff8d988d1fe8c9ca6896da5"
+        date = "2025-01-16"
+    strings:
+        $xml = "<?xml"
+        $pdf_console_file_icon_small = "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"
+    condition:
+        $xml at 0 and $pdf_console_file_icon_small
+}
+
+
+rule document_with_embedded_executable {
+    meta:
+        author = "Joaquin Villegas"
+        description = "Detects documents with embedded executable content"
+        category = "document"
+        severity = "critical"
+        date = "2025.07.15"
+    strings:
+        // Document headers
+        $pdf_header = "%PDF-"
+        // $ole_header = { D0 CF 11 E0 A1 B1 1A E1 }
+        // $rtf_header = "{\\rtf"
+
+        // Executable headers within document
+        $pe_header = { 4D 5A }      // MZ header
+        $elf_header = { 7F 45 4C 46 } // ELF header
+        $macho_header = { FE ED FA CE } // Mach-O header
+
+        // Embedded object indicators
+        $embed1 = "\\objemb" nocase
+        $embed2 = "/EmbeddedFile" nocase
+        $embed3 = "Package" nocase
+        $embed4 = "OLE Object" nocase
+
+        // File streams
+        $stream1 = "\\objdata" nocase
+        $stream2 = "/F " nocase
+        $stream3 = "/Type/EmbeddedFile" nocase
+    condition:
+            $pdf_header at 0
+        and (any of ($pe_header, $elf_header, $macho_header))
+        and (any of ($embed*) or any of ($stream*))
+}
+
+
+rule pdf_with_javascript {
+    meta:
+        author = "Joaquin Villegas"
+        description = "Detects PDF files with embedded JavaScript and suspicious content"
+        category = "document"
+        severity = "medium"
+        date = "2025.07.15"
+    strings:
+        // PDF header
+        $pdf_header = "%PDF-"
+        // JavaScript indicators
+        $js1 = "/JavaScript" nocase
+        $js2 = "/JS" nocase
+        $js3 = "/OpenAction" nocase
+        $js4 = "/AA" nocase
+        // Suspicious JavaScript functions
+        $js_func1 = "app.alert" nocase
+        $js_func2 = "this.print" nocase
+        $js_func3 = "app.launchURL" nocase
+        $js_func4 = "this.submitForm" nocase
+        $js_func5 = "app.response" nocase
+        $js_func6 = "this.importDataObject" nocase
+        // Exploit indicators
+        $exploit1 = "unescape" nocase
+        $exploit2 = "eval" nocase
+        $exploit3 = "String.fromCharCode" nocase
+        $exploit4 = "document.write" nocase
+        // Heap spray indicators
+        $heap1 = /\x90{10,}/  // NOP sled
+        $heap2 = /%u9090/     // Unicode NOP
+        $heap3 = /\x0c\x0c\x0c\x0c/  // Heap spray pattern
+        // Form actions
+        $form1 = "/F " nocase
+        $form2 = "/Type/Action" nocase
+        $form3 = "/S/SubmitForm" nocase
+    condition:
+        $pdf_header at 0 and
+        (any of ($js*) or any of ($js_func*)) and
+        (any of ($exploit*) or any of ($heap*) or any of ($form*))
 }
