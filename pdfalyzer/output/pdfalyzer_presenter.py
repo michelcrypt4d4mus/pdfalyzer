@@ -109,6 +109,7 @@ class PdfalyzerPresenter:
                 log.warning(msg)
                 node_stream_bytes = node_stream_bytes.encode()
 
+            console.line()
             print_section_subheader(f"{escape(str(node))} Summary and Analysis", style=f"{BYTES_HIGHLIGHT} reverse")
             binary_scanner = BinaryScanner(node_stream_bytes, node)
             console.print(bytes_hashes_table(binary_scanner.bytes))
