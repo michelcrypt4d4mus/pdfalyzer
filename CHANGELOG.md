@@ -1,4 +1,6 @@
 # NEXT RELEASE
+
+### 1.16.11
 * Fix typo in `combine_pdfs` help
 * Add some more PyPi classifiers
 * Add a `.flake8` config and fix a bunch of style issues
