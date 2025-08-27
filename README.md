@@ -33,6 +33,8 @@ If you're looking for one of these things this may be the tool for you.
 ### What It Don't Do
 This tool is mostly for examining/working with a PDF's data and logical structure. As such it doesn't have much to offer as far as extracting text, rendering[^3], writing, etc. etc.
 
+If you suspect you are dealing with a malcious PDF you can safely run `pdfalyze` on it; embedded javascript etc. will not be executed. If you want to actually look at the contents of a suspect PDF you can use [`dangerzone`](https://dangerzone.rocks/) to sanitize the contents with extreme prejudice before opening it.
+
 -------------
 
 # Installation
