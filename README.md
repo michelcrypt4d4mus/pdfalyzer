@@ -36,7 +36,7 @@ This tool is mostly for examining/working with a PDF's data and logical structur
 -------------
 
 # Installation
-
+#### All Platforms
 Installation with [pipx](https://pypa.github.io/pipx/)[^4] is preferred though `pip3` / `pip` should also work.
 ```sh
 pipx install pdfalyzer
@@ -44,7 +44,12 @@ pipx install pdfalyzer
 
 See [PyPDF installation notes](https://github.com/py-pdf/pypdf#installation) about `PyCryptodome` if you plan to `pdfalyze` any files that use AES encryption.
 
-If you are on macOS someone out there was kind enough to make [The Pdfalyzer available via homebrew](https://formulae.brew.sh/formula/pdfalyzer) so `brew install pdfalyzer` should work.
+#### macOS
+If you are on macOS someone out there was kind enough to make [The Pdfalyzer available via homebrew](https://formulae.brew.sh/formula/pdfalyzer):
+
+```sh
+brew install pdfalyzer
+```
 
 ### Troubleshooting
 1. If you used `pip3` instead of `pipx` and have an issue you should try to install with `pipx`.
