@@ -44,8 +44,8 @@ pipx install pdfalyzer
 
 See [PyPDF installation notes](https://github.com/py-pdf/pypdf#installation) about `PyCryptodome` if you plan to `pdfalyze` any files that use AES encryption.
 
-#### macOS
-If you are on macOS someone out there was kind enough to make [The Pdfalyzer available via homebrew](https://formulae.brew.sh/formula/pdfalyzer):
+#### macOS Homebrew
+If you are on macOS and use `homebrew` someone out there was kind enough to make [The Pdfalyzer available via homebrew](https://formulae.brew.sh/formula/pdfalyzer) so this should work:
 
 ```sh
 brew install pdfalyzer
