@@ -1,4 +1,6 @@
 # NEXT RELEASE
+
+### 1.16.13
 * Bump `yaralyzer` to v1.0.7 and fix reference to yaralyzer's renamed `prefix_with_style()` method
 
 ### 1.16.12
