@@ -5,7 +5,7 @@ from numbers import Number
 
 from rich.table import Table
 from rich.text import Text
-from yaralyzer.helpers.rich_text_helper import CENTER, na_txt, prefix_with_plain_text_obj
+from yaralyzer.helpers.rich_text_helper import CENTER, na_txt, prefix_with_style
 
 from pdfalyzer.binary.binary_scanner import BinaryScanner
 from pdfalyzer.helpers.rich_text_helper import pct_txt
@@ -60,7 +60,7 @@ def build_decoding_stats_table(scanner: BinaryScanner) -> Table:
 
 def _new_decoding_stats_table(title) -> Table:
     """Build an empty table for displaying decoding stats"""
-    title = prefix_with_plain_text_obj(title, style='blue underline')
+    title = prefix_with_style(title, style='blue underline')
     title.append(": Decoding Attempts Summary Statistics", style='bright_white bold')
 
     table = Table(

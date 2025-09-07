@@ -19,7 +19,7 @@ if not environ.get('INVOKED_BY_PYTEST', False):
 from rich.columns import Columns
 from rich.panel import Panel
 from rich.text import Text
-from yaralyzer.helpers.rich_text_helper import prefix_with_plain_text_obj
+from yaralyzer.helpers.rich_text_helper import prefix_with_style
 from yaralyzer.output.file_export import invoke_rich_export
 from yaralyzer.output.rich_console import console
 from yaralyzer.util.logging import log_and_print
@@ -83,7 +83,7 @@ def pdfalyzer_show_color_theme() -> None:
     console.print(Panel('The Pdfalyzer Color Theme', style='reverse'))
 
     colors = [
-        prefix_with_plain_text_obj(name[:MAX_THEME_COL_SIZE], style=str(style)).append(' ')
+        prefix_with_style(name[:MAX_THEME_COL_SIZE], style=str(style)).append(' ')
         for name, style in PDFALYZER_THEME_DICT.items()
         if name not in ['reset', 'repr_url']
     ]
@@ -93,7 +93,7 @@ def pdfalyzer_show_color_theme() -> None:
 
 def combine_pdfs():
     """
-    Utility method to combine multiple PDFs into one. Invocable with 'combine_pdfs PDF1 [PDF2...]'.
+    Script method to combine multiple PDFs into one. Invocable with 'combine_pdfs PDF1 [PDF2...]'.
     Example: https://github.com/py-pdf/pypdf/blob/main/docs/user/merging-pdfs.md
     """
     args = parse_combine_pdfs_args()
@@ -130,3 +130,9 @@ def combine_pdfs():
     txt = Text('').append(f"  -> Wrote ")
     txt.append(str(file_size_in_mb(args.output_file)), style='cyan').append(" megabytes\n")
     print_highlighted(txt)
+
+
+# TODO: migrate this functionality from clown_sort
+# def extract_pages_from_pdf() -> None:
+#     args = parse_pdf_page_extraction_args()
+#     PdfFile(args.pdf_file).extract_page_range(args.page_range, destination_dir=args.destination_dir)
