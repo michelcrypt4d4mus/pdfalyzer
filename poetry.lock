@@ -187,13 +187,13 @@ windows-terminal = ["colorama (>=0.4.6)"]
 
 [[package]]
 name = "pypdf"
-version = "5.9.0"
+version = "6.0.0"
 description = "A pure-python PDF library capable of splitting, merging, cropping, and transforming PDF files"
 optional = false
-python-versions = ">=3.8"
+python-versions = ">=3.9"
 files = [
-    {file = "pypdf-5.9.0-py3-none-any.whl", hash = "sha256:be10a4c54202f46d9daceaa8788be07aa8cd5ea8c25c529c50dd509206382c35"},
-    {file = "pypdf-5.9.0.tar.gz", hash = "sha256:30f67a614d558e495e1fbb157ba58c1de91ffc1718f5e0dfeb82a029233890a1"},
+    {file = "pypdf-6.0.0-py3-none-any.whl", hash = "sha256:56ea60100ce9f11fc3eec4f359da15e9aec3821b036c1f06d2b660d35683abb8"},
+    {file = "pypdf-6.0.0.tar.gz", hash = "sha256:282a99d2cc94a84a3a3159f0d9358c0af53f85b4d28d76ea38b96e9e5ac2a08d"},
 ]
 
 [package.dependencies]
@@ -339,13 +339,13 @@ files = [
 
 [[package]]
 name = "typing-extensions"
-version = "4.14.1"
+version = "4.15.0"
 description = "Backported and Experimental Type Hints for Python 3.9+"
 optional = false
 python-versions = ">=3.9"
 files = [
-    {file = "typing_extensions-4.14.1-py3-none-any.whl", hash = "sha256:d1e1e3b58374dc93031d6eda2420a48ea44a36c2b4766a4fdeb3710755731d76"},
-    {file = "typing_extensions-4.14.1.tar.gz", hash = "sha256:38b39f4aeeab64884ce9f74c94263ef78f3c22467c8724005483154c26648d36"},
+    {file = "typing_extensions-4.15.0-py3-none-any.whl", hash = "sha256:f0fa19c6845758ab08074a0cfa8b7aecb71c999ca73d62883bc25cc018c4e548"},
+    {file = "typing_extensions-4.15.0.tar.gz", hash = "sha256:0cea48d173cc12fa28ecabc3b837ea3cf6f38c6d1136f85cbaaf598984861466"},
 ]
 
 [[package]]
@@ -420,13 +420,13 @@ files = [
 
 [[package]]
 name = "yaralyzer"
-version = "1.0.5"
+version = "1.0.6"
 description = "Visualize and force decode YARA and regex matches found in a file or byte stream. With colors. Lots of colors."
 optional = false
 python-versions = "<4.0,>=3.9"
 files = [
-    {file = "yaralyzer-1.0.5-py3-none-any.whl", hash = "sha256:46504fdd9995e315aad93664afc3588aa960421b03342fe64fa50c7988437ef9"},
-    {file = "yaralyzer-1.0.5.tar.gz", hash = "sha256:46b9c7e7e5414645eb89463bbb15a28332cc6bc8b5ab6a403a4a19f7168690c1"},
+    {file = "yaralyzer-1.0.6-py3-none-any.whl", hash = "sha256:1df990d69b12283a1ed3229c9ec7501e44e155f3edd800fdc3a01044dbb83ad3"},
+    {file = "yaralyzer-1.0.6.tar.gz", hash = "sha256:4576d0f59954b2e9cc9b73e33973e3a1a632e42b42464a6ede0ddea7f41600c2"},
 ]
 
 [package.dependencies]
@@ -438,5 +438,5 @@ yara-python = ">=4.5.4,<5.0.0"
 
 [metadata]
 lock-version = "2.0"
-python-versions = "^3.9.2"
-content-hash = "1a7cf7267f079b11782187daf13bcd2fcf4ba6f5a958db8fb6080893d4fa5230"
+python-versions = "^3.9,>=3.9.2"
+content-hash = "d1554bdd7ec37dbf05b252302ef730851d527e7fe70ae4102f0caee3f03ca98d"

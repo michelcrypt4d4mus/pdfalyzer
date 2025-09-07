@@ -1,4 +1,5 @@
 # NEXT RELEASE
+* Bump `PyPDF` to v6.0.0
 
 ### 1.16.11
 * Fix typo in `combine_pdfs` help
