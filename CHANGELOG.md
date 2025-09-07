@@ -1,4 +1,6 @@
 # NEXT RELEASE
+
+### 1.16.12
 * Bump `PyPDF` to v6.0.0
 
 ### 1.16.11
