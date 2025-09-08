@@ -5,9 +5,11 @@ from importlib.resources import as_file, files
 from sys import exit
 from typing import Optional, Union
 
-from yaralyzer.config import PDFALYZER, YaralyzerConfig
+from yaralyzer.config import YaralyzerConfig
 from yaralyzer.output.rich_console import print_fatal_error_and_exit
 from yaralyzer.yaralyzer import Yaralyzer
+
+from pdfalyzer.config import PDFALYZER
 
 YARA_RULES_DIR = files(PDFALYZER).joinpath('yara_rules')
 
