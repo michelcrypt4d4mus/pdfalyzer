@@ -20,7 +20,12 @@ class PdfFile:
         basename_without_ext (str): The base name of the PDF file (without extension).
         extname (str): The file extension of the PDF file.
     """
+
     def __init__(self, file_path: Union[str, Path]) -> None:
+        """
+        Args:
+            file_path (Union[str, Path]): Path to the PDF file.
+        """
         self.file_path: Path = Path(file_path)
 
         if not self.file_path.exists():
@@ -46,6 +51,9 @@ class PdfFile:
                 directory as the source PDF.
             extra_file_suffix (Optional[str]): An optional suffix to append to the new PDF's filename.
                 Defaults to the page range suffix.
+
+        Returns:
+            Path: The path to the newly created PDF file containing the extracted pages.
         """
         destination_dir = destination_dir or self.dirname
         create_dir_if_it_does_not_exist(destination_dir)
@@ -66,5 +74,5 @@ class PdfFile:
             with open(extracted_pages_pdf_path, 'wb') as extracted_pages_pdf:
                 pdf_writer.write(extracted_pages_pdf)
 
-        console.print(f"Wrote new PDF '{extracted_pages_pdf_path}'.")
+        console.print(f"Extracted pages to new PDF: '{extracted_pages_pdf_path}'.")
         return extracted_pages_pdf_path
