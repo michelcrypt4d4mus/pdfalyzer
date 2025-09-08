@@ -1,17 +1,22 @@
 """
 Functions for miscellaneous Rich text/string pretty printing operations.
 """
+from sys import stderr
 from typing import List, Union
 
 from pypdf.generic import PdfObject
 from rich.console import Console
 from rich.text import Text
+from yaralyzer.output.rich_console import console
 
 from pdfalyzer.helpers.pdf_object_helper import pypdf_class_name
 from pdfalyzer.output.styles.node_colors import get_label_style, get_class_style_italic
 
+ARROW_BULLET = '➤ '
+
 # Usually we use the yaralyzer console but that has no highlighter
 pdfalyzer_console = Console(color_system='256')
+stderr_console = Console(color_system='256', file=stderr)
 
 
 def print_highlighted(msg: Union[str, Text], **kwargs) -> None:
@@ -30,6 +35,21 @@ def quoted_text(
     txt = quote_char_txt + Text(_string, style=style) + quote_char_txt
     txt.justify = 'center'
     return txt
+
+
+def indented_bullet(msg: Union[str, Text], style: Optional[str] = None) -> Text:
+    return Text('  ') + bullet_text(msg, style)
+
+
+def bullet_text(msg: Union[str, Text], style: Optional[str] = None) -> Text:
+    if isinstance(msg, str):
+        msg = Text(msg, style=style)
+
+    return Text(ARROW_BULLET).append(msg)
+
+
+def mild_warning(msg: str) -> None:
+    console.print(indented_bullet(Text(msg, style='mild_warning')))
 
 
 def node_label(idnum: int, label: str, pdf_object: PdfObject, underline: bool = True) -> Text:

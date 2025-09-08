@@ -1,11 +1,21 @@
+import io
+from logging import Logger
 from os import path
 from pathlib import Path
-from typing import Optional, Union
+from typing import List, Optional, Union
 
-from pypdf import PdfWriter
+from PIL import Image
+from pypdf import PdfReader, PdfWriter
+from rich.console import Console
+from rich.markup import escape
+from rich.panel import Panel
+from rich.text import Text
 from yaralyzer.output.rich_console import console
+from yaralyzer.util.logging import log as yaralyzer_log
 
 from pdfalyzer.helpers.filesystem_helper import create_dir_if_it_does_not_exist, insert_suffix_before_extension
+from pdfalyzer.helpers.rich_text_helper import mild_warning, stderr_console
+from pdfalyzer.helpers.string_helper import exception_str
 from pdfalyzer.util.page_range import PageRange
 
 
@@ -76,3 +86,87 @@ class PdfFile:
 
         console.print(f"Extracted pages to new PDF: '{extracted_pages_pdf_path}'.")
         return extracted_pages_pdf_path
+
+    def extract_text(self, page_range: Optional[PageRange] = None, logger: Optional[Logger] = None) -> Optional[str]:
+        """
+        Use PyPDF to extract text page by page and use Tesseract to OCR any embedded images.
+
+        Args:
+            page_range (Optional[PageRange]): If provided, only extract text from pages in this range.
+                Page numbers are 1-indexed. If not provided, extract text from all pages.
+            log (Optional[Logger]): If provided, log progress to this logger. Otherwise use default logger.
+
+        Returns:
+            Optional[str]: The extracted text, or None if extraction failed.
+        """
+        log = logger or yaralyzer_log
+        log.debug(f"Extracting text from '{self.file_path}'...")
+        self._page_numbers_of_errors: List[int] = []
+        extracted_pages = []
+
+        try:
+            pdf_reader = PdfReader(self.file_path)
+            page_count = len(pdf_reader.pages)
+            log.debug(f"PDF Page count: {page_count}")
+
+            for page_number, page in enumerate(pdf_reader.pages, start=1):
+                if page_range and not page_range.in_range(page_number):
+                    self._log_to_stderr(f"Skipping page {page_number}...")
+                    continue
+
+                self._log_to_stderr(f"Parsing page {page_number}...")
+                page_buffer = Console(file=io.StringIO())
+                page_buffer.print(Panel(f"PAGE {page_number}", padding=(0, 15), expand=False))
+                page_buffer.print(escape(page.extract_text().strip()))
+                image_number = 1
+
+                # Extracting images is a bit fraught (lots of PIL and pypdf exceptions have come from here)
+                try:
+                    for image_number, image in enumerate(page.images, start=1):
+                        image_name = f"Page {page_number}, Image {image_number}"
+                        self._log_to_stderr(f"   Processing {image_name}...", "dim")
+                        page_buffer.print(Panel(image_name, expand=False))
+                        image_obj = Image.open(io.BytesIO(image.data))
+                        image_text = ImageFile.ocr_text(image_obj, f"{self.file_path} ({image_name})")
+                        page_buffer.print((image_text or '').strip())
+                except (OSError, NotImplementedError, TypeError, ValueError) as e:
+                    error_str = exception_str(e)
+                    msg = f"{error_str} while parsing embedded image {image_number} on page {page_number}..."
+                    mild_warning(msg)
+
+                    # Dump an error PDF and encourage user to report to pypdf team.
+                    if 'JBIG2Decode' not in str(e):
+                        stderr_console.print_exception()
+
+                        if page_number not in self._page_numbers_of_errors:
+                            self._handle_extraction_error(page_number, error_str)
+                            self._page_numbers_of_errors.append(page_number)
+
+                page_text = page_buffer.file.getvalue()
+                extracted_pages.append(page_text)
+                log.debug(page_text)
+
+                if Config.print_as_parsed:
+                    print(f"{page_text}")
+        except DependencyError:
+            log_optional_module_warning('pdf')
+        except EmptyFileError:
+            log.warning("Skipping empty file!")
+        except PdfStreamError as e:
+            print_error(f"Error parsing PDF file '{self.file_path}': {e}")
+            stderr_console.print_exception()
+
+        self._extracted_text = "\n\n".join(extracted_pages).strip()
+        self.text_extraction_attempted = True
+        return self._extracted_text
+
+    def file_size(self) -> int:
+        """Returns file size in bytes."""
+        return self.file_path.stat().st_size
+
+    def _log_to_stderr(self, msg: str, style: Optional[str] = None) -> None:
+        """When parsing very large PDFs it can be useful to log progress and other messages to STDERR."""
+        if self.file_size() < MIN_PDF_SIZE_TO_LOG_PROGRESS_TO_STDERR:
+            return
+
+        stderr_console.print(msg, style=style or "")

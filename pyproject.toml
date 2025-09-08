@@ -68,6 +68,8 @@ packages = [
 python = "^3.10"
 anytree = "~=2.13"
 pypdf = "^6.0.0"
+PyMuPDF = {version = "^1.26.4", optional = true}
+pytesseract = {version = "^0.3.13", optional = true}
 yaralyzer = "^1.0.9"
 
 [tool.poetry.group.dev.dependencies]

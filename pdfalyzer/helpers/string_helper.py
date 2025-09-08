@@ -35,8 +35,13 @@ def count_pattern_matches_in_text(pattern: str, text: str) -> int:
 
 
 def count_regex_matches_in_text(regex: Pattern, text: str) -> int:
-    """For use when you precompile the regex"""
+    """For use when you precompile the regex."""
     return sum(1 for _ in regex.finditer(text))
+
+
+def exception_str(e: Exception) -> str:
+    """A string with the type and message."""
+    return f"{type(e).__name__}: {e}"
 
 
 def root_address(_string: str) -> str:
