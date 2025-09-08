@@ -55,5 +55,6 @@ def number_and_pct(_number: int, total: int, digits: int = 1) -> Text:
 
 
 def pct_txt(_number: int, total: int, digits: int = 1) -> Text:
+    """Return nicely formatted percentage, e.g. '(80%)'."""
     pct = (100 * float(_number) / float(total)).__round__(digits)
     return Text(f"({pct}%)", style='blue')

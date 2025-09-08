@@ -9,9 +9,10 @@ from os import environ, pardir, path
 from yaralyzer.config import YaralyzerConfig, is_env_var_set_and_not_false, is_invoked_by_pytest
 
 PDFALYZE = 'pdfalyze'
+PDFALYZER = f"{PDFALYZE}r"
 ALL_STREAMS = -1
 PYTEST_FLAG = 'INVOKED_BY_PYTEST'
-PROJECT_ROOT = path.join(str(importlib.resources.files('pdfalyzer')), pardir)
+PROJECT_ROOT = path.join(str(importlib.resources.files(PDFALYZER)), pardir)
 
 # 3rd part pdf-parser.py
 PDF_PARSER_EXECUTABLE_ENV_VAR = 'PDFALYZER_PDF_PARSER_PY_PATH'

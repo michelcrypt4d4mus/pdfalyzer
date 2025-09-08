@@ -15,7 +15,7 @@ from rich.text import Text
 from yaralyzer.util.argument_parser import export, parser, parse_arguments as parse_yaralyzer_args, source
 from yaralyzer.util.logging import log, log_and_print, log_argparse_result, log_current_config, log_invocation
 
-from pdfalyzer.config import ALL_STREAMS, PdfalyzerConfig
+from pdfalyzer.config import ALL_STREAMS, PDFALYZER, PdfalyzerConfig
 from pdfalyzer.detection.constants.binary_regexes import QUOTE_PATTERNS
 from pdfalyzer.helpers.filesystem_helper import (do_all_files_exist, extract_page_number, file_exists, is_pdf,
      with_pdf_extension)
@@ -126,7 +126,7 @@ parser._action_groups = parser._action_groups[:2] + [parser._action_groups[-1]] 
 def parse_arguments():
     """Parse command line args. Most args can also be communicated to the app by setting env vars."""
     if '--version' in sys.argv:
-        print(f"pdfalyzer {version('pdfalyzer')}")
+        print(f"pdfalyzer {version(PDFALYZER)}")
         sys.exit()
 
     args = parser.parse_args()
