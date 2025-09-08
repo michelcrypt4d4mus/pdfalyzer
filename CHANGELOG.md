@@ -1,4 +1,6 @@
 # NEXT RELEASE
+
+### 1.16.14
 * Bump `yaralyzer` to v1.0.9
 * Drop support for python 3.9
 
