@@ -1,7 +1,7 @@
 # NEXT RELEASE
 
 ### 1.16.14
-* Bump `yaralyzer` to v1.0.9
+* Bump `yaralyzer` to v1.0.9, handle `FileNotFoundError` which is now raised instead of `TypeError`
 * Drop support for python 3.9
 
 ### 1.16.13
