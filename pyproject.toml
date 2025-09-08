@@ -15,7 +15,6 @@ classifiers = [
     "Intended Audience :: Information Technology",
     "License :: OSI Approved :: GNU General Public License v3 or later (GPLv3+)",
     "Programming Language :: Python",
-    "Programming Language :: Python :: 3.9",
     "Programming Language :: Python :: 3.10",
     "Programming Language :: Python :: 3.11",
     "Programming Language :: Python :: 3.12",
@@ -66,7 +65,7 @@ packages = [
 #   Dependencies    #
 #####################
 [tool.poetry.dependencies]
-python = "^3.9,>=3.9.2"
+python = "^3.10"
 anytree = "~=2.13"
 pypdf = "^6.0.0"
 yaralyzer = "^1.0.7"
