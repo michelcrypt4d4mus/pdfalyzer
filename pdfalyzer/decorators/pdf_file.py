@@ -6,6 +6,7 @@ from typing import List, Optional, Union
 
 from PIL import Image
 from pypdf import PdfReader, PdfWriter
+from pypdf.errors import DependencyError, EmptyFileError, PdfStreamError
 from rich.console import Console
 from rich.markup import escape
 from rich.panel import Panel
@@ -14,9 +15,13 @@ from yaralyzer.output.rich_console import console
 from yaralyzer.util.logging import log as yaralyzer_log
 
 from pdfalyzer.helpers.filesystem_helper import create_dir_if_it_does_not_exist, insert_suffix_before_extension
-from pdfalyzer.helpers.rich_text_helper import mild_warning, stderr_console
+from pdfalyzer.helpers.image_helper import ocr_text
+from pdfalyzer.helpers.rich_text_helper import attention_getting_panel, error_text, mild_warning, print_error, stderr_console
 from pdfalyzer.helpers.string_helper import exception_str
 from pdfalyzer.util.page_range import PageRange
+
+DEFAULT_PDF_ERRORS_DIR = Path.cwd().joinpath('pdf_errors')
+MIN_PDF_SIZE_TO_LOG_PROGRESS_TO_STDERR = 1024 * 1024 * 20
 
 
 class PdfFile:
@@ -127,7 +132,7 @@ class PdfFile:
                         self._log_to_stderr(f"   Processing {image_name}...", "dim")
                         page_buffer.print(Panel(image_name, expand=False))
                         image_obj = Image.open(io.BytesIO(image.data))
-                        image_text = ImageFile.ocr_text(image_obj, f"{self.file_path} ({image_name})")
+                        image_text = ocr_text(image_obj, f"{self.file_path} ({image_name})")
                         page_buffer.print((image_text or '').strip())
                 except (OSError, NotImplementedError, TypeError, ValueError) as e:
                     error_str = exception_str(e)
@@ -146,10 +151,11 @@ class PdfFile:
                 extracted_pages.append(page_text)
                 log.debug(page_text)
 
-                if Config.print_as_parsed:
+                # if Config.print_as_parsed:  # TODO: add option for this
+                if True:
                     print(f"{page_text}")
         except DependencyError:
-            log_optional_module_warning('pdf')
+            log.error("PyPDF is missing a dependency required to parse this PDF. Try 'pip install pdfalyzer[extract]'")
         except EmptyFileError:
             log.warning("Skipping empty file!")
         except PdfStreamError as e:
@@ -163,6 +169,35 @@ class PdfFile:
     def file_size(self) -> int:
         """Returns file size in bytes."""
         return self.file_path.stat().st_size
+
+    def print_extracted_text(self, page_range: Optional[PageRange] = None) -> None:
+        console.print(Panel(str(self.file_path), expand=False, style='bright_white reverse')        )
+        console.print(self.extract_text(page_range=page_range))
+
+    def _handle_extraction_error(self, page_number: int, error_msg: str) -> None:
+        """Rip the offending page to a new file and suggest that user report bug to PyPDF."""
+        destination_dir = DEFAULT_PDF_ERRORS_DIR
+
+        try:
+            extracted_file = self.extract_page_range(PageRange(str(page_number)), destination_dir, error_msg)
+        except Exception as e:
+            stderr_console.print(error_text(f"Failed to extract a page for submission to PyPDF team."))
+            extracted_file = None
+
+        blink_txt = Text('', style='bright_white')
+        blink_txt.append("An error (", style='blink color(154)').append(error_msg, style='color(11) blink')
+        blink_txt.append(') ', style='blink color(154)')
+        blink_txt.append("was encountered while processing a PDF file.\n\n", style='blink color(154)')
+
+        txt = Text(f"The error was of a type such that it probably came from a bug in ", style='bright_white')
+        txt.append('PyPDF', style='underline bright_green').append('. It was encountered processing the file ')
+        txt.append(str(self.file_path), style='file').append('. You should see a stack trace above this box.\n\n')
+
+        txt.append('The offending page will be extracted to ', style='bright_white')
+        txt.append(str(extracted_file), style='file').append('.\n\n')
+        txt.append(f"Please visit 'https://github.com/py-pdf/pypdf/issues' to report a bug. ", style='bold')
+        txt.append(f"Providing the devs with the extracted page and the stack trace help improve pypdf.")
+        stderr_console.print(attention_getting_panel(blink_txt + txt, title='PyPDF Error'))
 
     def _log_to_stderr(self, msg: str, style: Optional[str] = None) -> None:
         """When parsing very large PDFs it can be useful to log progress and other messages to STDERR."""

@@ -1,5 +1,6 @@
 import code
 import sys
+from argparse import Namespace
 from os import environ, getcwd, path
 
 from dotenv import load_dotenv
@@ -31,7 +32,7 @@ from pdfalyzer.output.pdfalyzer_presenter import PdfalyzerPresenter
 from pdfalyzer.output.styles.rich_theme import PDFALYZER_THEME_DICT
 from pdfalyzer.pdfalyzer import Pdfalyzer
 from pdfalyzer.util.argument_parser import (MAX_QUALITY, ask_to_proceed, output_sections, parse_arguments,
-     parse_combine_pdfs_args, parse_pdf_page_extraction_args)
+     parse_combine_pdfs_args, parse_pdf_page_extraction_args, parse_text_extraction_args)
 from pdfalyzer.util.pdf_parser_manager import PdfParserManager
 
 # For the table shown by running pdfalyzer_show_color_theme
@@ -137,6 +138,23 @@ def extract_pdf_pages() -> None:
     args = parse_pdf_page_extraction_args()
     PdfFile(args.pdf_file).extract_page_range(args.page_range, destination_dir=args.destination_dir)
 
+
+def extract_text_from_files() -> None:
+    """
+    Extract text from a single file or from all files in a given directory. Can accept
+    multiple paths as arguments on the command line.
+    """
+    args: Namespace = parse_text_extraction_args()
+    console.line()
+
+    # if args.debug:
+    #     Config.enable_debug_mode()
+    # if args.print_as_parsed:
+    #     Config.print_as_parsed = True
+
+    for file_path in args.files_to_process:
+        PdfFile(file_path).print_extracted_text(args.page_range)
+        console.line(2)
 
 # TODO: migrate this functionality from clown_sort
 # def extract_pdf_pages() -> None:

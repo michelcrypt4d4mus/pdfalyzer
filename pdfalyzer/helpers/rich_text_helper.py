@@ -2,10 +2,12 @@
 Functions for miscellaneous Rich text/string pretty printing operations.
 """
 from sys import stderr
-from typing import List, Union
+from typing import List, Optional, Union
 
 from pypdf.generic import PdfObject
 from rich.console import Console
+from rich.panel import Panel
+from rich.padding import Padding
 from rich.text import Text
 from yaralyzer.output.rich_console import console
 
@@ -78,3 +80,30 @@ def pct_txt(_number: int, total: int, digits: int = 1) -> Text:
     """Return nicely formatted percentage, e.g. '(80%)'."""
     pct = (100 * float(_number) / float(total)).__round__(digits)
     return Text(f"({pct}%)", style='blue')
+
+
+def warning_text(text: Union[str, Text]) -> Text:
+    msg = Text('').append(f"WARNING", style='bright_yellow').append(": ")
+
+    if isinstance(text, Text):
+        return msg + text
+    else:
+        return msg.append(text)
+
+
+def error_text(text: Union[str, Text]) -> Text:
+    msg = Text('').append(f"ERROR", style='bright_red').append(": ")
+
+    if isinstance(text, Text):
+        return msg + text
+    else:
+        return msg.append(text)
+
+
+def attention_getting_panel(text: Text, title: str, style: str = 'white on red') -> Padding:
+    p = Panel(text, padding=(2), title=title, style=style)
+    return Padding(p, pad=(1, 10, 2, 10))
+
+
+def print_error(text: Union[str, Text]) -> Text:
+    console.print(error_text(text))
