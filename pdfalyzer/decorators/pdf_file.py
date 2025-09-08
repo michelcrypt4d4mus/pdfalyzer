@@ -1,8 +1,8 @@
 from os import path
 from pathlib import Path
-from typing import List, Optional, Union
+from typing import Optional, Union
 
-from pypdf import PdfReader, PdfWriter
+from pypdf import PdfWriter
 from yaralyzer.output.rich_console import console
 
 from pdfalyzer.helpers.filesystem_helper import create_dir_if_it_does_not_exist, insert_suffix_before_extension
@@ -12,6 +12,13 @@ from pdfalyzer.util.page_range import PageRange
 class PdfFile:
     """
     Wrapper for a PDF file path that provides useful methods and properties.
+
+    Attributes:
+        file_path (Path): The path to the PDF file.
+        dirname (Path): The directory containing the PDF file.
+        basename (str): The base name of the PDF file (with extension).
+        basename_without_ext (str): The base name of the PDF file (without extension).
+        extname (str): The file extension of the PDF file.
     """
     def __init__(self, file_path: Union[str, Path]) -> None:
         self.file_path: Path = Path(file_path)
@@ -23,7 +30,6 @@ class PdfFile:
         self.basename: str = path.basename(file_path)
         self.basename_without_ext: str = str(Path(self.basename).with_suffix(''))
         self.extname: str = self.file_path.suffix
-        self.text_extraction_attempted: bool = False
 
     def extract_page_range(
             self,
