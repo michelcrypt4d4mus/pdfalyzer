@@ -98,10 +98,9 @@ Run `pdfalyzer_show_color_theme` to see the color theme employed.
 ### Guarantees
 Warnings will be printed if any PDF object ID between 1 and the `/Size` reported by the PDF itself could not be successfully placed in the tree. If you do not get any warnings then all[^2] of the inner PDF objects should be seen in the output.
 
-## Example Usage
+## Example Malicious PDF Investigation
 [BUFFERZONE Team](https://bufferzonesecurity.com) posted [an excellent example](https://bufferzonesecurity.com/the-beginners-guide-to-adobe-pdf-malware-reverse-engineering-part-1/) of how one might use The Pdfalyzer in tandem with [Didier Stevens' PDF tools](#installing-didier-stevenss-pdf-analysis-tools) to investigate a potentially malicious PDF (archived in [the `doc/` dir in this repo](./doc/) if the link rots).
 
--------------
 
 ## Use As A Code Library
 For info about setting up a dev environment see [Contributing](#contributing) below.
