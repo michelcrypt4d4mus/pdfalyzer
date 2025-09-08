@@ -139,7 +139,7 @@ def extract_pdf_pages() -> None:
     PdfFile(args.pdf_file).extract_page_range(args.page_range, destination_dir=args.destination_dir)
 
 
-def extract_text_from_files() -> None:
+def extract_text_from_pdfs() -> None:
     """
     Extract text from a single file or from all files in a given directory. Can accept
     multiple paths as arguments on the command line.

@@ -298,7 +298,7 @@ def parse_pdf_page_extraction_args() -> Namespace:
 
 
 ############################################
-# Parse args for extract_text_from_files() #
+# Parse args for extract_text_from_pdfs() #
 ############################################
 extract_text_parser = ArgumentParser(
     formatter_class=RichHelpFormatterPlus,
