@@ -1,4 +1,5 @@
 # NEXT RELEASE
+* Add `extract_pdf_pages` tool (imported from `clown_sort`)
 
 ### 1.16.14
 * Bump `yaralyzer` to v1.0.9, handle `FileNotFoundError` which is now raised instead of `TypeError`

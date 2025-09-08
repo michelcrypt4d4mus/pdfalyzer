@@ -213,7 +213,12 @@ Things like, say, a hidden binary `/F` (PDF instruction meaning "URL") followed 
 
 # PDF Resources
 ## Included PDF Tools
+#### `combine_pdfs`
 The Pdfalyzer ships with a command line tool `combine_pdfs` that combines multiple PDFs into a single PDF. Run `combine_pdfs --help` to see the options.
+
+#### `extract_pdf_pages`
+The Pdfalyzer ships with a command line tool `extract_pdf_pages` that can extract page ranges (e.g. "10-25") from PDFs on the command line.
+![](doc/extract_pages_from_pdf_help.png)
 
 ## 3rd Party PDF Tools
 ### Installing Didier Stevens's PDF Analysis Tools

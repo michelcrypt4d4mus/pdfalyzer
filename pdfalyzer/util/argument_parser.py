@@ -7,6 +7,7 @@ from collections import namedtuple
 from functools import partial, update_wrapper
 from importlib.metadata import version
 from os import getcwd, path
+from pathlib import Path
 from typing import List, Optional
 
 from rich_argparse_plus import RichHelpFormatterPlus
@@ -20,6 +21,7 @@ from pdfalyzer.detection.constants.binary_regexes import QUOTE_PATTERNS
 from pdfalyzer.helpers.filesystem_helper import (do_all_files_exist, extract_page_number, file_exists, is_pdf,
      with_pdf_extension)
 from pdfalyzer.helpers.rich_text_helper import print_highlighted
+from pdfalyzer.util.page_range import PageRangeArgumentValidator
 
 # NamedTuple to keep our argument selection orderly
 OutputSection = namedtuple('OutputSection', ['argument', 'method'])
@@ -255,6 +257,44 @@ def parse_combine_pdfs_args() -> Namespace:
         ask_to_proceed()
 
     print_highlighted(f"\nMerging {args.number_of_pdfs} individual PDFs into '{args.output_file}'...")
+    return args
+
+
+###########################################
+# Parse args for extract_pdf_pages() #
+###########################################
+
+page_range_validator = PageRangeArgumentValidator()
+
+extract_pdf_parser = ArgumentParser(
+    formatter_class=RichHelpFormatterPlus,
+    description="Extract pages from one PDF into a new PDF.",
+)
+
+extract_pdf_parser.add_argument('pdf_file', metavar='PDF_FILE', help='PDF to extract pages from')
+
+extract_pdf_parser.add_argument('--page-range', '-r',
+                                type=page_range_validator,
+                                help=page_range_validator.HELP_MSG,
+                                required=True)
+
+extract_pdf_parser.add_argument('--destination-dir', '-d',
+                                help="directory to write the new PDF to",
+                                default=Path.cwd())
+
+extract_pdf_parser.add_argument('--debug', action='store_true', help='turn on debug level logging')
+
+
+def parse_pdf_page_extraction_args() -> Namespace:
+    args = extract_pdf_parser.parse_args()
+
+    if not is_pdf(args.pdf_file):
+        log.error(f"'{args.pdf_file}' is not a PDF.")
+        sys.exit(-1)
+    elif not Path(args.destination_dir).exists():
+        log.error(f"Destination dir '{args.destination_dir}' does not exist.")
+        sys.exit(1)
+
     return args
 
 

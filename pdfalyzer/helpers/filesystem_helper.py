@@ -6,6 +6,7 @@ from pathlib import Path
 from typing import Optional, Union
 
 from yaralyzer.output.rich_console import console
+from yaralyzer.util.logging import log
 
 from pdfalyzer.helpers.rich_text_helper import print_highlighted
 
@@ -18,9 +19,20 @@ PDF_EXT = '.pdf'
 # type StrOrPath = Union[str, Path]
 
 
-def with_pdf_extension(file_path: Union[str, Path]) -> str:
-    """Append '.pdf' to 'file_path' if it doesn't already end with '.pdf'."""
-    return str(file_path) + ('' if is_pdf(file_path) else PDF_EXT)
+def create_dir_if_it_does_not_exist(dir: Path) -> None:
+    """Like it says on the tin."""
+    if dir.exists():
+        return
+
+    console.warning(f"Need to create '{dir}'")
+    dir.mkdir(parents=True, exist_ok=True)
+
+
+def insert_suffix_before_extension(file_path: Path, suffix: str, separator: str = '__') -> Path:
+    """Inserting 'page 1' suffix in 'path/to/file.jpg' -> '/path/to/file__page_1.jpg'."""
+    suffix = strip_bad_chars(suffix).replace(' ', '_')
+    file_path_without_extension = file_path.with_suffix('')
+    return Path(f"{file_path_without_extension}{separator}{suffix}{file_path.suffix}")
 
 
 def is_pdf(file_path: Union[str, Path]) -> bool:
@@ -100,3 +112,15 @@ def set_max_open_files(num_filehandles: int = DEFAULT_MAX_OPEN_FILES) -> tuple[O
                 soft, hard = resource.getrlimit(resource.RLIMIT_NOFILE)
 
     return (soft, hard)
+
+
+def strip_bad_chars(text: str) -> str:
+    """Remove chars that don't work well in filenames."""
+    text = ' '.join(text.splitlines()).replace('\\s+', ' ')
+    text = re.sub('’', "'", text).replace('|', 'I').replace(',', ',')
+    return re.sub('[^-0-9a-zA-Z@.,?_:=#\'\\$" ()]+', '_', text).replace('  ', ' ')
+
+
+def with_pdf_extension(file_path: Union[str, Path]) -> str:
+    """Append `".pdf"` to `file_path` if it doesn't already end with `".pdf"`."""
+    return str(file_path) + ('' if is_pdf(file_path) else PDF_EXT)

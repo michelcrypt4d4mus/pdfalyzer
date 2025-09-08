@@ -24,13 +24,14 @@ from yaralyzer.output.file_export import invoke_rich_export
 from yaralyzer.output.rich_console import console
 from yaralyzer.util.logging import log_and_print
 
+from pdfalyzer.decorators.pdf_file import PdfFile
 from pdfalyzer.helpers.filesystem_helper import file_size_in_mb, set_max_open_files
 from pdfalyzer.helpers.rich_text_helper import print_highlighted
 from pdfalyzer.output.pdfalyzer_presenter import PdfalyzerPresenter
 from pdfalyzer.output.styles.rich_theme import PDFALYZER_THEME_DICT
 from pdfalyzer.pdfalyzer import Pdfalyzer
 from pdfalyzer.util.argument_parser import (MAX_QUALITY, ask_to_proceed, output_sections, parse_arguments,
-     parse_combine_pdfs_args)
+     parse_combine_pdfs_args, parse_pdf_page_extraction_args)
 from pdfalyzer.util.pdf_parser_manager import PdfParserManager
 
 # For the table shown by running pdfalyzer_show_color_theme
@@ -132,7 +133,12 @@ def combine_pdfs():
     print_highlighted(txt)
 
 
+def extract_pdf_pages() -> None:
+    args = parse_pdf_page_extraction_args()
+    PdfFile(args.pdf_file).extract_page_range(args.page_range, destination_dir=args.destination_dir)
+
+
 # TODO: migrate this functionality from clown_sort
-# def extract_pages_from_pdf() -> None:
+# def extract_pdf_pages() -> None:
 #     args = parse_pdf_page_extraction_args()
 #     PdfFile(args.pdf_file).extract_page_range(args.page_range, destination_dir=args.destination_dir)
