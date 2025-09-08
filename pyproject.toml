@@ -68,7 +68,7 @@ packages = [
 python = "^3.10"
 anytree = "~=2.13"
 pypdf = "^6.0.0"
-yaralyzer = "^1.0.8"
+yaralyzer = "^1.0.9"
 
 [tool.poetry.group.dev.dependencies]
 flake8 = "^7.3.0"
