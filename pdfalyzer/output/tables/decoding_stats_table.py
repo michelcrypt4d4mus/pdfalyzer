@@ -19,7 +19,7 @@ DECODES_SUBTABLE_COLS = ['Encoding', '#', 'Decoded', '#', 'Forced', '#', 'Failed
 
 
 def build_decoding_stats_table(scanner: BinaryScanner) -> Table:
-    """Diplay aggregate results on the decoding attempts we made on subsets of scanner.bytes"""
+    """Diplay aggregate results on the decoding attempts we made on subsets of `scanner.bytes`."""
     stats_table = _new_decoding_stats_table(scanner.label.plain if scanner.label else '')
     regexes_not_found_in_stream = []
 
@@ -58,9 +58,9 @@ def build_decoding_stats_table(scanner: BinaryScanner) -> Table:
     return stats_table
 
 
-def _new_decoding_stats_table(title) -> Table:
-    """Build an empty table for displaying decoding stats"""
-    title = prefix_with_style(title, style='blue underline')
+def _new_decoding_stats_table(title_str: str) -> Table:
+    """Build an empty table for displaying decoding stats."""
+    title = prefix_with_style(title_str, style='blue underline')
     title.append(": Decoding Attempts Summary Statistics", style='bright_white bold')
 
     table = Table(

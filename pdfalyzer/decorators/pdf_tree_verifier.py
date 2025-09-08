@@ -11,6 +11,8 @@ from pdfalyzer.util.adobe_strings import *
 
 
 class PdfTreeVerifier:
+    """Class to verify that the PDF tree is complete/contains all the nodes in the PDF file."""
+
     def __init__(self, pdfalyzer: 'Pdfalyzer') -> None:
         self.pdfalyzer = pdfalyzer
 

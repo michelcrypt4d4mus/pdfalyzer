@@ -1,10 +1,5 @@
 """
-Walks the PDF objects and builds the PDF logical structure tree by
-wrapping each internal PDF object in a PdfTreeNode. Tree is managed by
-the anytree library. Information about the tree as a whole is stored
-in this class.
-Once the PDF is parsed this class manages access to
-information about or from the underlying PDF tree.
+PDFalyzer: Analyze and explore the structure of PDF files.
 """
 from os.path import basename
 from typing import Dict, Iterator, List, Optional
@@ -31,7 +26,19 @@ TRAILER_FALLBACK_ID = 10000000
 
 
 class Pdfalyzer:
+    """
+    Walks a PDF's internals and builds the PDF logical structure tree.
+
+    Each of the PDF's internal objects isw rapped in a `PdfTreeNode` object. The tree is managed
+    by the `anytree` library. Information about the tree as a whole is stored in this class.
+    Once the PDF is parsed this class provides access to info about or from the underlying PDF tree.
+    """
+
     def __init__(self, pdf_path: str):
+        """
+        Args:
+            pdf_path: Path to the PDF file to analyze
+        """
         self.pdf_path = pdf_path
         self.pdf_basename = basename(pdf_path)
         self.pdf_bytes = load_binary_data(pdf_path)
@@ -72,7 +79,7 @@ class Pdfalyzer:
         log.info(f"Walk complete.")
 
     def walk_node(self, node: PdfTreeNode) -> None:
-        """Recursively walk the PDF's tree structure starting at a given node"""
+        """Recursively walk the PDF's tree structure starting at a given node."""
         log.info(f'walk_node() called with {node}. Object dump:\n{print_with_header(node.obj, node.label)}')
         nodes_to_walk_next = [self._add_relationship_to_pdf_tree(r) for r in node.references_to_other_nodes()]
         node.all_references_processed = True
@@ -82,7 +89,7 @@ class Pdfalyzer:
                 self.walk_node(next_node)
 
     def find_node_by_idnum(self, idnum) -> Optional[PdfTreeNode]:
-        """Find node with idnum in the tree. Return None if that node is not reachable from the root."""
+        """Find node with `idnum` in the tree. Return `None` if that node is not reachable from the root."""
         nodes = [
             node for node in findall_by_attr(self.pdf_tree, name='idnum', value=idnum)
             if not isinstance(node, SymlinkNode)
@@ -96,7 +103,7 @@ class Pdfalyzer:
             raise PdfWalkError(f"Too many nodes had id {idnum}: {nodes}")
 
     def is_in_tree(self, search_for_node: PdfTreeNode) -> bool:
-        """Returns true if search_for_node is in the tree already."""
+        """Returns true if `search_for_node` is in the tree already."""
         return any([node == search_for_node for node in self.node_iterator()])
 
     def node_iterator(self) -> Iterator[PdfTreeNode]:
@@ -110,7 +117,7 @@ class Pdfalyzer:
 
     def _add_relationship_to_pdf_tree(self, relationship: PdfObjectRelationship) -> Optional[PdfTreeNode]:
         """
-        Place the relationship 'node' in the tree. Returns an optional node that should be
+        Place the `relationship` node in the tree. Returns an optional node that should be
         placed in the PDF node processing queue.
         """
         log.info(f'Assessing relationship {relationship}...')
@@ -172,7 +179,7 @@ class Pdfalyzer:
         return to_node
 
     def _resolve_indeterminate_nodes(self) -> None:
-        """Place all indeterminate nodes in the tree."""
+        """Place all indeterminate nodes in the tree. Called after all nodes have been walked."""
         indeterminate_nodes = [self.nodes_encountered[idnum] for idnum in self.indeterminate_ids]
         indeterminate_nodes_string = "\n   ".join([f"{node}" for node in indeterminate_nodes])
         log.info(f"Resolving {len(indeterminate_nodes)} indeterminate nodes: {indeterminate_nodes_string}")
@@ -185,7 +192,7 @@ class Pdfalyzer:
             IndeterminateNode(node).place_node()
 
     def _extract_font_infos(self) -> None:
-        """Extract information about fonts in the tree and place it in self.font_infos"""
+        """Extract information about fonts in the tree and place it in `self.font_infos`."""
         for node in self.node_iterator():
             if isinstance(node.obj, dict) and RESOURCES in node.obj:
                 log.debug(f"Extracting fonts from node with '{RESOURCES}' key: {node}...")
@@ -207,6 +214,6 @@ class Pdfalyzer:
         return new_node
 
     def _print_nodes_encountered(self) -> None:
-        """Debug method that displays which nodes have already been walked"""
+        """Debug method that displays which nodes have already been walked."""
         for i in sorted(self.nodes_encountered.keys()):
             console.print(f'{i}: {self.nodes_encountered[i]}')

@@ -15,8 +15,8 @@ ATTRIBUTES_TO_SHOW_IN_SUMMARY_TABLE = [
 ]
 
 
-def font_summary_table(font):
-    """Build a Rich Table with important info about the font"""
+def font_summary_table(font: 'FontInfo') -> Table:
+    """Build a Rich `Table` with important info about the font"""
     table = Table('', '', show_header=False)
     table.columns[0].style = 'font.property'
     table.columns[0].justify = 'right'

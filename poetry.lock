@@ -79,13 +79,13 @@ files = [
 
 [[package]]
 name = "markdown-it-py"
-version = "3.0.0"
+version = "4.0.0"
 description = "Python port of markdown-it. Markdown parsing, done right!"
 optional = false
-python-versions = ">=3.8"
+python-versions = ">=3.10"
 files = [
-    {file = "markdown-it-py-3.0.0.tar.gz", hash = "sha256:e3f60a94fa066dc52ec76661e37c851cb232d92f9886b15cb560aaada2df8feb"},
-    {file = "markdown_it_py-3.0.0-py3-none-any.whl", hash = "sha256:355216845c60bd96232cd8d8c40e8f9765cc86f46880e43a8fd22dc1a1a8cab1"},
+    {file = "markdown_it_py-4.0.0-py3-none-any.whl", hash = "sha256:87327c59b172c5011896038353a81343b6754500a08cd7a4973bb48c6d578147"},
+    {file = "markdown_it_py-4.0.0.tar.gz", hash = "sha256:cb0a2b4aa34f932c007117b194e945bd74e0ec24133ceb5bac59009cda1cb9f3"},
 ]
 
 [package.dependencies]
@@ -93,13 +93,12 @@ mdurl = ">=0.1,<1.0"
 
 [package.extras]
 benchmarking = ["psutil", "pytest", "pytest-benchmark"]
-code-style = ["pre-commit (>=3.0,<4.0)"]
-compare = ["commonmark (>=0.9,<1.0)", "markdown (>=3.4,<4.0)", "mistletoe (>=1.0,<2.0)", "mistune (>=2.0,<3.0)", "panflute (>=2.3,<3.0)"]
+compare = ["commonmark (>=0.9,<1.0)", "markdown (>=3.4,<4.0)", "markdown-it-pyrs", "mistletoe (>=1.0,<2.0)", "mistune (>=3.0,<4.0)", "panflute (>=2.3,<3.0)"]
 linkify = ["linkify-it-py (>=1,<3)"]
-plugins = ["mdit-py-plugins"]
+plugins = ["mdit-py-plugins (>=0.5.0)"]
 profiling = ["gprof2dot"]
-rtd = ["jupyter_sphinx", "mdit-py-plugins", "myst-parser", "pyyaml", "sphinx", "sphinx-copybutton", "sphinx-design", "sphinx_book_theme"]
-testing = ["coverage", "pytest", "pytest-cov", "pytest-regressions"]
+rtd = ["ipykernel", "jupyter_sphinx", "mdit-py-plugins (>=0.5.0)", "myst-parser", "pyyaml", "sphinx", "sphinx-book-theme (>=1.0,<2.0)", "sphinx-copybutton", "sphinx-design"]
+testing = ["coverage", "pytest", "pytest-cov", "pytest-regressions", "requests"]
 
 [[package]]
 name = "mccabe"
@@ -248,13 +247,13 @@ test = ["tox"]
 
 [[package]]
 name = "python-dotenv"
-version = "0.21.1"
+version = "1.1.1"
 description = "Read key-value pairs from a .env file and set them as environment variables"
 optional = false
-python-versions = ">=3.7"
+python-versions = ">=3.9"
 files = [
-    {file = "python-dotenv-0.21.1.tar.gz", hash = "sha256:1c93de8f636cde3ce377292818d0e440b6e45a82f215c3744979151fa8151c49"},
-    {file = "python_dotenv-0.21.1-py3-none-any.whl", hash = "sha256:41e12e0318bebc859fcc4d97d4db8d20ad21721a6aa5047dd59f090391cb549a"},
+    {file = "python_dotenv-1.1.1-py3-none-any.whl", hash = "sha256:31f23644fe2602f88ff55e1f5c79ba497e01224ee7737937930c448e4d0e24dc"},
+    {file = "python_dotenv-1.1.1.tar.gz", hash = "sha256:a8a6399716257f45be6a007360200409fce5cda2661e3dec71d23dc15f6189ab"},
 ]
 
 [package.extras]
@@ -420,23 +419,23 @@ files = [
 
 [[package]]
 name = "yaralyzer"
-version = "1.0.7"
-description = "Visualize and force decode YARA and regex matches found in a file or byte stream. With colors. Lots of colors."
+version = "1.0.8"
+description = "Visualize and force decode YARA and regex matches found in a file or byte stream with colors. Lots of colors."
 optional = false
-python-versions = "<4.0,>=3.9"
+python-versions = "<4.0,>=3.10"
 files = [
-    {file = "yaralyzer-1.0.7-py3-none-any.whl", hash = "sha256:d0f90fa174d8309f5fde563171fd9e22fd1b58218da11d8504558bd601819e4e"},
-    {file = "yaralyzer-1.0.7.tar.gz", hash = "sha256:925e23ad0466fbfc25be70d6053c553888b06723fc03fa607e7cf526932cf92b"},
+    {file = "yaralyzer-1.0.8-py3-none-any.whl", hash = "sha256:1db3e03952dc363a69e5c461c9760a472139eebef50be6bd7d5a7b993d1b1c47"},
+    {file = "yaralyzer-1.0.8.tar.gz", hash = "sha256:4a980c6ca9027862f6059f0b1abeba58fda0641c90b33107c9168cc9d396ada4"},
 ]
 
 [package.dependencies]
 chardet = ">=5.0.0,<6.0.0"
-python-dotenv = ">=0.21.0,<0.22.0"
+python-dotenv = ">=1.1.1,<2.0.0"
 rich = ">=14.1.0,<15.0.0"
 rich-argparse-plus = ">=0.3.1,<0.4.0"
 yara-python = ">=4.5.4,<5.0.0"
 
 [metadata]
 lock-version = "2.0"
-python-versions = "^3.9,>=3.9.2"
-content-hash = "e8904b6b1cccd518a223007c532dcce35d3389e8fd405959c0a09453365dc64a"
+python-versions = "^3.10"
+content-hash = "564963ccaffdeb0b1163d32d3eeb8e4f3022d458da7269299a989fa6f6c2439a"

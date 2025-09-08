@@ -1,10 +1,5 @@
 """
-PDF node decorator - wraps actual PDF objects to make them anytree nodes.
-Also adds decorators/generators for Rich text representation.
-
-Child/parent relationships should be set using the add_child() and set_parent()
-methods and not set directly. (TODO: this could be done better with anytree
-hooks)
+`PdfTreeNode` decorates a `PdfObject` with tree structure information.
 """
 from typing import Callable, List, Optional
 
@@ -27,11 +22,22 @@ DECODE_FAILURE_LEN = -1
 
 
 class PdfTreeNode(NodeMixin, PdfObjectProperties):
+    """
+    PDF node decorator - wraps actual PDF objects to make them `anytree` nodes.
+    Also adds decorators/generators for Rich text representation.
+
+    Child/parent relationships should be set using the `add_child()` and `set_parent()`
+    methods and not set directly.
+
+    TODO: this could be done better with anytree hooks.
+    """
+
     def __init__(self, obj: PdfObject, address: str, idnum: int):
         """
-        obj:     The underlying PDF object
-        address: The first address that points from some node to this one
-        idnum:   ID used in the reference
+        Args:
+            obj (PdfObject): The underlying PDF object
+            address (str): The first address that points from some node to this one
+            idnum (int): ID used in the reference
         """
         PdfObjectProperties.__init__(self, obj, address, idnum)
         self.non_tree_relationships: List[PdfObjectRelationship] = []
@@ -54,7 +60,7 @@ class PdfTreeNode(NodeMixin, PdfObjectProperties):
 
     @classmethod
     def from_reference(cls, ref: IndirectObject, address: str) -> 'PdfTreeNode':
-        """Builds a PdfTreeDecorator from an IndirectObject."""
+        """Alternate constructor to Build a `PdfTreeNode` from an `IndirectObject`."""
         try:
             return cls(ref.get_object(), address, ref.idnum)
         except PdfReadError as e:
@@ -82,7 +88,7 @@ class PdfTreeNode(NodeMixin, PdfObjectProperties):
             child.set_parent(self)
 
     def add_non_tree_relationship(self, relationship: PdfObjectRelationship) -> None:
-        """Add a relationship that points at this node's PDF object. TODO: doesn't include parent/child"""
+        """Add a relationship that points at this node's PDF object. TODO: doesn't include parent/child."""
         if relationship in self.non_tree_relationships:
             return
 

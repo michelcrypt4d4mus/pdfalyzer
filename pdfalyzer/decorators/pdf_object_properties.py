@@ -15,7 +15,7 @@ from pdfalyzer.util.adobe_strings import *
 
 
 class PdfObjectProperties:
-    """Simple class to extract critical features of a PdfObject."""
+    """Simple class to extract critical features of a `PdfObject`."""
 
     def __init__(
         self,
@@ -86,7 +86,7 @@ class PdfObjectProperties:
         obj: PdfObject,
         is_single_row_table: bool = False
     ) -> List[Union[Text, str]]:
-        """PDF object property at reference_key becomes a formatted 3-tuple for use in Rich tables."""
+        """PDF object property at `reference_key` becomes a formatted 3-tuple for use in Rich tables."""
         with_resolved_refs = cls.resolve_references(reference_key, obj)
 
         return [
@@ -101,7 +101,7 @@ class PdfObjectProperties:
     # TODO: this doesn't recurse...
     @classmethod
     def _obj_to_rich_text(cls, obj: Any) -> Text:
-        """Recurse through obj and build a Text object."""
+        """Recurse through `obj` and build a `Text` object."""
         if isinstance(obj, dict):
             key_value_pairs = [Text(f"{k}: ").append_text(cls._obj_to_rich_text(v)) for k, v in obj.items()]
             return Text('{').append_text(comma_join_txt(key_value_pairs)).append('}')

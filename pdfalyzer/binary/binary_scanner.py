@@ -1,6 +1,5 @@
 """
-Class for handling binary data - scanning through it for various suspicious patterns as well as forcing
-various character encodings upon it to see what comes out.
+`BinaryScanner` class.
 """
 from collections import defaultdict
 from typing import Iterator, Optional, Tuple
@@ -28,8 +27,18 @@ from pdfalyzer.util.adobe_strings import CONTENTS, CURRENTFILE_EEXEC, FONT_FILE_
 
 
 class BinaryScanner:
+    """
+    Class for handling binary data - scanning through it for various suspicious patterns as well as forcing
+    various character encodings upon it to see what comes out.
+    """
+
     def __init__(self, _bytes: bytes, owner: PdfTreeNode, label: Optional[Text] = None):
-        """'owner' arg is an optional link back to the object containing this binary."""
+        """
+        Args:
+            _bytes (bytes): The binary data to be scanned.
+            owner (PdfTreeNode): The `PdfTreeNode` that contains this binary data.
+            label (Optional[Text]): A rich `Text` label for the binary data (e.g. the PDF object's address).
+        """
         self.bytes = _bytes
         self.label = label
         self.owner = owner
@@ -42,7 +51,7 @@ class BinaryScanner:
         self.regex_extraction_stats = defaultdict(lambda: RegexMatchMetrics())
 
     def check_for_dangerous_instructions(self) -> None:
-        """Scan for all the strings in DANGEROUS_INSTRUCTIONS list and decode bytes around them."""
+        """Scan for all the strings in `DANGEROUS_INSTRUCTIONS` list and decode bytes around them."""
         subheader = "Scanning Binary For Anything That Could Be Described As 'sus'..."
         print_section_sub_subheader(subheader, style=f"bright_red")
 
@@ -71,8 +80,8 @@ class BinaryScanner:
 
     def force_decode_quoted_bytes(self) -> None:
         """
-        Find all strings matching QUOTE_PATTERNS (AKA between quote chars) and decode them with various encodings.
-        The --quote-type arg will limit this decode to just one kind of quote.
+        Find all strings matching `QUOTE_PATTERNS` (AKA between quote chars) and decode them with various
+        encodings. The `--quote-type` arg will limit this decode to just one kind of quote.
         """
         quote_selections = PdfalyzerConfig._args.extract_quoteds
 
@@ -100,11 +109,11 @@ class BinaryScanner:
     # YARA rules are written on the fly and then YARA does the matching.
     # -------------------------------------------------------------------------------
     def extract_guillemet_quoted_bytes(self) -> Iterator[Tuple[BytesMatch, BytesDecoder]]:
-        """Iterate on all strings surrounded by Guillemet quotes, e.g. «string»"""
+        """Iterate on all strings surrounded by Guillemet quotes, e.g. «string»."""
         return self._quote_yaralyzer(QUOTE_PATTERNS[GUILLEMET], GUILLEMET).match_iterator()
 
     def extract_backtick_quoted_bytes(self) -> Iterator[Tuple[BytesMatch, BytesDecoder]]:
-        """Returns an interator over all strings surrounded by backticks"""
+        """Returns an interator over all strings surrounded by backticks."""
         return self._quote_yaralyzer(QUOTE_PATTERNS[BACKTICK], BACKTICK).match_iterator()
 
     def extract_front_slash_quoted_bytes(self) -> Iterator[Tuple[BytesMatch, BytesDecoder]]:
@@ -137,7 +146,14 @@ class BinaryScanner:
         console.line()
 
     def process_yara_matches(self, yaralyzer: Yaralyzer, pattern: str, force: bool = False) -> None:
-        """Decide whether to attempt to decode the matched bytes, track stats. force param ignores min/max length."""
+        """
+        Decide whether to attempt to decode the matched bytes and track stats.
+
+        Args:
+            yaralyzer (Yaralyzer): The `Yaralyzer` instance to use for finding matches.
+            pattern (str): The pattern being searched for (used for stats tracking).
+            force (bool): If `True`, decode all matches even if they are very short or very long.
+        """
         for bytes_match, decoder in yaralyzer.match_iterator():
             log.debug(f"Trackings match stats for {pattern}, bytes_match: {bytes_match}, is_decodable: {bytes_match.is_decodable()}")  # noqa: E501
 
@@ -162,7 +178,7 @@ class BinaryScanner:
         return self.bytes.split(CURRENTFILE_EEXEC)[1] if CURRENTFILE_EEXEC in self.bytes else self.bytes
 
     def _quote_yaralyzer(self, quote_pattern: str, quote_type: str):
-        """Helper method to build a Yaralyzer for a quote_pattern"""
+        """Helper method to build a Yaralyzer for a `quote_pattern`."""
         label = f"{quote_type}_Quoted"
 
         if quote_type == GUILLEMET:
@@ -177,7 +193,7 @@ class BinaryScanner:
         rules_label: Optional[str] = None,
         pattern_label: Optional[str] = None
     ) -> Yaralyzer:
-        """Build a yaralyzer to scan self.bytes"""
+        """Build a `yaralyzer` to scan `self.bytes`."""
         return Yaralyzer.for_patterns(
             patterns=[escape_yara_pattern(pattern)],
             patterns_type=pattern_type,
@@ -198,5 +214,5 @@ class BinaryScanner:
         self.suppression_notice_queue = []
 
     def _eexec_idx(self) -> int:
-        """Returns the location of CURRENTFILES_EEXEC within the binary stream data (or 0 if it's not there)."""
+        """Returns the location of `CURRENTFILES_EEXEC` within the binary stream data (or 0 if it's not there)."""
         return self.bytes.find(CURRENTFILE_EEXEC) if CURRENTFILE_EEXEC in self.bytes else 0

@@ -124,7 +124,7 @@ parser._action_groups = parser._action_groups[:2] + [parser._action_groups[-1]] 
 # Main argument parsing begins #
 ################################
 def parse_arguments():
-    """Parse command line args. Most settings are communicated to the app by setting env vars"""
+    """Parse command line args. Most args can also be communicated to the app by setting env vars."""
     if '--version' in sys.argv:
         print(f"pdfalyzer {version('pdfalyzer')}")
         sys.exit()
@@ -158,7 +158,7 @@ def parse_arguments():
     return args
 
 
-def output_sections(args, pdfalyzer) -> List[OutputSection]:
+def output_sections(args: Namespace, pdfalyzer: 'Pdfalyzer') -> List[OutputSection]:
     """
     Determine which of the tree visualizations, font scans, etc should be run.
     If nothing is specified output ALL sections other than --streams which is v. slow/verbose.
@@ -196,9 +196,11 @@ def all_sections_chosen(args):
     return len([s for s in ALL_SECTIONS if vars(args)[s]]) == len(ALL_SECTIONS)
 
 
-###############################################
-# Separate arg parser for combine_pdfs script #
-###############################################
+
+#############################################################
+#  Separate arg parsers for combine_pdfs and other scripts  #
+#############################################################
+
 MAX_QUALITY = 10
 
 combine_pdfs_parser = ArgumentParser(

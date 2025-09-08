@@ -1,11 +1,3 @@
-"""
-Some nodes cannot be placed until we have walked the rest of the tree. For instance
-if we encounter a /Page that relationships /Resources we need to know if there's a
-/Pages parent of the /Page before committing to a tree structure.
-
-This class handles choosing among the candidates for a given PDF object's parent node
-(AKA "figuring out where to place the node in the PDF object tree").
-"""
 from typing import Callable, List, Optional
 
 from rich.markup import escape
@@ -18,6 +10,14 @@ from pdfalyzer.util.adobe_strings import *
 
 
 class IndeterminateNode:
+    """
+    Class to handle choosing among the candidates for a given PDF object's parent node.
+
+    Some nodes cannot be placed until we have walked the rest of the tree. For instance
+    if we encounter a /Page that relationships /Resources we need to know if there's a
+    /Pages parent of the /Page before committing to a tree structure.
+    """
+
     def __init__(self, node: PdfTreeNode) -> None:
         self.node = node
 
@@ -56,7 +56,7 @@ class IndeterminateNode:
 
         self.node.set_parent(parent)
 
-    def find_node_with_most_descendants(self, list_of_nodes: List[PdfTreeNode] = None) -> PdfTreeNode:
+    def find_node_with_most_descendants(self, list_of_nodes: Optional[List[PdfTreeNode]] = None) -> PdfTreeNode:
         """Find node with a reference to this one that has the most descendants"""
         list_of_nodes = list_of_nodes or [r.from_node for r in self.node.non_tree_relationships]
         max_descendants = max([node.descendants_count() for node in list_of_nodes])
@@ -64,7 +64,7 @@ class IndeterminateNode:
 
     def _has_only_similar_relationships(self) -> bool:
         """
-        Returns True if all the nodes w/references to this one have the same type or if all the
+        Returns `True` if all the nodes w/references to this one have the same type or if all the
         reference_keys that point to this node are the same.
         """
         unique_refferer_labels = self.node.unique_labels_of_referring_nodes()
@@ -125,6 +125,6 @@ class IndeterminateNode:
 
 
 def find_node_with_lowest_id(list_of_nodes: List[PdfTreeNode]) -> PdfTreeNode:
-    """Find node in list_of_nodes_with_lowest ID."""
+    """Return node in `list_of_nodes` with lowest ID."""
     lowest_idnum = min([n.idnum for n in list_of_nodes])
     return next(n for n in list_of_nodes if n.idnum == lowest_idnum)

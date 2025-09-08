@@ -19,7 +19,7 @@ CHARMAP_PADDING = (0, 2, 0, 10)
 
 
 def print_character_mapping(font: 'FontInfo') -> None:  # noqa: F821
-    """Prints the character mapping extracted by PyPDF._charmap in tidy columns"""
+    """Prints the character mapping extracted by PyPDF._charmap in tidy columns."""
     if font.character_mapping is None or len(font.character_mapping) == 0:
         log.info(f"No character map found in {font}")
         return
