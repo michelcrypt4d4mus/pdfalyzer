@@ -5,10 +5,11 @@ from importlib.resources import as_file, files
 from sys import exit
 from typing import Optional, Union
 
-from yaralyzer.config import YaralyzerConfig
+from yaralyzer.config import PDFALYZER, YaralyzerConfig
+from yaralyzer.output.rich_console import print_fatal_error_and_exit
 from yaralyzer.yaralyzer import Yaralyzer
 
-YARA_RULES_DIR = files('pdfalyzer').joinpath('yara_rules')
+YARA_RULES_DIR = files(PDFALYZER).joinpath('yara_rules')
 
 YARA_RULES_FILES = [
     'didier_stevens.yara',
@@ -20,11 +21,12 @@ YARA_RULES_FILES = [
 
 
 def get_file_yaralyzer(file_path_to_scan: str) -> Yaralyzer:
-    """Get a yaralyzer for a file path"""
+    """Get a yaralyzer for a file path."""
     return _build_yaralyzer(file_path_to_scan)
 
 
 def get_bytes_yaralyzer(scannable: bytes, label: str) -> Yaralyzer:
+    """Get a yaralyzer for a `scannable` bytes."""
     return _build_yaralyzer(scannable, label)
 
 
@@ -44,10 +46,5 @@ def _build_yaralyzer(scannable: Union[bytes, str], label: Optional[str] = None) 
 
                         try:
                             return Yaralyzer.for_rules_files(rules_paths, scannable, label)
-                        except ValueError as e:
-                            # TODO: use YARA_FILE_DOES_NOT_EXIST_ERROR_MSG variable
-                            if "it doesn't exist" in str(e):
-                                print(str(e))
-                                exit(1)
-                            else:
-                                raise e
+                        except FileNotFoundError as e:
+                            print_fatal_error_and_exit(str(e))
