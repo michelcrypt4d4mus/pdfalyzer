@@ -162,6 +162,12 @@ def output_sections(args: Namespace, pdfalyzer: 'Pdfalyzer') -> List[OutputSecti
     """
     Determine which of the tree visualizations, font scans, etc should be run.
     If nothing is specified output ALL sections other than --streams which is v. slow/verbose.
+
+    Args:
+        args: parsed command line arguments
+        pdfalyzer: the `pdfalyzer` instance whose methods will be called to produce output
+    Returns:
+        List[OutputSection]: List of `OutputSection` namedtuples with 'argument' and 'method' fields
     """
     # Create a partial for print_font_info() because it's the only one that can take an argument
     # partials have no __name__ so update_wrapper() propagates the 'print_font_info' as this partial's name
