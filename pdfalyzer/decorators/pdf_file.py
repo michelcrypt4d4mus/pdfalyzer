@@ -155,7 +155,7 @@ class PdfFile:
                 if True:
                     print(f"{page_text}")
         except DependencyError:
-            log.error("PyPDF is missing a dependency required to parse this PDF. Try 'pip install pdfalyzer[extract]'")
+            log.error("Pdfalyzer is missing an optional dependency required to extract text. Try 'pip install pdfalyzer[extract]'")
         except EmptyFileError:
             log.warning("Skipping empty file!")
         except PdfStreamError as e:
