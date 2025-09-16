@@ -92,7 +92,12 @@ class PdfFile:
         console.print(f"Extracted pages to new PDF: '{extracted_pages_pdf_path}'.")
         return extracted_pages_pdf_path
 
-    def extract_text(self, page_range: Optional[PageRange] = None, logger: Optional[Logger] = None) -> Optional[str]:
+    def extract_text(
+            self,
+            page_range: Optional[PageRange] = None,
+            logger: Optional[Logger] = None,
+            print_as_parsed: bool = False
+        ) -> Optional[str]:
         """
         Use PyPDF to extract text page by page and use Tesseract to OCR any embedded images.
 
@@ -100,6 +105,7 @@ class PdfFile:
             page_range (Optional[PageRange]): If provided, only extract text from pages in this range.
                 Page numbers are 1-indexed. If not provided, extract text from all pages.
             log (Optional[Logger]): If provided, log progress to this logger. Otherwise use default logger.
+            print_as_parsed (bool): If True, print each page's text to STDOUT as it is parsed.
 
         Returns:
             Optional[str]: The extracted text, or None if extraction failed.
@@ -151,8 +157,7 @@ class PdfFile:
                 extracted_pages.append(page_text)
                 log.debug(page_text)
 
-                # if Config.print_as_parsed:  # TODO: add option for this
-                if True:
+                if print_as_parsed:
                     print(f"{page_text}")
         except DependencyError:
             log.error("Pdfalyzer is missing an optional dependency required to extract text. Try 'pip install pdfalyzer[extract]'")
