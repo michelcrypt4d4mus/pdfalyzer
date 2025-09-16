@@ -162,9 +162,7 @@ class PdfFile:
             print_error(f"Error parsing PDF file '{self.file_path}': {e}")
             stderr_console.print_exception()
 
-        self._extracted_text = "\n\n".join(extracted_pages).strip()
-        self.text_extraction_attempted = True
-        return self._extracted_text
+        return "\n\n".join(extracted_pages).strip()
 
     def file_size(self) -> int:
         """Returns file size in bytes."""
