@@ -16,7 +16,8 @@ from yaralyzer.util.logging import log as yaralyzer_log
 
 from pdfalyzer.helpers.filesystem_helper import create_dir_if_it_does_not_exist, insert_suffix_before_extension
 from pdfalyzer.helpers.image_helper import ocr_text
-from pdfalyzer.helpers.rich_text_helper import attention_getting_panel, error_text, mild_warning, print_error, stderr_console
+from pdfalyzer.helpers.rich_text_helper import (attention_getting_panel, error_text, mild_warning,
+     print_error, stderr_console)
 from pdfalyzer.helpers.string_helper import exception_str
 from pdfalyzer.util.page_range import PageRange
 
