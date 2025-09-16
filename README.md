@@ -1,9 +1,9 @@
-<!-- ![Tests](https://img.shields.io/github/workflow/status/michelcrypt4d4mus/pdfalyzer/tests?label=tests)  -->
-![Python Version](https://img.shields.io/pypi/pyversions/pdfalyzer)
 [![GithubRelease](https://img.shields.io/github/v/release/michelcrypt4d4mus/pdfalyzer?sort=semver)](https://pypi.org/project/pdfalyzer/)
-[![GitHub last commit](https://img.shields.io/github/last-commit/michelcrypt4d4mus/pdfalyzer)](https://github.com/michelcrypt4d4mus/pdfalyzer)
 ![PyPiRelease](https://img.shields.io/pypi/v/pdfalyzer)
+[![GitHub last commit](https://img.shields.io/github/last-commit/michelcrypt4d4mus/pdfalyzer)](https://github.com/michelcrypt4d4mus/pdfalyzer)
+![Python Version](https://img.shields.io/pypi/pyversions/pdfalyzer)
 ![Downloads](https://img.shields.io/pypi/dm/pdfalyzer)
+[![Tests](https://github.com/michelcrypt4d4mus/pdfalyzer/actions/workflows/python-package.yml/badge.svg)](https://github.com/michelcrypt4d4mus/pdfalyzer/actions/workflows/python-package.yml)
 
 
 # THE PDFALYZER
