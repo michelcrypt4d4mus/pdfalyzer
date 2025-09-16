@@ -4,7 +4,6 @@ from os import path
 from pathlib import Path
 from typing import List, Optional, Union
 
-from PIL import Image
 from pypdf import PdfReader, PdfWriter
 from pypdf.errors import DependencyError, EmptyFileError, PdfStreamError
 from rich.console import Console
@@ -111,6 +110,7 @@ class PdfFile:
         Returns:
             Optional[str]: The extracted text, or None if extraction failed.
         """
+        from PIL import Image  # Imported here to avoid hard dependency if not using this method
         log = logger or yaralyzer_log
         log.debug(f"Extracting text from '{self.file_path}'...")
         self._page_numbers_of_errors: List[int] = []
