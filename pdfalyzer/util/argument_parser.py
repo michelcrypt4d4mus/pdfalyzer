@@ -305,7 +305,7 @@ def parse_pdf_page_extraction_args() -> Namespace:
 extract_text_parser = ArgumentParser(
     formatter_class=RichHelpFormatterPlus,
     description="Extract the text from one or more files or directories.",
-    epilog="If any of the FILE_OR_DIRs is a directory all files in that directory will be extracted."
+    epilog="If any of the FILE_OR_DIRs is a directory all PDF files in that directory will be extracted."
 )
 
 extract_text_parser.add_argument('file_or_dir', nargs='+', metavar='FILE_OR_DIR')
