@@ -13,8 +13,10 @@ from typing import List, Optional
 from rich_argparse_plus import RichHelpFormatterPlus
 from rich.prompt import Confirm
 from rich.text import Text
+from yaralyzer.helpers.file_helper import files_in_dir
 from yaralyzer.util.argument_parser import export, parser, parse_arguments as parse_yaralyzer_args, source
 from yaralyzer.util.logging import log, log_and_print, log_argparse_result, log_current_config, log_invocation
+
 
 from pdfalyzer.config import ALL_STREAMS, PDFALYZER, PdfalyzerConfig
 from pdfalyzer.detection.constants.binary_regexes import QUOTE_PATTERNS
@@ -329,7 +331,7 @@ def parse_text_extraction_args() -> Namespace:
             log.error(f"File '{file_path}' doesn't exist!")
             sys.exit(-1)
         elif file_path.is_dir():
-            args.files_to_process.extend(files_in_dir(file_path))
+            args.files_to_process.extend(files_in_dir(file_path, 'pdf'))
         else:
             args.files_to_process.append(file_path)
 
