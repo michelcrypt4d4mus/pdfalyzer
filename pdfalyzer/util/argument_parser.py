@@ -328,7 +328,7 @@ def parse_text_extraction_args() -> Namespace:
         file_path = Path(file_or_dir)
 
         if not file_path.exists():
-            log.error(f"File '{file_path}' doesn't exist!")
+            log.error(f"'{file_path}' is not a valid file or directory.")
             sys.exit(-1)
         elif file_path.is_dir():
             args.files_to_process.extend(files_in_dir(file_path, 'pdf'))

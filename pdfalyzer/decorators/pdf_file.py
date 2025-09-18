@@ -45,7 +45,7 @@ class PdfFile:
         self.file_path: Path = Path(file_path)
 
         if not self.file_path.exists():
-            raise FileNotFoundError(f"File '{file_path}' does not exist.")
+            raise FileNotFoundError(f"'{file_path}' is not a valid file or directory.")
 
         self.dirname = self.file_path.parent
         self.basename: str = path.basename(file_path)
