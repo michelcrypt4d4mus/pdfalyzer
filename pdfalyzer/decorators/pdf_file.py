@@ -34,6 +34,7 @@ class PdfFile:
         basename (str): The base name of the PDF file (with extension).
         basename_without_ext (str): The base name of the PDF file (without extension).
         extname (str): The file extension of the PDF file.
+        file_size (int): The size of the file in bytes.
     """
 
     def __init__(self, file_path: Union[str, Path]) -> None:
