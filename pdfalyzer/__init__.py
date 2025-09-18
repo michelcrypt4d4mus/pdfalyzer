@@ -147,16 +147,6 @@ def extract_text_from_pdfs() -> None:
     args: Namespace = parse_text_extraction_args()
     console.line()
 
-    # if args.debug:
-    #     Config.enable_debug_mode()
-    # if args.print_as_parsed:
-    #     Config.print_as_parsed = True
-
     for file_path in args.files_to_process:
-        PdfFile(file_path).print_extracted_text(args.page_range)
+        PdfFile(file_path).print_extracted_text(args.page_range, args.print_as_parsed)
         console.line(2)
-
-# TODO: migrate this functionality from clown_sort
-# def extract_pdf_pages() -> None:
-#     args = parse_pdf_page_extraction_args()
-#     PdfFile(args.pdf_file).extract_page_range(args.page_range, destination_dir=args.destination_dir)

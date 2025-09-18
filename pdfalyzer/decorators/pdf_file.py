@@ -174,9 +174,13 @@ class PdfFile:
         """Returns file size in bytes."""
         return self.file_path.stat().st_size
 
-    def print_extracted_text(self, page_range: Optional[PageRange] = None) -> None:
-        console.print(Panel(str(self.file_path), expand=False, style='bright_white reverse')        )
-        console.print(self.extract_text(page_range=page_range))
+    def print_extracted_text(self, page_range: Optional[PageRange] = None, print_as_parsed: bool = False) -> None:
+        """Fancy wrapper for printing the extracted text to the screen."""
+        console.print(Panel(str(self.file_path), expand=False, style='bright_white reverse'))
+        txt = self.extract_text(page_range=page_range, print_as_parsed=print_as_parsed)
+
+        if not print_as_parsed:
+            console.print(txt)
 
     def _handle_extraction_error(self, page_number: int, error_msg: str) -> None:
         """Rip the offending page to a new file and suggest that user report bug to PyPDF."""

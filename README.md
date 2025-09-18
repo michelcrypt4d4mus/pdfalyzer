@@ -220,7 +220,7 @@ The Pdfalyzer comes with a few command line tools:
 Combines multiple PDFs into a single PDF. Run `combine_pdfs --help` to see the options.
 
 #### `extract_pdf_pages`
-Extracts page ranges (e.g. "10-25") from a PDF. Run `extract_pdf_pages --help` to see the options.
+Extracts page ranges (e.g. "10-25") from a PDF and writes them to a new PDF. Run `extract_pdf_pages --help` to see the options.
 ![](doc/extract_pages_from_pdf_help.png)
 
 #### `extract_text_from_pdfs`
