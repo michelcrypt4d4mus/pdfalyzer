@@ -50,6 +50,7 @@ class PdfFile:
         self.basename: str = path.basename(file_path)
         self.basename_without_ext: str = str(Path(self.basename).with_suffix(''))
         self.extname: str = self.file_path.suffix
+        self.file_size = self.file_path.stat().st_size
 
     def extract_page_range(
             self,
@@ -170,10 +171,6 @@ class PdfFile:
 
         return "\n\n".join(extracted_pages).strip()
 
-    def file_size(self) -> int:
-        """Returns file size in bytes."""
-        return self.file_path.stat().st_size
-
     def print_extracted_text(self, page_range: Optional[PageRange] = None, print_as_parsed: bool = False) -> None:
         """Fancy wrapper for printing the extracted text to the screen."""
         console.print(Panel(str(self.file_path), expand=False, style='bright_white reverse'))
@@ -209,7 +206,7 @@ class PdfFile:
 
     def _log_to_stderr(self, msg: str, style: Optional[str] = None) -> None:
         """When parsing very large PDFs it can be useful to log progress and other messages to STDERR."""
-        if self.file_size() < MIN_PDF_SIZE_TO_LOG_PROGRESS_TO_STDERR:
+        if self.file_size < MIN_PDF_SIZE_TO_LOG_PROGRESS_TO_STDERR:
             return
 
         stderr_console.print(msg, style=style or "")
