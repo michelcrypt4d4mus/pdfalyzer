@@ -211,14 +211,27 @@ Things like, say, a hidden binary `/F` (PDF instruction meaning "URL") followed 
 
 -------------
 
+
 # PDF Resources
 ## Included PDF Tools
+The Pdfalyzer comes with a few command line tools:
+
 #### `combine_pdfs`
-The Pdfalyzer ships with a command line tool `combine_pdfs` that combines multiple PDFs into a single PDF. Run `combine_pdfs --help` to see the options.
+Combines multiple PDFs into a single PDF. Run `combine_pdfs --help` to see the options.
 
 #### `extract_pdf_pages`
-The Pdfalyzer ships with a command line tool `extract_pdf_pages` that can extract page ranges (e.g. "10-25") from PDFs on the command line.
+Extracts page ranges (e.g. "10-25") from a PDF and writes them to a new PDF. Run `extract_pdf_pages --help` to see the options.
 ![](doc/extract_pages_from_pdf_help.png)
+
+#### `extract_text_from_pdfs`
+Extracts text from a PDF, including applying OCR to all embedded images. Requires that you install The Pdfalyzer's optional dependencies:
+
+```bash
+pipx install pdfalyzer[extract]
+```
+
+Run `extract_text_from_pdfs --help` to see the options.
+
 
 ## 3rd Party PDF Tools
 ### Installing Didier Stevens's PDF Analysis Tools

@@ -68,7 +68,12 @@ packages = [
 python = "^3.10"
 anytree = "~=2.13"
 pypdf = "^6.0.0"
+PyMuPDF = {version = "^1.26.4", optional = true}
+pytesseract = {version = "^0.3.13", optional = true}
 yaralyzer = "^1.0.9"
+
+[tool.poetry.extras]
+extract = ["PyMuPDF", "pytesseract"]
 
 [tool.poetry.group.dev.dependencies]
 flake8 = "^7.3.0"
@@ -82,6 +87,7 @@ pytest-skip-slow = "^0.0.3"
 [tool.poetry.scripts]
 combine_pdfs = 'pdfalyzer:combine_pdfs'
 extract_pdf_pages = 'pdfalyzer:extract_pdf_pages'
+extract_text_from_pdfs = 'pdfalyzer:extract_text_from_pdfs'
 pdfalyze = 'pdfalyzer:pdfalyze'
 pdfalyzer_show_color_theme = 'pdfalyzer:pdfalyzer_show_color_theme'
 
@@ -108,3 +114,8 @@ requires = ["poetry-core>=1.0.0"]
 addopts = [
     "--import-mode=importlib",
 ]
+
+
+# Poetry 2.x handles optional dependencies like this:
+# [project.optional-dependencies]
+# extract = ["PyMuPDF", "pytesseract"]

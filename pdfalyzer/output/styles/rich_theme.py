@@ -51,7 +51,8 @@ PDFALYZER_THEME_DICT.update({
     'warn.harsh': 'reverse bright_yellow',
     # error log events
     'fail': 'bold reverse red',
-    'milderror': 'red',
+    'mild_error': 'red',  # TODO: unused?
+    'mild_warning': 'color(228) dim',
     'red_alert': 'blink bold red reverse on white',
 })
 
