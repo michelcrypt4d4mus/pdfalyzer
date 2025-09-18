@@ -1,4 +1,6 @@
 # NEXT RELEASE
+
+# 1.17.0
 * Add `extract_pdf_pages` command line tool (imported from `clown_sort`)
 * Add `extract_text_from_pdfs` command line tool (imported from `clown_sort`)
 
