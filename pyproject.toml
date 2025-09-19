@@ -74,6 +74,10 @@ yaralyzer = "^1.0.9"
 
 [tool.poetry.extras]
 extract = ["PyMuPDF", "pytesseract"]
+# Poetry 2.x handles optional dependencies like this:
+# [project.optional-dependencies]
+# extract = ["PyMuPDF", "pytesseract"]
+
 
 [tool.poetry.group.dev.dependencies]
 flake8 = "^7.3.0"
@@ -114,8 +118,3 @@ requires = ["poetry-core>=1.0.0"]
 addopts = [
     "--import-mode=importlib",
 ]
-
-
-# Poetry 2.x handles optional dependencies like this:
-# [project.optional-dependencies]
-# extract = ["PyMuPDF", "pytesseract"]
