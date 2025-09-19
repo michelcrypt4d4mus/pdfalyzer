@@ -1,4 +1,6 @@
 # NEXT RELEASE
+
+### 1.17.1
 * Fix issue where `combine_pdfs` page ranges were indexed from 0 instead of 1
 
 # 1.17.0
