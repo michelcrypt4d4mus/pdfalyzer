@@ -18,16 +18,14 @@ pp = PrettyPrinter(
     sort_dicts=True)
 
 
-def generate_hyphen_line(width: Optional[int] = None, title: Optional[str] = None):
-    """e.g. '-----------------BEGIN-----------------'"""
-    width = width or console_width()
+def all_strings_are_same_ignoring_numbers(strings: List[str]) -> bool:
+    """Returns true if string addresses are same except for digits."""
+    return len(set([replace_digits(s) for s in strings])) == 1
 
-    if title is None:
-        return '-' * width
 
-    side_hyphens = int((width - len(title)) / 2) * '-'
-    line = side_hyphens + title + side_hyphens
-    return line if len(line) == width else line + '-'
+def bracketed(index: Union[int, str]) -> str:
+    """Surround index with [ and ]."""
+    return f"[{index}]"
 
 
 def count_pattern_matches_in_text(pattern: str, text: str) -> int:
@@ -44,9 +42,20 @@ def exception_str(e: Exception) -> str:
     return f"{type(e).__name__}: {e}"
 
 
-def root_address(_string: str) -> str:
-    """Strip the bracketed part off an address, e.g. '/Root[1]' => '/Root'."""
-    return _string.split('[')[0]
+def generate_hyphen_line(width: Optional[int] = None, title: Optional[str] = None):
+    """e.g. '-----------------BEGIN-----------------'"""
+    width = width or console_width()
+
+    if title is None:
+        return '-' * width
+
+    side_hyphens = int((width - len(title)) / 2) * '-'
+    line = side_hyphens + title + side_hyphens
+    return line if len(line) == width else line + '-'
+
+
+def has_a_common_substring(strings: List[str]) -> bool:
+    return all([is_substring_of_longer_strings_in_list(s, strings) for s in strings])
 
 
 def is_prefixed_by_any(_string: str, prefixes: List[str]) -> bool:
@@ -54,9 +63,10 @@ def is_prefixed_by_any(_string: str, prefixes: List[str]) -> bool:
     return any([_string.startswith(prefix) for prefix in prefixes])
 
 
-def bracketed(index: Union[int, str]) -> str:
-    """Surround index with [ and ]."""
-    return f"[{index}]"
+def is_substring_of_longer_strings_in_list(_string: str, strings: List[str]) -> bool:
+    """Return True if '_string' is a substring of all the 'strings' longer than '_string'."""
+    longer_strings = [s for s in strings if len(s) > len(_string)]
+    return all([_string in longer_string for longer_string in longer_strings])
 
 
 def replace_digits(string_with_digits: str) -> str:
@@ -64,18 +74,6 @@ def replace_digits(string_with_digits: str) -> str:
     return DIGIT_REGEX.sub('x', string_with_digits)
 
 
-def all_strings_are_same_ignoring_numbers(strings: List[str]) -> bool:
-    """Returns true if string addresses are same except for digits."""
-    return len(set([replace_digits(s) for s in strings])) == 1
-
-
-def is_substring_of_longer_strings_in_list(_string: str, strings: List[str]) -> bool:
-    longer_strings = [s for s in strings if len(s) > len(_string)]
-    return all([_string in longer_string for longer_string in longer_strings])
-
-
-def has_a_common_substring(strings: List[str]) -> bool:
-    return all([
-        is_substring_of_longer_strings_in_list(s, strings)
-        for s in strings
-    ])
+def root_address(_string: str) -> str:
+    """Strip the bracketed part off an address, e.g. '/Root[1]' => '/Root'."""
+    return _string.split('[')[0]
