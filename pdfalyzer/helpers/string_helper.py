@@ -3,7 +3,7 @@ Various text formatting/styling/manipulating methods.
 """
 import re
 from pprint import PrettyPrinter
-from typing import List, Pattern, Union
+from typing import List, Optional, Pattern, Union
 
 from yaralyzer.output.rich_console import console_width
 
@@ -18,7 +18,7 @@ pp = PrettyPrinter(
     sort_dicts=True)
 
 
-def generate_hyphen_line(width=None, title=None):
+def generate_hyphen_line(width: Optional[int] = None, title: Optional[str] = None):
     """e.g. '-----------------BEGIN-----------------'"""
     width = width or console_width()
 
