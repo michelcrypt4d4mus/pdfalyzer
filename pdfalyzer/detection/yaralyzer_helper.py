@@ -2,7 +2,6 @@
 Functions to help with the pre-configured YARA rules in the /yara directory.
 """
 from importlib.resources import as_file, files
-from sys import exit
 from typing import Optional, Union
 
 from yaralyzer.config import YaralyzerConfig
