@@ -31,7 +31,8 @@ from pdfalyzer.helpers.rich_text_helper import print_highlighted
 from pdfalyzer.output.pdfalyzer_presenter import PdfalyzerPresenter
 from pdfalyzer.output.styles.rich_theme import PDFALYZER_THEME_DICT
 from pdfalyzer.pdfalyzer import Pdfalyzer
-from pdfalyzer.util.argument_parser import (MAX_QUALITY, ask_to_proceed, output_sections, parse_arguments,
+from pdfalyzer.util.argument_parser import ask_to_proceed, output_sections, parse_arguments
+from pdfalyzer.util.cli_tools_argument_parser import (MAX_QUALITY, ask_to_proceed,
      parse_combine_pdfs_args, parse_pdf_page_extraction_args, parse_text_extraction_args)
 from pdfalyzer.util.pdf_parser_manager import PdfParserManager
 
@@ -135,15 +136,13 @@ def combine_pdfs():
 
 
 def extract_pdf_pages() -> None:
+    """Extract a range of pages from a PDF to a new PDF."""
     args = parse_pdf_page_extraction_args()
     PdfFile(args.pdf_file).extract_page_range(args.page_range, destination_dir=args.destination_dir)
 
 
 def extract_text_from_pdfs() -> None:
-    """
-    Extract text from a single file or from all files in a given directory. Can accept
-    multiple paths as arguments on the command line.
-    """
+    """Extract text from a list of file or from all PDF files in a list of directories."""
     args: Namespace = parse_text_extraction_args()
     console.line()
 

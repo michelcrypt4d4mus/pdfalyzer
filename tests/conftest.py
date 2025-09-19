@@ -65,6 +65,11 @@ def additional_yara_rules_path():
     return FIXTURES_DIR.joinpath('additional_yara_rules.yara')
 
 
+@pytest.fixture(scope="session")
+def multipage_pdf_path():
+    return FIXTURES_DIR.joinpath('The Consul General at Berlin to FDR underecretary of State June 1933.pdf')
+
+
 @pytest.fixture
 def tmp_dir():
     """Clear the tmp dir when fixture is loaded"""

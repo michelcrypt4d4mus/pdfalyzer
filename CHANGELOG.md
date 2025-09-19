@@ -1,4 +1,5 @@
 # NEXT RELEASE
+* Fix issue where `combine_pdfs` page ranges were indexed from 0 instead of 1
 
 # 1.17.0
 * Add `extract_pdf_pages` command line tool (imported from `clown_sort`)

@@ -6,7 +6,7 @@ from argparse import ArgumentTypeError
 from dataclasses import dataclass
 from typing import Tuple
 
-PAGE_RANGE_REGEX = re.compile('\\d(-\\d)?')
+PAGE_RANGE_REGEX = re.compile(r'[1-9](\d+)?(-\d+)?')
 
 
 @dataclass
@@ -15,7 +15,7 @@ class PageRange:
 
     def __post_init__(self):
         if not PAGE_RANGE_REGEX.match(self.page_range):
-            raise ValueError(f"Invalid page range '{self.page_range}'")
+            raise ArgumentTypeError(f"Invalid page range '{self.page_range}'")
 
         if '-' in self.page_range:
             (self.first_page, self.last_page) = (int(p) for p in self.page_range.split('-'))
@@ -35,10 +35,10 @@ class PageRange:
         if self.first_page + 1 == self.last_page:
             return f"page_{self.first_page}"
         else:
-            return f"pages_{self.first_page}-{self.last_page}"
+            return f"pages_{self.first_page}-{self.last_page - 1}"
 
     def to_tuple(self) -> Tuple[int, int]:
-        return (self.first_page, self.last_page)
+        return (self.first_page - 1, self.last_page - 1)
 
     def __repr__(self) -> str:
         return f"PageRange({self.first_page}, {self.last_page})"
@@ -48,7 +48,4 @@ class PageRangeArgumentValidator(object):
     HELP_MSG = "a single digit ('11') or a range ('11-15') (WILL NOT extract the last page)"
 
     def __call__(self, value):
-        if not PAGE_RANGE_REGEX.match(value):
-            raise ArgumentTypeError("Argument has to match '{}'".format(PAGE_RANGE_REGEX.pattern))
-
         return PageRange(value)

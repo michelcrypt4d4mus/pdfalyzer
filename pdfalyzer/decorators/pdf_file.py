@@ -72,7 +72,7 @@ class PdfFile:
         Returns:
             Path: The path to the newly created PDF file containing the extracted pages.
         """
-        destination_dir = destination_dir or self.dirname
+        destination_dir = Path(destination_dir or self.dirname)
         create_dir_if_it_does_not_exist(destination_dir)
 
         if extra_file_suffix is None:
