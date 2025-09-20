@@ -1,4 +1,6 @@
 # NEXT RELEASE
+
+### 1.17.2
 * Remove unused `--debug` args for CLI tools
 * Rename `extract_text_from_pdfs` to `extract_pdf_text`
 
