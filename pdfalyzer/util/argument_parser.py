@@ -196,7 +196,7 @@ def output_sections(args: Namespace, pdfalyzer: 'Pdfalyzer') -> List[OutputSecti
 
 
 def all_sections_chosen(args):
-    """Returns true if all flags are set or no flags are set."""
+    """Returns True if all flags are set or no flags are set."""
     return len([s for s in ALL_SECTIONS if vars(args)[s]]) == len(ALL_SECTIONS)
 
 
