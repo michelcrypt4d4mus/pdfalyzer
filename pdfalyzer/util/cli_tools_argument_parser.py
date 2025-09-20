@@ -2,7 +2,8 @@
 Argument parsers for the command line tools other than `pdfalyze` that are included with The Pdfalyzer.
 
 1. combine_pdfs
-2.
+2. extract_pdf_pages
+3. extract_text_from_pdfs
 """
 import sys
 from argparse import ArgumentParser, Namespace
