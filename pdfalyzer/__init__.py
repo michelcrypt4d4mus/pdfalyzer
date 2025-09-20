@@ -141,7 +141,7 @@ def extract_pdf_pages() -> None:
     PdfFile(args.pdf_file).extract_page_range(args.page_range, destination_dir=args.destination_dir)
 
 
-def extract_text_from_pdfs() -> None:
+def extract_pdf_text() -> None:
     """Extract text from a list of file or from all PDF files in a list of directories."""
     args: Namespace = parse_text_extraction_args()
     console.line()

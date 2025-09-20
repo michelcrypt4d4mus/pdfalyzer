@@ -25,5 +25,5 @@ def test_extract_pdf_pages(extracted_pdf_path, multipage_pdf_path, tmp_dir):
     cmd_stdout = check_output(['extract_pdf_pages', '-r', '2', '-d', tmp_dir, multipage_pdf_path], env=environ).decode()
     assert "__page_2.pdf" in cmd_stdout
     assert extracted_pdf_path.exists()
-    text = check_output(['extract_text_from_pdfs', extracted_pdf_path], env=environ).decode()
+    text = check_output(['extract_pdf_text', extracted_pdf_path], env=environ).decode()
     assert "woefully ignorant and unprepared" in text

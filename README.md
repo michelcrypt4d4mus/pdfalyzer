@@ -218,9 +218,9 @@ The Pdfalyzer comes with a few command line tools:
 
 * `combine_pdfs` - Combines multiple PDFs into a single PDF. Run `combine_pdfs --help` for more info.
 * `extract_pdf_pages` - Extracts page ranges (e.g. "10-25") from a PDF and writes them to a new PDF. Run `extract_pdf_pages --help` for more info.
-* `extract_text_from_pdfs` - Extracts text from a PDF, including applying OCR to all embedded images. Run `extract_text_from_pdfs --help` for more info.
+* `extract_pdf_text` - Extracts text from a PDF, including applying OCR to all embedded images. Run `extract_pdf_text --help` for more info.
 
-Running `extract_text_from_pdfs` requires that you install The Pdfalyzer's optional dependencies:
+Running `extract_pdf_text` requires that you install The Pdfalyzer's optional dependencies:
 
 ```bash
 pipx install pdfalyzer[extract]

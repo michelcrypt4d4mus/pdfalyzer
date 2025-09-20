@@ -1,5 +1,6 @@
 # NEXT RELEASE
 * Remove unused `--debug` args for CLI tools
+* Rename `extract_text_from_pdfs` to `extract_pdf_text`
 
 ### 1.17.1
 * Fix issue where `extract_pdf_pages` page ranges were indexed from 0 instead of 1

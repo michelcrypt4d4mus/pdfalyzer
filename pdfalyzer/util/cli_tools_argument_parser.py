@@ -3,7 +3,7 @@ Argument parsers for the command line tools other than `pdfalyze` that are inclu
 
 1. combine_pdfs
 2. extract_pdf_pages
-3. extract_text_from_pdfs
+3. extract_pdf_text
 """
 import sys
 from argparse import ArgumentParser, Namespace
@@ -112,9 +112,9 @@ def parse_pdf_page_extraction_args() -> Namespace:
     return args
 
 
-############################
-#  extract_text_from_pdfs  #
-############################
+######################
+#  extract_pdf_text  #
+######################
 extract_text_parser = ArgumentParser(
     formatter_class=RichHelpFormatterPlus,
     description="Extract the text from one or more files or directories.",

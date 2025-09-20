@@ -1,4 +1,5 @@
 import io
+from argparse import ArgumentError
 from logging import Logger
 from os import path
 from pathlib import Path
@@ -74,11 +75,15 @@ class PdfFile:
         """
         destination_dir = Path(destination_dir or self.dirname)
         create_dir_if_it_does_not_exist(destination_dir)
+        pdf_reader = PdfReader(self.file_path)
+        page_count = len(pdf_reader.pages)
+        file_suffix = page_range.file_suffix()
 
-        if extra_file_suffix is None:
-            file_suffix = page_range.file_suffix()
-        else:
-            file_suffix = f"{page_range.file_suffix()}__{extra_file_suffix}"
+        if page_count < page_range.last_page:
+            raise ValueError(f"PDF only has {page_count} pages but you asked for pages {page_range}!")
+
+        if extra_file_suffix is not None:
+            file_suffix += f"__{extra_file_suffix}"
 
         extracted_pages_pdf_basename = insert_suffix_before_extension(self.file_path, file_suffix).name
         extracted_pages_pdf_path = destination_dir.joinpath(extracted_pages_pdf_basename)
@@ -211,3 +216,10 @@ class PdfFile:
             return
 
         stderr_console.print(msg, style=style or "")
+
+    # def _num_pages(self) -> int:
+    #     pdf_reader = PdfReader(self.file_path)
+    #     page_count = len(pdf_reader.pages)
+    #         log.debug(f"PDF Page count: {page_count}")
+
+    #         for page_number, page in enumerate(pdf_reader.pages, start=1):
