@@ -1,4 +1,5 @@
 # NEXT RELEASE
+* Put back `--debug` arg for CLI tools
 
 ### 1.17.2
 * Remove unused `--debug` args for CLI tools
