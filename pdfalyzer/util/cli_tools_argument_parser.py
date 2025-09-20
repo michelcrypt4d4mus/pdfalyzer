@@ -89,6 +89,7 @@ extract_pdf_parser = ArgumentParser(
 )
 
 extract_pdf_parser.add_argument('pdf_file', metavar='PDF_FILE', help='PDF to extract pages from')
+extract_pdf_parser.add_argument('--debug', action='store_true', help='turn on debug level logging')
 
 extract_pdf_parser.add_argument('--page-range', '-r',
                                 type=page_range_validator,
@@ -124,6 +125,7 @@ extract_text_parser = ArgumentParser(
 )
 
 extract_text_parser.add_argument('file_or_dir', nargs='+', metavar='FILE_OR_DIR')
+extract_text_parser.add_argument('--debug', action='store_true', help='turn on debug level logging')
 
 extract_text_parser.add_argument('--page-range', '-r',
                                  type=page_range_validator,
