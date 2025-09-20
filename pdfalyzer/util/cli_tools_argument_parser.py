@@ -98,8 +98,6 @@ extract_pdf_parser.add_argument('--destination-dir', '-d',
                                 help="directory to write the new PDF to",
                                 default=Path.cwd())
 
-extract_pdf_parser.add_argument('--debug', action='store_true', help='turn on debug level logging')
-
 
 def parse_pdf_page_extraction_args() -> Namespace:
     args = extract_pdf_parser.parse_args()
@@ -124,7 +122,6 @@ extract_text_parser = ArgumentParser(
 )
 
 extract_text_parser.add_argument('file_or_dir', nargs='+', metavar='FILE_OR_DIR')
-extract_text_parser.add_argument('--debug', action='store_true', help='turn on debug level logging')
 
 extract_text_parser.add_argument('--page-range', '-r',
                                  type=page_range_validator,
