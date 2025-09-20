@@ -6,7 +6,6 @@ from pathlib import Path
 from typing import Optional, Union
 
 from yaralyzer.output.rich_console import console
-from yaralyzer.util.logging import log
 
 from pdfalyzer.helpers.rich_text_helper import print_highlighted
 

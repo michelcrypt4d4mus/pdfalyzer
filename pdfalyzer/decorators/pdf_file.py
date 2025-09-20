@@ -30,9 +30,9 @@ class PdfFile:
 
     Attributes:
         file_path (Path): The path to the PDF file.
-        dirname (Path): The directory containing the PDF file.
         basename (str): The base name of the PDF file (with extension).
         basename_without_ext (str): The base name of the PDF file (without extension).
+        dirname (Path): The directory containing the PDF file.
         extname (str): The file extension of the PDF file.
         file_size (int): The size of the file in bytes.
     """
