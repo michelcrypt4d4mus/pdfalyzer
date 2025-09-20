@@ -1,4 +1,5 @@
 # NEXT RELEASE
+* Remove unused `--debug` args for CLI tools
 
 ### 1.17.1
 * Fix issue where `extract_pdf_pages` page ranges were indexed from 0 instead of 1
