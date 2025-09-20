@@ -133,7 +133,7 @@ extract_text_parser.add_argument('--page-range', '-r',
 
 extract_text_parser.add_argument('--print-as-parsed', '-p',
                                  action='store_true',
-                                 help='print pages as they are parsed instead of waiting until document is fully parsed')
+                                 help='print pages as they are parsed instead of waiting until parsing complete')
 
 
 def parse_text_extraction_args() -> Namespace:

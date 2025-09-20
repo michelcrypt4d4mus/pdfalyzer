@@ -20,6 +20,8 @@ from pdfalyzer.helpers.rich_text_helper import (attention_getting_panel, error_t
 from pdfalyzer.helpers.string_helper import exception_str
 from pdfalyzer.util.page_range import PageRange
 
+DEPENDENCY_ERROR_MSG = "Pdfalyzer is missing an optional dependency required to extract text. " + \
+                       "Try 'pip install pdfalyzer[extract]'"
 DEFAULT_PDF_ERRORS_DIR = Path.cwd().joinpath('pdf_errors')
 MIN_PDF_SIZE_TO_LOG_PROGRESS_TO_STDERR = 1024 * 1024 * 20
 
@@ -54,11 +56,11 @@ class PdfFile:
         self.file_size = self.file_path.stat().st_size
 
     def extract_page_range(
-            self,
-            page_range: PageRange,
-            destination_dir: Optional[Path] = None,
-            extra_file_suffix: Optional[str] = None
-        ) -> Path:
+        self,
+        page_range: PageRange,
+        destination_dir: Optional[Path] = None,
+        extra_file_suffix: Optional[str] = None
+    ) -> Path:
         """
         Extract a range of pages to a new PDF file.
 
@@ -86,7 +88,7 @@ class PdfFile:
 
         extracted_pages_pdf_basename = insert_suffix_before_extension(self.file_path, file_suffix).name
         extracted_pages_pdf_path = destination_dir.joinpath(extracted_pages_pdf_basename)
-        console.print(f"Extracting {page_range.file_suffix()} from '{self.file_path}' to '{extracted_pages_pdf_path}'...")
+        console.print(f"Extracting {page_range.file_suffix()} from '{self.file_path}' to '{extracted_pages_pdf_path}'")
         pdf_writer = PdfWriter()
 
         with open(self.file_path, 'rb') as source_pdf:
@@ -99,11 +101,11 @@ class PdfFile:
         return extracted_pages_pdf_path
 
     def extract_text(
-            self,
-            page_range: Optional[PageRange] = None,
-            logger: Optional[Logger] = None,
-            print_as_parsed: bool = False
-        ) -> Optional[str]:
+        self,
+        page_range: Optional[PageRange] = None,
+        logger: Optional[Logger] = None,
+        print_as_parsed: bool = False
+    ) -> Optional[str]:
         """
         Use PyPDF to extract text page by page and use Tesseract to OCR any embedded images.
 
@@ -167,7 +169,7 @@ class PdfFile:
                 if print_as_parsed:
                     print(f"{page_text}")
         except DependencyError:
-            log.error("Pdfalyzer is missing an optional dependency required to extract text. Try 'pip install pdfalyzer[extract]'")
+            log.error(DEPENDENCY_ERROR_MSG)
         except EmptyFileError:
             log.warning("Skipping empty file!")
         except PdfStreamError as e:
@@ -190,7 +192,8 @@ class PdfFile:
 
         try:
             extracted_file = self.extract_page_range(PageRange(str(page_number)), destination_dir, error_msg)
-        except Exception as e:
+        except Exception:
+            stderr_console.print_exception()
             stderr_console.print(error_text(f"Failed to extract a page for submission to PyPDF team."))
             extracted_file = None
 

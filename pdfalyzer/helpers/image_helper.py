@@ -13,7 +13,7 @@ def ocr_text(image: Image.Image, image_name: str) -> Optional[str]:
 
     try:
         text = pytesseract.image_to_string(image)
-    except pytesseract.pytesseract.TesseractError as e:
+    except pytesseract.pytesseract.TesseractError:
         console.print_exception()
         console.print(warning_text(f"Tesseract OCR failure '{image_name}'! No OCR text extracted..."))
     except OSError as e:
