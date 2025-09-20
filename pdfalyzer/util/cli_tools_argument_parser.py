@@ -5,6 +5,7 @@ Argument parsers for the command line tools other than `pdfalyze` that are inclu
 2. extract_pdf_pages
 3. extract_pdf_text
 """
+import logging
 import sys
 from argparse import ArgumentParser, Namespace
 from pathlib import Path
@@ -109,6 +110,7 @@ def parse_pdf_page_extraction_args() -> Namespace:
         log.error(f"Destination dir '{args.destination_dir}' does not exist.")
         sys.exit(1)
 
+    _set_log_level(args)
     return args
 
 
@@ -151,4 +153,10 @@ def parse_text_extraction_args() -> Namespace:
         log.error(f"--page-range can only be specified for a single PDF")
         sys.exit(-1)
 
+    _set_log_level(args)
     return args
+
+
+def _set_log_level(args: Namespace):
+    if args.debug:
+        log.setLevel(logging.DEBUG)

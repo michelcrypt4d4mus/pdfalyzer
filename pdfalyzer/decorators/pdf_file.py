@@ -215,10 +215,3 @@ class PdfFile:
             return
 
         stderr_console.print(msg, style=style or "")
-
-    # def _num_pages(self) -> int:
-    #     pdf_reader = PdfReader(self.file_path)
-    #     page_count = len(pdf_reader.pages)
-    #         log.debug(f"PDF Page count: {page_count}")
-
-    #         for page_number, page in enumerate(pdf_reader.pages, start=1):
