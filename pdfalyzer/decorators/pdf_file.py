@@ -79,7 +79,7 @@ class PdfFile:
         page_count = len(pdf_reader.pages)
         file_suffix = page_range.file_suffix()
 
-        if page_count < page_range.last_page:
+        if page_count < (page_range.last_page - 1):
             raise ValueError(f"PDF only has {page_count} pages but you asked for pages {page_range}!")
 
         if extra_file_suffix is not None:
