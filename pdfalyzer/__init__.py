@@ -32,8 +32,8 @@ from pdfalyzer.output.pdfalyzer_presenter import PdfalyzerPresenter
 from pdfalyzer.output.styles.rich_theme import PDFALYZER_THEME_DICT
 from pdfalyzer.pdfalyzer import Pdfalyzer
 from pdfalyzer.util.argument_parser import ask_to_proceed, output_sections, parse_arguments
-from pdfalyzer.util.cli_tools_argument_parser import (MAX_QUALITY, ask_to_proceed,
-     parse_combine_pdfs_args, parse_pdf_page_extraction_args, parse_text_extraction_args)
+from pdfalyzer.util.cli_tools_argument_parser import (MAX_QUALITY, parse_combine_pdfs_args,
+     parse_pdf_page_extraction_args, parse_text_extraction_args)
 from pdfalyzer.util.pdf_parser_manager import PdfParserManager
 
 # For the table shown by running pdfalyzer_show_color_theme

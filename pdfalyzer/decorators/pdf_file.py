@@ -1,5 +1,4 @@
 import io
-from argparse import ArgumentError
 from logging import Logger
 from os import path
 from pathlib import Path
