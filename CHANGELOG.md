@@ -1,4 +1,5 @@
 # NEXT RELEASE
+* Fix `PIL` lazy import
 
 ### 1.17.4
 * Make `PIL` a lazy import so installs without `[extract]` extras don't fail
