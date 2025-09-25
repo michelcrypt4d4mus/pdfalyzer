@@ -1,4 +1,6 @@
 # NEXT RELEASE
+
+### 1.17.5
 * Fix `PIL` lazy import
 
 ### 1.17.4
