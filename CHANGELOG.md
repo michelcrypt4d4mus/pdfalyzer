@@ -1,5 +1,8 @@
 # NEXT RELEASE
 
+### 1.17.4
+* Make `PIL` a lazy import so installs without `[extract]` extras don't fail
+
 ### 1.17.3
 * Put back `--debug` arg for CLI tools
 
