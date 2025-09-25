@@ -5,7 +5,7 @@ from yaralyzer.output.rich_console import console
 from pdfalyzer.helpers.rich_text_helper import warning_text
 
 
-def ocr_text(image: "Image.Image", image_name: str) -> Optional[str]:
+def ocr_text(image: "Image.Image", image_name: str) -> Optional[str]:  # noqa F821
     """Use pytesseract to OCR the text in the image and return it as a string."""
     import pytesseract
     from PIL import Image
