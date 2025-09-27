@@ -10,7 +10,7 @@ from pypdf import PdfReader
 from pypdf.generic import IndirectObject
 from yaralyzer.helpers.file_helper import load_binary_data
 from yaralyzer.output.file_hashes_table import compute_file_hashes
-from yaralyzer.output.rich_console import console
+from yaralyzer.output.rich_console import console, print_fatal_error_and_exit
 from yaralyzer.util.logging import log
 
 from pdfalyzer.decorators.document_model_printer import print_with_header
@@ -22,7 +22,8 @@ from pdfalyzer.pdf_object_relationship import PdfObjectRelationship
 from pdfalyzer.util.adobe_strings import *
 from pdfalyzer.util.exceptions import PdfWalkError
 
-TRAILER_FALLBACK_ID = 10000000
+TRAILER_FALLBACK_ID = 10_000_000
+PYPDF_ERROR_MSG = "Failed to open file with PyPDF. Consider filing a PyPDF bug report: https://github.com/py-pdf/pypdf/issues"
 
 
 class Pdfalyzer:
@@ -44,7 +45,12 @@ class Pdfalyzer:
         self.pdf_bytes = load_binary_data(pdf_path)
         self.pdf_bytes_info = compute_file_hashes(self.pdf_bytes)
         pdf_file = open(pdf_path, 'rb')  # Filehandle must be left open for PyPDF to perform seeks
-        self.pdf_reader = PdfReader(pdf_file)
+
+        try:
+            self.pdf_reader = PdfReader(pdf_file)
+        except Exception as e:
+            console.print_exception()
+            print_fatal_error_and_exit(f"{PYPDF_ERROR_MSG}\n{e}")
 
         # Initialize tracking variables
         self.indeterminate_ids = set()  # See INDETERMINATE_REF_KEYS comment
