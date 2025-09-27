@@ -1,4 +1,6 @@
 # NEXT RELEASE
+
+### 1.17.6
 * Better handling for errors resulting from bugs in PyPDF
 * Properly close file handle when pdfalyzing is complete
 
