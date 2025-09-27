@@ -35,7 +35,6 @@ This tool is mostly for examining/working with a PDF's data and logical structur
 
 If you suspect you are dealing with a malcious PDF you can safely run `pdfalyze` on it; embedded javascript etc. will not be executed. If you want to actually look at the contents of a suspect PDF you can use [`dangerzone`](https://dangerzone.rocks/) to sanitize the contents with extreme prejudice before opening it.
 
--------------
 
 # Installation
 #### All Platforms
@@ -65,7 +64,6 @@ brew install pdfalyzer
    sudo apt-get install build-essential libssl-dev libffi-dev rustc
    ```
 
--------------
 
 # Usage
 
@@ -81,7 +79,7 @@ If you provide none of the flags in the `ANALYSIS SELECTION` section of the `--h
 
 The `--streams` output is the one used to hunt for patterns in the embedded bytes and can be _extremely_ verbose depending on the `--quote-char` options chosen (or not chosen) and contents of the PDF. [The Yaralyzer](https://github.com/michelcrypt4d4mus/yaralyzer) handles this task; if you want to hunt for patterns in the bytes other than bytes surrounded by backticks/frontslashes/brackets/quotes/etc. you may want to use The Yaralyzer directly. As The Yaralyzer is a prequisite for The Pdfalyzer you may already have the `yaralyze` command installed and available.
 
-### Setting Command Line Options Permanently With A `.pdfalyzer` File
+#### Setting Command Line Options Permanently With A `.pdfalyzer` File
 When you run `pdfalyze` on some PDF the tool will check for a file called `.pdfalyzer` in these places in this order:
 
 1. the current directory
@@ -89,11 +87,8 @@ When you run `pdfalyze` on some PDF the tool will check for a file called `.pdfa
 
 If it finds a `.pdfalyzer` file in either such place it will load configuration options from it. Documentation on the options that can be configured with these files lives in [`.pdfalyzer.example`](.pdfalyzer.example) which doubles as an example file you can copy into place and edit to your needs. Handy if you find yourself typing the same command line options over and over again.
 
-### Environment Variables
+#### Environment Variables
 Even if you don't configure your own `.pdfalyzer` file you may still glean some insight from reading the descriptions of the various variables in [`.pdfalyzer.example`](.pdfalyzer.example); there's a little more exposition there than in the output of `pdfalyze -h`.
-
-### Colors And Themes
-Run `pdfalyzer_show_color_theme` to see the color theme employed.
 
 ### Guarantees
 Warnings will be printed if any PDF object ID between 1 and the `/Size` reported by the PDF itself could not be successfully placed in the tree. If you do not get any warnings then all[^2] of the inner PDF objects should be seen in the output.
@@ -108,6 +103,7 @@ The Pdfalyzer comes with a few command line tools for doing stuff with PDFs:
 * `combine_pdfs` - Combines multiple PDFs into a single PDF. Run `combine_pdfs --help` for more info.
 * `extract_pdf_pages` - Extracts page ranges (e.g. "10-25") from a PDF and writes them to a new PDF. Run `extract_pdf_pages --help` for more info.
 * `extract_pdf_text` - Extracts text from a PDF, including applying OCR to all embedded images. Run `extract_pdf_text --help` for more info.
+* `pdfalyzer_show_color_theme` - Run to see the color theme employed in Pdfalyzer's output.
 
 Running `extract_pdf_text` requires that you install The Pdfalyzer's optional dependencies:
 
@@ -116,7 +112,7 @@ pipx install pdfalyzer[extract]
 ```
 
 
-## Use As A Code Library
+## As A Python Library
 For info about setting up a dev environment see [Contributing](#contributing) below.
 
 At its core The Pdfalyzer is taking PDF internal objects gathered by [PyPDF](https://github.com/py-pdf/pypdf) and wrapping them in [AnyTree](https://github.com/c0fec0de/anytree)'s `NodeMixin` class.  Given that things like searching the tree or accessing internal PDF properties will be done through those packages' code it may be helpful to review their documentation.
