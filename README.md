@@ -102,6 +102,20 @@ Warnings will be printed if any PDF object ID between 1 and the `/Size` reported
 [BUFFERZONE Team](https://bufferzonesecurity.com) posted [an excellent example](https://bufferzonesecurity.com/the-beginners-guide-to-adobe-pdf-malware-reverse-engineering-part-1/) of how one might use The Pdfalyzer in tandem with [Didier Stevens' PDF tools](#installing-didier-stevenss-pdf-analysis-tools) to investigate a potentially malicious PDF (archived in [the `doc/` dir in this repo](./doc/) if the link rots).
 
 
+## Included Command Line Tools
+The Pdfalyzer comes with a few command line tools for doing stuff with PDFs:
+
+* `combine_pdfs` - Combines multiple PDFs into a single PDF. Run `combine_pdfs --help` for more info.
+* `extract_pdf_pages` - Extracts page ranges (e.g. "10-25") from a PDF and writes them to a new PDF. Run `extract_pdf_pages --help` for more info.
+* `extract_pdf_text` - Extracts text from a PDF, including applying OCR to all embedded images. Run `extract_pdf_text --help` for more info.
+
+Running `extract_pdf_text` requires that you install The Pdfalyzer's optional dependencies:
+
+```bash
+pipx install pdfalyzer[extract]
+```
+
+
 ## Use As A Code Library
 For info about setting up a dev environment see [Contributing](#contributing) below.
 
@@ -213,20 +227,6 @@ Things like, say, a hidden binary `/F` (PDF instruction meaning "URL") followed 
 
 
 # PDF Resources
-## Included PDF Tools
-The Pdfalyzer comes with a few command line tools:
-
-* `combine_pdfs` - Combines multiple PDFs into a single PDF. Run `combine_pdfs --help` for more info.
-* `extract_pdf_pages` - Extracts page ranges (e.g. "10-25") from a PDF and writes them to a new PDF. Run `extract_pdf_pages --help` for more info.
-* `extract_pdf_text` - Extracts text from a PDF, including applying OCR to all embedded images. Run `extract_pdf_text --help` for more info.
-
-Running `extract_pdf_text` requires that you install The Pdfalyzer's optional dependencies:
-
-```bash
-pipx install pdfalyzer[extract]
-```
-
-
 ## 3rd Party PDF Tools
 ### Installing Didier Stevens's PDF Analysis Tools
 Stevens's tools provide comprehensive info about the contents of a PDF, are guaranteed not to trigger the rendering of any malicious content (especially `pdfid.py`), and have been battle tested for well over a decade. It would probably be a good idea to analyze your PDF with his tools before you start working with this one.
