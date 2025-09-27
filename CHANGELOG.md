@@ -1,5 +1,6 @@
 # NEXT RELEASE
 * Better handling for errors resulting from bugs in PyPDF
+* Properly close file handle when pdfalyzing is complete
 
 ### 1.17.5
 * Fix `PIL` lazy import

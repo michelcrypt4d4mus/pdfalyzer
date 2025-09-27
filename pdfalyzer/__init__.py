@@ -43,7 +43,7 @@ MAX_THEME_COL_SIZE = 35
 def pdfalyze():
     args = parse_arguments()
     pdfalyzer = Pdfalyzer(args.file_to_scan_path)
-    pdfalyzer = PdfalyzerPresenter(pdfalyzer)
+    presenter = PdfalyzerPresenter(pdfalyzer)
     output_basepath = None
 
     # Binary stream extraction is a special case
@@ -55,7 +55,7 @@ def pdfalyze():
 
     # The method that gets called is related to the argument name. See 'possible_output_sections' list in
     # argument_parser.py. Analysis exports wrap themselves around the methods that actually generate the analyses.
-    for (arg, method) in output_sections(args, pdfalyzer):
+    for (arg, method) in output_sections(args, presenter):
         if args.output_dir:
             output_basepath = PdfalyzerConfig.get_output_basepath(method)
             print(f'Exporting {arg} data to {output_basepath}...')
@@ -79,6 +79,8 @@ def pdfalyze():
     # Drop into interactive shell if requested
     if args.interact:
         code.interact(local=locals())
+
+    pdfalyzer.pdf_filehandle.close()
 
 
 def pdfalyzer_show_color_theme() -> None:

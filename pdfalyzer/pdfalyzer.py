@@ -7,6 +7,7 @@ from typing import Dict, Iterator, List, Optional
 from anytree import LevelOrderIter, SymlinkNode
 from anytree.search import findall, findall_by_attr
 from pypdf import PdfReader
+from pypdf.errors import PdfReadError
 from pypdf.generic import IndirectObject
 from yaralyzer.helpers.file_helper import load_binary_data
 from yaralyzer.output.file_hashes_table import compute_file_hashes
@@ -33,6 +34,19 @@ class Pdfalyzer:
     Each of the PDF's internal objects isw rapped in a `PdfTreeNode` object. The tree is managed
     by the `anytree` library. Information about the tree as a whole is stored in this class.
     Once the PDF is parsed this class provides access to info about or from the underlying PDF tree.
+
+    Attributes:
+        font_infos (List[FontInfo]): Font summary objects
+        max_generation (int): Max revision number ("generation") encounted in this PDF.
+        nodes_encountered (Dict[int, PdfTreeNode]): Nodes we've traversed already.
+        pdf_basename (str): The base name of the PDF file (with extension).
+        pdf_bytes (bytes): PDF binary data.
+        pdf_bytes_info (BytesInfo): File size, hashes, and other data points about the PDF's raw bytes.
+        pdf_filehandle (BufferedReader): File handle that reads the PDF.
+        pdf_path (str): The path to the PDF file.
+        pdf_size (int): Number of nodes as extracted from the PDF's Trailer node.
+        pdf_tree (PdfTreeNode): The top node of the PDF data structure tree.
+        verifier (PdfTreeVerifier): PdfTreeVerifier that can validate the PDF has been walked successfully.
     """
 
     def __init__(self, pdf_path: str):
@@ -44,19 +58,21 @@ class Pdfalyzer:
         self.pdf_basename = basename(pdf_path)
         self.pdf_bytes = load_binary_data(pdf_path)
         self.pdf_bytes_info = compute_file_hashes(self.pdf_bytes)
-        pdf_file = open(pdf_path, 'rb')  # Filehandle must be left open for PyPDF to perform seeks
+        self.pdf_filehandle = open(pdf_path, 'rb')  # Filehandle must be left open for PyPDF to perform seeks
 
         try:
-            self.pdf_reader = PdfReader(pdf_file)
+            self.pdf_reader = PdfReader(self.pdf_filehandle)
+        except PdfReadError:
+            self._handle_fatal_error(f'PdfReadError: "{pdf_path}" doesn\'t seem to be a valid PDF file.')
         except Exception as e:
             console.print_exception()
-            print_fatal_error_and_exit(f"{PYPDF_ERROR_MSG}\n{e}")
+            self._handle_fatal_error(f"{PYPDF_ERROR_MSG}\n{e}")
 
         # Initialize tracking variables
-        self.indeterminate_ids = set()  # See INDETERMINATE_REF_KEYS comment
-        self.nodes_encountered: Dict[int, PdfTreeNode] = {}  # Nodes we've seen already
         self.font_infos: List[FontInfo] = []  # Font summary objects
         self.max_generation = 0  # PDF revisions are "generations"; this is the max generation encountered
+        self.nodes_encountered: Dict[int, PdfTreeNode] = {}  # Nodes we've seen already
+        self._indeterminate_ids = set()  # See INDETERMINATE_REF_KEYS comment
 
         # Bootstrap the root of the tree with the trailer. PDFs are always read trailer first.
         # Technically the trailer has no PDF Object ID but we set it to the /Size of the PDF.
@@ -154,9 +170,9 @@ class Pdfalyzer:
                 from_node.add_child(to_node)
 
             # Remove this to_node from inteterminacy now that it's got a child or parent
-            if relationship.to_obj.idnum in self.indeterminate_ids:
+            if relationship.to_obj.idnum in self._indeterminate_ids:
                 log.info(f"  Found {relationship} => {to_node} was marked indeterminate but now placed")
-                self.indeterminate_ids.remove(relationship.to_obj.idnum)
+                self._indeterminate_ids.remove(relationship.to_obj.idnum)
 
         # If the relationship is indeterminate or we've seen the PDF object before, add it as
         # a non-tree relationship for now. An attempt to place the node will be made at the end.
@@ -165,7 +181,7 @@ class Pdfalyzer:
 
             # If we already encountered 'to_node' then skip adding it to the queue of nodes to walk
             if was_seen_before:
-                if relationship.to_obj.idnum not in self.indeterminate_ids and to_node.parent is None:
+                if relationship.to_obj.idnum not in self._indeterminate_ids and to_node.parent is None:
                     raise PdfWalkError(f"{relationship} - ref has no parent and is not indeterminate")
                 else:
                     log.debug(f"  Already saw {relationship}; not scanning next")
@@ -173,7 +189,7 @@ class Pdfalyzer:
             # Indeterminate relationships need to wait until everything has been scanned to be placed
             elif relationship.is_indeterminate or (relationship.is_link and not self.is_in_tree(to_node)):
                 log.info(f'  Indeterminate ref {relationship}')
-                self.indeterminate_ids.add(to_node.idnum)
+                self._indeterminate_ids.add(to_node.idnum)
             # Link nodes like /Dest are usually just links between nodes
             elif relationship.is_link:
                 log.debug(f"  Link ref {relationship}")
@@ -184,9 +200,13 @@ class Pdfalyzer:
 
         return to_node
 
+    def _handle_fatal_error(self, msg: str) -> None:
+        self.pdf_filehandle.close()
+        print_fatal_error_and_exit(msg)
+
     def _resolve_indeterminate_nodes(self) -> None:
         """Place all indeterminate nodes in the tree. Called after all nodes have been walked."""
-        indeterminate_nodes = [self.nodes_encountered[idnum] for idnum in self.indeterminate_ids]
+        indeterminate_nodes = [self.nodes_encountered[idnum] for idnum in self._indeterminate_ids]
         indeterminate_nodes_string = "\n   ".join([f"{node}" for node in indeterminate_nodes])
         log.info(f"Resolving {len(indeterminate_nodes)} indeterminate nodes: {indeterminate_nodes_string}")
 
