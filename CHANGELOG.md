@@ -1,4 +1,5 @@
 # NEXT RELEASE
+* Handle `AttributeError` in `FontInfo` extraction
 
 ### 1.17.7
 * Bump `pypdf` to 6.1.3 (fixes [#31](https://github.com/michelcrypt4d4mus/pdfalyzer/issues/31)), `PyMuPDF` to 1.26.5

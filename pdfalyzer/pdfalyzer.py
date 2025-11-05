@@ -220,14 +220,20 @@ class Pdfalyzer:
     def _extract_font_infos(self) -> None:
         """Extract information about fonts in the tree and place it in `self.font_infos`."""
         for node in self.node_iterator():
-            if isinstance(node.obj, dict) and RESOURCES in node.obj:
-                log.debug(f"Extracting fonts from node with '{RESOURCES}' key: {node}...")
-                known_font_ids = [fi.idnum for fi in self.font_infos]
+            if not (isinstance(node.obj, dict) and RESOURCES in node.obj):
+                continue
 
+            log.debug(f"Extracting fonts from node with '{RESOURCES}' key: {node}...")
+            known_font_ids = [fi.idnum for fi in self.font_infos]
+
+            try:
                 self.font_infos += [
                     fi for fi in FontInfo.extract_font_infos(node.obj)
                     if fi.idnum not in known_font_ids
                 ]
+            except AttributeError as e:
+                console.print_exception()
+                log.error(f"Failed to extract font information from node: {node}")
 
     def _build_or_find_node(self, relationship: IndirectObject, relationship_key: str) -> PdfTreeNode:
         """If node in self.nodes_encountered already then return it, otherwise build a node and store it."""
