@@ -2,7 +2,7 @@ from typing import Optional
 
 from yaralyzer.output.rich_console import console
 
-from pdfalyzer.helpers.rich_text_helper import warning_text
+from pdfalyzer.helpers.rich_text_helper import print_warning
 
 
 def ocr_text(image: "Image.Image", image_name: str) -> Optional[str]:  # noqa F821
@@ -15,10 +15,10 @@ def ocr_text(image: "Image.Image", image_name: str) -> Optional[str]:  # noqa F8
         text = pytesseract.image_to_string(image)
     except pytesseract.pytesseract.TesseractError:
         console.print_exception()
-        console.print(warning_text(f"Tesseract OCR failure '{image_name}'! No OCR text extracted..."))
+        print_warning(f"Tesseract OCR failure '{image_name}'! No OCR text extracted..."))
     except OSError as e:
         if 'truncated' in str(e):
-            console.print(warning_text(f"Truncated image file '{image_name}'!"))
+            print_warning(f"Truncated image file '{image_name}'!"))
         else:
             console.print_exception()
             console.print(f"Error while extracting '{image_name}'!", style='bright_red')
