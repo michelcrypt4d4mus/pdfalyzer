@@ -106,4 +106,5 @@ def attention_getting_panel(text: Text, title: str, style: str = 'white on red')
 
 
 def print_error(text: Union[str, Text]) -> Text:
+    console.line()
     console.print(error_text(text))

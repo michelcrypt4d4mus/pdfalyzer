@@ -1,4 +1,5 @@
 # NEXT RELEASE
+* Broaden exception handling in `FontInfo` extraction
 
 ### 1.17.8
 * Handle `AttributeError` in `FontInfo` extraction

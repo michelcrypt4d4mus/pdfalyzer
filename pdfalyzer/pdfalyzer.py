@@ -19,6 +19,7 @@ from pdfalyzer.decorators.indeterminate_node import IndeterminateNode
 from pdfalyzer.decorators.pdf_tree_node import PdfTreeNode
 from pdfalyzer.decorators.pdf_tree_verifier import PdfTreeVerifier
 from pdfalyzer.font_info import FontInfo
+from pdfalyzer.helpers.rich_text_helper import print_error
 from pdfalyzer.pdf_object_relationship import PdfObjectRelationship
 from pdfalyzer.util.adobe_strings import *
 from pdfalyzer.util.exceptions import PdfWalkError
@@ -37,6 +38,7 @@ class Pdfalyzer:
 
     Attributes:
         font_infos (List[FontInfo]): Font summary objects
+        font_info_extraction_error (Optional[Exception]): Error encountered extracting FontInfo (if any)
         max_generation (int): Max revision number ("generation") encounted in this PDF.
         nodes_encountered (Dict[int, PdfTreeNode]): Nodes we've traversed already.
         pdf_basename (str): The base name of the PDF file (with extension).
@@ -70,6 +72,7 @@ class Pdfalyzer:
 
         # Initialize tracking variables
         self.font_infos: List[FontInfo] = []  # Font summary objects
+        self.font_info_extraction_error: Optional[Exception] = None
         self.max_generation = 0  # PDF revisions are "generations"; this is the max generation encountered
         self.nodes_encountered: Dict[int, PdfTreeNode] = {}  # Nodes we've seen already
         self._indeterminate_ids = set()  # See INDETERMINATE_REF_KEYS comment
@@ -231,9 +234,11 @@ class Pdfalyzer:
                     fi for fi in FontInfo.extract_font_infos(node.obj)
                     if fi.idnum not in known_font_ids
                 ]
-            except AttributeError as e:
-                console.print_exception()
-                log.error(f"Failed to extract font information from node: {node}")
+            except Exception as e:
+                self.font_info_extraction_error = e
+                console.line()
+                log.warning(f"Failed to extract font information from node: {node} (error: {e})")
+                console.line()
 
     def _build_or_find_node(self, relationship: IndirectObject, relationship_key: str) -> PdfTreeNode:
         """If node in self.nodes_encountered already then return it, otherwise build a node and store it."""

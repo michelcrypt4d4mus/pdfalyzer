@@ -173,8 +173,8 @@ class PdfFile:
         except EmptyFileError:
             log.warning("Skipping empty file!")
         except PdfStreamError as e:
-            print_error(f"Error parsing PDF file '{self.file_path}': {e}")
             stderr_console.print_exception()
+            print_error(f"Error parsing PDF file '{self.file_path}': {e}")
 
         return "\n\n".join(extracted_pages).strip()
 

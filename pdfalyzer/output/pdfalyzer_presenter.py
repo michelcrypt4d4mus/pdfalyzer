@@ -20,6 +20,7 @@ from pdfalyzer.binary.binary_scanner import BinaryScanner
 from pdfalyzer.config import PdfalyzerConfig
 from pdfalyzer.decorators.pdf_tree_node import DECODE_FAILURE_LEN
 from pdfalyzer.detection.yaralyzer_helper import get_bytes_yaralyzer, get_file_yaralyzer
+from pdfalyzer.helpers.rich_text_helper import print_error
 from pdfalyzer.helpers.string_helper import pp
 from pdfalyzer.output.layout import (print_fatal_error_panel, print_section_header, print_section_subheader,
      print_section_sub_subheader)
@@ -27,12 +28,19 @@ from pdfalyzer.output.tables.decoding_stats_table import build_decoding_stats_ta
 from pdfalyzer.output.tables.pdf_node_rich_table import generate_rich_tree, get_symlink_representation
 from pdfalyzer.output.tables.stream_objects_table import stream_objects_table
 from pdfalyzer.pdfalyzer import Pdfalyzer
-# from pdfalyzer.util.adobe_strings import *
 
 INTERNAL_YARA_ERROR_MSG = "Internal YARA error! YARA's error codes can be checked here: https://github.com/VirusTotal/yara/blob/master/libyara/include/yara/error.h"  # noqa: E501
 
 
 class PdfalyzerPresenter:
+    """
+    Handles formatting of console text output for Pdfalyzer class.
+
+    Attributes:
+        pdfalyzer (Pdfalyzer): Pdfalyzer for a given PDF file
+        yaralyzer (Yaralyzer): Yaralyzer for a given PDF file
+    """
+
     def __init__(self, pdfalyzer: Pdfalyzer):
         self.pdfalyzer = pdfalyzer
         self.yaralyzer = get_file_yaralyzer(self.pdfalyzer.pdf_path)
@@ -82,6 +90,9 @@ class PdfalyzerPresenter:
     def print_font_info(self, font_idnum=None) -> None:
         """Print informatin about all fonts that appear in this PDF."""
         print_section_header(f'{len(self.pdfalyzer.font_infos)} fonts found in {self.pdfalyzer.pdf_basename}')
+
+        if self.pdfalyzer.font_info_extraction_error:
+            print_error(f"Failed to extract font information (error: {self.pdfalyzer.font_info_extraction_error})")
 
         for font_info in [fi for fi in self.pdfalyzer.font_infos if font_idnum is None or font_idnum == fi.idnum]:
             font_info.print_summary()
