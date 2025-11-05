@@ -141,7 +141,7 @@ def parse_arguments():
         exit_with_error("--no-default-yara-rules requires at least one --yara-file argument")
 
     # File export options
-    if args.export_svg or args.export_txt or args.export_html or args.extract_binary_streams:
+    if args.export_svg or args.export_txt or args.export_html or args.export_json or args.extract_binary_streams:
         args.output_dir = args.output_dir or getcwd()
         file_prefix = (args.file_prefix + '__') if args.file_prefix else ''
         args.file_suffix = ('_' + args.file_suffix) if args.file_suffix else ''
