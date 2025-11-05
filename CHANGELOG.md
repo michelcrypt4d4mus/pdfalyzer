@@ -1,4 +1,6 @@
 # NEXT RELEASE
+
+### 1.17.9
 * Broaden exception handling in `FontInfo` extraction
 
 ### 1.17.8
