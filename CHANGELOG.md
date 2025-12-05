@@ -1,5 +1,6 @@
 # NEXT RELEASE
 * Fix logging bug in `create_dir_if_it_does_not_exist()`
+* Upgrade `pypdf` to 6.4.0
 
 ### 1.17.9
 * Broaden exception handling in `FontInfo` extraction
