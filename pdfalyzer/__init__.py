@@ -41,6 +41,7 @@ MAX_THEME_COL_SIZE = 35
 
 
 def pdfalyze():
+    """Main entry point for The Pdfalyzer command line tool."""
     args = parse_arguments()
     pdfalyzer = Pdfalyzer(args.file_to_scan_path)
     presenter = PdfalyzerPresenter(pdfalyzer)
@@ -65,10 +66,8 @@ def pdfalyze():
 
         if args.export_txt:
             invoke_rich_export(console.save_text, output_basepath)
-
         if args.export_html:
             invoke_rich_export(console.save_html, output_basepath)
-
         if args.export_svg:
             invoke_rich_export(console.save_svg, output_basepath)
 

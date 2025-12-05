@@ -6,6 +6,7 @@ from pathlib import Path
 from typing import Optional, Union
 
 from yaralyzer.output.rich_console import console
+from yaralyzer.util.logging import log
 
 from pdfalyzer.helpers.rich_text_helper import print_highlighted
 
@@ -23,7 +24,7 @@ def create_dir_if_it_does_not_exist(dir: Path) -> None:
     if dir.exists():
         return
 
-    console.warning(f"Need to create '{dir}'")
+    log.warning(f"Need to create '{dir}'")
     dir.mkdir(parents=True, exist_ok=True)
 
 

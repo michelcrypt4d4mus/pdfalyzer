@@ -1,4 +1,5 @@
 # NEXT RELEASE
+* Fix logging bug in `create_dir_if_it_does_not_exist()`
 
 ### 1.17.9
 * Broaden exception handling in `FontInfo` extraction
