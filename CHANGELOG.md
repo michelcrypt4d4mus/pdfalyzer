@@ -1,4 +1,5 @@
 # NEXT RELEASE
+* Upgrade `pypdf` to 6.4.1
 
 ### 1.17.10
 * Fix logging bug in `create_dir_if_it_does_not_exist()`
