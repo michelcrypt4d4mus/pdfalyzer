@@ -65,7 +65,7 @@ packages = [
 #   Dependencies    #
 #####################
 [tool.poetry.dependencies]
-python = "^3.10"
+python = "^3.11.14"
 anytree = "~=2.13"
 pypdf = "^6.4.1"
 PyMuPDF = {version = "^1.26.5", optional = true}

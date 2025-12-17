@@ -148,7 +148,7 @@ class PdfFile:
                         page_buffer.print(Panel(image_name, expand=False))
                         image_obj = Image.open(io.BytesIO(image.data))
                         image_text = ocr_text(image_obj, f"{self.file_path} ({image_name})")
-                        page_buffer.print((image_text or '').strip())
+                        page_buffer.print(escape(image_text or '').strip())
                 except (OSError, NotImplementedError, TypeError, ValueError) as e:
                     error_str = exception_str(e)
                     msg = f"{error_str} while parsing embedded image {image_number} on page {page_number}..."
