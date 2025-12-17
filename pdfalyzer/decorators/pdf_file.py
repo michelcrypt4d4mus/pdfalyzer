@@ -144,7 +144,7 @@ class PdfFile:
                 try:
                     for image_number, image in enumerate(page.images, start=1):
                         image_name = f"Page {page_number}, Image {image_number}"
-                        self._log_to_stderr(f"   Processing {image_name}...", "dim")
+                        self._log_to_stderr(f"   OCRing {image_name}...", "dim")
                         page_buffer.print(Panel(image_name, expand=False))
                         image_obj = Image.open(io.BytesIO(image.data))
                         image_text = ocr_text(image_obj, f"{self.file_path} ({image_name})")
