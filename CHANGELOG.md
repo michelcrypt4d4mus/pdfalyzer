@@ -1,4 +1,6 @@
 # NEXT RELEASE
+
+### 1.17.11
 * Upgrade `pypdf` to 6.4.2
 * Properly escape image OCR text with `rich.markup.escape()` when printing to `page_buffer` to avoid exceptions on weird OCR text
 
