@@ -66,7 +66,6 @@ packages = [
 #####################
 [tool.poetry.dependencies]
 python = "^3.11.14"
-
 anytree = "~=2.13"
 PyMuPDF = {version = "^1.26.5", optional = true}
 pypdf = "^6.4.2"
@@ -74,6 +73,14 @@ pytesseract = {version = "^0.3.13", optional = true}
 yaralyzer = "^1.0.9"
 
 
+# The OCR library pytesseract is kinda heavyweight and not required for basic pdfalyzing.
+# It's only needed if you want to use The Pdfalyzer's extra tools like extract_pdf_text().
+# Install the extra pkgs with one of the commands below depending on your package manager:
+#       * [poetry]  poetry add pdfalyzer[extract]
+#       *    [pip]  pip install pdfalyzer[extract]
+# Or for local development:
+#       * [poetry]  poetry install --all-extras
+#       *    [pip]  pip install .[extract]
 [tool.poetry.extras]
 extract = ["PyMuPDF", "pytesseract"]
 # Poetry 2.x handles optional dependencies like this:

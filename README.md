@@ -16,8 +16,16 @@ A PDF analysis tool for [visualizing](#example-output) the inner tree-like data 
 
 ### Quick Start
 ```sh
+# If you want to use the full suite of tools that ship with the Pdfalyzer (e.g. extract_pdf_text) - do this:
+pipx install pdfalyzer[extract]
+# Or if you don't care about brute force extracting text from PDFs and just want to pdfalyze, do this:
 pipx install pdfalyzer
-pdfalyze "martin_heidegger-being_illmatic.pdf"
+
+# Then Pdfalyze to your hearts content:
+pdfalyze martin_heidegger-being_illmatic.pdf
+
+# Consult the help screen if needed:
+pdfalyze --help
 ```
 
 ### What It Do
