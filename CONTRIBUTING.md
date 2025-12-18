@@ -26,7 +26,7 @@ source $(poetry env info --path)/bin/activate
 ```bash
 python -m venv .venv              # Create a virtualenv in .venv
 . .venv/bin/activate              # Activate the virtualenv
-pip install .                     # Install packages
+pip install .[extract]            # Install packages
 ```
 
 Note that I'm not sure exactly how to get the `pdfalyze` command installed when developing outside of a `poetry` env, but creating a simple `run_pdfalyzer.py` file with these contents would do the same thing:
