@@ -15,6 +15,8 @@ A PDF analysis tool for [visualizing](#example-output) the inner tree-like data 
 **PyPi Users:** This document renders a lot better [on GitHub](https://github.com/michelcrypt4d4mus/pdfalyzer). Pictures, footnotes, etc.
 
 ### Quick Start
+You can use `pip` but `pipx` is a cleaner way to install for normal users. Developers should probably use `poetry`.
+
 ```sh
 # If you want to use the full suite of tools that ship with the Pdfalyzer (e.g. extract_pdf_text) - do this:
 pipx install pdfalyzer[extract]
@@ -25,7 +27,7 @@ pipx install pdfalyzer
 pdfalyze martin_heidegger-being_illmatic.pdf
 
 # Consult the help screen if needed:
-pdfalyze --help
+pdfalyze -h
 ```
 
 ### What It Do
