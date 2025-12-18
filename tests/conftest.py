@@ -1,8 +1,8 @@
 from os import environ, path, pardir, remove
 from pathlib import Path
+environ['INVOKED_BY_PYTEST'] = 'True'  # Must be set before importing yaralyzer (?)
 
 import pytest                                           # noqa: E402
-environ['INVOKED_BY_PYTEST'] = 'True'  # Must be set before importing yaralyzer (?)
 from yaralyzer.helpers.file_helper import files_in_dir  # noqa: E402
 
 from pdfalyzer.pdfalyzer import Pdfalyzer               # noqa: E402
