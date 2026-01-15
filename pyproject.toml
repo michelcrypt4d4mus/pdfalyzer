@@ -67,7 +67,7 @@ packages = [
 python = "^3.11.14"
 anytree = "~=2.13"
 PyMuPDF = {version = "^1.26.5", optional = true}
-pypdf = "^6.4.2"
+pypdf = "^6.4.2,<6.6.0"
 pytesseract = {version = "^0.3.13", optional = true}
 yaralyzer = "^1.0.9"
 

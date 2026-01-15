@@ -1,4 +1,5 @@
 # NEXT RELEASE
+* Set max version of `pypdf` to below 6.6.0 because of breaking [change](https://github.com/py-pdf/pypdf/pull/3583) with `_cmap.build_char_map()` from
 
 ### 1.17.11
 * Upgrade `pypdf` to 6.4.2
