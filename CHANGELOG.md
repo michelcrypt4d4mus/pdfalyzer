@@ -1,4 +1,5 @@
 # NEXT RELEASE
+* Use `pypdf` new `Font` object
 
 ### 1.17.11
 * Upgrade `pypdf` to 6.4.2
