@@ -1,6 +1,9 @@
 # NEXT RELEASE
 * Use `pypdf` new `Font` object
 
+### 1.17.12
+* Set max version of `pypdf` to below 6.6.0 because of breaking [change](https://github.com/py-pdf/pypdf/pull/3583) with `_cmap.build_char_map()` from
+
 ### 1.17.11
 * Upgrade `pypdf` to 6.4.2
 * Properly escape image OCR text with `rich.markup.escape()` when printing to `page_buffer` to avoid exceptions on weird OCR text
