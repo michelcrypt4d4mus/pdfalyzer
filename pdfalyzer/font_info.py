@@ -6,8 +6,8 @@ from dataclasses import dataclass, field
 from typing import cast
 
 from pypdf._cmap import prepare_cm
-from pypdf._font import Font, FontDescriptor
-from pypdf.generic import DictionaryObject, EncodedStreamObject, IndirectObject, NameObject, PdfObject
+from pypdf._font import Font
+from pypdf.generic import DictionaryObject, IndirectObject, NameObject, PdfObject
 from rich.text import Text
 from yaralyzer.output.rich_console import console
 from yaralyzer.util.logging import log
@@ -17,7 +17,7 @@ from pdfalyzer.output.character_mapping import print_character_mapping, print_pr
 from pdfalyzer.output.layout import print_section_subheader
 from pdfalyzer.output.styles.node_colors import get_label_style
 from pdfalyzer.output.tables.font_summary_table import font_summary_table
-from pdfalyzer.util.adobe_strings import (FONT, FONT_DESCRIPTOR, FONT_FILE, FONT_LENGTHS, RESOURCES,
+from pdfalyzer.util.adobe_strings import (FONT, FONT_FILE, FONT_LENGTHS, RESOURCES,
      SUBTYPE, TO_UNICODE, TYPE, W, WIDTHS)
 
 FONT_SECTION_PREVIEW_LEN = 30
@@ -42,59 +42,27 @@ class FontInfo:
             return []
 
         fonts = fonts.get_object()
-        return [cls.build(label, font) for label, font in fonts.items()]
+        return [cls(label, font.idnum, font.get_object()) for label, font in fonts.items()]
 
-    @classmethod
-    def build(cls, label: str, font_ref: IndirectObject) -> 'FontInfo':
-        """Build a FontInfo object from a IndirectObject ref to a /Font"""
-        font_obj = cast(DictionaryObject, font_ref.get_object())
-        font_descriptor = None
-        font_file = None
-
-        if font_obj.get(TYPE) != FONT:
-            raise TypeError(f"{TYPE} of {font_ref} is not {FONT}")
-
-        if font_obj.get(FONT_DESCRIPTOR):
-            font_descriptor = font_obj[FONT_DESCRIPTOR].get_object()
-            font_file_keys = [k for k in font_descriptor.keys() if FONT_FILE in k]
-
-            # There's /FontFile, /FontFile2, etc. but whichever it is there should be only one
-            if len(font_file_keys) > 1:
-                raise RuntimeError(f"Too many /FontFile keys in {font_descriptor}: {font_file_keys}")
-            elif len(font_file_keys) == 0:
-                log.info(f"No font_file found in {font_descriptor}")
-            else:
-                font_file = font_descriptor[font_file_keys[0]].get_object()
-
-        return cls(label, font_ref.idnum, font_obj, font_descriptor, font_file)
-
-    def __init__(
-        self,
-        label: NameObject | str,
-        idnum: int,
-        font: DictionaryObject,
-        font_descriptor: DictionaryObject,
-        font_file: EncodedStreamObject
-    ):
+    def __init__(self, label: NameObject | str, idnum: int, font: DictionaryObject):
         self.label = label
         self.idnum = idnum
-        self.font_file = font_file
-        self.descriptor = font_descriptor
         self.font_obj = Font.from_font_resource(font)
+        self.font_file = self.font_obj.font_descriptor.font_file
 
         # /Font attributes
         self.font = font
-        self.sub_type = font.get(SUBTYPE)
+        self.base_font = f"/{self.font_obj.name}"
+        self.sub_type = f"/{self.font_obj.sub_type}"
         self.widths = font.get(WIDTHS) or font.get(W)
 
         if isinstance(self.widths, IndirectObject):
             self.widths = self.widths.get_object()
 
-        self.base_font = font.get('/BaseFont')
         self.first_and_last_char = [font.get('/FirstChar'), font.get('/LastChar')]
         self.display_title = f"{self.idnum}. Font {self.label} "
 
-        if self.sub_type is None:
+        if (self.sub_type or "Unknown") == "Unknown":
             log.warning(f"Font type not given for {self.display_title}")
             self.display_title += "(UNKNOWN FONT TYPE)"
         else:
@@ -112,9 +80,9 @@ class FontInfo:
         self.character_mapping = self.font_obj.character_map if self.font_obj.character_map else None
 
         # /FontFile attributes
-        if font_file is not None:
-            self.lengths = [font_file[k] for k in FONT_LENGTHS if k in font_file]
-            self.stream_data = font_file.get_data()
+        if self.font_file is not None:
+            self.lengths = [self.font_file[k] for k in FONT_LENGTHS if k in self.font_file]
+            self.stream_data = self.font_obj.font_descriptor.font_file.get_data()
             self.advertised_length = sum(self.lengths)
             scanner_label = Text(self.display_title, get_label_style(FONT_FILE))
             self.binary_scanner = BinaryScanner(self.stream_data, self, scanner_label)
