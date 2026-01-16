@@ -7,7 +7,7 @@ from typing import cast
 
 from pypdf._cmap import prepare_cm
 from pypdf._font import Font
-from pypdf.generic import DictionaryObject, IndirectObject, NameObject, PdfObject, is_null_or_none
+from pypdf.generic import DictionaryObject, IndirectObject, NameObject, PdfObject, StreamObject, is_null_or_none
 from rich.text import Text
 from yaralyzer.output.rich_console import console
 from yaralyzer.util.logging import log
@@ -22,30 +22,35 @@ from pdfalyzer.util.adobe_strings import FONT, FONT_FILE, FONT_LENGTHS, RESOURCE
 FONT_SECTION_PREVIEW_LEN = 30
 
 
+@dataclass(kw_only=True)
 class FontInfo:
-    @classmethod
-    def extract_font_infos(cls, obj_with_resources: DictionaryObject) -> ['FontInfo']:
-        """
-        Extract all the fonts from a given /Resources PdfObject node.
-        obj_with_resources must have '/Resources' because that's what _cmap module expects
-        """
-        resources = obj_with_resources[RESOURCES].get_object()
-        fonts = resources.get(FONT)
+    label: NameObject | str
+    font_indirect: IndirectObject
+    font: PdfObject = field(init=False)
+    font_obj: Font = field(init=False)
+    font_file: StreamObject | None = None
+    idnum: int = field(init=False)
+    lengths: list[int] | None = None
+    stream_data: bytes | None = None
+    advertised_length: int | None = None
+    binary_scanner: BinaryScanner | None = None
+    prepared_char_map: bytes | None = None
+    widths: list[int] | None = None
+    # TODO: make methods
+    base_font: str = ''
+    sub_type: str = ''
+    first_and_last_char: list[str] | None = None
+    display_tile: str = ''
+    bounding_box: tuple[float, float, float, float] | None = None
+    flags: int | None = None
+    character_mapping: dict[str, str] | None = None
 
-        if is_null_or_none(fonts):
-            log.info(f'No fonts found in {obj_with_resources}')
-            return []
-
-        fonts = fonts.get_object()
-        return [cls(label, font) for label, font in fonts.items()]
-
-    def __init__(self, label: NameObject | str, _font: IndirectObject):
-        self.label = label
-        self.idnum = _font.idnum
+    def __post_init__(self):
+        self.idnum = self.font_indirect.idnum
 
         # /Font attributes
-        self.font = _font.get_object()
-        self.font_obj = Font.from_font_resource(_font.get_object())
+        self.font = self.font_indirect.get_object()
+        self.font_obj = Font.from_font_resource(self.font.get_object())
         self.font_file = self.font_obj.font_descriptor.font_file
         self.base_font = f"/{self.font_obj.name}"
         self.sub_type = f"/{self.font_obj.sub_type}"
@@ -64,12 +69,9 @@ class FontInfo:
             self.display_title += f"({self.sub_type[1:]})"
 
         # FontDescriptor attributes
-        if self.font_obj.font_descriptor is not None:
+        if not is_null_or_none(self.font_obj.font_descriptor):
             self.bounding_box = self.font_obj.font_descriptor.bbox
             self.flags = self.font_obj.font_descriptor.flags
-        else:
-            self.bounding_box = None
-            self.flags = None
 
         self.prepared_char_map = prepare_cm(self.font) if TO_UNICODE in self.font else None
         self.character_mapping = self.font_obj.character_map if self.font_obj.character_map else None
@@ -81,11 +83,6 @@ class FontInfo:
             self.advertised_length = sum(self.lengths)
             scanner_label = Text(self.display_title, get_label_style(FONT_FILE))
             self.binary_scanner = BinaryScanner(self.stream_data, self, scanner_label)
-        else:
-            self.lengths = None
-            self.stream_data = None
-            self.advertised_length = None
-            self.binary_scanner = None
 
     def width_stats(self):
         if self.widths is None:
@@ -109,3 +106,19 @@ class FontInfo:
 
     def __str__(self) -> str:
         return self.display_title
+
+    @classmethod
+    def extract_font_infos(cls, obj_with_resources: DictionaryObject) -> ['FontInfo']:
+        """
+        Extract all the fonts from a given /Resources PdfObject node.
+        obj_with_resources must have '/Resources' because that's what _cmap module expects
+        """
+        resources = obj_with_resources[RESOURCES].get_object()
+        fonts = resources.get(FONT)
+
+        if is_null_or_none(fonts):
+            log.info(f'No fonts found in {obj_with_resources}')
+            return []
+
+        fonts = fonts.get_object()
+        return [cls(label=label, font_indirect=font) for label, font in fonts.items()]
