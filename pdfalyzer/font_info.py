@@ -17,8 +17,7 @@ from pdfalyzer.output.character_mapping import print_character_mapping, print_pr
 from pdfalyzer.output.layout import print_section_subheader
 from pdfalyzer.output.styles.node_colors import get_label_style
 from pdfalyzer.output.tables.font_summary_table import font_summary_table
-from pdfalyzer.util.adobe_strings import (FONT, FONT_FILE, FONT_LENGTHS, RESOURCES,
-     SUBTYPE, TO_UNICODE, TYPE, W, WIDTHS)
+from pdfalyzer.util.adobe_strings import FONT, FONT_FILE, FONT_LENGTHS, RESOURCES, TO_UNICODE, W, WIDTHS
 
 FONT_SECTION_PREVIEW_LEN = 30
 
