@@ -7,7 +7,7 @@ from typing import cast
 
 from pypdf._cmap import prepare_cm
 from pypdf._font import Font
-from pypdf.generic import DictionaryObject, IndirectObject, NameObject, PdfObject
+from pypdf.generic import DictionaryObject, IndirectObject, NameObject, PdfObject, is_null_or_none
 from rich.text import Text
 from yaralyzer.output.rich_console import console
 from yaralyzer.util.logging import log
@@ -32,29 +32,29 @@ class FontInfo:
         resources = obj_with_resources[RESOURCES].get_object()
         fonts = resources.get(FONT)
 
-        if not fonts:
+        if is_null_or_none(fonts):
             log.info(f'No fonts found in {obj_with_resources}')
             return []
 
         fonts = fonts.get_object()
-        return [cls(label, font.idnum, font.get_object()) for label, font in fonts.items()]
+        return [cls(label, font) for label, font in fonts.items()]
 
-    def __init__(self, label: NameObject | str, idnum: int, font: DictionaryObject):
+    def __init__(self, label: NameObject | str, _font: IndirectObject):
         self.label = label
-        self.idnum = idnum
-        self.font_obj = Font.from_font_resource(font)
-        self.font_file = self.font_obj.font_descriptor.font_file
+        self.idnum = _font.idnum
 
         # /Font attributes
-        self.font = font
+        self.font = _font.get_object()
+        self.font_obj = Font.from_font_resource(_font.get_object())
+        self.font_file = self.font_obj.font_descriptor.font_file
         self.base_font = f"/{self.font_obj.name}"
         self.sub_type = f"/{self.font_obj.sub_type}"
-        self.widths = font.get(WIDTHS) or font.get(W)
+        self.widths = self.font.get(WIDTHS) or self.font.get(W)
 
         if isinstance(self.widths, IndirectObject):
             self.widths = self.widths.get_object()
 
-        self.first_and_last_char = [font.get('/FirstChar'), font.get('/LastChar')]
+        self.first_and_last_char = [self.font.get('/FirstChar'), self.font.get('/LastChar')]
         self.display_title = f"{self.idnum}. Font {self.label} "
 
         if (self.sub_type or "Unknown") == "Unknown":
@@ -71,7 +71,7 @@ class FontInfo:
             self.bounding_box = None
             self.flags = None
 
-        self.prepared_char_map = prepare_cm(font) if TO_UNICODE in font else None
+        self.prepared_char_map = prepare_cm(self.font) if TO_UNICODE in self.font else None
         self.character_mapping = self.font_obj.character_map if self.font_obj.character_map else None
 
         # /FontFile attributes

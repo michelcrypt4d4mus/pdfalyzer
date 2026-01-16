@@ -27,6 +27,11 @@ def adobe_type1_fonts_pdf_path():
 def analyzing_malicious_pdf_path():
     return _pdf_in_doc_dir('analyzing-malicious-document-files.pdf')
 
+# Has a Type1 font
+@pytest.fixture(scope='session')
+def attachment_pdf_pdfalyzer():
+    return Pdfalyzer(str(FIXTURES_DIR.joinpath('attachment.pdf')))
+
 
 # Some obj ids for use with -f when you want to limit yourself to the font
 @pytest.fixture(scope="session")
