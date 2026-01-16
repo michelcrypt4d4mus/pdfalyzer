@@ -108,10 +108,8 @@ class FontInfo:
             self.bounding_box = None
             self.flags = None
 
-        console.print(f"font '{label}': {self.font_obj}\nfont_file:{font_file}")
         self.prepared_char_map = prepare_cm(font) if TO_UNICODE in font else None
         self.character_mapping = self.font_obj.character_map if self.font_obj.character_map else None
-        # import pdb; pdb.set_trace()
 
         # /FontFile attributes
         if font_file is not None:
