@@ -35,7 +35,7 @@ def font_summary_table(font: 'FontInfo') -> Table:  # noqa: F821
         add_table_row('actual length', font.binary_scanner.stream_length)
     if font.prepared_char_map is not None:
         add_table_row('prepared charmap length', len(font.prepared_char_map))
-    if font._char_map is not None:
+    if font.character_mapping:
         add_table_row('character mapping count', len(font.character_mapping))
     if font.widths is not None:
         for k, v in font.width_stats().items():

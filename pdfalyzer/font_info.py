@@ -3,6 +3,7 @@ Unify font information spread across a bunch of PdfObjects (Font, FontDescriptor
 and FontFile) into a single class.
 """
 from dataclasses import dataclass, field
+from typing import cast
 
 from pypdf._cmap import prepare_cm
 from pypdf._font import Font, FontDescriptor
@@ -41,19 +42,19 @@ class FontInfo:
             return []
 
         fonts = fonts.get_object()
-        return [cls.build(label, font, obj_with_resources) for label, font in fonts.items()]
+        return [cls.build(label, font) for label, font in fonts.items()]
 
     @classmethod
-    def build(cls, label: str, font_ref: IndirectObject, obj_with_resources: DictionaryObject) -> 'FontInfo':
+    def build(cls, label: str, font_ref: IndirectObject) -> 'FontInfo':
         """Build a FontInfo object from a IndirectObject ref to a /Font"""
-        font_obj = font_ref.get_object()
+        font_obj = cast(DictionaryObject, font_ref.get_object())
         font_descriptor = None
         font_file = None
 
         if font_obj.get(TYPE) != FONT:
             raise TypeError(f"{TYPE} of {font_ref} is not {FONT}")
 
-        if FONT_DESCRIPTOR in font_obj:
+        if font_obj.get(FONT_DESCRIPTOR):
             font_descriptor = font_obj[FONT_DESCRIPTOR].get_object()
             font_file_keys = [k for k in font_descriptor.keys() if FONT_FILE in k]
 
@@ -65,7 +66,7 @@ class FontInfo:
             else:
                 font_file = font_descriptor[font_file_keys[0]].get_object()
 
-        return cls(label, font_ref.idnum, font_obj, font_descriptor, font_file, obj_with_resources)
+        return cls(label, font_ref.idnum, font_obj, font_descriptor, font_file)
 
     def __init__(
         self,
@@ -73,15 +74,13 @@ class FontInfo:
         idnum: int,
         font: DictionaryObject,
         font_descriptor: DictionaryObject,
-        font_file: EncodedStreamObject,
-        obj_with_resources: PdfObject
+        font_file: EncodedStreamObject
     ):
         self.label = label
         self.idnum = idnum
         self.font_file = font_file
         self.descriptor = font_descriptor
         self.font_obj = Font.from_font_resource(font)
-        self.font_descriptor_obj = self.font_obj.font_descriptor
 
         # /Font attributes
         self.font = font
@@ -102,9 +101,9 @@ class FontInfo:
             self.display_title += f"({self.sub_type[1:]})"
 
         # FontDescriptor attributes
-        if font_descriptor is not None:
-            self.bounding_box = font_descriptor.get('/FontBBox')
-            self.flags = font_descriptor.get('/Flags')
+        if self.font_obj.font_descriptor is not None:
+            self.bounding_box = self.font_obj.font_descriptor.bbox
+            self.flags = self.font_obj.font_descriptor.flags
         else:
             self.bounding_box = None
             self.flags = None
@@ -117,12 +116,10 @@ class FontInfo:
             scanner_label = Text(self.display_title, get_label_style(FONT_FILE))
             self.binary_scanner = BinaryScanner(self.stream_data, self, scanner_label)
             self.prepared_char_map = prepare_cm(font) if TO_UNICODE in font else None
-            import pdb; pdb.set_trace()
-            # TODO: shouldn't we be passing ALL the widths?
-            self._char_map = build_char_map(label, self.widths[0], obj_with_resources)
+            # import pdb; pdb.set_trace()
 
             try:
-                self.character_mapping = self._char_map[3]
+                self.character_mapping = self.font_obj.character_map
             except (IndexError, TypeError):
                 log.warning(f"Exception trying to get character mapping for {self}")
                 self.character_mapping = []
@@ -132,7 +129,6 @@ class FontInfo:
             self.advertised_length = None
             self.binary_scanner = None
             self.prepared_char_map = None
-            self._char_map = None
             self.character_mapping = None
 
     def width_stats(self):
