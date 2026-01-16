@@ -2,8 +2,11 @@
 Unify font information spread across a bunch of PdfObjects (Font, FontDescriptor,
 and FontFile) into a single class.
 """
-from pypdf._cmap import build_char_map, prepare_cm
-from pypdf.generic import IndirectObject, PdfObject
+from dataclasses import dataclass, field
+
+from pypdf._cmap import prepare_cm
+from pypdf._font import Font, FontDescriptor
+from pypdf.generic import DictionaryObject, EncodedStreamObject, IndirectObject, NameObject, PdfObject
 from rich.text import Text
 from yaralyzer.output.rich_console import console
 from yaralyzer.util.logging import log
@@ -21,7 +24,7 @@ FONT_SECTION_PREVIEW_LEN = 30
 
 class FontInfo:
     @classmethod
-    def extract_font_infos(cls, obj_with_resources: PdfObject) -> ['FontInfo']:
+    def extract_font_infos(cls, obj_with_resources: DictionaryObject) -> ['FontInfo']:
         """
         Extract all the fonts from a given /Resources PdfObject node.
         obj_with_resources must have '/Resources' because that's what _cmap module expects
@@ -41,7 +44,7 @@ class FontInfo:
         return [cls.build(label, font, obj_with_resources) for label, font in fonts.items()]
 
     @classmethod
-    def build(cls, label: str, font_ref: IndirectObject, obj_with_resources) -> 'FontInfo':
+    def build(cls, label: str, font_ref: IndirectObject, obj_with_resources: DictionaryObject) -> 'FontInfo':
         """Build a FontInfo object from a IndirectObject ref to a /Font"""
         font_obj = font_ref.get_object()
         font_descriptor = None
@@ -64,11 +67,21 @@ class FontInfo:
 
         return cls(label, font_ref.idnum, font_obj, font_descriptor, font_file, obj_with_resources)
 
-    def __init__(self, label, idnum, font, font_descriptor, font_file, obj_with_resources):
+    def __init__(
+        self,
+        label: NameObject | str,
+        idnum: int,
+        font: DictionaryObject,
+        font_descriptor: DictionaryObject,
+        font_file: EncodedStreamObject,
+        obj_with_resources: PdfObject
+    ):
         self.label = label
         self.idnum = idnum
         self.font_file = font_file
         self.descriptor = font_descriptor
+        self.font_obj = Font.from_font_resource(font)
+        self.font_descriptor_obj = self.font_obj.font_descriptor
 
         # /Font attributes
         self.font = font
@@ -104,6 +117,7 @@ class FontInfo:
             scanner_label = Text(self.display_title, get_label_style(FONT_FILE))
             self.binary_scanner = BinaryScanner(self.stream_data, self, scanner_label)
             self.prepared_char_map = prepare_cm(font) if TO_UNICODE in font else None
+            import pdb; pdb.set_trace()
             # TODO: shouldn't we be passing ALL the widths?
             self._char_map = build_char_map(label, self.widths[0], obj_with_resources)
 
