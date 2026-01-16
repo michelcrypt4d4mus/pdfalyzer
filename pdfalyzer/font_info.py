@@ -108,6 +108,11 @@ class FontInfo:
             self.bounding_box = None
             self.flags = None
 
+        console.print(f"font '{label}': {self.font_obj}\nfont_file:{font_file}")
+        self.prepared_char_map = prepare_cm(font) if TO_UNICODE in font else None
+        self.character_mapping = self.font_obj.character_map if self.font_obj.character_map else None
+        # import pdb; pdb.set_trace()
+
         # /FontFile attributes
         if font_file is not None:
             self.lengths = [font_file[k] for k in FONT_LENGTHS if k in font_file]
@@ -115,21 +120,11 @@ class FontInfo:
             self.advertised_length = sum(self.lengths)
             scanner_label = Text(self.display_title, get_label_style(FONT_FILE))
             self.binary_scanner = BinaryScanner(self.stream_data, self, scanner_label)
-            self.prepared_char_map = prepare_cm(font) if TO_UNICODE in font else None
-            # import pdb; pdb.set_trace()
-
-            try:
-                self.character_mapping = self.font_obj.character_map
-            except (IndexError, TypeError):
-                log.warning(f"Exception trying to get character mapping for {self}")
-                self.character_mapping = []
         else:
             self.lengths = None
             self.stream_data = None
             self.advertised_length = None
             self.binary_scanner = None
-            self.prepared_char_map = None
-            self.character_mapping = None
 
     def width_stats(self):
         if self.widths is None:
