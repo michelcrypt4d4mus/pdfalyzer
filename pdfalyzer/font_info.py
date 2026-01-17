@@ -2,12 +2,12 @@
 Unify font information spread across a bunch of PdfObjects (Font, FontDescriptor,
 and FontFile) into a single class.
 """
-from dataclasses import dataclass, field
+from dataclasses import asdict, dataclass, field, fields
 from typing import cast
 
 from pypdf._cmap import prepare_cm
 from pypdf._font import Font
-from pypdf.generic import DictionaryObject, IndirectObject, NameObject, PdfObject, StreamObject, is_null_or_none
+from pypdf.generic import ArrayObject, DictionaryObject, IndirectObject, NameObject, NumberObject, PdfObject, StreamObject, is_null_or_none
 from rich.text import Text
 from yaralyzer.output.rich_console import console
 from yaralyzer.util.logging import log
@@ -20,6 +20,7 @@ from pdfalyzer.output.tables.font_summary_table import font_summary_table
 from pdfalyzer.util.adobe_strings import FONT, FONT_FILE, FONT_LENGTHS, RESOURCES, TO_UNICODE, W, WIDTHS
 
 FONT_SECTION_PREVIEW_LEN = 30
+MAX_REPR_STR_LEN = 20
 
 
 @dataclass(kw_only=True)
@@ -71,7 +72,7 @@ class FontInfo:
         # FontDescriptor attributes
         if not is_null_or_none(self.font_obj.font_descriptor):
             self.bounding_box = self.font_obj.font_descriptor.bbox
-            self.flags = self.font_obj.font_descriptor.flags
+            self.flags = int(self.font_obj.font_descriptor.flags)
 
         self.prepared_char_map = prepare_cm(self.font) if TO_UNICODE in self.font else None
         self.character_mapping = self.font_obj.character_map if self.font_obj.character_map else None
@@ -103,6 +104,33 @@ class FontInfo:
         print_character_mapping(self)
         print_prepared_charmap(self)
         console.line()
+
+    def __repr__(self) -> str:
+        d = {}
+        print("\n\n")
+
+        for f in fields(self):
+            value = getattr(self, f.name)
+            value = str(value) if isinstance(value, NameObject) else value
+
+            if isinstance(value, (bytes, str)) and len(value) > MAX_REPR_STR_LEN:
+                if isinstance(value, (bytes)):
+                    value = value[0:MAX_REPR_STR_LEN] + b'...'
+                else:
+                    value = f'"{value[0:MAX_REPR_STR_LEN]}..."'
+            elif isinstance(value, ArrayObject):
+                value = list(value)
+            elif isinstance(value, (BinaryScanner, PdfObject)):
+                value = f"<{type(value).__name__} obj>"
+            elif isinstance(value, Font):
+                value = f'Font(name="{value.name}")'
+            elif isinstance(value, str):
+                value = f'"{value}"'
+
+            #log.warning(f"{f.name} ({type(value).__name__}): {value}")
+            d[f.name] = value
+
+        return f"FontInfo(\n    " + ',\n    '.join([f"{k}={v}" for k,v in d.items()]) + '\n)'
 
     def __str__(self) -> str:
         return self.display_title
