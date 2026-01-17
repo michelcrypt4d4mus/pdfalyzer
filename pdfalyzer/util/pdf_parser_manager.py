@@ -1,8 +1,6 @@
-"""
-Instances of this class manage external calls to Didier Stevens's pdf-parser.py for a given PDF.
-"""
 import re
 from os import path, system
+from pathlib import Path
 from subprocess import check_output
 
 from yaralyzer.util.logging import log
@@ -21,7 +19,8 @@ PDF_PARSER_INSTALL_MSG = f"If you need to install pdf-parser.py, it's a single .
 
 
 class PdfParserManager:
-    def __init__(self, path_to_pdf):
+    """Instances of this class manage external calls to Didier Stevens's pdf-parser.py for a given PDF."""
+    def __init__(self, path_to_pdf: str | Path):
         if PdfalyzerConfig.PDF_PARSER_EXECUTABLE is None:
             raise RuntimeError(f"{PDF_PARSER_EXECUTABLE_ENV_VAR} not configured.\n\n{PDF_PARSER_INSTALL_MSG}")
 
@@ -36,7 +35,7 @@ class PdfParserManager:
         self.object_ids_containing_stream_data = []
         self.extract_object_ids()
 
-    def extract_object_ids(self):
+    def extract_object_ids(self) -> None:
         """Examine output of pdf-parser.py to find all object IDs as well as those object IDs that have streams"""
         log.debug(f"Running '{self.base_shell_cmd}'")
         self.pdf_parser_output_lines = check_output(self.base_shell_cmd, shell=True, text=True).split("\n")
@@ -59,7 +58,7 @@ class PdfParserManager:
         log.info(f"{self.path_to_pdf} Object IDs: {self.object_ids}")
         log.info(f"{self.path_to_pdf} Objs IDs w/streams: {self.object_ids_containing_stream_data}")
 
-    def extract_all_streams(self, output_dir):
+    def extract_all_streams(self, output_dir: str | Path) -> None:
         """Use pdf-parser.py to find binary data streams in the PDF and dump each of them to a separate file"""
         for object_id in self.object_ids_containing_stream_data:
             stream_dump_file = path.join(output_dir, f'{path.basename(self.path_to_pdf)}.object_{object_id}.bin')

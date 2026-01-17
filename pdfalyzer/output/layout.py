@@ -70,9 +70,9 @@ def print_section_sub_subheader(headline: str, style: str = ''):
     _print_header_panel(headline, style, True, half_width())
 
 
-def print_headline_panel(headline: str, style: str = '', indent: int = 0):
+def print_headline_panel(headline: str, style: str = '', indent: int = 0, internal_padding: tuple | None = None):
     """Prints a full-width headline panel with no padding above or below."""
-    _print_header_panel(headline, style, False, console_width(), indent=indent)
+    _print_header_panel(headline, style, False, console_width(), internal_padding, indent=indent)
 
 
 def print_fatal_error_panel(headline: str):

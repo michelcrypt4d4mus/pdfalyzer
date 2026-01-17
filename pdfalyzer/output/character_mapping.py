@@ -14,19 +14,16 @@ from pdfalyzer.helpers.string_helper import pp
 from pdfalyzer.output.layout import print_headline_panel, subheading_width
 
 CHARMAP_TITLE = 'Character Mapping (As Extracted By PyPDF)'
-CHARMAP_INDENT = 10
+CHARMAP_INDENT = 8
 CHARMAP_PADDING = (0, 2, 0, 10)
 PREPARED_CHARMAP_PADDING = (0, 0, 0, CHARMAP_INDENT)
 CHARMAP_TABLE_PADDING = (1, 0, 0, CHARMAP_INDENT + 2)
+CHARMAP_PANEL_INTERNAL_INDENT = 2
 
 
 def print_character_mapping(font: 'FontInfo') -> None:  # noqa: F821
     """Prints the character mapping extracted by PyPDF._charmap in tidy columns."""
-    if font.character_mapping is None or len(font.character_mapping) == 0:
-        log.info(f"No character map found in {font}")
-        return
-
-    print_headline_panel(f"{font} {CHARMAP_TITLE}", style='charmap.title', indent=CHARMAP_INDENT)
+    _print_charmap_header(f"{font} {CHARMAP_TITLE}", 'charmap.title')
     charmap_entries = [_format_charmap_entry(k, v) for k, v in font.character_mapping.items()]
 
     charmap_columns = Columns(
@@ -34,7 +31,8 @@ def print_character_mapping(font: 'FontInfo') -> None:  # noqa: F821
         column_first=True,
         padding=CHARMAP_PADDING,
         equal=True,
-        align='right')
+        align='right'
+    )
 
     console.print(Padding(charmap_columns, CHARMAP_TABLE_PADDING), width=subheading_width())
     console.line()
@@ -42,12 +40,7 @@ def print_character_mapping(font: 'FontInfo') -> None:  # noqa: F821
 
 def print_prepared_charmap(font: 'FontInfo'):  # noqa: F821
     """Prints the prepared_charmap returned by PyPDF."""
-    if font.prepared_char_map is None:
-        log.info(f"No prepared_charmap found in {font}")
-        return
-
-    headline = f"{font} Adobe PostScript charmap prepared by PyPDF"
-    print_headline_panel(headline, style='charmap.prepared_title', indent=CHARMAP_INDENT)
+    _print_charmap_header(f"{font} Adobe PostScript charmap prepared by PyPDF", 'charmap.prepared_title')
     console.line()
     print_bytes(font.prepared_char_map, style='charmap.prepared', indent=CHARMAP_INDENT + 2)
     console.line()
@@ -61,3 +54,8 @@ def _format_charmap_entry(k: str, v: str) -> Text:
             key = key[1:-1]
 
     return quoted_text(key, 'charmap.byte') + Text(' => ') + quoted_text(str(v), 'charmap.char')
+
+
+def _print_charmap_header(headline: str, style: str) -> None:
+    right_padding = subheading_width() - CHARMAP_INDENT - CHARMAP_PANEL_INTERNAL_INDENT - len(headline) - 2
+    print_headline_panel(headline, style, CHARMAP_INDENT, (0, right_padding, 0, 2))
