@@ -50,6 +50,10 @@ def indented_bullet(msg: Union[str, Text], style: Optional[str] = None) -> Text:
     return Text('  ') + bullet_text(msg, style)
 
 
+def indent_padding(indent: int) -> tuple[int, int, int, int]:
+    return (0, 0, 0, indent)
+
+
 def mild_warning(msg: str) -> None:
     console.print(indented_bullet(Text(msg, style='mild_warning')))
 

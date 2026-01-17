@@ -1,7 +1,8 @@
 # NEXT RELEASE
+* Indent the font character maps under the font info panel
 
 ### 1.17.12
-* Set max version of `pypdf` to below 6.6.0 because of breaking [change](https://github.com/py-pdf/pypdf/pull/3583) with `_cmap.build_char_map()` from
+* Set max version of `pypdf` to below 6.6.0 because of breaking [change](https://github.com/py-pdf/pypdf/pull/3583) with `_cmap.build_char_map()`
 
 ### 1.17.11
 * Upgrade `pypdf` to 6.4.2
