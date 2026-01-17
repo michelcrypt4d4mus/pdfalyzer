@@ -148,7 +148,7 @@ class FontInfo:
         print_prepared_charmap(self)
         console.line()
 
-    def _summary_table(self) -> Table:  # noqa: F821
+    def _summary_table(self) -> Table:
         """Build a Rich `Table` with important info about the font"""
         table = Table('', '', show_header=False)
         table.columns[0].style = 'font.property'
