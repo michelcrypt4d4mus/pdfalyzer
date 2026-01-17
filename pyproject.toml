@@ -1,6 +1,6 @@
 [tool.poetry]
 name = "pdfalyzer"
-version = "1.17.12"
+version = "1.17.13"
 description = "Analyze PDFs with colors (and YARA). Visualize a PDF's inner tree-like data structure, check it against a library of YARA rules, force decodes of suspicious font binaries, and more."
 authors = ["Michel de Cryptadamus <michel@cryptadamus.com>"]
 license = "GPL-3.0-or-later"
@@ -70,7 +70,7 @@ PyMuPDF = {version = "^1.26.5", optional = true}
 #pypdf = "6.6.0"  # Version locked in case Font class changes
 pypdf = {path = "../pypdf", develop = true}
 pytesseract = {version = "^0.3.13", optional = true}
-yaralyzer = "^1.0.9"
+yaralyzer = "^1.0.11"
 
 # The OCR library pytesseract is kinda heavyweight and not required for basic pdfalyzing.
 # It's only needed if you want to use The Pdfalyzer's extra tools like extract_pdf_text().

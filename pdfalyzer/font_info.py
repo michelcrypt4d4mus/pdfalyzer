@@ -8,19 +8,27 @@ from typing import cast
 from pypdf._cmap import prepare_cm
 from pypdf._font import Font
 from pypdf.generic import ArrayObject, DictionaryObject, IndirectObject, NameObject, PdfObject, StreamObject, is_null_or_none
+from rich.table import Table
 from rich.text import Text
 from yaralyzer.output.rich_console import console
 from yaralyzer.util.logging import log
 
 from pdfalyzer.binary.binary_scanner import BinaryScanner
 from pdfalyzer.output.character_mapping import print_character_mapping, print_prepared_charmap
-from pdfalyzer.output.layout import print_section_subheader
-from pdfalyzer.output.styles.node_colors import get_label_style
-from pdfalyzer.output.tables.font_summary_table import font_summary_table
-from pdfalyzer.util.adobe_strings import FONT, FONT_FILE, FONT_LENGTHS, RESOURCES, TO_UNICODE, W, WIDTHS
+from pdfalyzer.output.layout import print_section_subheader, subheading_width
+from pdfalyzer.output.styles.node_colors import get_class_style, get_label_style
+from pdfalyzer.util.adobe_strings import (FONT, FONT_DESCRIPTOR, FONT_FILE, FONT_LENGTHS, RESOURCES,
+     SUBTYPE, TO_UNICODE, TYPE, W, WIDTHS)
 
 FONT_SECTION_PREVIEW_LEN = 30
 MAX_REPR_STR_LEN = 20
+
+ATTRIBUTES_TO_SHOW_IN_SUMMARY_TABLE = [
+    'sub_type',
+    'base_font',
+    'flags',
+    'bounding_box',
+]
 
 
 @dataclass(kw_only=True)
@@ -100,15 +108,69 @@ class FontInfo:
     def print_summary(self):
         """Prints a table of info about the font drawn from the various PDF objects. quote_type of None means all."""
         print_section_subheader(str(self), style='font.title')
-        console.print(font_summary_table(self))
-        console.line()
-        print_character_mapping(self)
-        print_prepared_charmap(self)
+        console.print(self._summary_table())
         console.line()
 
-    def __repr__(self) -> str:
-        d = {}
-        print("\n\n")
+        if self.character_mapping:
+            print_character_mapping(self)
+        else:
+            log.info(f"No character map found in {self}")
+
+        if self.prepared_char_map:
+            print_prepared_charmap(self)
+        else:
+            log.info(f"No prepared_charmap found in {self}")
+
+        console.line()
+
+    def _summary_table(self) -> Table:
+        """Build a Rich `Table` with important info about the font"""
+        table = Table('', '', show_header=False)
+        table.columns[0].style = 'font.property'
+        table.columns[0].justify = 'right'
+
+        def add_table_row(name, value):
+            table.add_row(name, Text(str(value), get_class_style(value)))
+
+        for attr in ATTRIBUTES_TO_SHOW_IN_SUMMARY_TABLE:
+            attr_value = getattr(self, attr)
+            add_table_row(attr, attr_value)
+
+        add_table_row('/Length properties', self.lengths)
+        add_table_row('total advertised length', self.advertised_length)
+
+        if self.binary_scanner is not None:
+            add_table_row('actual length', self.binary_scanner.stream_length)
+        if self.prepared_char_map is not None:
+            add_table_row('prepared charmap length', len(self.prepared_char_map))
+        if self.character_mapping:
+            add_table_row('character mapping count', len(self.character_mapping))
+        if self.widths is not None:
+            for k, v in self.width_stats().items():
+                add_table_row(f"char width {k}", v)
+
+            # Check if there's a single number repeated over and over.
+            if len(set(self.widths)) == 1:
+                table.add_row(
+                    'char widths',
+                    Text(
+                        f"{self.widths[0]} (single value repeated {len(self.widths)} times)",
+                        style=get_class_style(list)
+                    )
+                )
+            else:
+                add_table_row('char widths', self.widths)
+                add_table_row('char widths(sorted)', sorted(self.widths))
+
+        col_0_width = max([len(entry) for entry in table.columns[0]._cells]) + 4
+        table.columns[1].max_width = subheading_width() - col_0_width - 3
+        return table
+
+
+    # TODO: currently unused
+    # def preview_bytes_at_advertised_lengths(self):
+    #     """Show the bytes at the boundaries provided by /Length1, /Length2, and /Length3, if they exist"""
+    #     lengths = self.lengths or []
 
         for f in fields(self):
             value = getattr(self, f.name)

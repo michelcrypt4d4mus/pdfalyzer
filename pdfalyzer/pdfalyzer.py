@@ -10,8 +10,9 @@ from pypdf import PdfReader
 from pypdf.errors import PdfReadError
 from pypdf.generic import IndirectObject
 from yaralyzer.helpers.file_helper import load_binary_data
+from yaralyzer.helpers.rich_text_helper import print_fatal_error_and_exit
 from yaralyzer.output.file_hashes_table import compute_file_hashes
-from yaralyzer.output.rich_console import console, print_fatal_error_and_exit
+from yaralyzer.output.rich_console import console
 from yaralyzer.util.logging import log
 
 from pdfalyzer.decorators.document_model_printer import print_with_header

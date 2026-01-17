@@ -14,6 +14,7 @@ from rich.text import Text
 from yaralyzer.config import YaralyzerConfig
 from yaralyzer.output.rich_console import BYTES_HIGHLIGHT, console
 from yaralyzer.output.file_hashes_table import bytes_hashes_table
+from yaralyzer.yara.error import yara_error_msg
 from yaralyzer.util.logging import log
 
 from pdfalyzer.binary.binary_scanner import BinaryScanner
@@ -28,8 +29,6 @@ from pdfalyzer.output.tables.decoding_stats_table import build_decoding_stats_ta
 from pdfalyzer.output.tables.pdf_node_rich_table import generate_rich_tree, get_symlink_representation
 from pdfalyzer.output.tables.stream_objects_table import stream_objects_table
 from pdfalyzer.pdfalyzer import Pdfalyzer
-
-INTERNAL_YARA_ERROR_MSG = "Internal YARA error! YARA's error codes can be checked here: https://github.com/VirusTotal/yara/blob/master/libyara/include/yara/error.h"  # noqa: E501
 
 
 class PdfalyzerPresenter:
@@ -100,7 +99,7 @@ class PdfalyzerPresenter:
     def print_streams_analysis(self, idnum: Optional[int] = None) -> None:
         """
         For each binary stream,
-          1. Scan decompressed binary with YARA ruels we applied to whole PDF (the ones in pdfalyzer/yara_rules/)
+          1. Scan decompressed binary with YARA rules we applied to whole PDF (the ones in pdfalyzer/yara_rules/)
           2. Check for (and force decode) dangerous PDF instructions like /JavaScript and /OpenAction
           3. Check for (and force decode) any BOMs (byte order marks)
           4. Check for (and force decode) any sequences of bytes between quotes
@@ -143,9 +142,9 @@ class PdfalyzerPresenter:
 
         try:
             self.yaralyzer.yaralyze()
-        except yara.Error:
+        except yara.Error as e:
             console.print_exception()
-            print_fatal_error_panel(INTERNAL_YARA_ERROR_MSG)
+            print_fatal_error_panel(yara_error_msg(e))
             return
 
         YaralyzerConfig.args.standalone_mode = False
