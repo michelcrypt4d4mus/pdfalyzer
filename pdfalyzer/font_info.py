@@ -168,7 +168,7 @@ class FontInfo:
             add_table_row('actual length', self.binary_scanner.stream_length)
         if self.prepared_char_map is not None:
             add_table_row('prepared charmap length', len(self.prepared_char_map))
-        if self._char_map is not None:
+        if self.character_mapping:
             add_table_row('character mapping count', len(self.character_mapping))
         if self.widths is not None:
             for k, v in self.width_stats().items():
