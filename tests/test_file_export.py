@@ -24,16 +24,16 @@ def test_file_export(analyzing_malicious_pdf_path, tmp_dir):
     check_output([PDFALYZE, analyzing_malicious_pdf_path, *args], env=environ)
     rendered_files = files_in_dir(tmp_dir)
     assert len(rendered_files) == 6
+    file_sizes = sorted([path.getsize(f) for f in rendered_files])
+    assert_array_is_close(file_sizes, [6905, 8356, 13069, 37356, 189154, 1671253])
+
+    # Print yaralyzer output to test what's going on with github actions
     yaralyzer_output_path = [f for f in rendered_files if 'yara_results' in f][0]
 
-    # Print it to test what's going on with github actions
     with open(yaralyzer_output_path) as f:
         yaralyzer_output = f.read()
         print(yaralyzer_output)
         assert 'internal error' not in yaralyzer_output
-
-    file_sizes = sorted([path.getsize(f) for f in rendered_files])
-    assert_array_is_close(file_sizes, [6905, 8356, 13069, 37356, 189154, 1671253])
 
     for file in rendered_files:
         remove(file)
