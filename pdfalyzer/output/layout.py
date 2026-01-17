@@ -9,6 +9,8 @@ from rich.panel import Panel
 from rich.table import Table
 from yaralyzer.output.rich_console import console, console_width
 
+from pdfalyzer.helpers.rich_text_helper import indent_padding
+
 DEFAULT_SUBTABLE_COL_STYLES = ['white', 'bright_white']
 HEADER_PADDING = (1, 1)
 
@@ -68,9 +70,9 @@ def print_section_sub_subheader(headline: str, style: str = ''):
     _print_header_panel(headline, style, True, half_width())
 
 
-def print_headline_panel(headline: str, style: str = ''):
+def print_headline_panel(headline: str, style: str = '', indent: int = 0):
     """Prints a full-width headline panel with no padding above or below."""
-    _print_header_panel(headline, style, False, console_width())
+    _print_header_panel(headline, style, False, console_width(), indent=indent)
 
 
 def print_fatal_error_panel(headline: str):
@@ -78,6 +80,21 @@ def print_fatal_error_panel(headline: str):
     print_headline_panel(headline, style='red blink')
 
 
-def _print_header_panel(headline: str, style: str, expand: bool, width: int, padding: tuple = (0,)) -> None:
+def _print_header_panel(
+        headline: str,
+        style: str,
+        expand: bool,
+        width: int,
+        internal_padding: tuple | None = None,
+        indent: int = 0
+    ) -> None:
     """Helper to print a rich `Panel` with the given style, width, and padding."""
-    console.print(Panel(headline, style=style, expand=expand, width=width or subheading_width(), padding=padding))
+    panel = Panel(
+        headline,
+        style=style,
+        expand=expand,
+        width=width or subheading_width(),
+        padding=internal_padding or (0,),
+    )
+
+    console.print(Padding(panel, indent_padding(indent)))

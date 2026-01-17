@@ -14,8 +14,10 @@ from pdfalyzer.helpers.string_helper import pp
 from pdfalyzer.output.layout import print_headline_panel, subheading_width
 
 CHARMAP_TITLE = 'Character Mapping (As Extracted By PyPDF)'
-CHARMAP_TITLE_PADDING = (1, 0, 0, 2)
+CHARMAP_INDENT = 10
 CHARMAP_PADDING = (0, 2, 0, 10)
+PREPARED_CHARMAP_PADDING = (0, 0, 0, CHARMAP_INDENT)
+CHARMAP_TABLE_PADDING = (1, 0, 0, CHARMAP_INDENT + 2)
 
 
 def print_character_mapping(font: 'FontInfo') -> None:  # noqa: F821
@@ -24,7 +26,7 @@ def print_character_mapping(font: 'FontInfo') -> None:  # noqa: F821
         log.info(f"No character map found in {font}")
         return
 
-    print_headline_panel(f"{font} {CHARMAP_TITLE}", style='charmap.title')
+    print_headline_panel(f"{font} {CHARMAP_TITLE}", style='charmap.title', indent=CHARMAP_INDENT)
     charmap_entries = [_format_charmap_entry(k, v) for k, v in font.character_mapping.items()]
 
     charmap_columns = Columns(
@@ -35,7 +37,7 @@ def print_character_mapping(font: 'FontInfo') -> None:  # noqa: F821
         align='right'
     )
 
-    console.print(Padding(charmap_columns, CHARMAP_TITLE_PADDING), width=subheading_width())
+    console.print(Padding(charmap_columns, CHARMAP_TABLE_PADDING), width=subheading_width())
     console.line()
 
 
@@ -46,8 +48,9 @@ def print_prepared_charmap(font: 'FontInfo'):  # noqa: F821
         return
 
     headline = f"{font} Adobe PostScript charmap prepared by PyPDF"
-    print_headline_panel(headline, style='charmap.prepared_title')
-    print_bytes(font.prepared_char_map, style='charmap.prepared')
+    print_headline_panel(headline, style='charmap.prepared_title', indent=CHARMAP_INDENT)
+    console.line()
+    print_bytes(font.prepared_char_map, style='charmap.prepared', indent=CHARMAP_INDENT + 2)
     console.line()
 
 
