@@ -1,5 +1,6 @@
 # NEXT RELEASE
 * Indent the font character maps under the font info panel
+* Bump `yaralyzer` to 1.0.11
 
 ### 1.17.12
 * Set max version of `pypdf` to below 6.6.0 because of breaking [change](https://github.com/py-pdf/pypdf/pull/3583) with `_cmap.build_char_map()`
