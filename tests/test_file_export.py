@@ -8,9 +8,6 @@ from yaralyzer.helpers.file_helper import files_in_dir
 from pdfalyzer.config import PDFALYZE
 
 
-# This used to fail but seems to be OK ever since upgrading yara-python to 4.5.4?
-# 2025-01-17 started failing again mid-session
-# @pytest.mark.skip(reason="YARA is throwing internal error 46 about 'too many fibers' on macOS")
 @pytest.mark.slow
 def test_file_export(analyzing_malicious_pdf_path, tmp_dir):
     args = [

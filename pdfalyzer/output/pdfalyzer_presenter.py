@@ -99,7 +99,7 @@ class PdfalyzerPresenter:
     def print_streams_analysis(self, idnum: Optional[int] = None) -> None:
         """
         For each binary stream,
-          1. Scan decompressed binary with YARA ruels we applied to whole PDF (the ones in pdfalyzer/yara_rules/)
+          1. Scan decompressed binary with YARA rules we applied to whole PDF (the ones in pdfalyzer/yara_rules/)
           2. Check for (and force decode) dangerous PDF instructions like /JavaScript and /OpenAction
           3. Check for (and force decode) any BOMs (byte order marks)
           4. Check for (and force decode) any sequences of bytes between quotes
