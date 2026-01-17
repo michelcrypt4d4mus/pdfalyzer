@@ -33,6 +33,8 @@ def font_summary_table(font: 'FontInfo') -> Table:  # noqa: F821
 
     if font.binary_scanner is not None:
         add_table_row('actual length', font.binary_scanner.stream_length)
+    if font.first_and_last_char:
+        add_table_row('/FirstChar, /LastChar', font.first_and_last_char)
     if font.prepared_char_map is not None:
         add_table_row('prepared charmap length', len(font.prepared_char_map))
     if font.character_mapping:

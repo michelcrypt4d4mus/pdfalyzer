@@ -84,6 +84,7 @@ class FontInfo:
             self.advertised_length = sum(self.lengths)
             scanner_label = Text(self.display_title, get_label_style(FONT_FILE))
             self.binary_scanner = BinaryScanner(self.stream_data, self, scanner_label)
+            # import pdb;pdb.set_trace()
 
     def width_stats(self):
         if self.widths is None:
