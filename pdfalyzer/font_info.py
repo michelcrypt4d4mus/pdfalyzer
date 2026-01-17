@@ -144,8 +144,17 @@ class FontInfo:
         print_section_subheader(str(self), style='font.title')
         console.print(self._summary_table())
         console.line()
-        print_character_mapping(self)
-        print_prepared_charmap(self)
+
+        if self.character_mapping:
+            print_character_mapping(self)
+        else:
+            log.info(f"No character map found in {self}")
+
+        if self.prepared_char_map:
+            print_prepared_charmap(self)
+        else:
+            log.info(f"No prepared_charmap found in {self}")
+
         console.line()
 
     def _summary_table(self) -> Table:
