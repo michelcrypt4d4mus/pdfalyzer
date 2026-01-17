@@ -32,7 +32,8 @@ def print_character_mapping(font: 'FontInfo') -> None:  # noqa: F821
         column_first=True,
         padding=CHARMAP_PADDING,
         equal=True,
-        align='right')
+        align='right'
+    )
 
     console.print(Padding(charmap_columns, CHARMAP_TITLE_PADDING), width=subheading_width())
     console.line()

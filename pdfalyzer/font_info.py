@@ -7,7 +7,7 @@ from typing import cast
 
 from pypdf._cmap import prepare_cm
 from pypdf._font import Font
-from pypdf.generic import ArrayObject, DictionaryObject, IndirectObject, NameObject, NumberObject, PdfObject, StreamObject, is_null_or_none
+from pypdf.generic import ArrayObject, DictionaryObject, IndirectObject, NameObject, PdfObject, StreamObject, is_null_or_none
 from rich.text import Text
 from yaralyzer.output.rich_console import console
 from yaralyzer.util.logging import log
