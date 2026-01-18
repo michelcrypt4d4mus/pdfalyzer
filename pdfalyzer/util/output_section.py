@@ -1,8 +1,7 @@
 from argparse import Namespace
 from dataclasses import dataclass
 from functools import partial, update_wrapper
-from typing import Callable
-from typing import Self
+from typing import Callable, Self
 
 from yaralyzer.util.logging import log_and_print
 
