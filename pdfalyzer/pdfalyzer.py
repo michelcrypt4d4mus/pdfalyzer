@@ -256,10 +256,11 @@ class Pdfalyzer:
                 log.warning(f"Failed to extract font information from node: {node} (error: {e})")
                 console.line()
 
-        log_walked_fonts(walked_fonts, "WHOLE PDF")
-        known_font_ids = sorted([fi.idnum for fi in self.font_infos])
+        # log_walked_fonts(walked_fonts, "WHOLE PDF")
+        # known_font_ids = sorted([fi.idnum for fi in self.font_infos])
         # log.warning(f"Old way found {len(known_font_ids)} FontInfos with ids: {json.dumps(known_font_ids, indent=4)}")
         # compare_fonts(self.font_infos)
+        self.font_infos = sorted(self.font_infos, key=lambda fi: fi.display_title)
 
     def _build_or_find_node(self, relationship: IndirectObject, relationship_key: str) -> PdfTreeNode:
         """If node in self.nodes_encountered already then return it, otherwise build a node and store it."""
