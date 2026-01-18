@@ -22,6 +22,7 @@ from pdfalyzer.decorators.indeterminate_node import IndeterminateNode
 from pdfalyzer.decorators.pdf_tree_node import PdfTreeNode
 from pdfalyzer.decorators.pdf_tree_verifier import PdfTreeVerifier
 from pdfalyzer.font_info import FontInfo, uniquify_fonts, unique_font_string
+from pdfalyzer.helpers.dict_helper import compare_dicts
 from pdfalyzer.helpers.rich_text_helper import print_error
 from pdfalyzer.pdf_object_relationship import PdfObjectRelationship
 from pdfalyzer.util.adobe_strings import *
@@ -228,20 +229,20 @@ class Pdfalyzer:
         walked_fonts = []
 
         for node in self.node_iterator():
-            if isinstance(node.obj, DictionaryObject):
-                node_fonts = FontInfo._get_fonts_walk(node.obj)
-                walked_fonts.extend(node_fonts)
-                log_walked_fonts(node_fonts, f"'{node.address}'")
+            # if isinstance(node.obj, DictionaryObject):
+            #     node_fonts = FontInfo._get_fonts_walk(node.obj)
+            #     walked_fonts.extend(node_fonts)
+            #     log_walked_fonts(node_fonts, f"'{node.address}'")
 
-            if not (isinstance(node.obj, dict) and RESOURCES in node.obj):
+            if not (isinstance(node.obj, dict) and FONT in node.obj):
                 continue
 
-            log.debug(f"Extracting fonts from node with '{RESOURCES}' key: {node}...")
+            log.debug(f"Extracting fonts from node with '{FONT}' key: {node}...")
             known_font_ids = [fi.idnum for fi in self.font_infos]
 
             try:
                 self.font_infos += [
-                    fi for fi in FontInfo.extract_font_infos(node.obj)
+                    fi for fi in FontInfo.extract_font_infos(node)
                     if fi.idnum not in known_font_ids
                 ]
             except Exception as e:
@@ -252,7 +253,8 @@ class Pdfalyzer:
 
         log_walked_fonts(walked_fonts, "WHOLE PDF")
         known_font_ids = sorted([fi.idnum for fi in self.font_infos])
-        log.warning(f"Old way found {len(known_font_ids)} FontInfos with ids: {json.dumps(known_font_ids, indent=4)}")
+        # log.warning(f"Old way found {len(known_font_ids)} FontInfos with ids: {json.dumps(known_font_ids, indent=4)}")
+        compare_fonts(self.font_infos)
 
     def _build_or_find_node(self, relationship: IndirectObject, relationship_key: str) -> PdfTreeNode:
         """If node in self.nodes_encountered already then return it, otherwise build a node and store it."""
@@ -275,3 +277,18 @@ def log_walked_fonts(fonts: list[Font], source: str) -> None:
         fonts = uniquify_fonts(fonts)
         font_names = sorted([unique_font_string(font) for font in fonts])
         log.warning(f"Extracted {len(font_names)} walked fonts from {source}: {json.dumps(font_names, indent=4)}")
+
+
+def compare_fonts(font_infos: list[FontInfo]) -> None:
+    unique_font_strings = list(set([unique_font_string(fi.font_obj) for fi in font_infos]))
+
+    for font_str in unique_font_strings:
+        _font_infos = [fi for fi in font_infos if unique_font_string(fi.font_obj) == font_str]
+
+        if len(_font_infos) == 1:
+            continue
+
+        log.warning(f"Found {len(_font_infos)} '{font_str}' fonts, comparing /Font dicts:")
+        compare_dicts(_font_infos[0].font_dict, _font_infos[1].font_dict)
+        log.warning(f"Comparing /FontDescriptor for '{font_str}':")
+        compare_dicts(_font_infos[0].font_descriptor_dict, _font_infos[1].font_descriptor_dict)

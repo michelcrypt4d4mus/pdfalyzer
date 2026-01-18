@@ -10,6 +10,7 @@ from yaralyzer.output.rich_console import console
 from yaralyzer.util.logging import log
 
 from pdfalyzer.binary.binary_scanner import BinaryScanner
+from pdfalyzer.decorators.pdf_tree_node import PdfTreeNode
 from pdfalyzer.helpers.dict_helper import without_nones
 from pdfalyzer.output.character_mapping import print_character_mapping, print_prepared_charmap
 from pdfalyzer.output.layout import print_section_subheader, subheading_width
@@ -74,7 +75,7 @@ class FontInfo:
             self.display_title += f"({self.font_obj.sub_type})"
 
         # pypdf FontDescriptor fills in defaults for these props so we have to extract from source
-        if not is_null_or_none(self.font_dict[FONT_DESCRIPTOR]):
+        if FONT_DESCRIPTOR in self.font_dict and not is_null_or_none(self.font_dict[FONT_DESCRIPTOR]):
             self.font_descriptor_dict = cast(DictionaryObject, self.font_dict[FONT_DESCRIPTOR])
             self.bounding_box = self.font_descriptor_dict['/FontBBox']
             self.flags = int(self.font_descriptor_dict['/Flags'])
@@ -209,20 +210,15 @@ class FontInfo:
         return self.display_title
 
     @classmethod
-    def extract_font_infos(cls, obj_with_resources: DictionaryObject) -> list[Self]:
-        """
-        Extract all the fonts from a given /Resources PdfObject node.
-        obj_with_resources must have '/Resources' because that's what _cmap module expects
-        """
-        resources = obj_with_resources[RESOURCES].get_object()
-        fonts = resources.get(FONT)
+    def extract_font_infos(cls, node: PdfTreeNode) -> list[Self]:
+        """Extract all the fonts from a given /Font PdfObject node."""
+        font_dict = node.obj.get(FONT)
 
-        if is_null_or_none(fonts):
-            log.info(f'No fonts found in {obj_with_resources}')
+        if is_null_or_none(font_dict):
+            log.warning(f'No fonts found in /Font {node}')
             return []
 
-        fonts = fonts.get_object()
-        return [cls(label=label, font_indirect=font) for label, font in fonts.items()]
+        return [cls(label=label, font_indirect=font) for label, font in font_dict.items()]
 
     @classmethod
     def _get_fonts_walk(cls, obj: DictionaryObject) -> list[Font]:
@@ -253,7 +249,7 @@ class FontInfo:
                         and "/FontDescriptor" in f["/DescendantFonts"][0].get_object() \
                         and any(x in f["/DescendantFonts"][0].get_object() for x in FONT_FILE_KEYS)):
                 try:
-                    log.warning(f"Extracting font from /CharProcs")
+                    log.warning(f"Extracting font from /CharProcs or /DescendantFonts")
                     fonts.append(Font.from_font_resource(f))
                     fonts[-1].is_embedded = True
                 except KeyError:
