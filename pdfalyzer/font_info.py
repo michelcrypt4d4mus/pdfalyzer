@@ -306,5 +306,11 @@ class FontInfo:
 # TODO: this should probably check if the fonts are actually the same instead of just
 # matching the names.
 def uniquify_fonts(fonts: list[Font]) -> list[Font]:
-    font_name_map = {f.name: f for f in fonts}
+    font_name_map = {unique_font_string(f): f for f in fonts}
     return [f for f in font_name_map.values()]
+
+
+def unique_font_string(f: Font) -> str:
+    font_str = f"{f.sub_type}: {f.name}"
+    font_str += f" (embedded /FontFile ID: {f.font_descriptor.font_file.indirect_reference.idnum})" if f.font_descriptor.font_file else ''
+    return font_str

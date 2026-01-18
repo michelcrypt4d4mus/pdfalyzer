@@ -1,12 +1,14 @@
 """
 PDFalyzer: Analyze and explore the structure of PDF files.
 """
+import json
 from os.path import basename
 from typing import Dict, Iterator, List, Optional
 
 from anytree import LevelOrderIter, SymlinkNode
 from anytree.search import findall, findall_by_attr
 from pypdf import PdfReader
+from pypdf._font import Font
 from pypdf.errors import PdfReadError
 from pypdf.generic import DictionaryObject, IndirectObject
 from yaralyzer.helpers.file_helper import load_binary_data
@@ -19,7 +21,7 @@ from pdfalyzer.decorators.document_model_printer import print_with_header
 from pdfalyzer.decorators.indeterminate_node import IndeterminateNode
 from pdfalyzer.decorators.pdf_tree_node import PdfTreeNode
 from pdfalyzer.decorators.pdf_tree_verifier import PdfTreeVerifier
-from pdfalyzer.font_info import FontInfo, uniquify_fonts
+from pdfalyzer.font_info import FontInfo, uniquify_fonts, unique_font_string
 from pdfalyzer.helpers.rich_text_helper import print_error
 from pdfalyzer.pdf_object_relationship import PdfObjectRelationship
 from pdfalyzer.util.adobe_strings import *
@@ -229,11 +231,7 @@ class Pdfalyzer:
             if isinstance(node.obj, DictionaryObject):
                 node_fonts = FontInfo._get_fonts_walk(node.obj)
                 walked_fonts.extend(node_fonts)
-
-                if node_fonts:
-                    node_fonts = uniquify_fonts(node_fonts)
-                    font_names = sorted([font.name for font in node_fonts])
-                    log.warning(f"Extracted {len(font_names)} walked fonts from '{node.address}': {font_names}")
+                log_walked_fonts(node_fonts, f"'{node.address}'")
 
             if not (isinstance(node.obj, dict) and RESOURCES in node.obj):
                 continue
@@ -252,10 +250,7 @@ class Pdfalyzer:
                 log.warning(f"Failed to extract font information from node: {node} (error: {e})")
                 console.line()
 
-        if walked_fonts:
-            walked_fonts = uniquify_fonts(walked_fonts)
-            font_names = sorted([font.name + (' (embedded)' if font.is_embedded else '') for font in walked_fonts])
-            log.warning(f"TOTAL extracted {len(font_names)} walked fonts: {font_names}")
+        log_walked_fonts(walked_fonts, "WHOLE PDF")
 
     def _build_or_find_node(self, relationship: IndirectObject, relationship_key: str) -> PdfTreeNode:
         """If node in self.nodes_encountered already then return it, otherwise build a node and store it."""
@@ -271,3 +266,10 @@ class Pdfalyzer:
         """Debug method that displays which nodes have already been walked."""
         for i in sorted(self.nodes_encountered.keys()):
             console.print(f'{i}: {self.nodes_encountered[i]}')
+
+
+def log_walked_fonts(fonts: list[Font], source: str) -> None:
+    if fonts:
+        fonts = uniquify_fonts(fonts)
+        font_names = sorted([unique_font_string(font) for font in fonts])
+        log.warning(f"Extracted {len(font_names)} walked fonts from {source}: {json.dumps(font_names, indent=4)}")
