@@ -1,7 +1,7 @@
 """
 `PdfTreeNode` decorates a `PdfObject` with tree structure information.
 """
-from typing import Callable, List, Optional
+from typing import Callable, List, Optional, Self
 
 from anytree import NodeMixin, SymlinkNode
 from pypdf.errors import PdfReadError
@@ -59,7 +59,7 @@ class PdfTreeNode(NodeMixin, PdfObjectProperties):
             self.stream_length = 0
 
     @classmethod
-    def from_reference(cls, ref: IndirectObject, address: str) -> 'PdfTreeNode':
+    def from_reference(cls, ref: IndirectObject, address: str) -> Self:
         """Alternate constructor to Build a `PdfTreeNode` from an `IndirectObject`."""
         try:
             return cls(ref.get_object(), address, ref.idnum)
@@ -70,7 +70,7 @@ class PdfTreeNode(NodeMixin, PdfObjectProperties):
             log.warning(msg)
             return cls(ref, address, ref.idnum)
 
-    def set_parent(self, parent: 'PdfTreeNode') -> None:
+    def set_parent(self, parent: Self) -> None:
         """Set the parent of this node."""
         if self.parent is not None and self.parent != parent:
             raise PdfWalkError(f"Cannot set {parent} as parent of {self}, parent is already {self.parent}")
@@ -80,7 +80,7 @@ class PdfTreeNode(NodeMixin, PdfObjectProperties):
         self.known_to_parent_as = self.address_of_this_node_in_other(parent) or self.first_address
         log.info(f"  Added {parent} as parent of {self}")
 
-    def add_child(self, child: 'PdfTreeNode') -> None:
+    def add_child(self, child: Self) -> None:
         """Add a child to this node."""
         if next((c for c in self.children if c.idnum == child.idnum), None) is not None:
             log.debug(f"{child} is already child of {self}")
@@ -95,7 +95,7 @@ class PdfTreeNode(NodeMixin, PdfObjectProperties):
         self.non_tree_relationships.append(relationship)
         log.info(f'Added other relationship: {relationship} {self}')
 
-    def remove_non_tree_relationship(self, from_node: 'PdfTreeNode') -> None:
+    def remove_non_tree_relationship(self, from_node: Self) -> None:
         """Remove all non_tree_relationships from from_node to this node."""
         relationships_to_remove = [r for r in self.non_tree_relationships if r.from_node == from_node]
 
@@ -109,7 +109,7 @@ class PdfTreeNode(NodeMixin, PdfObjectProperties):
             log.debug(f"Removing relationship {relationship} from {self}")
             self.non_tree_relationships.remove(relationship)
 
-    def nodes_with_here_references(self) -> List['PdfTreeNode']:
+    def nodes_with_here_references(self) -> List[Self]:
         """Return a list of nodes that contain this node's PDF object as an IndirectObject reference."""
         return [r.from_node for r in self.non_tree_relationships if r.from_node]
 
@@ -150,7 +150,7 @@ class PdfTreeNode(NodeMixin, PdfObjectProperties):
 
         return '...' + address[-max_length:][3:]
 
-    def address_of_this_node_in_other(self, from_node: 'PdfTreeNode') -> Optional[str]:
+    def address_of_this_node_in_other(self, from_node: Self) -> Optional[str]:
         """Find the local address used in 'from_node' to refer to this node."""
         refs_to_this_node = [
             ref for ref in from_node.references_to_other_nodes()
@@ -183,7 +183,7 @@ class PdfTreeNode(NodeMixin, PdfObjectProperties):
 
             return address
 
-    def tree_relationships(self) -> List['PdfTreeNode']:
+    def tree_relationships(self) -> List[Self]:
         """Returns parents and children."""
         return list(self.children) + ([self.parent] if self.parent is not None else [])
 

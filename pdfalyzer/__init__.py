@@ -31,9 +31,10 @@ from pdfalyzer.helpers.rich_text_helper import print_highlighted
 from pdfalyzer.output.pdfalyzer_presenter import PdfalyzerPresenter
 from pdfalyzer.output.styles.rich_theme import PDFALYZER_THEME_DICT
 from pdfalyzer.pdfalyzer import Pdfalyzer
-from pdfalyzer.util.argument_parser import ask_to_proceed, output_sections, parse_arguments
+from pdfalyzer.util.argument_parser import ask_to_proceed, parse_arguments
 from pdfalyzer.util.cli_tools_argument_parser import (MAX_QUALITY, parse_combine_pdfs_args,
      parse_pdf_page_extraction_args, parse_text_extraction_args)
+from pdfalyzer.util.output_section import OutputSection
 from pdfalyzer.util.pdf_parser_manager import PdfParserManager
 
 # For the table shown by running pdfalyzer_show_color_theme
@@ -45,7 +46,7 @@ def pdfalyze():
     args = parse_arguments()
     pdfalyzer = Pdfalyzer(args.file_to_scan_path)
     presenter = PdfalyzerPresenter(pdfalyzer)
-    output_basepath = None
+    output_basepath = ''
 
     # Binary stream extraction is a special case
     if args.extract_binary_streams:
@@ -56,13 +57,13 @@ def pdfalyze():
 
     # The method that gets called is related to the argument name. See 'possible_output_sections' list in
     # argument_parser.py. Analysis exports wrap themselves around the methods that actually generate the analyses.
-    for (arg, method) in output_sections(args, presenter):
+    for section in OutputSection.selected_sections(args, presenter):
         if args.output_dir:
-            output_basepath = PdfalyzerConfig.get_output_basepath(method)
-            print(f'Exporting {arg} data to {output_basepath}...')
+            output_basepath = PdfalyzerConfig.get_output_basepath(section.method)
+            print(f'Exporting {section.argument} data to {output_basepath}...')
             console.record = True
 
-        method()
+        section.method()
 
         if args.export_txt:
             invoke_rich_export(console.save_text, output_basepath)

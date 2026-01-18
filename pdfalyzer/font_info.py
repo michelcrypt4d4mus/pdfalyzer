@@ -3,7 +3,7 @@ Unify font information spread across a bunch of PdfObjects (Font, FontDescriptor
 and FontFile) into a single class.
 """
 from dataclasses import dataclass, field
-from typing import cast
+from typing import Self, cast
 
 from pypdf._cmap import prepare_cm
 from pypdf._font import Font, FontDescriptor
@@ -32,7 +32,7 @@ ATTRIBUTES_TO_SHOW_IN_SUMMARY_TABLE = [
 
 class FontInfo:
     @classmethod
-    def extract_font_infos(cls, obj_with_resources: DictionaryObject) -> ['FontInfo']:
+    def extract_font_infos(cls, obj_with_resources: DictionaryObject) -> list[Self]:
         """
         Extract all the fonts from a given /Resources PdfObject node.
         obj_with_resources must have '/Resources' because that's what _cmap module expects
@@ -52,7 +52,7 @@ class FontInfo:
         return [cls.build(label, font) for label, font in fonts.items()]
 
     @classmethod
-    def build(cls, label: str, font_ref: IndirectObject) -> 'FontInfo':
+    def build(cls, label: str, font_ref: IndirectObject) -> Self:
         """Build a FontInfo object from a IndirectObject ref to a /Font"""
         font_obj = cast(DictionaryObject, font_ref.get_object())
         font_descriptor = None
@@ -131,17 +131,6 @@ class FontInfo:
             self.advertised_length = None
             self.binary_scanner = None
 
-    def width_stats(self):
-        if self.widths is None:
-            return {}
-
-        return {
-            'min': min(self.widths),
-            'max': max(self.widths),
-            'count': len(self.widths),
-            'unique_count': len(set(self.widths)),
-        }
-
     def print_summary(self):
         """Prints a table of info about the font drawn from the various PDF objects. quote_type of None means all."""
         print_section_subheader(str(self), style='font.title')
@@ -183,7 +172,7 @@ class FontInfo:
         if self.character_mapping:
             add_table_row('character mapping count', len(self.character_mapping))
         if self.widths is not None:
-            for k, v in self.width_stats().items():
+            for k, v in self._width_stats().items():
                 add_table_row(f"char width {k}", v)
 
             # Check if there's a single number repeated over and over.
@@ -203,6 +192,16 @@ class FontInfo:
         table.columns[1].max_width = subheading_width() - col_0_width - 3
         return table
 
+    def _width_stats(self):
+        if self.widths is None:
+            return {}
+
+        return {
+            'min': min(self.widths),
+            'max': max(self.widths),
+            'count': len(self.widths),
+            'unique_count': len(set(self.widths)),
+        }
 
     # TODO: currently unused
     # def preview_bytes_at_advertised_lengths(self):

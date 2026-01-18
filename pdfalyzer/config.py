@@ -5,12 +5,12 @@ as well as those set by environment variables and/or a .pdfalyzer file.
 import importlib.resources
 from argparse import Namespace
 from os import environ, pardir, path
+from typing import Callable
 
 from yaralyzer.config import YaralyzerConfig, is_env_var_set_and_not_false, is_invoked_by_pytest
 
 PDFALYZE = 'pdfalyze'
 PDFALYZER = f"{PDFALYZE}r"
-ALL_STREAMS = -1
 PYTEST_FLAG = 'INVOKED_BY_PYTEST'
 PROJECT_ROOT = path.join(str(importlib.resources.files(PDFALYZER)), pardir)
 
@@ -34,7 +34,7 @@ class PdfalyzerConfig:
             PDF_PARSER_EXECUTABLE = None
 
     @classmethod
-    def get_output_basepath(cls, export_method: str) -> str:
+    def get_output_basepath(cls, export_method: Callable) -> str:
         """Build the path to an output file - everything but the extension"""
         export_type = export_method.__name__.removeprefix('print_')
         output_basename = f"{cls._args.output_basename}.{export_type}"
