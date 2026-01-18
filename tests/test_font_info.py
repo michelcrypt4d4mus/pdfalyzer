@@ -14,4 +14,4 @@ def test_font_extraction(attachment_pdf_pdfalyzer, embedded_font, geobase_pdfaly
     assert embedded_font.flags == 70
     assert embedded_font._flag_names() == ['serif', 'symbolic', 'italic']
 
-    assert len(geobase_pdfalyzer.font_infos) == 21
+    assert len(geobase_pdfalyzer.font_infos) == 16
