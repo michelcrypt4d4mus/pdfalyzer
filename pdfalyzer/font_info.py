@@ -123,7 +123,7 @@ class FontInfo:
         return without_nones([self.font_dict.get('/FirstChar'), self.font_dict.get('/LastChar')])
 
     def _flag_names(self) -> list[str]:
-        return flag_strings(self.flags or 0)
+        return [name for bit, name in FONT_FLAGS.items() if bool((self.flags or 0) & 1 << (bit - 1))]
 
     def _summary_table(self) -> Table:
         """Build a Rich `Table` with important info about the font"""
@@ -308,16 +308,6 @@ class FontInfo:
                     fonts.extend(cls._get_fonts_walk(cast(DictionaryObject, a)))
 
         return uniquify_fonts(fonts)
-
-
-def flag_strings(flags: int) -> list[str]:
-    flag_names = []
-
-    for position, name in FONT_FLAGS.items():
-        if bool(flags & 1 << (position - 1)):
-            flag_names.append(name)
-
-    return flag_names
 
 
 # TODO: this should probably check if the fonts are actually the same instead of just
