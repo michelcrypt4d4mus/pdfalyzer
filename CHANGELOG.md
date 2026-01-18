@@ -1,6 +1,6 @@
 # NEXT RELEASE
 * Use `pypdf` new `Font` object
-* Translate each font's `/Flags` bits in the font info table
+* Translate each font's `/Flags` bits into human readable format in the font info table
 * Make `PdfObjectProperties`, `IndeterminateNode`, `PdfObjectRelationship` into dataclasses
 
 ### 1.17.13
