@@ -26,9 +26,20 @@ MAX_REPR_STR_LEN = 20
 ATTRIBUTES_TO_SHOW_IN_SUMMARY_TABLE = [
     'sub_type',
     'base_font',
-    'flags',
     'bounding_box',
 ]
+
+FONT_FLAGS = {
+    1: 'monospace',
+    2: 'serif',
+    3: 'symbolic',
+    4: 'script',
+    6: 'nonsymbolic',
+    7: 'italic',
+    17: 'allcaps',
+    18: 'smallcaps',
+    19: 'forcebold',
+}
 
 
 @dataclass(kw_only=True)
@@ -111,14 +122,17 @@ class FontInfo:
     def _first_and_last_char(self) -> list[int]:
         return without_nones([self.font_dict.get('/FirstChar'), self.font_dict.get('/LastChar')])
 
+    def _flag_names(self) -> list[str]:
+        return flag_strings(self.flags or 0)
+
     def _summary_table(self) -> Table:
         """Build a Rich `Table` with important info about the font"""
         table = Table('', '', show_header=False)
         table.columns[0].style = 'font.property'
         table.columns[0].justify = 'right'
 
-        def add_table_row(name, value):
-            table.add_row(name, Text(str(value), get_class_style(value)))
+        def add_table_row(name, value, style: str = ''):
+            table.add_row(name, Text(str(value), style or get_class_style(value)))
 
         for attr in ATTRIBUTES_TO_SHOW_IN_SUMMARY_TABLE:
             attr_value = getattr(self, attr)
@@ -126,6 +140,10 @@ class FontInfo:
 
         add_table_row('/Length properties', self.lengths)
         add_table_row('/FirstChar, /LastChar', self._first_and_last_char())
+
+        if self.flags:
+            add_table_row('flags', f"{self.flags} (" + ', '.join(self._flag_names()) + ')', 'cyan')
+
         add_table_row('total advertised length', self.advertised_length)
 
         if self.binary_scanner is not None:
@@ -290,6 +308,16 @@ class FontInfo:
                     fonts.extend(cls._get_fonts_walk(cast(DictionaryObject, a)))
 
         return uniquify_fonts(fonts)
+
+
+def flag_strings(flags: int) -> list[str]:
+    flag_names = []
+
+    for position, name in FONT_FLAGS.items():
+        if bool(flags & 1 << (position - 1)):
+            flag_names.append(name)
+
+    return flag_names
 
 
 # TODO: this should probably check if the fonts are actually the same instead of just
