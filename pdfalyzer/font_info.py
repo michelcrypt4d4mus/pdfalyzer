@@ -238,6 +238,7 @@ class FontInfo:
 
             if "/BaseFont" in f:
                 fonts.append(Font.from_font_resource(f))
+                fonts[-1].is_embedded = True  # TODO: should be a FontInfo prop
 
             if "/CharProcs" in f \
                     or ("/FontDescriptor" in f and any(x in f["/FontDescriptor"] for x in FONT_FILE_KEYS)) \
@@ -285,13 +286,7 @@ class FontInfo:
                     log.warning(f"Extracting fonts from /AP/N (not /XObject)")
                     fonts.extend(cls._get_fonts_walk(cast(DictionaryObject, a)))
 
-        fonts = uniquify_fonts(fonts)
-
-        if fonts:
-            font_names = [font.name for font in fonts]
-            log.warning(f"Extracted {len(fonts)} fonts: {font_names}")
-
-        return fonts
+        return uniquify_fonts(fonts)
 
 
 def uniquify_fonts(fonts: list[Font]) -> list[Font]:

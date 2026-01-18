@@ -228,7 +228,8 @@ class Pdfalyzer:
                 walked_fonts = FontInfo._get_fonts_walk(node.obj)
 
                 if walked_fonts:
-                    log.warning(f"Found {len(walked_fonts)} walked_fonts in '{node.address}': {walked_fonts}")
+                    font_names = [font.name for font in walked_fonts]
+                    log.warning(f"Extracted {len(font_names)} walked fonts from '{node.address}': {font_names}")
 
             if not (isinstance(node.obj, dict) and RESOURCES in node.obj):
                 continue
