@@ -125,6 +125,8 @@ class FontInfo:
 
         add_table_row('Subtype', self.font_obj.sub_type)
         add_table_row('FontName', self.font_obj.name)  # TODO: is this really BaseFont?
+        add_table_row('Encoding', self.font_dict["/Encoding"])
+        add_table_row('Interpretable?', self.font_obj.interpretable)
         add_table_row('bounding_box', self.font_obj.font_descriptor.bbox)
         add_table_row('/Length properties', self.lengths)
         add_table_row('/FirstChar, /LastChar', self._first_and_last_char())

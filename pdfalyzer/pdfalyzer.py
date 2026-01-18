@@ -251,6 +251,8 @@ class Pdfalyzer:
                 console.line()
 
         log_walked_fonts(walked_fonts, "WHOLE PDF")
+        known_font_ids = sorted([fi.idnum for fi in self.font_infos])
+        log.warning(f"Old way found {len(known_font_ids)} FontInfos with ids: {json.dumps(known_font_ids, indent=4)}")
 
     def _build_or_find_node(self, relationship: IndirectObject, relationship_key: str) -> PdfTreeNode:
         """If node in self.nodes_encountered already then return it, otherwise build a node and store it."""
