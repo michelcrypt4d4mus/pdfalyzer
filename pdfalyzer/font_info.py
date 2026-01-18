@@ -17,7 +17,7 @@ from pdfalyzer.binary.binary_scanner import BinaryScanner
 from pdfalyzer.output.character_mapping import print_character_mapping, print_prepared_charmap
 from pdfalyzer.output.layout import print_section_subheader, subheading_width
 from pdfalyzer.output.styles.node_colors import get_class_style, get_label_style
-from pdfalyzer.util.adobe_strings import FONT, FONT_FILE, FONT_LENGTHS, RESOURCES, TO_UNICODE, W, WIDTHS
+from pdfalyzer.util.adobe_strings import FONT, FONT_FILE, FONT_FILE_KEYS, FONT_LENGTHS, RESOURCES, TO_UNICODE, W, WIDTHS
 
 FONT_SECTION_PREVIEW_LEN = 30
 MAX_REPR_STR_LEN = 20
@@ -209,3 +209,87 @@ class FontInfo:
 
         fonts = fonts.get_object()
         return [cls(label=label, font_indirect=font) for label, font in fonts.items()]
+
+    @classmethod
+    def _get_fonts_walk(cls, obj: DictionaryObject) -> list[Font]:
+        """
+        Get the set of all fonts and all embedded fonts.
+
+        Args:
+            obj: Page resources dictionary
+            fnt: font
+            emb: embedded fonts
+
+        Returns:
+            A tuple (fnt, emb)
+
+        If there is a key called 'BaseFont', that is a font that is used in the document.
+        If there is a key called 'FontName' and another key in the same dictionary object
+        that is called 'FontFilex' (where x is null, 2, or 3), then that fontname is
+        embedded.
+
+        We create and add to two sets, fnt = fonts used and emb = fonts embedded.
+        """
+        fonts: list[Font] = []
+
+        def process_font(f: DictionaryObject) -> None:
+            nonlocal fonts
+            f = cast(DictionaryObject, f.get_object())  # to be sure
+
+            if "/BaseFont" in f:
+                fonts.append(Font.from_font_resource(f))
+
+            if "/CharProcs" in f \
+                    or ("/FontDescriptor" in f and any(x in f["/FontDescriptor"] for x in FONT_FILE_KEYS)) \
+                    or ("/DescendantFonts" in f \
+                        and "/FontDescriptor" in f["/DescendantFonts"][0].get_object() \
+                        and any(x in f["/DescendantFonts"][0].get_object() for x in FONT_FILE_KEYS)):
+                try:
+                    log.warning(f"Extracting font from /CharProcs")
+                    fonts.append(Font.from_font_resource(f))
+                except KeyError:
+                    log.error(f"Failed to extract font from {f}")
+
+        if "/DR" in obj and "/Font" in cast(DictionaryObject, obj["/DR"]):
+            for f in cast(DictionaryObject, cast(DictionaryObject, obj["/DR"])["/Font"]):
+                log.warning(f"Extracting font from /DR")
+                process_font(f)
+
+        if "/Resources" in obj:
+            if "/Font" in cast(DictionaryObject, obj["/Resources"]):
+                for f in cast(DictionaryObject, cast(DictionaryObject, obj["/Resources"])["/Font"]).values():
+                    log.warning(f"Extracting font from /Resources")
+                    process_font(f)
+            if "/XObject" in cast(DictionaryObject, obj["/Resources"]):
+                for x in cast(DictionaryObject, cast(DictionaryObject, obj["/Resources"])["/XObject"]).values():
+                    log.warning(f"Extracting fonts from /XObject")
+                    fonts.extend(cls._get_fonts_walk(cast(DictionaryObject, x.get_object())))
+
+        if "/Annots" in obj:
+            for a in cast(ArrayObject, obj["/Annots"]):
+                log.warning(f"Extracting font from /Annots")
+                fonts.extend(cls._get_fonts_walk(cast(DictionaryObject, a.get_object())))
+
+        if "/AP" in obj:
+            n_obj = cast(DictionaryObject, cast(DictionaryObject, obj["/AP"])["/N"])
+
+            if n_obj.get("/Type") == "/XObject":
+                log.warning(f"Extracting font from /AP, /Xobject")
+                fonts.extend(cls._get_fonts_walk(n_obj))
+            else:
+                for a in n_obj:
+                    log.warning(f"Extracting fonts from /AP (not /XObject)")
+                    fonts.extend(cls._get_fonts_walk(cast(DictionaryObject, a)))
+
+        fonts = uniquify_fonts(fonts)
+
+        if fonts:
+            font_names = [font.name for font in fonts]
+            log.warning(f"Extracted {len(fonts)} fonts: {font_names}")
+
+        return fonts
+
+
+def uniquify_fonts(fonts: list[Font]) -> list[Font]:
+    font_name_map = {f.name: f for f in fonts}
+    return [f for f in font_name_map.values()]

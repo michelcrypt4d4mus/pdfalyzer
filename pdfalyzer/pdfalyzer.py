@@ -8,7 +8,7 @@ from anytree import LevelOrderIter, SymlinkNode
 from anytree.search import findall, findall_by_attr
 from pypdf import PdfReader
 from pypdf.errors import PdfReadError
-from pypdf.generic import IndirectObject
+from pypdf.generic import DictionaryObject, IndirectObject
 from yaralyzer.helpers.file_helper import load_binary_data
 from yaralyzer.helpers.rich_text_helper import print_fatal_error_and_exit
 from yaralyzer.output.file_hashes_table import compute_file_hashes
@@ -224,6 +224,12 @@ class Pdfalyzer:
     def _extract_font_infos(self) -> None:
         """Extract information about fonts in the tree and place it in `self.font_infos`."""
         for node in self.node_iterator():
+            if isinstance(node.obj, DictionaryObject):
+                walked_fonts = FontInfo._get_fonts_walk(node.obj)
+
+                if walked_fonts:
+                    log.warning(f"Found {len(walked_fonts)} walked_fonts in '{node.address}': {walked_fonts}")
+
             if not (isinstance(node.obj, dict) and RESOURCES in node.obj):
                 continue
 
