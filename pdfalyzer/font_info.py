@@ -223,22 +223,15 @@ class FontInfo:
     @classmethod
     def _get_fonts_walk(cls, obj: DictionaryObject) -> list[Font]:
         """
-        Get the set of all fonts and all embedded fonts.
-
-        Args:
-            obj: Page resources dictionary
-            fnt: font
-            emb: embedded fonts
-
-        Returns:
-            A tuple (fnt, emb)
+        Get the set of all fonts (embedded and not embedded).
 
         If there is a key called 'BaseFont', that is a font that is used in the document.
         If there is a key called 'FontName' and another key in the same dictionary object
         that is called 'FontFilex' (where x is null, 2, or 3), then that fontname is
         embedded.
 
-        We create and add to two sets, fnt = fonts used and emb = fonts embedded.
+        Args:
+            obj: Page resources dictionary
         """
         fonts: list[Font] = []
 
@@ -279,24 +272,36 @@ class FontInfo:
 
             if "/XObject" in resources:
                 for x in cast(DictionaryObject, resources["/XObject"]).values():
-                    log.warning(f"Extracting fonts from /Resources/XObject")
-                    fonts.extend(cls._get_fonts_walk(cast(DictionaryObject, x.get_object())))
+                    xobject_fonts = cls._get_fonts_walk(cast(DictionaryObject, x.get_object()))
+                    fonts.extend(xobject_fonts)
+
+                    if xobject_fonts:
+                        log.warning(f"Extracted {len(xobject_fonts)} fonts from /Resources/XObject")
 
         if "/Annots" in obj:
             for i, annot in enumerate(cast(ArrayObject, obj["/Annots"])):
-                log.warning(f"Extracting font from /Annots[{i}]")
-                fonts.extend(cls._get_fonts_walk(cast(DictionaryObject, annot.get_object())))
+                annots_fonts = cls._get_fonts_walk(cast(DictionaryObject, annot.get_object()))
+                fonts.extend(annots_fonts)
+
+                if annots_fonts:
+                    log.warning(f"Extracted {len(annots_fonts)} fonts from /Annots[{i}]")
 
         if "/AP" in obj and "/N" in cast(DictionaryObject, obj["/AP"]):
             n_obj = cast(DictionaryObject, cast(DictionaryObject, obj["/AP"])["/N"])
 
             if n_obj.get("/Type") == "/XObject":
-                log.warning(f"Extracting font from /AP/N, /Xobject")
-                fonts.extend(cls._get_fonts_walk(n_obj))
+                n_obj_fonts = cls._get_fonts_walk(n_obj)
+                fonts.extend(n_obj_fonts)
+
+                if n_obj_fonts:
+                    log.warning(f"Extracted font from /AP/N which is an /Xobject")
             else:
                 for a in n_obj:
-                    log.warning(f"Extracting fonts from /AP/N (not /XObject)")
-                    fonts.extend(cls._get_fonts_walk(cast(DictionaryObject, a)))
+                    n_obj_dict_fonts = cls._get_fonts_walk(cast(DictionaryObject, a))
+                    fonts.extend(n_obj_dict_fonts)
+
+                    if n_obj_dict_fonts:
+                        log.warning(f"Extracted {len(annots_fonts)} fonts from /AP/N/{a} (not /XObject)")
 
         return uniquify_fonts(fonts)
 
