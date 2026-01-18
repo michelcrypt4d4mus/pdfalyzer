@@ -1,6 +1,7 @@
 """
 Decorator for PyPDF PdfObject that extracts a couple of properties (type, label, etc).
 """
+from dataclasses import dataclass
 from typing import Any, List, Optional, Union
 
 from pypdf.generic import DictionaryObject, IndirectObject, NumberObject, PdfObject
@@ -14,28 +15,24 @@ from pdfalyzer.output.styles.node_colors import get_class_style, get_class_style
 from pdfalyzer.util.adobe_strings import *
 
 
+@dataclass
 class PdfObjectProperties:
     """Simple class to extract critical features of a `PdfObject`."""
+    obj: PdfObject
+    address: str
+    idnum: int
+    indirect_object: IndirectObject | None = None
 
-    def __init__(
-        self,
-        pdf_object: PdfObject,
-        address: str,
-        idnum: int,
-        indirect_object: Optional[IndirectObject] = None
-    ):
-        self.idnum = idnum
-        self.obj = pdf_object
-        self.indirect_object = indirect_object
+    def __post_init__(self,):
         self.sub_type = None
         self.all_references_processed = False
         self.known_to_parent_as: Optional[str] = None
 
-        if isinstance(pdf_object, DictionaryObject):
-            self.type = pdf_object.get(TYPE) or address
-            self.sub_type = pdf_object.get(SUBTYPE) or pdf_object.get(S)
+        if isinstance(self.obj, DictionaryObject):
+            self.type = self.obj.get(TYPE) or self.address
+            self.sub_type = self.obj.get(SUBTYPE) or self.obj.get(S)
 
-            if TYPE in pdf_object and self.sub_type is not None:
+            if TYPE in self.obj and self.sub_type is not None:
                 self.label = f"{self.type}:{self.sub_type[1:]}"
             else:
                 self.label = self.type
@@ -45,18 +42,18 @@ class PdfObjectProperties:
                 self.label = root_address(self.label)
         else:
             # If it's not a DictionaryObject all we have as far as naming is the address passed in.
-            self.label = address
-            self.type = root_address(address) if isinstance(address, str) else None
+            self.label = self.address
+            self.type = root_address(self.address) if isinstance(self.address, str) else None
 
         # Force self.label to be a string. TODO this sucks.
         if isinstance(self.label, int):
             self.label = f"{UNLABELED}[{self.label}]"
 
         # TODO: this is hacky/temporarily incorrect bc we often don't know the parent when node is being constructed
-        if isinstance(address, int):
-            self.first_address = f"[{address}]"
+        if isinstance(self.address, int):
+            self.first_address = f"[{self.address}]"
         else:
-            self.first_address = address
+            self.first_address = self.address
 
         log.debug(f"Node ID: {self.idnum}, type: {self.type}, subtype: {self.sub_type}, " +
                   f"label: {self.label}, first_address: {self.first_address}")
