@@ -251,34 +251,38 @@ class FontInfo:
                     log.error(f"Failed to extract font from {f}")
 
         if "/DR" in obj and "/Font" in cast(DictionaryObject, obj["/DR"]):
-            for f in cast(DictionaryObject, cast(DictionaryObject, obj["/DR"])["/Font"]):
+            dr_obj = cast(DictionaryObject, obj["/DR"])
+
+            for f in cast(DictionaryObject, dr_obj["/Font"]):
                 log.warning(f"Extracting font from /DR")
                 process_font(f)
 
         if "/Resources" in obj:
             if "/Font" in cast(DictionaryObject, obj["/Resources"]):
-                for f in cast(DictionaryObject, cast(DictionaryObject, obj["/Resources"])["/Font"]).values():
+                resources = cast(DictionaryObject, obj["/Resources"])
+
+                for f in cast(DictionaryObject, resources["/Font"]).values():
                     log.warning(f"Extracting font from /Resources")
                     process_font(f)
-            if "/XObject" in cast(DictionaryObject, obj["/Resources"]):
-                for x in cast(DictionaryObject, cast(DictionaryObject, obj["/Resources"])["/XObject"]).values():
-                    log.warning(f"Extracting fonts from /XObject")
+            if "/XObject" in resources:
+                for x in cast(DictionaryObject, resources["/XObject"]).values():
+                    log.warning(f"Extracting fonts from /Resources/XObject")
                     fonts.extend(cls._get_fonts_walk(cast(DictionaryObject, x.get_object())))
 
         if "/Annots" in obj:
-            for a in cast(ArrayObject, obj["/Annots"]):
-                log.warning(f"Extracting font from /Annots")
-                fonts.extend(cls._get_fonts_walk(cast(DictionaryObject, a.get_object())))
+            for i, annot in enumerate(cast(ArrayObject, obj["/Annots"])):
+                log.warning(f"Extracting font from /Annots[{i}]")
+                fonts.extend(cls._get_fonts_walk(cast(DictionaryObject, annot.get_object())))
 
         if "/AP" in obj:
             n_obj = cast(DictionaryObject, cast(DictionaryObject, obj["/AP"])["/N"])
 
             if n_obj.get("/Type") == "/XObject":
-                log.warning(f"Extracting font from /AP, /Xobject")
+                log.warning(f"Extracting font from /AP/N, /Xobject")
                 fonts.extend(cls._get_fonts_walk(n_obj))
             else:
                 for a in n_obj:
-                    log.warning(f"Extracting fonts from /AP (not /XObject)")
+                    log.warning(f"Extracting fonts from /AP/N (not /XObject)")
                     fonts.extend(cls._get_fonts_walk(cast(DictionaryObject, a)))
 
         fonts = uniquify_fonts(fonts)
