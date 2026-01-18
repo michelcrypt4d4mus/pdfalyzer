@@ -1,6 +1,6 @@
 # NEXT RELEASE
 * Use `pypdf` new `Font` object
-* Improved handling of
+* Improved handling of `/DescendantFonts` prop for CID and composite fonts
 * Translate each font's `/Flags` bits into human readable format in the font info table
 * Make `PdfObjectProperties`, `IndeterminateNode`, `PdfObjectRelationship` into dataclasses
 * Red blinking alert on font binaries whose length does not match the one they advertise in `/Length` props

@@ -49,7 +49,6 @@ class FontInfo:
     font_obj: Font = field(init=False)
     idnum: int = field(init=False)
     lengths: list[int] | None = None
-    stream_data: bytes | None = None
     binary_scanner: BinaryScanner | None = None
     prepared_char_map: bytes | None = None
     raw_widths: list[int] | None = None
@@ -103,10 +102,10 @@ class FontInfo:
                 if k in self.font_obj.font_descriptor.font_file
             ]
 
-            self.stream_data = self.font_obj.font_descriptor.font_file.get_data()
             self.advertised_length = sum(self.lengths)
+            stream_data = self.font_obj.font_descriptor.font_file.get_data()
             scanner_label = Text(self.display_title, get_label_style(FONT_FILE))
-            self.binary_scanner = BinaryScanner(self.stream_data, self, scanner_label)
+            self.binary_scanner = BinaryScanner(stream_data, self, scanner_label)
 
         self.prepared_char_map = prepare_cm(self.font_dict) if TO_UNICODE in self.font_dict else None
 
