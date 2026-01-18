@@ -2,6 +2,8 @@
 Fun with dicts.
 """
 
+without_nones = lambda _list: [e for e in _list if e]
+
 
 def get_dict_key_by_value(_dict: dict, value):
     """Inverse of the usual dict operation"""

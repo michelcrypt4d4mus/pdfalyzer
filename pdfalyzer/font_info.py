@@ -14,6 +14,7 @@ from yaralyzer.output.rich_console import console
 from yaralyzer.util.logging import log
 
 from pdfalyzer.binary.binary_scanner import BinaryScanner
+from pdfalyzer.helpers.dict_helper import without_nones
 from pdfalyzer.output.character_mapping import print_character_mapping, print_prepared_charmap
 from pdfalyzer.output.layout import print_section_subheader, subheading_width
 from pdfalyzer.output.styles.node_colors import get_class_style, get_label_style
@@ -34,7 +35,7 @@ ATTRIBUTES_TO_SHOW_IN_SUMMARY_TABLE = [
 class FontInfo:
     label: NameObject | str
     font_indirect: IndirectObject
-    font: PdfObject = field(init=False)
+    font_dict: DictionaryObject = field(init=False)
     font_obj: Font = field(init=False)
     font_file: StreamObject | None = None
     idnum: int = field(init=False)
@@ -47,7 +48,6 @@ class FontInfo:
     advertised_length: int | None = None
     base_font: str = ''
     sub_type: str = ''
-    first_and_last_char: list[str] | None = None
     display_tile: str = ''
     bounding_box: tuple[float, float, float, float] | None = None
     flags: int | None = None
@@ -55,20 +55,18 @@ class FontInfo:
 
     def __post_init__(self):
         self.idnum = self.font_indirect.idnum
+        self.display_title = f"{self.idnum}. Font {self.label} "
 
         # /Font attributes
-        self.font = self.font_indirect.get_object()
-        self.font_obj = Font.from_font_resource(self.font.get_object())
+        self.font_dict = cast(DictionaryObject, self.font_indirect.get_object())
+        self.font_obj = Font.from_font_resource(self.font_dict)
         self.font_file = self.font_obj.font_descriptor.font_file
         self.base_font = f"/{self.font_obj.name}"
         self.sub_type = f"/{self.font_obj.sub_type}"
-        self.widths = self.font.get(WIDTHS) or self.font.get(W)
+        self.widths = self.font_dict.get(WIDTHS) or self.font_dict.get(W)
 
         if isinstance(self.widths, IndirectObject):
             self.widths = self.widths.get_object()
-
-        self.first_and_last_char = [self.font.get('/FirstChar'), self.font.get('/LastChar')]
-        self.display_title = f"{self.idnum}. Font {self.label} "
 
         if (self.sub_type or "Unknown") == "Unknown":
             log.warning(f"Font type not given for {self.display_title}")
@@ -81,7 +79,7 @@ class FontInfo:
             self.bounding_box = self.font_obj.font_descriptor.bbox
             self.flags = int(self.font_obj.font_descriptor.flags)
 
-        self.prepared_char_map = prepare_cm(self.font) if TO_UNICODE in self.font else None
+        self.prepared_char_map = prepare_cm(self.font_dict) if TO_UNICODE in self.font_dict else None
         self.character_mapping = self.font_obj.character_map if self.font_obj.character_map else None
 
         # /FontFile attributes
@@ -111,6 +109,9 @@ class FontInfo:
 
         console.line()
 
+    def _first_and_last_char(self) -> list[int]:
+        return without_nones([self.font_dict.get('/FirstChar'), self.font_dict.get('/LastChar')])
+
     def _summary_table(self) -> Table:
         """Build a Rich `Table` with important info about the font"""
         table = Table('', '', show_header=False)
@@ -125,6 +126,7 @@ class FontInfo:
             add_table_row(attr, attr_value)
 
         add_table_row('/Length properties', self.lengths)
+        add_table_row('/FirstChar, /LastChar', self._first_and_last_char())
         add_table_row('total advertised length', self.advertised_length)
 
         if self.binary_scanner is not None:
