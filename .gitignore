@@ -21,3 +21,4 @@ pdf_errors/
 # Other
 .DS_Store
 LICENSE
+count_fonts_in_pypdf_samples.pkl.gz
