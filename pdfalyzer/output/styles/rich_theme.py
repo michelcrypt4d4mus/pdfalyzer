@@ -22,8 +22,8 @@ PDFALYZER_THEME_DICT.update({
     'font.property': 'color(135)',
     'font.title': 'reverse dark_blue on color(253)',
     # charmap
-    'charmap.title': 'color(18) reverse on white dim',
-    'charmap.prepared_title': 'color(23) reverse on white dim',
+    'charmap.title': 'color(25)',
+    'charmap.prepared_title': 'color(23)',
     'charmap.prepared': 'color(106) dim',
     'charmap.byte': 'color(58)',
     'charmap.char': 'color(120) bold',
