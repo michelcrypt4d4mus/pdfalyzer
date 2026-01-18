@@ -1,3 +1,4 @@
+from dataclasses import dataclass
 from typing import Callable, List, Optional
 
 from rich.markup import escape
@@ -9,6 +10,7 @@ from pdfalyzer.helpers.string_helper import all_strings_are_same_ignoring_number
 from pdfalyzer.util.adobe_strings import *
 
 
+@dataclass
 class IndeterminateNode:
     """
     Class to handle choosing among the candidates for a given PDF object's parent node.
@@ -17,9 +19,7 @@ class IndeterminateNode:
     if we encounter a /Page that relationships /Resources we need to know if there's a
     /Pages parent of the /Page before committing to a tree structure.
     """
-
-    def __init__(self, node: PdfTreeNode) -> None:
-        self.node = node
+    node: PdfTreeNode
 
     def place_node(self) -> None:
         """Attempt to find the appropriate parent/child relationships for this node."""
