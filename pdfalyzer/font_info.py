@@ -277,7 +277,7 @@ class FontInfo:
                 log.warning(f"Extracting font from /Annots[{i}]")
                 fonts.extend(cls._get_fonts_walk(cast(DictionaryObject, annot.get_object())))
 
-        if "/AP" in obj:
+        if "/AP" in obj and "/N" in cast(DictionaryObject, obj["/AP"]):
             n_obj = cast(DictionaryObject, cast(DictionaryObject, obj["/AP"])["/N"])
 
             if n_obj.get("/Type") == "/XObject":
