@@ -22,7 +22,7 @@ PYPDF_SAMPLES_DIR = PYPDF_REPO_DIR.joinpath('sample-files')
 PICKLED_PATH = Path('./count_fonts_in_pypdf_samples.pkl.gz')
 
 
-file_fonts: dict[str, list[FontInfo] | str] = {}
+file_fonts: dict[str, list[FontInfo]] = {}
 
 for file in PYPDF_RESOURCES_DIR.glob('*.pdf'):
     file_key = str(file).removeprefix(str(PYPDF_REPO_DIR) + '/')
@@ -38,15 +38,24 @@ for file in PYPDF_RESOURCES_DIR.glob('*.pdf'):
             console.print(f"        - {name}", style='cyan')
     except Exception as e:
         console.print_exception()
-        file_fonts[file_key] = f"ERROR: {e}"
-        log.error(file_fonts[file_key])
+        log.error(f"Error processing '{file}': {type(e).__name__} ({e})")
 
 
-with gzip.open(PICKLED_PATH, 'wb') as file:
-    for font_list in file_fonts.values():
-        if isinstance(font_list, list):
-            for font in font_list:
-                font.binary_scanner = None  # has to be removed to pickle successfully
+for file in sorted(file_fonts.keys(), key=lambda f: -1 if isinstance(f, str) else len(file_fonts[f])):
+    font_infos = file_fonts[file]
+    console.line()
+    console.print(Text('').append(file, style='bright_green bold').append(f"has {len(font_infos)} FontInfos"))
 
-    pickle.dump(file_fonts, file)
-    print(f"Pickled data to '{PICKLED_PATH}' ({file_size_in_mb(PICKLED_PATH)} MB)...")
+    for fi in font_infos:
+        font_name = f"{fi.display_title}: {unique_font_string(fi.font_obj)}"
+        console.print(Text(f'        [{i}]', style='grey27').append(font_name, style='cyan'))
+
+
+# with gzip.open(PICKLED_PATH, 'wb') as file:
+#     for font_list in file_fonts.values():
+#         if isinstance(font_list, list):
+#             for font in font_list:
+#                 font.binary_scanner = None  # has to be removed to pickle successfully
+
+#     pickle.dump(file_fonts, file)
+#     print(f"Pickled data to '{PICKLED_PATH}' ({file_size_in_mb(PICKLED_PATH)} MB)...")

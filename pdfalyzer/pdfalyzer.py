@@ -10,7 +10,7 @@ from anytree import LevelOrderIter, SymlinkNode
 from anytree.search import findall, findall_by_attr
 from pypdf import PdfReader
 from pypdf._font import Font
-from pypdf.errors import PdfReadError
+from pypdf.errors import DependencyError, PdfReadError
 from pypdf.generic import DictionaryObject, IndirectObject
 from yaralyzer.helpers.file_helper import load_binary_data
 from yaralyzer.helpers.rich_text_helper import print_fatal_error_and_exit
@@ -73,9 +73,14 @@ class Pdfalyzer:
             self.pdf_reader = PdfReader(self.pdf_filehandle)
         except PdfReadError as e:
             self._handle_fatal_error(f'PdfReadError: "{pdf_path}" doesn\'t seem to be a valid PDF file.', e)
+        except DependencyError as e:
+            self._handle_fatal_error(f"Missing dependency required for this file.", e)
         except Exception as e:
             console.print_exception()
-            self._handle_fatal_error(f"{PYPDF_ERROR_MSG}\n{e}", e)
+            self._handle_fatal_error(f"{PYPDF_ERROR_MSG}\n", e)
+
+        if self.pdf_reader.is_encrypted:
+            import pdb;pdb.set_trace
 
         # Initialize tracking variables
         self.font_infos: List[FontInfo] = []  # Font summary objects
@@ -215,7 +220,7 @@ class Pdfalyzer:
 
         # Only exit if running in a 'pdfalyze some_file.pdf context'
         if parser.prog == PDFALYZE:
-            print_fatal_error_and_exit(msg)
+            print_fatal_error_and_exit(f"{msg} ({e})")
         else:
             print_error(msg)
             raise e
