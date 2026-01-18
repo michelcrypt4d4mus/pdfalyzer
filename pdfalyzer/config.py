@@ -9,6 +9,8 @@ from typing import Callable
 
 from yaralyzer.config import YaralyzerConfig, is_env_var_set_and_not_false, is_invoked_by_pytest
 
+from pdfalyzer.util.output_section import ALL_STREAMS
+
 PDFALYZE = 'pdfalyze'
 PDFALYZER = f"{PDFALYZE}r"
 PYTEST_FLAG = 'INVOKED_BY_PYTEST'
