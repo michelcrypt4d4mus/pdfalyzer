@@ -92,10 +92,10 @@ def _print_header_panel(
     """Helper to print a rich `Panel` with the given style, width, and padding."""
     panel = Panel(
         headline,
-        style=style,
         expand=expand,
-        width=width or subheading_width(),
         padding=internal_padding or (0,),
+        style=style,
+        width=width or subheading_width(),
     )
 
     console.print(Padding(panel, indent_padding(indent)))
