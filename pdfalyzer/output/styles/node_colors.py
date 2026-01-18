@@ -70,7 +70,12 @@ LABEL_STYLES += [
 
 def get_class_style(obj: Any) -> str:
     """Style for various types of data (e.g. DictionaryObject)"""
-    return next((cs.style for cs in NODE_TYPE_STYLES if isinstance(obj, cs.klass)), '')
+    if obj is True:
+        return 'bright_green bold'
+    elif obj is False:
+        return 'bright_red bold'
+    else:
+        return next((cs.style for cs in NODE_TYPE_STYLES if isinstance(obj, cs.klass)), '')
 
 
 def get_class_style_dim(obj: Any) -> str:

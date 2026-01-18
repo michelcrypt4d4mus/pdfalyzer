@@ -3,6 +3,7 @@
 * Improved handling of
 * Translate each font's `/Flags` bits into human readable format in the font info table
 * Make `PdfObjectProperties`, `IndeterminateNode`, `PdfObjectRelationship` into dataclasses
+* Red blinking alert on font binaries whose length does not match the one they advertise in `/Length` props
 * Sort `Pdfalyzer.font_infos` array by node id
 
 ### 1.17.13

@@ -15,10 +15,11 @@ from pdfalyzer.helpers.dict_helper import without_nones
 from pdfalyzer.output.character_mapping import print_character_mapping, print_prepared_charmap
 from pdfalyzer.output.layout import print_section_subheader, subheading_width
 from pdfalyzer.output.styles.node_colors import get_class_style, get_label_style
-from pdfalyzer.util.adobe_strings import DESCENDANT_FONTS, FONT, FONT_DESCRIPTOR, FONT_FILE, FONT_FILE_KEYS, FONT_LENGTHS, RESOURCES, TO_UNICODE, W, WIDTHS
+from pdfalyzer.util.adobe_strings import DESCENDANT_FONTS, FONT, FONT_DESCRIPTOR, FONT_FILE, FONT_FILE_KEYS, FONT_LENGTHS, RESOURCES, SUBTYPE, TO_UNICODE, W, WIDTHS
 
 FONT_SECTION_PREVIEW_LEN = 30
 MAX_REPR_STR_LEN = 20
+RAW_CHAR_WIDTHS = 'raw char widths'
 
 FONT_FLAG_BIT_POSITIONS = {
     1: 'monospace',
@@ -41,6 +42,7 @@ class FontInfo:
     label: NameObject | str
     font_indirect: IndirectObject
     # Constructed properties
+    descendant_fonts_subtype: str | None = None
     display_title: str = field(init=False)
     font_dict: DictionaryObject = field(init=False)
     font_descriptor_dict: DictionaryObject = field(init=False)
@@ -50,7 +52,7 @@ class FontInfo:
     stream_data: bytes | None = None
     binary_scanner: BinaryScanner | None = None
     prepared_char_map: bytes | None = None
-    widths: list[int] | None = None
+    raw_widths: list[int] | None = None
     # TODO: make methods?
     advertised_length: int | None = None
     bounding_box: tuple[float, float, float, float] | None = None
@@ -63,10 +65,7 @@ class FontInfo:
         # /Font attributes
         self.font_dict = cast(DictionaryObject, self.font_indirect.get_object())
         self.font_obj = Font.from_font_resource(self.font_dict)
-        self.widths = self.font_dict.get(WIDTHS) or self.font_dict.get(W)
-
-        if isinstance(self.widths, IndirectObject):
-            self.widths = self.widths.get_object()
+        self.raw_widths = self.font_dict.get(WIDTHS) or self.font_dict.get(W)
 
         if (self.font_obj.sub_type or "Unknown") == "Unknown":
             log.warning(f"Font type not given for {self.display_title}")
@@ -76,9 +75,14 @@ class FontInfo:
 
         if FONT_DESCRIPTOR in self.font_dict or DESCENDANT_FONTS in self.font_dict:
             # CID or composite fonts have a 1 element array in /DescendantFonts that has the /FontDescriptor
-            if DESCENDANT_FONTS in self.font_dict and FONT_DESCRIPTOR in self.font_dict[DESCENDANT_FONTS][0]:
-                self.font_descriptor_dict = self.font_dict[DESCENDANT_FONTS][0][FONT_DESCRIPTOR].get_object()
-                self.widths = self.font_obj.character_widths
+            if DESCENDANT_FONTS in self.font_dict:
+                descendant_font = self.font_dict[DESCENDANT_FONTS][0].get_object()
+
+                if FONT_DESCRIPTOR in descendant_font:
+                    self.font_descriptor_dict = descendant_font[FONT_DESCRIPTOR].get_object()
+
+                self.descendant_fonts_subtype = descendant_font.get(SUBTYPE)
+                self.raw_widths = descendant_font.get(WIDTHS) or descendant_font.get(W)
             elif FONT_DESCRIPTOR in self.font_dict:
                 self.font_descriptor_dict = cast(DictionaryObject, self.font_dict[FONT_DESCRIPTOR].get_object())
 
@@ -88,6 +92,9 @@ class FontInfo:
                 self.flags = int(self.font_descriptor_dict['/Flags'])
             else:
                 log.warning(f"Found no {FONT_DESCRIPTOR} for font {self.display_title}")
+
+        if isinstance(self.raw_widths, IndirectObject):
+            self.raw_widths = self.raw_widths.get_object()
 
         # /FontFile attributes
         if self.font_obj.font_descriptor.font_file is not None:
@@ -134,60 +141,69 @@ class FontInfo:
         table.add_column(style='font.property', justify='right')
         table.add_column()
 
-        def add_table_row(name, value, style: str = ''):
+        def add_table_row(name, value, style: str = '', row_style: str = ''):
             value = value if isinstance(value, Text) else Text(str(value), style or get_class_style(value))
-            table.add_row(name, value)
+            table.add_row(name, value, style=row_style)
 
         add_table_row('Subtype', self.font_obj.sub_type)
         add_table_row('FontName', self.font_obj.name)  # TODO: is this really BaseFont?
-        # add_table_row('Encoding', self.font_dict["/Encoding"])
-        add_table_row('pypdf interpretable?', self.font_obj.interpretable)
-        add_table_row('bounding_box', self.bounding_box)
-        add_table_row('/Length properties', self.lengths)
-        add_table_row('/FirstChar, /LastChar', self._first_and_last_char())
 
+        if self.descendant_fonts_subtype:
+            add_table_row(f"Composite Subtype", self.descendant_fonts_subtype[1:])
         if self.flags:
             add_table_row('style flags', f"{self.flags} (" + ', '.join(self._flag_names()) + ')', 'cyan')
 
-        add_table_row('total advertised length', self.advertised_length)
+        add_table_row('bounding_box', self.bounding_box)
+        add_table_row('/FirstChar, /LastChar', self._first_and_last_char())
+        add_table_row('pypdf interpretable', self.font_obj.interpretable)
 
         if self.binary_scanner is not None:
-            add_table_row('embedded binary length', self.binary_scanner.stream_length)
+            row_style = 'red_alert' if self.binary_scanner.stream_length != self.advertised_length else ''
+            add_table_row('/Length properties', self.lengths)
+            add_table_row('embedded binary length', self.binary_scanner.stream_length, row_style=row_style)
+            add_table_row('advertised binary length', self.advertised_length, row_style=row_style)
         if self.prepared_char_map is not None:
             add_table_row('prepared charmap length', len(self.prepared_char_map))
-        if  self.font_obj.character_map:
+        if self.font_obj.character_map:
             add_table_row('character mapping count', len( self.font_obj.character_map))
-        if self.widths is not None:
-            for k, v in self._width_stats().items():
-                add_table_row(f"char width {k}", v)
+        if self.raw_widths is not None:
+            if all([isinstance(e, int) for e in self.raw_widths]):  # DescendantFonts include arrays in the list of widths
+                for k, v in self._width_stats().items():
+                    add_table_row(f"char width {k}", v)
 
-            # Check if there's a single number repeated over and over.
-            if len(set(self.widths)) == 1:
-                table.add_row(
-                    'char widths',
-                    Text(
-                        f"{self.widths[0]} (single value repeated {len(self.widths)} times)",
-                        style=get_class_style(list)
+                # Check if there's a single number repeated over and over.
+                if len(set(self.raw_widths)) == 1:
+                    table.add_row(
+                        RAW_CHAR_WIDTHS,
+                        Text(
+                            f"{self.raw_widths[0]} (single value repeated {len(self.raw_widths)} times)",
+                            style=get_class_style(list)
+                        )
                     )
-                )
+                else:
+                    add_table_row(RAW_CHAR_WIDTHS, self.raw_widths)
             else:
-                add_table_row('char widths', self.widths)
-                add_table_row('char widths(sorted)', sorted(self.widths))
+                add_table_row(RAW_CHAR_WIDTHS, self.raw_widths)
+        if self.font_obj.character_widths:
+            add_table_row('char widths', self.font_obj.character_widths)
 
         col_0_width = max([len(entry) for entry in table.columns[0]._cells]) + 4
         table.columns[1].max_width = subheading_width() - col_0_width - 3
         return table
 
-    def _width_stats(self):
-        if self.widths is None:
+    def _width_stats(self) -> dict[str, int]:
+        if not self.raw_widths:
             return {}
-
-        return {
-            'min': min(self.widths),
-            'max': max(self.widths),
-            'count': len(self.widths),
-            'unique_count': len(set(self.widths)),
-        }
+        try:
+            return {
+                'min': min(self.raw_widths),
+                'max': max(self.raw_widths),
+                'count': len(self.raw_widths),
+                'unique_count': len(set(self.raw_widths)),
+            }
+        except Exception as e:
+            log.error(f"{self.display_title} Failed to get width stats from raw_widths:\n{self.raw_widths}")
+            return {}
 
     def __repr__(self) -> str:
         d = {}
