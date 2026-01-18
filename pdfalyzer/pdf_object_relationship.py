@@ -1,8 +1,8 @@
 """
 Simple container class for information about a link between two PDF objects.
 """
-from dataclasses import dataclass
-from typing import List, Optional, Union
+from dataclasses import dataclass, field
+from typing import Any, List, Optional, Self, Union
 
 from pypdf.generic import IndirectObject, PdfObject
 from yaralyzer.util.logging import log
@@ -19,6 +19,7 @@ class PdfObjectRelationship:
     to_obj: IndirectObject
     reference_key: str
     address: str
+    from_obj: Any | None = None
 
     def __post_init__(self) -> None:
         """
@@ -54,7 +55,7 @@ class PdfObjectRelationship:
         from_obj: Optional[PdfObject] = None,
         ref_key: Optional[Union[str, int]] = None,
         address: Optional[str] = None
-    ) -> List['PdfObjectRelationship']:
+    ) -> List[Self]:
         """
         Builds list of relationships 'from_node.obj' contains referencing other PDF objects.
         Initially called with single arg from_node. Other args are employed when recursable
@@ -64,7 +65,7 @@ class PdfObjectRelationship:
             raise ValueError("Either :from_node or :from_obj must be provided to get references")
 
         from_obj = from_node.obj if from_obj is None else from_obj
-        references: List[PdfObjectRelationship] = []
+        references: list[Self] = []
 
         if isinstance(from_obj, IndirectObject):
             references.append(cls(from_node, from_obj, str(ref_key), str(address)))
