@@ -121,11 +121,12 @@ class FontInfo:
         table.columns[0].justify = 'right'
 
         def add_table_row(name, value, style: str = ''):
-            table.add_row(name, Text(str(value), style or get_class_style(value)))
+            value = value if isinstance(value, Text) else Text(str(value), style or get_class_style(value))
+            table.add_row(name, value)
 
         add_table_row('Subtype', self.font_obj.sub_type)
         add_table_row('FontName', self.font_obj.name)  # TODO: is this really BaseFont?
-        add_table_row('Encoding', self.font_dict["/Encoding"])
+        # add_table_row('Encoding', self.font_dict["/Encoding"])
         add_table_row('Interpretable?', self.font_obj.interpretable)
         add_table_row('bounding_box', self.font_obj.font_descriptor.bbox)
         add_table_row('/Length properties', self.lengths)
