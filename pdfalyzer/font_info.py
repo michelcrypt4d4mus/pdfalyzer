@@ -1,7 +1,3 @@
-"""
-Unify font information spread across a bunch of PdfObjects (Font, FontDescriptor,
-and FontFile) into a single class.
-"""
 from dataclasses import asdict, dataclass, field, fields
 from typing import Self, cast
 
@@ -38,6 +34,9 @@ FONT_FLAGS = {
 
 @dataclass(kw_only=True)
 class FontInfo:
+    """
+    Extract and unify font information.
+    """
     label: NameObject | str
     font_indirect: IndirectObject
     font_dict: DictionaryObject = field(init=False)

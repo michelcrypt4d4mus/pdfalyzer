@@ -1,6 +1,4 @@
-"""
-Decorator for PyPDF PdfObject that extracts a couple of properties (type, label, etc).
-"""
+
 from dataclasses import dataclass
 from typing import Any, List, Optional, Self, Union
 
@@ -17,7 +15,13 @@ from pdfalyzer.util.adobe_strings import *
 
 @dataclass
 class PdfObjectProperties:
-    """Simple class to extract critical features of a `PdfObject`."""
+    """
+    Decorator for PyPDF PdfObject that extracts a couple of properties (type, label, etc).
+
+    Attributes:
+        obj (PdfObject): The underyling PDF object
+        address (str): The location of the PDF object in the tree, e.g.
+    """
     obj: PdfObject
     address: str
     idnum: int
