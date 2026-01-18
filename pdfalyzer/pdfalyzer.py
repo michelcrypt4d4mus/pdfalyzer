@@ -238,11 +238,6 @@ class Pdfalyzer:
         walked_fonts = []
 
         for node in self.node_iterator():
-            # if isinstance(node.obj, DictionaryObject):
-            #     node_fonts = FontInfo._get_fonts_walk(node.obj)
-            #     walked_fonts.extend(node_fonts)
-            #     log_walked_fonts(node_fonts, f"'{node.address}'")
-
             known_font_ids = [fi.idnum for fi in self.font_infos]
 
             try:
@@ -256,10 +251,6 @@ class Pdfalyzer:
                 log.warning(f"Failed to extract font information from node: {node} (error: {e})")
                 console.line()
 
-        # log_walked_fonts(walked_fonts, "WHOLE PDF")
-        # known_font_ids = sorted([fi.idnum for fi in self.font_infos])
-        # log.warning(f"Old way found {len(known_font_ids)} FontInfos with ids: {json.dumps(known_font_ids, indent=4)}")
-        # compare_fonts(self.font_infos)
         self.font_infos = sorted(self.font_infos, key=lambda fi: fi.idnum)
 
     def _build_or_find_node(self, relationship: IndirectObject, relationship_key: str) -> PdfTreeNode:
@@ -276,25 +267,3 @@ class Pdfalyzer:
         """Debug method that displays which nodes have already been walked."""
         for i in sorted(self.nodes_encountered.keys()):
             console.print(f'{i}: {self.nodes_encountered[i]}')
-
-
-def log_walked_fonts(fonts: list[Font], source: str) -> None:
-    if fonts:
-        fonts = uniquify_fonts(fonts)
-        font_names = sorted([unique_font_string(font) for font in fonts])
-        log.warning(f"Extracted {len(font_names)} walked fonts from {source}: {json.dumps(font_names, indent=4)}")
-
-
-def compare_fonts(font_infos: list[FontInfo]) -> None:
-    unique_font_strings = list(set([unique_font_string(fi.font_obj) for fi in font_infos]))
-
-    for font_str in unique_font_strings:
-        _font_infos = [fi for fi in font_infos if unique_font_string(fi.font_obj) == font_str]
-
-        if len(_font_infos) == 1:
-            continue
-
-        log.warning(f"Found {len(_font_infos)} '{font_str}' fonts, comparing /Font dicts:")
-        compare_dicts(_font_infos[0].font_dict, _font_infos[1].font_dict)
-        log.warning(f"Comparing /FontDescriptor for '{font_str}':")
-        compare_dicts(_font_infos[0].font_descriptor_dict, _font_infos[1].font_descriptor_dict)
