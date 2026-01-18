@@ -24,7 +24,7 @@ class OutputSection:
     method: Callable
 
     @classmethod
-    def output_sections(cls, args: Namespace, pdfalyzer: 'Pdfalyzer') -> list[Self]:  # noqa: F821
+    def selected_sections(cls, args: Namespace, pdfalyzer: 'Pdfalyzer') -> list[Self]:  # noqa: F821
         """
         Determine which of the tree visualizations, font scans, etc should be run.
         If nothing is specified output ALL sections other than --streams which is v. slow/verbose.

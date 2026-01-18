@@ -57,7 +57,7 @@ def pdfalyze():
 
     # The method that gets called is related to the argument name. See 'possible_output_sections' list in
     # argument_parser.py. Analysis exports wrap themselves around the methods that actually generate the analyses.
-    for section in OutputSection.output_sections(args, presenter):
+    for section in OutputSection.selected_sections(args, presenter):
         if args.output_dir:
             output_basepath = PdfalyzerConfig.get_output_basepath(section.method)
             print(f'Exporting {section.argument} data to {output_basepath}...')
