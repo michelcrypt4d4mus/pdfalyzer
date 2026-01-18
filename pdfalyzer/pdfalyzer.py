@@ -19,7 +19,7 @@ from pdfalyzer.decorators.document_model_printer import print_with_header
 from pdfalyzer.decorators.indeterminate_node import IndeterminateNode
 from pdfalyzer.decorators.pdf_tree_node import PdfTreeNode
 from pdfalyzer.decorators.pdf_tree_verifier import PdfTreeVerifier
-from pdfalyzer.font_info import FontInfo
+from pdfalyzer.font_info import FontInfo, uniquify_fonts
 from pdfalyzer.helpers.rich_text_helper import print_error
 from pdfalyzer.pdf_object_relationship import PdfObjectRelationship
 from pdfalyzer.util.adobe_strings import *
@@ -223,12 +223,16 @@ class Pdfalyzer:
 
     def _extract_font_infos(self) -> None:
         """Extract information about fonts in the tree and place it in `self.font_infos`."""
+        walked_fonts = []
+
         for node in self.node_iterator():
             if isinstance(node.obj, DictionaryObject):
-                walked_fonts = FontInfo._get_fonts_walk(node.obj)
+                node_fonts = FontInfo._get_fonts_walk(node.obj)
+                walked_fonts.extend(node_fonts)
 
-                if walked_fonts:
-                    font_names = [font.name for font in walked_fonts]
+                if node_fonts:
+                    node_fonts = uniquify_fonts(node_fonts)
+                    font_names = sorted([font.name for font in node_fonts])
                     log.warning(f"Extracted {len(font_names)} walked fonts from '{node.address}': {font_names}")
 
             if not (isinstance(node.obj, dict) and RESOURCES in node.obj):
@@ -247,6 +251,11 @@ class Pdfalyzer:
                 console.line()
                 log.warning(f"Failed to extract font information from node: {node} (error: {e})")
                 console.line()
+
+        if walked_fonts:
+            walked_fonts = uniquify_fonts(walked_fonts)
+            font_names = sorted([font.name + (' (embedded)' if font.is_embedded else '') for font in walked_fonts])
+            log.warning(f"TOTAL extracted {len(font_names)} walked fonts: {font_names}")
 
     def _build_or_find_node(self, relationship: IndirectObject, relationship_key: str) -> PdfTreeNode:
         """If node in self.nodes_encountered already then return it, otherwise build a node and store it."""

@@ -238,7 +238,7 @@ class FontInfo:
 
             if "/BaseFont" in f:
                 fonts.append(Font.from_font_resource(f))
-                fonts[-1].is_embedded = True  # TODO: should be a FontInfo prop
+                fonts[-1].is_embedded = False  # TODO: should be a FontInfo prop
 
             if "/CharProcs" in f \
                     or ("/FontDescriptor" in f and any(x in f["/FontDescriptor"] for x in FONT_FILE_KEYS)) \
@@ -248,6 +248,7 @@ class FontInfo:
                 try:
                     log.warning(f"Extracting font from /CharProcs")
                     fonts.append(Font.from_font_resource(f))
+                    fonts[-1].is_embedded = True
                 except KeyError:
                     log.error(f"Failed to extract font from {f}")
 
@@ -259,12 +260,13 @@ class FontInfo:
                 process_font(f)
 
         if "/Resources" in obj:
-            if "/Font" in cast(DictionaryObject, obj["/Resources"]):
-                resources = cast(DictionaryObject, obj["/Resources"])
+            resources = cast(DictionaryObject, obj["/Resources"])
 
+            if "/Font" in resources:
                 for f in cast(DictionaryObject, resources["/Font"]).values():
                     log.warning(f"Extracting font from /Resources")
                     process_font(f)
+
             if "/XObject" in resources:
                 for x in cast(DictionaryObject, resources["/XObject"]).values():
                     log.warning(f"Extracting fonts from /Resources/XObject")
@@ -289,6 +291,8 @@ class FontInfo:
         return uniquify_fonts(fonts)
 
 
+# TODO: this should probably check if the fonts are actually the same instead of just
+# matching the names.
 def uniquify_fonts(fonts: list[Font]) -> list[Font]:
     font_name_map = {f.name: f for f in fonts}
     return [f for f in font_name_map.values()]
