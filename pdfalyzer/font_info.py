@@ -14,7 +14,7 @@ from pdfalyzer.helpers.dict_helper import without_nones
 from pdfalyzer.output.character_mapping import print_character_mapping, print_prepared_charmap
 from pdfalyzer.output.layout import print_section_subheader, subheading_width
 from pdfalyzer.output.styles.node_colors import get_class_style, get_label_style
-from pdfalyzer.util.adobe_strings import FONT, FONT_FILE, FONT_FILE_KEYS, FONT_LENGTHS, RESOURCES, TO_UNICODE, W, WIDTHS
+from pdfalyzer.util.adobe_strings import FONT, FONT_DESCRIPTOR, FONT_FILE, FONT_FILE_KEYS, FONT_LENGTHS, RESOURCES, TO_UNICODE, W, WIDTHS
 
 FONT_SECTION_PREVIEW_LEN = 30
 MAX_REPR_STR_LEN = 20
@@ -39,8 +39,10 @@ class FontInfo:
     """
     label: NameObject | str
     font_indirect: IndirectObject
-    # Optional args
+    # Constructed properties
+    display_title: str = field(init=False)
     font_dict: DictionaryObject = field(init=False)
+    font_descriptor_dict: DictionaryObject = field(init=False)
     font_obj: Font = field(init=False)
     idnum: int = field(init=False)
     lengths: list[int] | None = None
@@ -50,7 +52,6 @@ class FontInfo:
     widths: list[int] | None = None
     # TODO: make methods?
     advertised_length: int | None = None
-    display_tile: str = ''
     bounding_box: tuple[float, float, float, float] | None = None
     flags: int | None = None
 
@@ -72,10 +73,11 @@ class FontInfo:
         else:
             self.display_title += f"({self.font_obj.sub_type})"
 
-        # FontDescriptor attributes
-        if not is_null_or_none(self.font_obj.font_descriptor):
-            self.bounding_box = self.font_obj.font_descriptor.bbox  # TODO: pypdf has a default value, we want to show real value
-            self.flags = int(self.font_obj.font_descriptor.flags)
+        # pypdf FontDescriptor fills in defaults for these props so we have to extract from source
+        if not is_null_or_none(self.font_dict[FONT_DESCRIPTOR]):
+            self.font_descriptor_dict = cast(DictionaryObject, self.font_dict[FONT_DESCRIPTOR])
+            self.bounding_box = self.font_descriptor_dict['/FontBBox']
+            self.flags = int(self.font_descriptor_dict['/Flags'])
 
         # /FontFile attributes
         if self.font_obj.font_descriptor.font_file is not None:
