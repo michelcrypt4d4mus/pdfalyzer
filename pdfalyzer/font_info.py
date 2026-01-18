@@ -40,11 +40,11 @@ class FontInfo:
     idnum: int = field(init=False)
     lengths: list[int] | None = None
     stream_data: bytes | None = None
-    advertised_length: int | None = None
     binary_scanner: BinaryScanner | None = None
     prepared_char_map: bytes | None = None
     widths: list[int] | None = None
     # TODO: make methods
+    advertised_length: int | None = None
     base_font: str = ''
     sub_type: str = ''
     first_and_last_char: list[str] | None = None
