@@ -24,7 +24,7 @@ CHARMAP_PANEL_INTERNAL_INDENT = 1
 def print_character_mapping(font: 'FontInfo') -> None:  # noqa: F821
     """Prints the character mapping extracted by PyPDF._charmap in tidy columns."""
     _print_charmap_header(f"{font} {CHARMAP_TITLE}", 'charmap.title')
-    charmap_entries = [_format_charmap_entry(k, v) for k, v in font.character_mapping.items()]
+    charmap_entries = [_format_charmap_entry(k, v) for k, v in  font.font_obj.character_map.items()]
 
     charmap_columns = Columns(
         charmap_entries,

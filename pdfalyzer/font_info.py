@@ -39,21 +39,20 @@ class FontInfo:
     """
     label: NameObject | str
     font_indirect: IndirectObject
+    # Optional args
     font_dict: DictionaryObject = field(init=False)
     font_obj: Font = field(init=False)
-    font_file: StreamObject | None = None
     idnum: int = field(init=False)
     lengths: list[int] | None = None
     stream_data: bytes | None = None
     binary_scanner: BinaryScanner | None = None
     prepared_char_map: bytes | None = None
     widths: list[int] | None = None
-    # TODO: make methods
+    # TODO: make methods?
     advertised_length: int | None = None
     display_tile: str = ''
     bounding_box: tuple[float, float, float, float] | None = None
     flags: int | None = None
-    character_mapping: dict[str, str] | None = None
 
     def __post_init__(self):
         self.idnum = self.font_indirect.idnum
@@ -62,7 +61,6 @@ class FontInfo:
         # /Font attributes
         self.font_dict = cast(DictionaryObject, self.font_indirect.get_object())
         self.font_obj = Font.from_font_resource(self.font_dict)
-        self.font_file = self.font_obj.font_descriptor.font_file
         self.widths = self.font_dict.get(WIDTHS) or self.font_dict.get(W)
 
         if isinstance(self.widths, IndirectObject):
@@ -79,16 +77,19 @@ class FontInfo:
             self.bounding_box = self.font_obj.font_descriptor.bbox  # TODO: pypdf has a default value, we want to show real value
             self.flags = int(self.font_obj.font_descriptor.flags)
 
-        self.prepared_char_map = prepare_cm(self.font_dict) if TO_UNICODE in self.font_dict else None
-        self.character_mapping = self.font_obj.character_map if self.font_obj.character_map else None
-
         # /FontFile attributes
-        if self.font_file is not None:
-            self.lengths = [self.font_file[k] for k in FONT_LENGTHS if k in self.font_file]
+        if self.font_obj.font_descriptor.font_file is not None:
+            self.lengths = [
+                self.font_obj.font_descriptor.font_file[k] for k in FONT_LENGTHS
+                if k in self.font_obj.font_descriptor.font_file
+            ]
+
             self.stream_data = self.font_obj.font_descriptor.font_file.get_data()
             self.advertised_length = sum(self.lengths)
             scanner_label = Text(self.display_title, get_label_style(FONT_FILE))
             self.binary_scanner = BinaryScanner(self.stream_data, self, scanner_label)
+
+        self.prepared_char_map = prepare_cm(self.font_dict) if TO_UNICODE in self.font_dict else None
 
     def print_summary(self):
         """Prints a table of info about the font drawn from the various PDF objects. quote_type of None means all."""
@@ -96,7 +97,7 @@ class FontInfo:
         console.print(self._summary_table())
         console.line()
 
-        if self.character_mapping:
+        if self.font_obj.character_map:
             print_character_mapping(self)
         else:
             log.info(f"No character map found in {self}")
@@ -142,8 +143,8 @@ class FontInfo:
             add_table_row('embedded binary length', self.binary_scanner.stream_length)
         if self.prepared_char_map is not None:
             add_table_row('prepared charmap length', len(self.prepared_char_map))
-        if self.character_mapping:
-            add_table_row('character mapping count', len(self.character_mapping))
+        if  self.font_obj.character_map:
+            add_table_row('character mapping count', len( self.font_obj.character_map))
         if self.widths is not None:
             for k, v in self._width_stats().items():
                 add_table_row(f"char width {k}", v)
