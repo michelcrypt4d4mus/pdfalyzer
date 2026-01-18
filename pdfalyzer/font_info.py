@@ -89,7 +89,6 @@ class FontInfo:
             self.advertised_length = sum(self.lengths)
             scanner_label = Text(self.display_title, get_label_style(FONT_FILE))
             self.binary_scanner = BinaryScanner(self.stream_data, self, scanner_label)
-            # import pdb;pdb.set_trace()
 
     def print_summary(self):
         """Prints a table of info about the font drawn from the various PDF objects. quote_type of None means all."""
