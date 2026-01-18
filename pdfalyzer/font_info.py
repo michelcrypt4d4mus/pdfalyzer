@@ -19,7 +19,7 @@ from pdfalyzer.util.adobe_strings import FONT, FONT_FILE, FONT_FILE_KEYS, FONT_L
 FONT_SECTION_PREVIEW_LEN = 30
 MAX_REPR_STR_LEN = 20
 
-FONT_FLAGS = {
+FONT_FLAG_BIT_POSITIONS = {
     1: 'monospace',
     2: 'serif',
     3: 'symbolic',
@@ -112,7 +112,8 @@ class FontInfo:
         return without_nones([self.font_dict.get('/FirstChar'), self.font_dict.get('/LastChar')])
 
     def _flag_names(self) -> list[str]:
-        return [name for bit, name in FONT_FLAGS.items() if bool((self.flags or 0) & 1 << (bit - 1))]
+        flags = self.flags or 0
+        return [name for bit, name in FONT_FLAG_BIT_POSITIONS.items() if bool(flags & 1 << (bit - 1))]
 
     def _summary_table(self) -> Table:
         """Build a Rich `Table` with important info about the font"""
