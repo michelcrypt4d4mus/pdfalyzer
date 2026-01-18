@@ -23,12 +23,6 @@ from pdfalyzer.util.adobe_strings import FONT, FONT_FILE, FONT_FILE_KEYS, FONT_L
 FONT_SECTION_PREVIEW_LEN = 30
 MAX_REPR_STR_LEN = 20
 
-ATTRIBUTES_TO_SHOW_IN_SUMMARY_TABLE = [
-    'sub_type',
-    'base_font',
-    'bounding_box',
-]
-
 FONT_FLAGS = {
     1: 'monospace',
     2: 'serif',
@@ -57,7 +51,6 @@ class FontInfo:
     widths: list[int] | None = None
     # TODO: make methods
     advertised_length: int | None = None
-    base_font: str = ''
     sub_type: str = ''
     display_tile: str = ''
     bounding_box: tuple[float, float, float, float] | None = None
@@ -72,8 +65,7 @@ class FontInfo:
         self.font_dict = cast(DictionaryObject, self.font_indirect.get_object())
         self.font_obj = Font.from_font_resource(self.font_dict)
         self.font_file = self.font_obj.font_descriptor.font_file
-        self.base_font = f"/{self.font_obj.name}"
-        self.sub_type = f"/{self.font_obj.sub_type}"
+        self.sub_type = self.font_obj.sub_type
         self.widths = self.font_dict.get(WIDTHS) or self.font_dict.get(W)
 
         if isinstance(self.widths, IndirectObject):
@@ -83,11 +75,11 @@ class FontInfo:
             log.warning(f"Font type not given for {self.display_title}")
             self.display_title += "(UNKNOWN FONT TYPE)"
         else:
-            self.display_title += f"({self.sub_type[1:]})"
+            self.display_title += f"({self.sub_type})"
 
         # FontDescriptor attributes
         if not is_null_or_none(self.font_obj.font_descriptor):
-            self.bounding_box = self.font_obj.font_descriptor.bbox
+            self.bounding_box = self.font_obj.font_descriptor.bbox  # TODO: pypdf has a default value, we want to show real value
             self.flags = int(self.font_obj.font_descriptor.flags)
 
         self.prepared_char_map = prepare_cm(self.font_dict) if TO_UNICODE in self.font_dict else None
@@ -134,20 +126,19 @@ class FontInfo:
         def add_table_row(name, value, style: str = ''):
             table.add_row(name, Text(str(value), style or get_class_style(value)))
 
-        for attr in ATTRIBUTES_TO_SHOW_IN_SUMMARY_TABLE:
-            attr_value = getattr(self, attr)
-            add_table_row(attr, attr_value)
-
+        add_table_row('sub_type', self.sub_type)
+        add_table_row('base_font', self.font_obj.name)
+        add_table_row('bounding_box', self.font_obj.font_descriptor.bbox)
         add_table_row('/Length properties', self.lengths)
         add_table_row('/FirstChar, /LastChar', self._first_and_last_char())
 
         if self.flags:
-            add_table_row('flags', f"{self.flags} (" + ', '.join(self._flag_names()) + ')', 'cyan')
+            add_table_row('style flags', f"{self.flags} (" + ', '.join(self._flag_names()) + ')', 'cyan')
 
         add_table_row('total advertised length', self.advertised_length)
 
         if self.binary_scanner is not None:
-            add_table_row('actual length', self.binary_scanner.stream_length)
+            add_table_row('embedded binary length', self.binary_scanner.stream_length)
         if self.prepared_char_map is not None:
             add_table_row('prepared charmap length', len(self.prepared_char_map))
         if self.character_mapping:
