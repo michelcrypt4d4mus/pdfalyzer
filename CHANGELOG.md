@@ -1,8 +1,9 @@
 # NEXT RELEASE
 * Use `pypdf` new `Font` object
+* Improved handling of
 * Translate each font's `/Flags` bits into human readable format in the font info table
 * Make `PdfObjectProperties`, `IndeterminateNode`, `PdfObjectRelationship` into dataclasses
-* Sort `Pdfalyzer.font_infos` array by font name
+* Sort `Pdfalyzer.font_infos` array by node id
 
 ### 1.17.13
 * Remove YARA rule `invalid_trailer_structure` because it's causing YARA to crash with `internal error 46: TOO_MANY_RE_FIBERS` on some files (opened [issue](https://github.com/VirusTotal/yara/issues/2190) in YARA repo)
