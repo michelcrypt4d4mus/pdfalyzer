@@ -3,7 +3,7 @@ Unify font information spread across a bunch of PdfObjects (Font, FontDescriptor
 and FontFile) into a single class.
 """
 from dataclasses import asdict, dataclass, field, fields
-from typing import cast
+from typing import Self, cast
 
 from pypdf._cmap import prepare_cm
 from pypdf._font import Font
@@ -94,17 +94,6 @@ class FontInfo:
             self.binary_scanner = BinaryScanner(self.stream_data, self, scanner_label)
             # import pdb;pdb.set_trace()
 
-    def width_stats(self):
-        if self.widths is None:
-            return {}
-
-        return {
-            'min': min(self.widths),
-            'max': max(self.widths),
-            'count': len(self.widths),
-            'unique_count': len(set(self.widths)),
-        }
-
     def print_summary(self):
         """Prints a table of info about the font drawn from the various PDF objects. quote_type of None means all."""
         print_section_subheader(str(self), style='font.title')
@@ -146,7 +135,7 @@ class FontInfo:
         if self.character_mapping:
             add_table_row('character mapping count', len(self.character_mapping))
         if self.widths is not None:
-            for k, v in self.width_stats().items():
+            for k, v in self._width_stats().items():
                 add_table_row(f"char width {k}", v)
 
             # Check if there's a single number repeated over and over.
@@ -166,11 +155,19 @@ class FontInfo:
         table.columns[1].max_width = subheading_width() - col_0_width - 3
         return table
 
+    def _width_stats(self):
+        if self.widths is None:
+            return {}
 
-    # TODO: currently unused
-    # def preview_bytes_at_advertised_lengths(self):
-    #     """Show the bytes at the boundaries provided by /Length1, /Length2, and /Length3, if they exist"""
-    #     lengths = self.lengths or []
+        return {
+            'min': min(self.widths),
+            'max': max(self.widths),
+            'count': len(self.widths),
+            'unique_count': len(set(self.widths)),
+        }
+
+    def __repr__(self) -> str:
+        d = {}
 
         for f in fields(self):
             value = getattr(self, f.name)
@@ -199,7 +196,7 @@ class FontInfo:
         return self.display_title
 
     @classmethod
-    def extract_font_infos(cls, obj_with_resources: DictionaryObject) -> ['FontInfo']:
+    def extract_font_infos(cls, obj_with_resources: DictionaryObject) -> list[Self]:
         """
         Extract all the fonts from a given /Resources PdfObject node.
         obj_with_resources must have '/Resources' because that's what _cmap module expects

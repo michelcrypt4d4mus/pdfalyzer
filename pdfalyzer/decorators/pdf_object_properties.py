@@ -2,7 +2,7 @@
 Decorator for PyPDF PdfObject that extracts a couple of properties (type, label, etc).
 """
 from dataclasses import dataclass
-from typing import Any, List, Optional, Union
+from typing import Any, List, Optional, Self, Union
 
 from pypdf.generic import DictionaryObject, IndirectObject, NumberObject, PdfObject
 from rich.text import Text
@@ -59,7 +59,7 @@ class PdfObjectProperties:
                   f"label: {self.label}, first_address: {self.first_address}")
 
     @classmethod
-    def from_reference(cls, reference: IndirectObject, address: str) -> 'PdfObjectProperties':
+    def from_reference(cls, reference: IndirectObject, address: str) -> Self:
         return cls(reference.get_object(), address, reference.idnum, reference)
 
     @classmethod

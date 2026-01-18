@@ -4,23 +4,20 @@ Parse command line arguments for `pdfalyze` and construct the `PdfalyzerConfig` 
 import sys
 from argparse import ArgumentParser, Namespace
 from collections import namedtuple
-from functools import partial, update_wrapper
 from importlib.metadata import version
 from os import getcwd, path
-from typing import List, Optional
+from typing import Optional
 
 from rich_argparse_plus import RichHelpFormatterPlus
 from rich.prompt import Confirm
 from rich.text import Text
 from yaralyzer.util.argument_parser import export, parser, parse_arguments as parse_yaralyzer_args, source
-from yaralyzer.util.logging import log, log_and_print, log_argparse_result, log_current_config, log_invocation
+from yaralyzer.util.logging import log, log_argparse_result, log_current_config, log_invocation
 
-from pdfalyzer.config import ALL_STREAMS, PDFALYZER, PdfalyzerConfig
+from pdfalyzer.util.output_section import ALL_STREAMS, DOCINFO, TREE, RICH, FONTS, COUNTS, STREAMS, YARA
+from pdfalyzer.config import PDFALYZER, PdfalyzerConfig
 from pdfalyzer.detection.constants.binary_regexes import QUOTE_PATTERNS
 from pdfalyzer.helpers.rich_text_helper import print_highlighted
-
-# NamedTuple to keep our argument selection orderly
-OutputSection = namedtuple('OutputSection', ['argument', 'method'])
 
 RichHelpFormatterPlus.choose_theme('prince')
 
@@ -34,14 +31,6 @@ EPILOG = "Values for various config options can be set permanently by a .pdfalyz
          f"A registry of previous pdfalyzer invocations will be inscribed to a file if the " + \
          "{YaralyzerConfig.LOG_DIR_ENV_VAR} environment variable is configured."
 
-# Analysis selection sections
-DOCINFO = 'docinfo'
-TREE = 'tree'
-RICH = 'rich'
-FONTS = 'fonts'
-COUNTS = 'counts'
-YARA = 'yara'
-STREAMS = 'streams'
 DEFAULT_SECTIONS = [DOCINFO, TREE, RICH, FONTS, COUNTS, YARA]
 ALL_SECTIONS = DEFAULT_SECTIONS + [STREAMS]
 
@@ -154,45 +143,6 @@ def parse_arguments():
     log_argparse_result(args, 'parsed')
     log_current_config()
     return args
-
-
-def output_sections(args: Namespace, pdfalyzer: 'Pdfalyzer') -> List[OutputSection]:  # noqa: F821
-    """
-    Determine which of the tree visualizations, font scans, etc should be run.
-    If nothing is specified output ALL sections other than --streams which is v. slow/verbose.
-
-    Args:
-        args: parsed command line arguments
-        pdfalyzer: the `pdfalyzer` instance whose methods will be called to produce output
-    Returns:
-        List[OutputSection]: List of `OutputSection` namedtuples with 'argument' and 'method' fields
-    """
-    # Create a partial for print_font_info() because it's the only one that can take an argument
-    # partials have no __name__ so update_wrapper() propagates the 'print_font_info' as this partial's name
-    stream_id = None if args.streams == ALL_STREAMS else args.streams
-    stream_scan = partial(pdfalyzer.print_streams_analysis, idnum=stream_id)
-    update_wrapper(stream_scan, pdfalyzer.print_streams_analysis)
-
-    # 1st element string matches the argument in 'select' group
-    # 2nd is fxn to call if selected.
-    # Top to bottom is the default order of output.
-    possible_output_sections = [
-        OutputSection(DOCINFO, pdfalyzer.print_document_info),
-        OutputSection(TREE, pdfalyzer.print_tree),
-        OutputSection(RICH, pdfalyzer.print_rich_table_tree),
-        OutputSection(FONTS, pdfalyzer.print_font_info),
-        OutputSection(COUNTS, pdfalyzer.print_summary),
-        OutputSection(YARA, pdfalyzer.print_yara_results),
-        OutputSection(STREAMS, stream_scan),
-    ]
-
-    output_sections = [section for section in possible_output_sections if vars(args)[section.argument]]
-
-    if len(output_sections) == 0:
-        log_and_print("No output section specified so outputting all sections except --streams...")
-        return [section for section in possible_output_sections if section.argument != STREAMS]
-    else:
-        return output_sections
 
 
 def all_sections_chosen(args):
