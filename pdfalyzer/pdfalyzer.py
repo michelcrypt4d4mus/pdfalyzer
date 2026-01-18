@@ -3,6 +3,7 @@ PDFalyzer: Analyze and explore the structure of PDF files.
 """
 import json
 from os.path import basename
+from pathlib import Path
 from typing import Dict, Iterator, List, Optional
 
 from anytree import LevelOrderIter, SymlinkNode
@@ -17,6 +18,7 @@ from yaralyzer.output.file_hashes_table import compute_file_hashes
 from yaralyzer.output.rich_console import console
 from yaralyzer.util.logging import log
 
+from pdfalyzer.config import PDFALYZE
 from pdfalyzer.decorators.document_model_printer import print_with_header
 from pdfalyzer.decorators.indeterminate_node import IndeterminateNode
 from pdfalyzer.decorators.pdf_tree_node import PdfTreeNode
@@ -26,6 +28,7 @@ from pdfalyzer.helpers.dict_helper import compare_dicts
 from pdfalyzer.helpers.rich_text_helper import print_error
 from pdfalyzer.pdf_object_relationship import PdfObjectRelationship
 from pdfalyzer.util.adobe_strings import *
+from pdfalyzer.util.argument_parser import parser
 from pdfalyzer.util.exceptions import PdfWalkError
 
 TRAILER_FALLBACK_ID = 10_000_000
@@ -55,7 +58,7 @@ class Pdfalyzer:
         verifier (PdfTreeVerifier): PdfTreeVerifier that can validate the PDF has been walked successfully.
     """
 
-    def __init__(self, pdf_path: str):
+    def __init__(self, pdf_path: str | Path):
         """
         Args:
             pdf_path: Path to the PDF file to analyze
@@ -68,11 +71,11 @@ class Pdfalyzer:
 
         try:
             self.pdf_reader = PdfReader(self.pdf_filehandle)
-        except PdfReadError:
-            self._handle_fatal_error(f'PdfReadError: "{pdf_path}" doesn\'t seem to be a valid PDF file.')
+        except PdfReadError as e:
+            self._handle_fatal_error(f'PdfReadError: "{pdf_path}" doesn\'t seem to be a valid PDF file.', e)
         except Exception as e:
             console.print_exception()
-            self._handle_fatal_error(f"{PYPDF_ERROR_MSG}\n{e}")
+            self._handle_fatal_error(f"{PYPDF_ERROR_MSG}\n{e}", e)
 
         # Initialize tracking variables
         self.font_infos: List[FontInfo] = []  # Font summary objects
@@ -207,9 +210,15 @@ class Pdfalyzer:
 
         return to_node
 
-    def _handle_fatal_error(self, msg: str) -> None:
+    def _handle_fatal_error(self, msg: str, e: Exception) -> None:
         self.pdf_filehandle.close()
-        print_fatal_error_and_exit(msg)
+
+        # Only exit if running in a 'pdfalyze some_file.pdf context'
+        if parser.prog == PDFALYZE:
+            print_fatal_error_and_exit(msg)
+        else:
+            print_error(msg)
+            raise e
 
     def _resolve_indeterminate_nodes(self) -> None:
         """Place all indeterminate nodes in the tree. Called after all nodes have been walked."""
@@ -234,10 +243,6 @@ class Pdfalyzer:
             #     walked_fonts.extend(node_fonts)
             #     log_walked_fonts(node_fonts, f"'{node.address}'")
 
-            if not (isinstance(node.obj, dict) and FONT in node.obj):
-                continue
-
-            log.debug(f"Extracting fonts from node with '{FONT}' key: {node}...")
             known_font_ids = [fi.idnum for fi in self.font_infos]
 
             try:
@@ -254,7 +259,7 @@ class Pdfalyzer:
         log_walked_fonts(walked_fonts, "WHOLE PDF")
         known_font_ids = sorted([fi.idnum for fi in self.font_infos])
         # log.warning(f"Old way found {len(known_font_ids)} FontInfos with ids: {json.dumps(known_font_ids, indent=4)}")
-        compare_fonts(self.font_infos)
+        # compare_fonts(self.font_infos)
 
     def _build_or_find_node(self, relationship: IndirectObject, relationship_key: str) -> PdfTreeNode:
         """If node in self.nodes_encountered already then return it, otherwise build a node and store it."""

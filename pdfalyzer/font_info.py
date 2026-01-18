@@ -212,7 +212,18 @@ class FontInfo:
     @classmethod
     def extract_font_infos(cls, node: PdfTreeNode) -> list[Self]:
         """Extract all the fonts from a given /Font PdfObject node."""
-        font_dict = node.obj.get(FONT)
+        if not isinstance(node.obj, DictionaryObject):
+            return []
+        elif (RESOURCES in node.obj and isinstance(node.obj[RESOURCES], DictionaryObject)):
+            log.warning(f"Extracting fonts from node with '{RESOURCES}' that isn't IndirectObject): {node}...")
+            obj = node.obj[RESOURCES]
+        elif FONT in node.obj:
+            log.warning(f"Extracting fonts from node with '{FONT}': {node}...")
+            obj = node.obj
+        else:
+            return []
+
+        font_dict = obj.get(FONT)
 
         if is_null_or_none(font_dict):
             log.warning(f'No fonts found in /Font {node}')

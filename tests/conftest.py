@@ -32,6 +32,12 @@ def analyzing_malicious_pdf_path():
 def attachment_pdf_pdfalyzer():
     return Pdfalyzer(str(FIXTURES_DIR.joinpath('attachment.pdf')))
 
+# Has a /Resources key with fonts that is not an indirect object (it's a DictionaryObject)
+# Also has a /DescendantFonts key
+@pytest.fixture(scope='session')
+def geobase_pdfalyzer():
+    return Pdfalyzer(str(FIXTURES_DIR.joinpath('GeoBase_NHNC1_Data_Model_UML_EN.pdf')))
+
 
 # Some obj ids for use with -f when you want to limit yourself to the font
 @pytest.fixture(scope="session")
