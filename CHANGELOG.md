@@ -1,4 +1,5 @@
 # NEXT RELEASE
+* Use `pypdf` new `Font` object
 * Make `PdfObjectProperties`, `IndeterminateNode`, `PdfObjectRelationship` into dataclasses
 
 ### 1.17.13
