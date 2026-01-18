@@ -523,4 +523,4 @@ extract = ["PyMuPDF", "pytesseract"]
 [metadata]
 lock-version = "2.0"
 python-versions = "^3.11.14"
-content-hash = "a5e1aa6c80c803de6fa99042ba5f58926839f73f290de102677e90d560586f28"
+content-hash = "563b7e87d6e7c7b1e622316aba40df9c616e1bc9357e55a26a0908dfd9c059d8"
