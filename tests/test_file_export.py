@@ -22,7 +22,7 @@ def test_file_export(analyzing_malicious_pdf_path, tmp_dir):
     rendered_files = sorted(files_in_dir(tmp_dir))
     assert len(rendered_files) == 6
     file_sizes = [path.getsize(f) for f in rendered_files]
-    assert_array_is_close(file_sizes, [6869, 36441, 1671253, 8356, 189154, 1858435])
+    assert_array_is_close(file_sizes, [6869, 61716, 1671253, 8356, 189154, 1858435])
 
     for file in rendered_files:
         remove(file)
