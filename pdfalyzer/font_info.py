@@ -15,7 +15,7 @@ from pdfalyzer.helpers.dict_helper import without_nones
 from pdfalyzer.output.character_mapping import print_character_mapping, print_prepared_charmap
 from pdfalyzer.output.layout import print_section_subheader, subheading_width
 from pdfalyzer.output.styles.node_colors import get_class_style, get_label_style
-from pdfalyzer.util.adobe_strings import FONT, FONT_DESCRIPTOR, FONT_FILE, FONT_FILE_KEYS, FONT_LENGTHS, RESOURCES, TO_UNICODE, W, WIDTHS
+from pdfalyzer.util.adobe_strings import DESCENDANT_FONTS, FONT, FONT_DESCRIPTOR, FONT_FILE, FONT_FILE_KEYS, FONT_LENGTHS, RESOURCES, TO_UNICODE, W, WIDTHS
 
 FONT_SECTION_PREVIEW_LEN = 30
 MAX_REPR_STR_LEN = 20
@@ -75,10 +75,17 @@ class FontInfo:
             self.display_title += f"({self.font_obj.sub_type})"
 
         # pypdf FontDescriptor fills in defaults for these props so we have to extract from source
-        if FONT_DESCRIPTOR in self.font_dict and not is_null_or_none(self.font_dict[FONT_DESCRIPTOR]):
-            self.font_descriptor_dict = cast(DictionaryObject, self.font_dict[FONT_DESCRIPTOR])
-            self.bounding_box = self.font_descriptor_dict['/FontBBox']
-            self.flags = int(self.font_descriptor_dict['/Flags'])
+        if FONT_DESCRIPTOR in self.font_dict or DESCENDANT_FONTS in self.font_dict:
+            if DESCENDANT_FONTS in self.font_dict and FONT_DESCRIPTOR in self.font_dict[DESCENDANT_FONTS][0]:
+                self.font_descriptor_dict = self.font_dict[DESCENDANT_FONTS][0][FONT_DESCRIPTOR].get_object()
+            elif FONT_DESCRIPTOR in self.font_dict:
+                self.font_descriptor_dict = cast(DictionaryObject, self.font_dict[FONT_DESCRIPTOR].get_object())
+
+            if self.font_descriptor_dict:
+                self.bounding_box = self.font_descriptor_dict['/FontBBox']
+                self.flags = int(self.font_descriptor_dict['/Flags'])
+            else:
+                log.warning(f"Found no {FONT_DESCRIPTOR} for font {self.display_title}")
 
         # /FontFile attributes
         if self.font_obj.font_descriptor.font_file is not None:
@@ -229,7 +236,24 @@ class FontInfo:
             log.warning(f'No fonts found in /Font {node}')
             return []
 
-        return [cls(label=label, font_indirect=font) for label, font in font_dict.items()]
+        fonts = [cls(label=label, font_indirect=font) for label, font in font_dict.items()]
+
+        for font in fonts:
+            if DESCENDANT_FONTS in font.font_dict:
+                descendants = font.font_dict.get(DESCENDANT_FONTS).get_object()
+                log.warning(f"{node} has {len(descendants)} {DESCENDANT_FONTS}. font_descriptor is {font.font_obj.font_descriptor}")
+
+                for i, descendant in enumerate(descendants):
+                    # import pdb;pdb.set_trace()
+                    log.warning(f"{node} Found {DESCENDANT_FONTS}[{i}] of type '{type(descendant).__name__}', idnum={descendant.indirect_reference.idnum}: {descendant}")
+
+                    try:
+                        fonts.append(cls(label=f"{font.display_title} Descendant {i}", font_indirect=descendant.indirect_reference))
+                    except Exception as e:
+                        console.print_exception()
+                        log.error(f"Failed to get {DESCENDANT_FONTS}[{i}] bc of {e}")
+
+        return fonts
 
     @classmethod
     def _get_fonts_walk(cls, obj: DictionaryObject) -> list[Font]:
