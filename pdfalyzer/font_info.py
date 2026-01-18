@@ -78,6 +78,7 @@ class FontInfo:
         if FONT_DESCRIPTOR in self.font_dict or DESCENDANT_FONTS in self.font_dict:
             if DESCENDANT_FONTS in self.font_dict and FONT_DESCRIPTOR in self.font_dict[DESCENDANT_FONTS][0]:
                 self.font_descriptor_dict = self.font_dict[DESCENDANT_FONTS][0][FONT_DESCRIPTOR].get_object()
+                self.widths = self.font_obj.character_widths
             elif FONT_DESCRIPTOR in self.font_dict:
                 self.font_descriptor_dict = cast(DictionaryObject, self.font_dict[FONT_DESCRIPTOR].get_object())
 
@@ -222,10 +223,10 @@ class FontInfo:
         if not isinstance(node.obj, DictionaryObject):
             return []
         elif (RESOURCES in node.obj and isinstance(node.obj[RESOURCES], DictionaryObject)):
-            log.warning(f"Extracting fonts from node with '{RESOURCES}' that isn't IndirectObject): {node}...")
+            log.debug(f"Extracting fonts from node with '{RESOURCES}' that isn't IndirectObject): {node}...")
             obj = node.obj[RESOURCES]
         elif FONT in node.obj:
-            log.warning(f"Extracting fonts from node with '{FONT}': {node}...")
+            log.debug(f"Extracting fonts from node with '{FONT}': {node}...")
             obj = node.obj
         else:
             return []
@@ -241,17 +242,17 @@ class FontInfo:
         for font in fonts:
             if DESCENDANT_FONTS in font.font_dict:
                 descendants = font.font_dict.get(DESCENDANT_FONTS).get_object()
-                log.warning(f"{node} has {len(descendants)} {DESCENDANT_FONTS}. font_descriptor is {font.font_obj.font_descriptor}")
+                # log.warning(f"{node} has {len(descendants)} {DESCENDANT_FONTS}. font_descriptor is {font.font_obj.font_descriptor}")
 
                 for i, descendant in enumerate(descendants):
                     # import pdb;pdb.set_trace()
                     log.warning(f"{node} Found {DESCENDANT_FONTS}[{i}] of type '{type(descendant).__name__}', idnum={descendant.indirect_reference.idnum}: {descendant}")
 
-                    try:
-                        fonts.append(cls(label=f"{font.display_title} Descendant {i}", font_indirect=descendant.indirect_reference))
-                    except Exception as e:
-                        console.print_exception()
-                        log.error(f"Failed to get {DESCENDANT_FONTS}[{i}] bc of {e}")
+                    # try:
+                    #     fonts.append(cls(label=f"{font.display_title} Descendant {i}", font_indirect=descendant.indirect_reference))
+                    # except Exception as e:
+                    #     console.print_exception()
+                    #     log.error(f"Failed to get {DESCENDANT_FONTS}[{i}] bc of {e}")
 
         return fonts
 
