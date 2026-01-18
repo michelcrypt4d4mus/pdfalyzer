@@ -1,6 +1,8 @@
 """
 Verify that the PDF tree is complete/contains all the nodes in the PDF file.
 """
+from dataclasses import dataclass
+
 from pypdf.errors import PdfReadError
 from pypdf.generic import IndirectObject, NameObject, NumberObject
 from rich.markup import escape
@@ -10,11 +12,10 @@ from yaralyzer.util.logging import log
 from pdfalyzer.util.adobe_strings import *
 
 
+@dataclass
 class PdfTreeVerifier:
     """Class to verify that the PDF tree is complete/contains all the nodes in the PDF file."""
-
-    def __init__(self, pdfalyzer: 'Pdfalyzer') -> None:
-        self.pdfalyzer = pdfalyzer
+    pdfalyzer: 'Pdfalyzer'
 
     def verify_all_nodes_encountered_are_in_tree(self) -> None:
         """Make sure every node we can see is reachable from the root of the tree"""
