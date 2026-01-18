@@ -71,7 +71,8 @@ def _new_decoding_stats_table(title_str: str) -> Table:
         style='color(18)',
         border_style='color(111) dim',
         header_style='color(235) on color(249) reverse',
-        title_style='color(249) bold')
+        title_style='color(249) bold'
+    )
 
     def add_column(header, **kwargs):
         table.add_column(pad_header(header.upper()), **kwargs)
