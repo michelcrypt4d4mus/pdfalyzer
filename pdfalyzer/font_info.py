@@ -51,7 +51,6 @@ class FontInfo:
     widths: list[int] | None = None
     # TODO: make methods
     advertised_length: int | None = None
-    sub_type: str = ''
     display_tile: str = ''
     bounding_box: tuple[float, float, float, float] | None = None
     flags: int | None = None
@@ -65,17 +64,16 @@ class FontInfo:
         self.font_dict = cast(DictionaryObject, self.font_indirect.get_object())
         self.font_obj = Font.from_font_resource(self.font_dict)
         self.font_file = self.font_obj.font_descriptor.font_file
-        self.sub_type = self.font_obj.sub_type
         self.widths = self.font_dict.get(WIDTHS) or self.font_dict.get(W)
 
         if isinstance(self.widths, IndirectObject):
             self.widths = self.widths.get_object()
 
-        if (self.sub_type or "Unknown") == "Unknown":
+        if (self.font_obj.sub_type or "Unknown") == "Unknown":
             log.warning(f"Font type not given for {self.display_title}")
             self.display_title += "(UNKNOWN FONT TYPE)"
         else:
-            self.display_title += f"({self.sub_type})"
+            self.display_title += f"({self.font_obj.sub_type})"
 
         # FontDescriptor attributes
         if not is_null_or_none(self.font_obj.font_descriptor):
@@ -126,8 +124,8 @@ class FontInfo:
         def add_table_row(name, value, style: str = ''):
             table.add_row(name, Text(str(value), style or get_class_style(value)))
 
-        add_table_row('sub_type', self.sub_type)
-        add_table_row('base_font', self.font_obj.name)
+        add_table_row('Subtype', self.font_obj.sub_type)
+        add_table_row('FontName', self.font_obj.name)  # TODO: is this really BaseFont?
         add_table_row('bounding_box', self.font_obj.font_descriptor.bbox)
         add_table_row('/Length properties', self.lengths)
         add_table_row('/FirstChar, /LastChar', self._first_and_last_char())
