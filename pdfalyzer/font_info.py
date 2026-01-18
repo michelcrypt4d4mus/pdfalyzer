@@ -116,9 +116,9 @@ class FontInfo:
 
     def _summary_table(self) -> Table:
         """Build a Rich `Table` with important info about the font"""
-        table = Table('', '', show_header=False)
-        table.columns[0].style = 'font.property'
-        table.columns[0].justify = 'right'
+        table = Table(show_header=False)
+        table.add_column(style='font.property', justify='right')
+        table.add_column()
 
         def add_table_row(name, value, style: str = ''):
             value = value if isinstance(value, Text) else Text(str(value), style or get_class_style(value))

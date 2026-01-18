@@ -25,7 +25,8 @@ def generate_subtable(cols: List[str], header_style: str = 'subtable') -> Table:
         header_style=header_style,
         show_lines=False,
         border_style='grey.dark',
-        expand=True)
+        expand=True
+    )
 
     for i, col in enumerate(cols):
         if i == 0:
