@@ -147,6 +147,10 @@ class Pdfalyzer:
         """Iterate over nodes, grouping them by distance from the root."""
         return LevelOrderIter(self.pdf_tree)
 
+    def nodes_without_parents(self) -> list[PdfTreeNode]:
+        """Return nodes that were encountered but have no parent set yet."""
+        return [n for n in self.unplaced_encountered_nodes() if n.parent is None]
+
     def ref_and_obj_for_id(self, idnum: int) -> tuple[IndirectObject, PdfObject | None]:
         ref = IndirectObject(idnum, self.max_generation, self.pdf_reader)
 
@@ -263,6 +267,17 @@ class Pdfalyzer:
             if obj.get(TYPE) == OBJ_STM:
                 log.warning(f"Making unplaced {OBJ_STM} obj a child of root")
                 self.pdf_tree.add_child(self._build_or_find_node(ref, OBJ_STM))
+
+        for node in self.nodes_without_parents():
+            if node.type == PAGES:
+                catalog_nodes = self.find_nodes_with_attr('type', '/Catalog')
+
+                if not catalog_nodes:
+                    return
+
+                catalog_node = catalog_nodes[0]
+                log.warning(f"Forcing orphaned /Pages node {node} to be child of {catalog_node}")
+                node.set_parent(catalog_node)
 
     def _extract_font_infos(self) -> None:
         """Extract information about fonts in the tree and place it in `self.font_infos`."""

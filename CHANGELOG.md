@@ -1,5 +1,6 @@
 # NEXT RELEASE
 * Better placement of nodes that are members of an `ArrayObject`
+* 
 * Use `pypdf` new `Font` object
 * Make `PdfObjectProperties`, `IndeterminateNode`, `PdfObjectRelationship` into dataclasses
 * Sort `Pdfalyzer.font_infos` array by font name
