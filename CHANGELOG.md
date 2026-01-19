@@ -2,6 +2,7 @@
 * Use `pypdf` new `Font` object
 * Make `PdfObjectProperties`, `IndeterminateNode`, `PdfObjectRelationship` into dataclasses
 * Sort `Pdfalyzer.font_infos` array by font name
+* `pdfalyze` now returns 1 to shell if there are unplaced nodes unless the `--allow-missed-nodes` option is used
 
 ### 1.17.13
 * Remove YARA rule `invalid_trailer_structure` because it's causing YARA to crash with `internal error 46: TOO_MANY_RE_FIBERS` on some files (opened [issue](https://github.com/VirusTotal/yara/issues/2190) in YARA repo)

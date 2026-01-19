@@ -1,66 +1,110 @@
 """
 Verify that the PDF tree is complete/contains all the nodes in the PDF file.
 """
-from dataclasses import dataclass
+from dataclasses import dataclass, field
+from types import NoneType
 
 from pypdf.errors import PdfReadError
-from pypdf.generic import IndirectObject, NameObject, NumberObject
+from pypdf.generic import BooleanObject, IndirectObject, NameObject, NullObject, NumberObject, PdfObject
 from rich.markup import escape
 from yaralyzer.output.rich_console import console
 from yaralyzer.util.logging import log
 
+from pdfalyzer.decorators.pdf_tree_node import PdfTreeNode
 from pdfalyzer.util.adobe_strings import *
+
+OK_UNPLACED_TYPES = (BooleanObject, NameObject, NoneType, NullObject, NumberObject)
 
 
 @dataclass
 class PdfTreeVerifier:
     """Class to verify that the PDF tree is complete/contains all the nodes in the PDF file."""
     pdfalyzer: 'Pdfalyzer'
+    unplaced_encountered_nodes: list[PdfTreeNode] = field(init=False)
 
-    def verify_all_nodes_encountered_are_in_tree(self) -> None:
-        """Make sure every node we can see is reachable from the root of the tree"""
-        missing_nodes = [
+    def __post_init__(self):
+        self.unplaced_encountered_nodes = [
             node for idnum, node in self.pdfalyzer.nodes_encountered.items()
             if self.pdfalyzer.find_node_by_idnum(idnum) is None
         ]
 
-        if len(missing_nodes) > 0:
-            msg = f"Nodes were traversed but never placed: {escape(str(missing_nodes))}\n" + \
+        if len(self.unplaced_encountered_nodes) > 0:
+            msg = f"Nodes were traversed but never placed: {escape(str(self.unplaced_encountered_nodes))}\n\n" + \
                    "For link nodes like /First, /Next, /Prev, and /Last this might be no big deal - depends " + \
                    "on the PDF. But for other node typtes this could indicate missing data in the tree."
-            console.print(msg)
             log.warning(msg)
 
-    def verify_unencountered_are_untraversable(self) -> None:
-        """Make sure any PDF object IDs we can't find in tree are /ObjStm or /Xref nodes."""
-        if self.pdfalyzer.pdf_size is None:
-            log.warning(f"{SIZE} not found in PDF trailer; cannot verify all nodes are in tree")
-            return
-        if self.pdfalyzer.max_generation > 0:
-            log.warning(f"Methodd doesn't check revisions but this doc is generation {self.pdfalyzer.max_generation}")
+        self._verify_unencountered_are_untraversable()
 
-        # We expect to see all ordinals up to the number of nodes /Trailer claims exist as obj. IDs.
-        missing_node_ids = [
+    def log_final_warnings(self) -> None:
+        print('')
+        log.warning(f"All missing node ids: {self.missing_node_ids()}\n")
+        log.warning(f"Important missing node IDs: {self.notable_missing_node_ids()}")
+
+        for idnum in self.missing_node_ids():
+            _ref, obj = self._ref_and_obj_for_id(idnum)
+            log.warning(f"Missing node ID {idnum} ({type(obj).__name__})")
+
+        log.warning(f"Unplaced nodes: {self.unplaced_encountered_nodes}\n")
+
+    def missing_node_ids(self) -> list[int]:
+        """We expect to see all ordinals up to the number of nodes /Trailer claims exist as obj IDs."""
+        if self.pdfalyzer.pdf_size is None:
+            log.error(f"{SIZE} not found in PDF trailer; cannot verify all nodes are in tree")
+            return []
+
+        return [
             i for i in range(1, self.pdfalyzer.pdf_size)
             if self.pdfalyzer.find_node_by_idnum(i) is None
         ]
 
-        for idnum in missing_node_ids:
-            ref = IndirectObject(idnum, self.pdfalyzer.max_generation, self.pdfalyzer.pdf_reader)
+    def notable_missing_node_ids(self) -> list[int]:
+        """Missing idnums that aren't NullObject, NumberObject, etc."""
+        notable_ids = []
 
-            try:
-                obj = ref.get_object()
-            except PdfReadError as e:
-                if 'Invalid Elementary Object' in str(e):
-                    log.warning(f"Couldn't verify elementary obj with id {idnum} is properly in tree")
-                    continue
-                log.error(str(e))
+        for idnum in self.missing_node_ids():
+            _ref, obj = self._ref_and_obj_for_id(idnum)
+
+            if isinstance(obj, OK_UNPLACED_TYPES):
+                log.info(f"Missing node {idnum} but it's an acceptable type ({type(obj).__name__}, value={obj}")
+            else:
+                notable_ids.append(idnum)
+
+        return notable_ids
+
+    def was_successful(self):
+        """Return True if no unplaced nodes or missing node IDs."""
+        return (len(self.unplaced_encountered_nodes) + len(self.notable_missing_node_ids())) == 0
+
+    def _ref_and_obj_for_id(self, idnum: int) -> tuple[IndirectObject, PdfObject | None]:
+        ref = IndirectObject(idnum, self.pdfalyzer.max_generation, self.pdfalyzer.pdf_reader)
+        obj = None
+
+        try:
+            obj = ref.get_object()
+        except PdfReadError as e:
+            if 'Invalid Elementary Object' in str(e):
+                log.warning(f"Bad object: {e}")
+            else:
                 console.print_exception()
-                obj = None
+                log.error(str(e))
                 raise e
 
+        return (ref, obj)
+
+    def _verify_unencountered_are_untraversable(self) -> None:
+        """
+        Make sure any PDF object IDs we can't find in tree are /ObjStm or /Xref nodes and
+        make a final attempt to place a few select kinds of nodes.
+        """
+        if self.pdfalyzer.max_generation > 0:
+            log.warning(f"Verification doesn't check revisions but this PDF's generation is {self.pdfalyzer.max_generation}")
+
+        for idnum in self.missing_node_ids():
+            ref, obj = self._ref_and_obj_for_id(idnum)
+
             if obj is None:
-                log.error(f"Cannot find ref {ref} in PDF!")
+                log.error(f"Couldn't verify elementary obj with id {idnum} is properly in tree")
                 continue
             elif isinstance(obj, (NumberObject, NameObject)):
                 log.info(f"Obj {idnum} is a {type(obj)} w/value {obj}; if relationshipd by /Length etc. this is a nonissue but maybe worth doublechecking")  # noqa: E501

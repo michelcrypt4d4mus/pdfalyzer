@@ -93,8 +93,6 @@ class Pdfalyzer:
         self._resolve_indeterminate_nodes()
         self._extract_font_infos()
         self.verifier = PdfTreeVerifier(self)
-        self.verifier.verify_all_nodes_encountered_are_in_tree()
-        self.verifier.verify_unencountered_are_untraversable()
 
         # Create SymlinkNodes for relationships between PDF objects that are not parent/child relationships.
         # (Do this last because it has the side effect of making a lot more nodes)
