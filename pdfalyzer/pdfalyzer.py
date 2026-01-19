@@ -110,6 +110,7 @@ class Pdfalyzer:
 
         # After scanning all objects we place nodes whose position was uncertain, extract fonts, and verify
         self._resolve_indeterminate_nodes()
+        self._resolve_missing_nodes()
         self._extract_font_infos()
         self.verifier = PdfTreeVerifier(self)
 
@@ -256,6 +257,16 @@ class Pdfalyzer:
 
         return to_node
 
+    def _catalog_node(self) -> PdfTreeNode | None:
+        catalog_nodes = self.find_nodes_with_attr('type', '/Catalog')
+
+        if not catalog_nodes:
+            return None
+        elif len(catalog_nodes) > 1:
+            log.warning(f"Found multiple /Catalog nodes! {catalog_nodes}")
+
+        return catalog_nodes[0]
+
     def _handle_fatal_error(self, msg: str, e: Exception) -> None:
         if 'pdf_reader' in vars(self):
             self.pdf_reader.close()
@@ -270,7 +281,7 @@ class Pdfalyzer:
             raise e
 
     def _resolve_indeterminate_nodes(self) -> None:
-        """Place indeterminate nodes in the tree and place any unplaced /ObjStms at root."""
+        """Place indeterminate nodes in the tree."""
         indeterminate_nodes = [self.nodes_encountered[idnum] for idnum in self._indeterminate_ids]
         indeterminate_nodes_string = "\n   ".join([f"{node}" for node in indeterminate_nodes])
         log.info(f"Resolving {len(indeterminate_nodes)} indeterminate nodes: {indeterminate_nodes_string}")
@@ -282,7 +293,9 @@ class Pdfalyzer:
 
             IndeterminateNode(node).place_node()
 
-        # Place /ObjStm at root if no other location found, make a weak attemp at /XRef nodes
+    def _resolve_missing_nodes(self) -> None:
+        """Make a best effort to place nodes we have so far failed to get into the tree hierarchy."""
+        # Place /ObjStm at root if no other location found.
         for idnum in self.missing_node_ids():
             ref, obj = self.ref_and_obj_for_id(idnum)
 
@@ -329,6 +342,15 @@ class Pdfalyzer:
                 catalog_node = catalog_nodes[0]
                 log.warning(f"Forcing orphaned /Pages node {node} to be child of {catalog_node}")
                 node.set_parent(catalog_node)
+
+        # Force /Pages to be children of /Catalog
+        for node in self.nodes_without_parents():
+            if node.type == PAGES:
+                catalog_node = self._catalog_node()
+
+                if catalog_node:
+                    log.warning(f"Forcing orphaned /Pages node {node} to be child of {catalog_node}")
+                    node.set_parent(catalog_node)
 
     def _extract_font_infos(self) -> None:
         """Extract information about fonts in the tree and place it in `self.font_infos`."""

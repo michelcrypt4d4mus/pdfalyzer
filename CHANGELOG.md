@@ -1,6 +1,8 @@
 # NEXT RELEASE
 * Handle encrypted PDFs via `--password` option and/or prompting user for the password
 * Better placement of nodes that are members of an `ArrayObject`
+* Insert grandparents in situations where there's nodes that are in any array but also claim a node other than the array is their parent
+* Force stranded `/Pages` nodes to be children of `/Catalog`
 * Use `pypdf` new `Font` object
 * Improved handling of `/DescendantFonts` prop for CID and composite fonts (finds more fonts)
 * Translate each font's `/Flags` bits into human readable format in the font info table
