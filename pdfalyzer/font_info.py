@@ -253,7 +253,9 @@ class FontInfo:
         """Extract all the fonts from a given /Font PdfObject node."""
         if not isinstance(node.obj, DictionaryObject):
             return []
-        elif (RESOURCES in node.obj and isinstance(node.obj[RESOURCES], DictionaryObject)):
+        elif RESOURCES in node.obj \
+                and isinstance(node.obj[RESOURCES], DictionaryObject) \
+                and FONT in node.obj[RESOURCES]:
             log.debug(f"Extracting fonts from node with '{RESOURCES}' that isn't IndirectObject): {node}...")
             obj = node.obj[RESOURCES]
         elif FONT in node.obj:
