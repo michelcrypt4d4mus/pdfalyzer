@@ -29,10 +29,9 @@ class PdfTreeVerifier:
         ]
 
         if len(missing_nodes) > 0:
-            msg = f"Nodes were traversed but never placed: {escape(str(missing_nodes))}\n" + \
+            msg = f"Nodes were traversed but never placed: {escape(str(missing_nodes))}\n\n" + \
                    "For link nodes like /First, /Next, /Prev, and /Last this might be no big deal - depends " + \
                    "on the PDF. But for other node typtes this could indicate missing data in the tree."
-            console.print(msg)
             log.warning(msg)
 
     def verify_unencountered_are_untraversable(self) -> None:

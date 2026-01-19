@@ -38,7 +38,7 @@ def attachment_pdf_pdfalyzer():
 def geobase_pdfalyzer():
     return Pdfalyzer(str(FIXTURES_DIR.joinpath('GeoBase_NHNC1_Data_Model_UML_EN.pdf')))
 
-# Has a lot of unplaced nodes
+# Has a lot of unplaced nodes. pypdf/resources/SF424_page2.pdf has TONS of unplaced nodes
 @pytest.fixture(scope='session')
 def form_evince_pdfalyzer():
     return Pdfalyzer(str(FIXTURES_DIR.joinpath('form_evince.pdf')))
