@@ -84,10 +84,7 @@ def pdfalyze():
 
     # Non-zero error code if PDF was not verified.
     if not pdfalyzer.verifier.was_successful() and not args.allow_missed_nodes:
-        print('')
-        log.warning(f"All missing node ids: {pdfalyzer.verifier.missing_node_ids()}\n")
-        pdfalyzer.verifier.log_missing_node_types()
-        log.warning(f"Unplaced nodes: {pdfalyzer.verifier.unplaced_nodes}\n")
+        pdfalyzer.verifier.log_final_warnings()
         exit(1)
 
 

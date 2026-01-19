@@ -20,26 +20,39 @@ OK_UNPLACED_TYPES = (BooleanObject, NameObject, NoneType, NullObject, NumberObje
 class PdfTreeVerifier:
     """Class to verify that the PDF tree is complete/contains all the nodes in the PDF file."""
     pdfalyzer: 'Pdfalyzer'
-    unplaced_nodes: list[PdfTreeNode] = field(init=False)
+    unplaced_encountered_nodes: list[PdfTreeNode] = field(init=False)
 
     def __post_init__(self):
-        self.unplaced_nodes = [
+        self.unplaced_encountered_nodes = [
             node for idnum, node in self.pdfalyzer.nodes_encountered.items()
             if self.pdfalyzer.find_node_by_idnum(idnum) is None
         ]
 
-        if len(self.unplaced_nodes) > 0:
-            msg = f"Nodes were traversed but never placed: {escape(str(self.unplaced_nodes))}\n\n" + \
+        if len(self.unplaced_encountered_nodes) > 0:
+            msg = f"Nodes were traversed but never placed: {escape(str(self.unplaced_encountered_nodes))}\n\n" + \
                    "For link nodes like /First, /Next, /Prev, and /Last this might be no big deal - depends " + \
                    "on the PDF. But for other node typtes this could indicate missing data in the tree."
             log.warning(msg)
 
         self._verify_unencountered_are_untraversable()
 
-    def log_missing_node_types(self) -> None:
+    def log_final_warnings(self) -> None:
+        print('')
+        log.warning(f"All missing node ids: {self.missing_node_ids()}\n")
+        log.warning(f"Important missing node IDs: {self.notable_missing_node_ids()}")
+
         for idnum in self.missing_node_ids():
             ref, obj = self._ref_and_obj_for_id(idnum)
             log.warning(f"Missing node ID {idnum} ({type(obj).__name__})")
+
+        log.warning(f"Unplaced nodes: {self.unplaced_encountered_nodes}\n")
+
+    def missing_node_ids(self) -> list[int]:
+        """We expect to see all ordinals up to the number of nodes /Trailer claims exist as obj IDs."""
+        return [
+            i for i in range(1, self.pdfalyzer.pdf_size)
+            if self.pdfalyzer.find_node_by_idnum(i) is None
+        ]
 
     def notable_missing_node_ids(self) -> list[int]:
         """Missing idnums that aren't NullObject, NumberObject, etc."""
@@ -55,16 +68,9 @@ class PdfTreeVerifier:
 
         return notable_ids
 
-    def missing_node_ids(self) -> list[int]:
-        """We expect to see all ordinals up to the number of nodes /Trailer claims exist as obj IDs."""
-        return [
-            i for i in range(1, self.pdfalyzer.pdf_size)
-            if self.pdfalyzer.find_node_by_idnum(i) is None
-        ]
-
     def was_successful(self):
         """Return True if no unplaced nodes or missing node IDs."""
-        return (len(self.unplaced_nodes) + len(self.notable_missing_node_ids())) == 0
+        return (len(self.unplaced_encountered_nodes) + len(self.notable_missing_node_ids())) == 0
 
     def _ref_and_obj_for_id(self, idnum: int) -> tuple[IndirectObject, PdfObject | None]:
         ref = IndirectObject(idnum, self.pdfalyzer.max_generation, self.pdfalyzer.pdf_reader)
