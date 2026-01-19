@@ -23,11 +23,7 @@ class PdfTreeVerifier:
     unplaced_encountered_nodes: list[PdfTreeNode] = field(init=False)
 
     def __post_init__(self):
-        self.unplaced_encountered_nodes = [
-            node for idnum, node in self.pdfalyzer.nodes_encountered.items()
-            if self.pdfalyzer.find_node_by_idnum(idnum) is None
-        ]
-
+        self.unplaced_encountered_nodes = self.pdfalyzer.unplaced_encountered_nodes()
         self._verify_unencountered_are_untraversable()
 
     def log_final_warnings(self) -> None:
@@ -39,31 +35,20 @@ class PdfTreeVerifier:
                    "on the PDF. But for other node typtes this could indicate missing data in the tree.\n"
             log.warning(msg)
 
-        log.warning(f"All missing node ids: {self.missing_node_ids()}\n")
+        log.warning(f"All missing node ids: {self.pdfalyzer.missing_node_ids()}\n")
         log.warning(f"Important missing node IDs: {self.notable_missing_node_ids()}")
 
-        for idnum in self.missing_node_ids():
+        for idnum in self.pdfalyzer.missing_node_ids():
             _ref, obj = self._ref_and_obj_for_id(idnum)
             log.warning(f"Missing node ID {idnum} ({type(obj).__name__})")
 
         log.warning(f"Unplaced nodes: {self.unplaced_encountered_nodes}\n")
 
-    def missing_node_ids(self) -> list[int]:
-        """We expect to see all ordinals up to the number of nodes /Trailer claims exist as obj IDs."""
-        if self.pdfalyzer.pdf_size is None:
-            log.error(f"{SIZE} not found in PDF trailer; cannot verify all nodes are in tree")
-            return []
-
-        return [
-            i for i in range(1, self.pdfalyzer.pdf_size)
-            if self.pdfalyzer.find_node_by_idnum(i) is None
-        ]
-
     def notable_missing_node_ids(self) -> list[int]:
         """Missing idnums that aren't NullObject, NumberObject, etc."""
         notable_ids = []
 
-        for idnum in self.missing_node_ids():
+        for idnum in self.pdfalyzer.missing_node_ids():
             _ref, obj = self._ref_and_obj_for_id(idnum)
 
             if isinstance(obj, OK_UNPLACED_TYPES):
@@ -79,13 +64,13 @@ class PdfTreeVerifier:
 
     def _ref_and_obj_for_id(self, idnum: int) -> tuple[IndirectObject, PdfObject | None]:
         ref = IndirectObject(idnum, self.pdfalyzer.max_generation, self.pdfalyzer.pdf_reader)
-        obj = None
 
         try:
             obj = ref.get_object()
         except PdfReadError as e:
             if 'Invalid Elementary Object' in str(e):
-                log.warning(f"Bad object: {e}")
+                log.error(f"pypdf failed to find bad object: {e}")
+                obj = None
             else:
                 console.print_exception()
                 log.error(str(e))
@@ -101,7 +86,7 @@ class PdfTreeVerifier:
         if self.pdfalyzer.max_generation > 0:
             log.warning(f"Verification doesn't check revisions but this PDF's generation is {self.pdfalyzer.max_generation}")
 
-        for idnum in self.missing_node_ids():
+        for idnum in self.pdfalyzer.missing_node_ids():
             ref, obj = self._ref_and_obj_for_id(idnum)
 
             if obj is None:
