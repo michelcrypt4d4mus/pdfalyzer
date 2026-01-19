@@ -1,7 +1,7 @@
 # NEXT RELEASE
 * Handle encrypted PDFs via `--password` option and/or prompting user for the password
 * Use `pypdf` new `Font` object
-* Improved handling of `/DescendantFonts` prop for CID and composite fonts
+* Improved handling of `/DescendantFonts` prop for CID and composite fonts (finds more fonts)
 * Translate each font's `/Flags` bits into human readable format in the font info table
 * Make `PdfObjectProperties`, `IndeterminateNode`, `PdfObjectRelationship` into dataclasses
 * Red blinking alert on font binaries whose length does not match the one they advertise in `/Length` props
@@ -9,6 +9,8 @@
 * Better handling of `FileNotFoundError` at start
 * Improve logging about unplaced PDF nodes
 * Put unplaced `/ObjStm` nodes at the root of the tree
+* Sort `Pdfalyzer.font_infos` array by font name
+* `pdfalyze` now returns 1 to shell if there are unplaced nodes unless the `--allow-missed-nodes` option is used
 
 ### 1.17.13
 * Remove YARA rule `invalid_trailer_structure` because it's causing YARA to crash with `internal error 46: TOO_MANY_RE_FIBERS` on some files (opened [issue](https://github.com/VirusTotal/yara/issues/2190) in YARA repo)
