@@ -1,9 +1,10 @@
 """
 Deprecated old, pre-tree, more rawformat reader. Only used for debugging these days.
+# TODO: rename this file
 """
 from io import StringIO
 
-from pypdf.generic import ArrayObject, DictionaryObject, IndirectObject
+from pypdf.generic import ArrayObject, DictionaryObject, IndirectObject, PdfObject
 from rich.console import Console
 from rich.markup import escape
 from yaralyzer.output.rich_console import console_width
@@ -20,8 +21,27 @@ TRUNCATABLE_TYPES = (ArrayObject, DictionaryObject, list, dict)
 TRUNCATE_MULTILINE = 25
 
 
+# Prints with a header of your choosing
+def highlighted_raw_pdf_obj_str(obj: PdfObject, header: str, depth=0, print_props=True, print_header=True) -> str:
+    """Created a formatted, color highlighted string to display properties of a Pdf object."""
+    console = Console(file=StringIO(), width=OBJ_DUMP_WIDTH)
+    box_horiz = '-' * (len(header) + 4)
+    box_elements = [box_horiz, f'| {escape(header)} |', box_horiz]
+    indent = INDENT_SPACES * depth
+    indent_join = "\n" + indent
+
+    if print_header:
+        console.print(f'{indent}' + indent_join.join(box_elements))
+
+        if print_props:
+            _print_all_props(obj, console, indent=indent)
+
+    console.print('')
+    return console.file.getvalue()
+
+
 # Truncates large pretty print output
-def pretty_print_list_or_dict(obj):
+def _pretty_print_list_or_dict(obj):
     if isinstance(obj, list) and len(obj) > TRUNCATE_MULTILINE:
         truncate_msg = f'(truncated {len(obj) - TRUNCATE_MULTILINE} of {len(obj)} rows)'
         obj = obj[:TRUNCATE_MULTILINE] + [truncate_msg]
@@ -35,7 +55,7 @@ def pretty_print_list_or_dict(obj):
     return pretty_str
 
 
-def print_all_props(pdf_obj, console, verbose=False, indent=''):
+def _print_all_props(pdf_obj, console, verbose=False, indent=''):
     if 'keys' not in dir(pdf_obj):
         console.print('* ' + pp.pformat(pdf_obj))
         return
@@ -59,23 +79,5 @@ def print_all_props(pdf_obj, console, verbose=False, indent=''):
 
     for k, v in large_print_jobs.items():
         indent_join = INDENT_JOIN + indent
-        pretty_str = indent_join.join(pretty_print_list_or_dict(v).split("\n"))
+        pretty_str = indent_join.join(_pretty_print_list_or_dict(v).split("\n"))
         console.print(indent + f" {k}  ({pypdf_class_name(v)})    {indent_join}{pretty_str}")
-
-
-# Prints with a header of your choosing
-def print_with_header(obj, header, depth=0, print_props=True, print_header=True):
-    console = Console(file=StringIO())#, width=OBJ_DUMP_WIDTH)
-    box_horiz = '-' * (len(header) + 4)
-    box_elements = [box_horiz, f'| {escape(header)} |', box_horiz]
-    indent = INDENT_SPACES * depth
-    indent_join = "\n" + indent
-
-    if print_header:
-        console.print(f'{indent}' + indent_join.join(box_elements))
-
-        if print_props:
-            print_all_props(obj, console, indent=indent)
-
-    console.print('')
-    return console.file.getvalue()
