@@ -28,16 +28,17 @@ class PdfTreeVerifier:
             if self.pdfalyzer.find_node_by_idnum(idnum) is None
         ]
 
-        if len(self.unplaced_encountered_nodes) > 0:
-            msg = f"Nodes were traversed but never placed: {escape(str(self.unplaced_encountered_nodes))}\n\n" + \
-                   "For link nodes like /First, /Next, /Prev, and /Last this might be no big deal - depends " + \
-                   "on the PDF. But for other node typtes this could indicate missing data in the tree."
-            log.warning(msg)
-
         self._verify_unencountered_are_untraversable()
 
     def log_final_warnings(self) -> None:
         print('')
+
+        if len(self.unplaced_encountered_nodes) > 0:
+            msg = f"Some nodes were traversed but never placed: {escape(str(self.unplaced_encountered_nodes))}\n\n" + \
+                   "For link nodes like /First, /Next, /Prev, and /Last this might be no big deal - depends " + \
+                   "on the PDF. But for other node typtes this could indicate missing data in the tree.\n"
+            log.warning(msg)
+
         log.warning(f"All missing node ids: {self.missing_node_ids()}\n")
         log.warning(f"Important missing node IDs: {self.notable_missing_node_ids()}")
 
