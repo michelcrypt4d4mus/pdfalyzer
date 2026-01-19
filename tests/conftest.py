@@ -45,13 +45,6 @@ def SF424_page2_pdf_path():
     return FIXTURES_DIR.joinpath('SF424_page2.pdf')
 
 
-# Some obj ids for use with -f when you want to limit yourself to the font
-@pytest.fixture(scope="session")
-def font_obj_ids_in_analyzing_malicious_docs_pdf():
-    return [5, 9, 11, 13, 15, 17]
-
-
-
 ##########################
 #    Pdfalyzer objects   #
 ##########################
@@ -82,6 +75,12 @@ def pages_node(analyzing_malicious_pdfalyzer):
 @pytest.fixture(scope="session")
 def font_info(analyzing_malicious_pdfalyzer):
     return next(fi for fi in analyzing_malicious_pdfalyzer.font_infos if fi.idnum == 5)
+
+
+# Some obj ids for use with -f when you want to limit yourself to the font
+@pytest.fixture(scope="session")
+def font_obj_ids_in_analyzing_malicious_docs_pdf():
+    return [5, 9, 11, 13, 15, 17]
 
 
 @pytest.fixture(scope="session")
