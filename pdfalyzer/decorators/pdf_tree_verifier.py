@@ -64,7 +64,8 @@ class PdfTreeVerifier:
         node_ids_without_parents = [n.idnum for n in nodes_without_parents]
 
         if node_ids_without_parents:
-            log.warning(f"These node IDs were parsed but have no no parent:\n{node_ids_without_parents}\n")
+            node_id_to_child_count = {n.idnum: f"has {len(n.children)} children" for n in nodes_without_parents}
+            log.warning(f"These node IDs were parsed but have no parent:\n{node_id_to_child_count}\n")
 
     def notable_missing_node_ids(self) -> list[int]:
         """Missing idnums that aren't NullObject, NumberObject, etc."""
@@ -114,7 +115,7 @@ class PdfTreeVerifier:
             s += f" but it's an empty object so not particularly concerning. "
         else:
             s += f" here's the contents for you to assess:\n\n"
-            s += highlighted_raw_pdf_obj_str(obj, header=f"Unplaced PdfObject (ID={idnum}, type='{type(obj).__name__}')")
+            s += highlighted_raw_pdf_obj_str(obj, header=f"Unplaced PdfObject {idnum}")
 
         if isinstance(obj, StreamObject):
             data = obj.get_data()
