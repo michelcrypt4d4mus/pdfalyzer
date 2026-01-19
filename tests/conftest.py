@@ -1,4 +1,4 @@
-from os import environ, path, pardir, remove
+from os import environ, path, remove
 from pathlib import Path
 environ['INVOKED_BY_PYTEST'] = 'True'  # Must be set before importing yaralyzer (?)
 
@@ -10,27 +10,32 @@ from pdfalyzer.pdfalyzer import Pdfalyzer               # noqa: E402
 # TODO: importlib doesn't play nice with running tests via GitHub actions
 # import importlib.resources
 # PROJECT_DIR = path.join(str(importlib.resources.files('pdfalyzer')), pardir)
-PYTESTS_DIR = path.dirname(__file__)
-PROJECT_DIR = path.join(PYTESTS_DIR, pardir)
-DOCUMENTATION_DIR = path.join(PROJECT_DIR, 'doc')
-SVG_DIR = path.join(DOCUMENTATION_DIR, 'svgs')
-RENDERED_IMAGES_DIR = path.join(SVG_DIR, 'rendered_images')
-FIXTURES_DIR = Path(PROJECT_DIR).joinpath('tests', 'fixtures')
+PYTESTS_DIR = Path(path.dirname(__file__))
+PROJECT_DIR = PYTESTS_DIR.parent
+DOCUMENTATION_DIR = PROJECT_DIR.joinpath('doc')
+SVG_DIR = DOCUMENTATION_DIR.joinpath('svgs')
+RENDERED_IMAGES_DIR = SVG_DIR.joinpath('rendered_images')
+FIXTURES_DIR = PROJECT_DIR.joinpath('tests', 'fixtures')
 
 
 # Full paths to PDF test fixtures
 @pytest.fixture(scope='session')
-def adobe_type1_fonts_pdf_path():
+def adobe_type1_fonts_pdf_path() -> Path:
     return _pdf_in_doc_dir('Type1_Acrobat_Font_Explanation.pdf')
 
 @pytest.fixture(scope='session')
-def analyzing_malicious_pdf_path():
+def analyzing_malicious_pdf_path() -> Path:
     return _pdf_in_doc_dir('analyzing-malicious-document-files.pdf')
 
 # Has unplaced nodes
 @pytest.fixture(scope='session')
-def SF424_page2_pdf_path():
+def SF424_page2_pdf_path() -> Path:
     return FIXTURES_DIR.joinpath('SF424_page2.pdf')
+
+# Has mysterious unplaced nodes
+@pytest.fixture(scope='session')
+def form_evince_path() -> Path:
+    return FIXTURES_DIR.joinpath('form_evince.pdf')
 
 
 # Some obj ids for use with -f when you want to limit yourself to the font
@@ -86,6 +91,6 @@ def tmp_dir():
     return tmpdir
 
 
-def _pdf_in_doc_dir(filename):
+def _pdf_in_doc_dir(filename: str) -> Path:
     """The couple of PDFs in the /doc dir make handy fixtures"""
-    return path.join(DOCUMENTATION_DIR, filename)
+    return DOCUMENTATION_DIR.joinpath(filename)
