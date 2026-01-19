@@ -28,7 +28,7 @@ from pdfalyzer.font_info import FontInfo
 from pdfalyzer.helpers.rich_text_helper import print_error
 from pdfalyzer.pdf_object_relationship import PdfObjectRelationship
 from pdfalyzer.util.adobe_strings import *
-from pdfalyzer.util.argument_parser import parser
+from pdfalyzer.util.argument_parser import is_pdfalyze_script
 from pdfalyzer.util.debugging import log_trace
 from pdfalyzer.util.exceptions import PdfWalkError
 
@@ -119,6 +119,10 @@ class Pdfalyzer:
         for node in self.node_iterator():
             if not isinstance(node, SymlinkNode):
                 node.symlink_non_tree_relationships()
+
+        # Defer warnings if currently running in a 'pdfalyze SOME_PDF.pdf' context
+        if not is_pdfalyze_script:
+            self.verifier.log_final_warnings()
 
         log.info(f"Walk complete.")
 
@@ -273,8 +277,8 @@ class Pdfalyzer:
         if 'pdf_filehandle' in vars(self):
             self.pdf_filehandle.close()
 
-        # Only exit if running in a 'pdfalyze some_file.pdf context'
-        if parser.prog == PDFALYZE:
+        # Only exit if running in a 'pdfalyze some_file.pdf context', otherwise raise Exception.
+        if is_pdfalyze_script:
             print_fatal_error_and_exit(f"{msg} ({e})")
         else:
             print_error(msg)
