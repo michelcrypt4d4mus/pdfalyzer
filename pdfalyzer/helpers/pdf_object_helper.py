@@ -3,9 +3,22 @@ Some methods to help with the direct manipulation/processing of PyPDF's PdfObjec
 """
 from typing import List, Optional
 
-from pypdf.generic import IndirectObject, PdfObject
+from pypdf.generic import ArrayObject, DictionaryObject, IndirectObject, PdfObject
 
 from pdfalyzer.pdf_object_relationship import PdfObjectRelationship
+from pdfalyzer.util.adobe_strings import TYPE
+
+
+def describe_obj(obj: PdfObject) -> str:
+    obj_str = f"({type(obj).__name__})"
+
+    if isinstance(obj, DictionaryObject):
+        obj_type = obj.get(TYPE)
+        obj_str += f" {obj_type}" if obj_type else ''
+    elif isinstance(obj, (ArrayObject, list)):
+        obj_str += f" {len(obj)} elements"
+
+    return obj_str
 
 
 def does_list_have_any_references(_list) -> bool:

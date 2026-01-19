@@ -1,7 +1,7 @@
 from dataclasses import dataclass
 from typing import Any, List, Optional, Self, Union
 
-from pypdf.generic import DictionaryObject, IndirectObject, NumberObject, PdfObject
+from pypdf.generic import ArrayObject, DictionaryObject, IndirectObject, NumberObject, PdfObject
 from rich.text import Text
 from yaralyzer.util.logging import log
 

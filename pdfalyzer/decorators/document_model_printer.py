@@ -9,7 +9,7 @@ from rich.console import Console
 from rich.markup import escape
 from yaralyzer.output.rich_console import console_width
 
-from pdfalyzer.helpers.pdf_object_helper import pypdf_class_name
+from pdfalyzer.helpers.pdf_object_helper import describe_obj, pypdf_class_name
 from pdfalyzer.helpers.string_helper import pp, INDENT_DEPTH
 
 INDENT_SPACES = ' ' * INDENT_DEPTH
@@ -21,27 +21,22 @@ TRUNCATABLE_TYPES = (ArrayObject, DictionaryObject, list, dict)
 TRUNCATE_MULTILINE = 25
 
 
-# Prints with a header of your choosing
-def highlighted_raw_pdf_obj_str(obj: PdfObject, header: str, depth=0, print_props=True, print_header=True) -> str:
+def highlighted_raw_pdf_obj_str(obj: PdfObject, header: str = '', depth=0) -> str:
     """Created a formatted, color highlighted string to display properties of a Pdf object."""
+    header += f" {describe_obj(obj)}"
     console = Console(file=StringIO(), width=OBJ_DUMP_WIDTH)
     box_horiz = '-' * (len(header) + 4)
     box_elements = [box_horiz, f'| {escape(header)} |', box_horiz]
     indent = INDENT_SPACES * depth
     indent_join = "\n" + indent
-
-    if print_header:
-        console.print(f'{indent}' + indent_join.join(box_elements))
-
-        if print_props:
-            _print_all_props(obj, console, indent=indent)
-
-    console.print('')
+    console.print(f'{indent}' + indent_join.join(box_elements))
+    _print_all_props(obj, console, indent=indent)
+    console.line()
     return console.file.getvalue()
 
 
 # Truncates large pretty print output
-def _pretty_print_list_or_dict(obj):
+def _pretty_print_list_or_dict(obj: PdfObject) -> str:
     if isinstance(obj, list) and len(obj) > TRUNCATE_MULTILINE:
         truncate_msg = f'(truncated {len(obj) - TRUNCATE_MULTILINE} of {len(obj)} rows)'
         obj = obj[:TRUNCATE_MULTILINE] + [truncate_msg]
@@ -55,7 +50,8 @@ def _pretty_print_list_or_dict(obj):
     return pretty_str
 
 
-def _print_all_props(pdf_obj, console, verbose=False, indent=''):
+def _print_all_props(pdf_obj: PdfObject, console: Console, verbose=False, indent='') -> None:
+    """Print properties of a PdfObject into the 'console' argument."""
     if 'keys' not in dir(pdf_obj):
         console.print('* ' + pp.pformat(pdf_obj))
         return
