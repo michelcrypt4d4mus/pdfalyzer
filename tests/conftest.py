@@ -61,6 +61,10 @@ def adobe_type1_fonts_pdfalyzer(adobe_type1_fonts_pdf_path):
 def form_evince_pdfalyzer():
     return Pdfalyzer(str(FIXTURES_DIR.joinpath('form_evince.pdf')))
 
+@pytest.fixture
+def SF424_page2_pdfalyzer(SF424_page2_pdf_path):
+    return Pdfalyzer(SF424_page2_pdf_path)
+
 
 # /Page and /Pages nodes
 @pytest.fixture(scope="session")
