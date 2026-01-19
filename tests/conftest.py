@@ -18,7 +18,9 @@ RENDERED_IMAGES_DIR = path.join(SVG_DIR, 'rendered_images')
 FIXTURES_DIR = Path(PROJECT_DIR).joinpath('tests', 'fixtures')
 
 
-# Full paths to PDF test fixtures
+#######################
+#    PDF test paths   #
+#######################
 @pytest.fixture(scope='session')
 def adobe_type1_fonts_pdf_path():
     return _pdf_in_doc_dir('Type1_Acrobat_Font_Explanation.pdf')
@@ -49,7 +51,10 @@ def font_obj_ids_in_analyzing_malicious_docs_pdf():
     return [5, 9, 11, 13, 15, 17]
 
 
-# PDFalyzers to parse them
+
+##########################
+#    Pdfalyzer objects   #
+##########################
 @pytest.fixture(scope="session")
 def analyzing_malicious_pdfalyzer(analyzing_malicious_pdf_path):
     return Pdfalyzer(analyzing_malicious_pdf_path)
