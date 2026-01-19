@@ -171,12 +171,12 @@ class Pdfalyzer:
 
         # If one is already a parent/child of the other there's nothing to do
         if to_node == from_node.parent or to_node in from_node.children:
-            log.debug(f"  {from_node} and {to_node} are already related")
+            log.debug(f"  {from_node} and {to_node} are already parent/child")
             return None
 
-        # Many branches return None or don't return.
-        # If there's an explicit /Parent or /Kids relationship then we know the correct relationship
+        # NOTE: Many branches return None
         if relationship.is_parent or relationship.is_child:
+            # If there's an explicit /Parent or /Kids relationship then we know the correct relationship
             log.debug(f"  Explicit parent/child link: {relationship}")
 
             if relationship.is_parent:
@@ -194,10 +194,9 @@ class Pdfalyzer:
             if relationship.to_obj.idnum in self._indeterminate_ids:
                 log.info(f"  Found {relationship} => {to_node} was marked indeterminate but now placed")
                 self._indeterminate_ids.remove(relationship.to_obj.idnum)
-
-        # If the relationship is indeterminate or we've seen the PDF object before, add it as
-        # a non-tree relationship for now. An attempt to place the node will be made at the end.
         elif relationship.is_indeterminate or relationship.is_link or was_seen_before:
+            # If the relationship is indeterminate or we've seen the PDF object before, add it as
+            # a non-tree relationship for now. An attempt to place the node will be made at the end.
             to_node.add_non_tree_relationship(relationship)
 
             # If we already encountered 'to_node' then skip adding it to the queue of nodes to walk
@@ -207,16 +206,15 @@ class Pdfalyzer:
                 else:
                     log.debug(f"  Already saw {relationship}; not scanning next")
                     return None
-            # Indeterminate relationships need to wait until everything has been scanned to be placed
             elif relationship.is_indeterminate or (relationship.is_link and not self.is_in_tree(to_node)):
+                # Indeterminate relationships need to wait until everything has been scanned to be placed
                 log.info(f'  Indeterminate ref {relationship}')
                 self._indeterminate_ids.add(to_node.idnum)
-            # Link nodes like /Dest are usually just links between nodes
             elif relationship.is_link:
+                # Link nodes like /Dest are usually just links between nodes
                 log.debug(f"  Link ref {relationship}")
-
-        # If no other conditions are met make from_node the parent of to_node
         else:
+            # If no other conditions are met make from_node the parent of to_node
             from_node.add_child(to_node)
 
         return to_node
