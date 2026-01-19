@@ -1,7 +1,8 @@
-
 import logging
 
+from yaralyzer.util.logging import log
 
-# Starting pdb.set_trace() this way kind of sucks because yr locals are messed up
-def debugger():
-    import pdb; pdb.set_trace(locals())
+
+def log_trace(*args) -> None:
+    """Log below logging.DEBUG level."""
+    log.log(logging.DEBUG - 1, *args)

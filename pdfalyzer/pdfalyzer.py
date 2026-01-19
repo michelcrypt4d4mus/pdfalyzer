@@ -25,6 +25,7 @@ from pdfalyzer.font_info import FontInfo
 from pdfalyzer.helpers.rich_text_helper import print_error
 from pdfalyzer.pdf_object_relationship import PdfObjectRelationship
 from pdfalyzer.util.adobe_strings import *
+from pdfalyzer.util.debugging import log_trace
 from pdfalyzer.util.exceptions import PdfWalkError
 
 TRAILER_FALLBACK_ID = 10_000_000
@@ -288,7 +289,7 @@ class Pdfalyzer:
         if relationship.idnum in self.nodes_encountered:
             return self.nodes_encountered[relationship.idnum]
 
-        log.debug(f"Building node for {relationship}")
+        log_trace(f"Building node for {relationship}")
         new_node = PdfTreeNode.from_reference(relationship, relationship_key)
         self.nodes_encountered[relationship.idnum] = new_node
         return new_node
