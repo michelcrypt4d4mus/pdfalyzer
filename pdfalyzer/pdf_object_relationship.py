@@ -29,7 +29,7 @@ class PdfObjectRelationship:
         might be '/Resources[/Font][/F1] if the /Font is a directly embedded reference instead of a remote one.
         """
         # Compute tree placement logic booleans
-        if (has_indeterminate_prefix(self.from_node.type) and not isinstance(self.from_node.obj, dict)) \
+        if (has_indeterminate_prefix(self.from_node.type) and not isinstance(self.from_node.obj, (dict, list))) \
                 or self.reference_key in INDETERMINATE_REF_KEYS:
             log.info(f"Indeterminate node: {self.from_node}")
             self.is_indeterminate = True
