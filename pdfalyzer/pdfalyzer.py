@@ -307,7 +307,7 @@ class Pdfalyzer:
                 continue
 
             if obj.get(TYPE) == OBJ_STM:
-                log.warning(f"Making unplaced {OBJ_STM} obj a child of root")
+                log.warning(f"Forcing unplaced {OBJ_STM} obj to be a child of root node")
                 self.pdf_tree.add_child(self._build_or_find_node(ref, OBJ_STM))
                 # Didier Stevens parses /ObjStm as a synthetic PDF here: https://github.com/DidierStevens/DidierStevensSuite/blob/master/pdf-parser.py#L1605
                 # offset_stream_data = obj.get_data()[obj.get('/First', 0):]
