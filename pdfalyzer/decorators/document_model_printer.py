@@ -6,6 +6,7 @@ from io import StringIO
 from pypdf.generic import ArrayObject, DictionaryObject, IndirectObject
 from rich.console import Console
 from rich.markup import escape
+from yaralyzer.output.rich_console import console_width
 
 from pdfalyzer.helpers.pdf_object_helper import pypdf_class_name
 from pdfalyzer.helpers.string_helper import pp, INDENT_DEPTH
@@ -13,6 +14,7 @@ from pdfalyzer.helpers.string_helper import pp, INDENT_DEPTH
 INDENT_SPACES = ' ' * INDENT_DEPTH
 INDENT_JOIN = "\n" + INDENT_SPACES
 VALUE_WIDTH = 30
+OBJ_DUMP_WIDTH = console_width() - len('                    WARNING ')
 
 TRUNCATABLE_TYPES = (ArrayObject, DictionaryObject, list, dict)
 TRUNCATE_MULTILINE = 25
@@ -63,7 +65,7 @@ def print_all_props(pdf_obj, console, verbose=False, indent=''):
 
 # Prints with a header of your choosing
 def print_with_header(obj, header, depth=0, print_props=True, print_header=True):
-    console = Console(file=StringIO())
+    console = Console(file=StringIO())#, width=OBJ_DUMP_WIDTH)
     box_horiz = '-' * (len(header) + 4)
     box_elements = [box_horiz, f'| {escape(header)} |', box_horiz]
     indent = INDENT_SPACES * depth
