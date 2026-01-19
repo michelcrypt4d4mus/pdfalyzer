@@ -98,7 +98,7 @@ class PdfTreeVerifier:
             s += f" but it's an empty object so not particularly concerning. "
         else:
             s += f" here's the contents for you to assess:\n\n"
-            s += highlighted_raw_pdf_obj_str(obj, header=f"unplaced object {idnum}")
+            s += highlighted_raw_pdf_obj_str(obj, header=f"Unplaced PdfObject (ID={idnum}, type='{type(obj).__name__}')")
 
         s += f"It has an embedded binary stream:\n{obj.get_data()}" if isinstance(obj, StreamObject) else ''
         (log_fxn or log.warning)(f"{s}\n")
