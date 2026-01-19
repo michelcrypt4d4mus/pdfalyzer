@@ -15,6 +15,7 @@ def test_file_export(analyzing_malicious_pdf_path, tmp_dir):
         '--max-decode-length', '51',
         '--output-dir', tmp_dir,
         '--suppress-decodes',
+        '--allow-missed-nodes',
         '-txt',
     ]
 

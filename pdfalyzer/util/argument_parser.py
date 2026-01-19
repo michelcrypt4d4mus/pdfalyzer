@@ -11,7 +11,7 @@ from typing import Optional
 from rich_argparse_plus import RichHelpFormatterPlus
 from rich.prompt import Confirm
 from rich.text import Text
-from yaralyzer.util.argument_parser import export, parser, parse_arguments as parse_yaralyzer_args, source
+from yaralyzer.util.argument_parser import debug, export, parser, parse_arguments as parse_yaralyzer_args, source
 from yaralyzer.util.logging import log, log_argparse_result, log_current_config, log_invocation
 
 from pdfalyzer.util.output_section import ALL_STREAMS, DOCINFO, TREE, RICH, FONTS, COUNTS, STREAMS, YARA
@@ -44,6 +44,11 @@ export.add_argument('-bin', '--extract-binary-streams',
 source.add_argument('--no-default-yara-rules',
                     action='store_true',
                     help='if --yara is selected use only custom rules from --yara-file arg and not the default included YARA rules')
+
+# Add one more option to the Debug section
+debug.add_argument('--allow-missed-nodes',
+                   action='store_true',
+                   help='force pdfalyze to return 0 to shell even if missing nodes encountered')
 
 
 # Note that we extend the yaralyzer's parser and export

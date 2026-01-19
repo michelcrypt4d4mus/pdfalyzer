@@ -23,7 +23,7 @@ from rich.text import Text
 from yaralyzer.helpers.rich_text_helper import prefix_with_style
 from yaralyzer.output.file_export import invoke_rich_export
 from yaralyzer.output.rich_console import console
-from yaralyzer.util.logging import log_and_print
+from yaralyzer.util.logging import log, log_and_print
 
 from pdfalyzer.decorators.pdf_file import PdfFile
 from pdfalyzer.helpers.filesystem_helper import file_size_in_mb, set_max_open_files
@@ -81,6 +81,14 @@ def pdfalyze():
         code.interact(local=locals())
 
     pdfalyzer.pdf_filehandle.close()
+
+    # Non-zero error code if PDF was not verified.
+    if not pdfalyzer.verifier.was_successful() and not args.allow_missed_nodes:
+        print('')
+        log.warning(f"All missing node ids: {pdfalyzer.verifier.missing_node_ids()}\n")
+        pdfalyzer.verifier.log_missing_node_types()
+        log.warning(f"Unplaced nodes: {pdfalyzer.verifier.unplaced_nodes}\n")
+        exit(1)
 
 
 def pdfalyzer_show_color_theme() -> None:

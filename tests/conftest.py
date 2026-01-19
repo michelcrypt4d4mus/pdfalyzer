@@ -27,6 +27,11 @@ def adobe_type1_fonts_pdf_path():
 def analyzing_malicious_pdf_path():
     return _pdf_in_doc_dir('analyzing-malicious-document-files.pdf')
 
+# Has unplaced nodes
+@pytest.fixture(scope='session')
+def SF424_page2_pdf_path():
+    return FIXTURES_DIR.joinpath('SF424_page2.pdf')
+
 
 # Some obj ids for use with -f when you want to limit yourself to the font
 @pytest.fixture(scope="session")
@@ -34,7 +39,7 @@ def font_obj_ids_in_analyzing_malicious_docs_pdf():
     return [5, 9, 11, 13, 15, 17]
 
 
-# PDF walkers to parse them
+# PDFalyzers to parse them
 @pytest.fixture(scope="session")
 def analyzing_malicious_pdfalyzer(analyzing_malicious_pdf_path):
     return Pdfalyzer(analyzing_malicious_pdf_path)
