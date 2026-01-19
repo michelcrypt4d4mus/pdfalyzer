@@ -60,7 +60,7 @@ class PdfTreeVerifier:
         if indeterminate_missing_node_ids:
             log.warning(f"These missing IDs were marked as indeterminate when treewalking:\n{indeterminate_missing_node_ids}\n")
 
-        nodes_without_parents = [n for n in self.pdfalyzer.unplaced_encountered_nodes() if n.parent is None]
+        nodes_without_parents = self.pdfalyzer.nodes_without_parents()
         node_ids_without_parents = [n.idnum for n in nodes_without_parents]
 
         if node_ids_without_parents:
