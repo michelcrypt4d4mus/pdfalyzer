@@ -24,7 +24,7 @@ class PdfTreeVerifier:
     def __post_init__(self):
         self._verify_unencountered_are_untraversable()
 
-    def log_final_warnings(self) -> None:
+    def log_missing_node_warnings(self) -> None:
         print('')
         unplaced_encountered_nodes = self.pdfalyzer.unplaced_encountered_nodes()
 
