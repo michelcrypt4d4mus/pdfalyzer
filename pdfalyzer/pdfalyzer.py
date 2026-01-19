@@ -247,8 +247,6 @@ class Pdfalyzer:
 
     def _extract_font_infos(self) -> None:
         """Extract information about fonts in the tree and place it in `self.font_infos`."""
-        walked_fonts = []
-
         for node in self.node_iterator():
             known_font_ids = [fi.idnum for fi in self.font_infos]
 

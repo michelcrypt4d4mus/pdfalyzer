@@ -38,15 +38,9 @@ def attachment_pdf_pdfalyzer():
 def geobase_pdfalyzer():
     return Pdfalyzer(str(FIXTURES_DIR.joinpath('GeoBase_NHNC1_Data_Model_UML_EN.pdf')))
 
-# Has unplaced nodes
 @pytest.fixture(scope='session')
 def SF424_page2_pdf_path():
-    return FIXTURES_DIR.joinpath('SF424_page2.pdf')
-
-# Has a lot of unplaced nodes. pypdf/resources/SF424_page2.pdf has TONS of unplaced nodes
-@pytest.fixture(scope='session')
-def form_evince_pdfalyzer():
-    return Pdfalyzer(str(FIXTURES_DIR.joinpath('form_evince.pdf')))
+    return FIXTURES_DIR.joinpath('SF424_page2.pdf')  # Has TONS of unplaced nodes
 
 
 # Some obj ids for use with -f when you want to limit yourself to the font
@@ -63,6 +57,10 @@ def analyzing_malicious_pdfalyzer(analyzing_malicious_pdf_path):
 @pytest.fixture(scope="session")
 def adobe_type1_fonts_pdfalyzer(adobe_type1_fonts_pdf_path):
     return Pdfalyzer(adobe_type1_fonts_pdf_path)
+
+@pytest.fixture(scope='session')
+def form_evince_pdfalyzer():
+    return Pdfalyzer(str(FIXTURES_DIR.joinpath('form_evince.pdf')))  # Has mysterious unplaced nodes
 
 
 # /Page and /Pages nodes
