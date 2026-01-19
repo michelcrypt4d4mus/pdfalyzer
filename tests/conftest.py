@@ -63,8 +63,8 @@ def adobe_type1_fonts_pdfalyzer(adobe_type1_fonts_pdf_path):
 
 # Has mysterious unplaced nodes
 @pytest.fixture(scope='session')
-def form_evince_pdfalyzer():
-    return Pdfalyzer(str(FIXTURES_DIR.joinpath('form_evince.pdf')))
+def form_evince_pdfalyzer(form_evince_path):
+    return Pdfalyzer(form_evince_path)
 
 @pytest.fixture
 def SF424_page2_pdfalyzer(SF424_page2_pdf_path):
