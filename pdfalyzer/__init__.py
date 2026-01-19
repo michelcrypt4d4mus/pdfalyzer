@@ -81,10 +81,10 @@ def pdfalyze():
         code.interact(local=locals())
 
     pdfalyzer.pdf_filehandle.close()
+    pdfalyzer.verifier.log_missing_node_warnings()
 
     # Non-zero error code if PDF was not verified.
     if not pdfalyzer.verifier.was_successful() and not args.allow_missed_nodes:
-        pdfalyzer.verifier.log_final_warnings()
         exit(1)
 
 

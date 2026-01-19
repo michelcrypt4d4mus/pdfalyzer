@@ -31,19 +31,16 @@ class PdfTreeVerifier:
         unplaced_encountered_nodes (list[PdfTreeNode]): Nodes encounted by walk_node() that aren't in the tree
     """
     pdfalyzer: 'Pdfalyzer'
-    unplaced_encountered_nodes: list[PdfTreeNode] = field(init=False)
 
-    def __post_init__(self):
-        self.unplaced_encountered_nodes = self.pdfalyzer.unplaced_encountered_nodes()
-
-    def log_final_warnings(self) -> None:
+    def log_missing_node_warnings(self) -> None:
         print('')
+        unplaced_encountered_nodes = self.pdfalyzer.unplaced_encountered_nodes()
 
         if self.pdfalyzer.max_generation > 0:
             log.warning(f"Verification doesn't check revisions (this PDF's generation is {self.pdfalyzer.max_generation})\n")
 
-        if len(self.unplaced_encountered_nodes) > 0:
-            msg = f"Some nodes were traversed but never placed: {escape(str(self.unplaced_encountered_nodes))}\n\n" + \
+        if len(unplaced_encountered_nodes) > 0:
+            msg = f"Some nodes were traversed but never placed: {escape(str(unplaced_encountered_nodes))}\n\n" + \
                    "For link nodes like /First, /Next, /Prev, and /Last this might be no big deal - depends " + \
                    "on the PDF. But for other node typtes this could indicate missing data in the tree.\n"
             log.warning(msg)
@@ -91,7 +88,7 @@ class PdfTreeVerifier:
 
     def was_successful(self):
         """Return True if no unplaced nodes or missing node IDs."""
-        return (len(self.unplaced_encountered_nodes) + len(self.notable_missing_node_ids())) == 0
+        return (len(self.pdfalyzer.unplaced_encountered_nodes()) + len(self.notable_missing_node_ids())) == 0
 
     def _log_all_unplaced_nodes(self) -> None:
         """Log warning for each unplaced node."""

@@ -122,7 +122,7 @@ class Pdfalyzer:
 
         # Defer warnings if currently running in a 'pdfalyze SOME_PDF.pdf' context
         if not is_pdfalyze_script:
-            self.verifier.log_final_warnings()
+            self.verifier.log_missing_node_warnings()
 
         log.info(f"Walk complete.")
 
