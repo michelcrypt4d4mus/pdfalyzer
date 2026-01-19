@@ -42,8 +42,8 @@ NAMED           = '/Named'
 NAMES           = '/Names'
 NEXT            = '/Next'
 NUMS            = '/Nums'
-OBJECT_STREAM   = '/ObjStm'
 OBJ             = '/Obj'
+OBJ_STM         = '/ObjStm'
 # TODO: /Pg refs could be the parents of /OBJR?
 OBJR            = '/OBJR'  # Object reference to "an entire PDF object"
 OPEN_ACTION     = CatalogDictionary.OPEN_ACTION

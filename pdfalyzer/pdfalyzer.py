@@ -8,7 +8,7 @@ from anytree import LevelOrderIter, SymlinkNode
 from anytree.search import findall, findall_by_attr
 from pypdf import PdfReader
 from pypdf.errors import PdfReadError
-from pypdf.generic import IndirectObject
+from pypdf.generic import DictionaryObject, IndirectObject, PdfObject
 from yaralyzer.helpers.file_helper import load_binary_data
 from yaralyzer.helpers.rich_text_helper import print_fatal_error_and_exit
 from yaralyzer.output.file_hashes_table import compute_file_hashes
@@ -142,6 +142,22 @@ class Pdfalyzer:
         """Iterate over nodes, grouping them by distance from the root."""
         return LevelOrderIter(self.pdf_tree)
 
+    def ref_and_obj_for_id(self, idnum: int) -> tuple[IndirectObject, PdfObject | None]:
+        ref = IndirectObject(idnum, self.max_generation, self.pdf_reader)
+
+        try:
+            obj = ref.get_object()
+        except PdfReadError as e:
+            if 'Invalid Elementary Object' in str(e):
+                log.error(f"pypdf failed to find bad object: {e}")
+                obj = None
+            else:
+                console.print_exception()
+                log.error(str(e))
+                raise e
+
+        return (ref, obj)
+
     def stream_nodes(self) -> List[PdfTreeNode]:
         """List of actual nodes (not SymlinkNodes) containing streams sorted by PDF object ID"""
         stream_filter = lambda node: node.contains_stream() and not isinstance(node, SymlinkNode)  # noqa: E731
@@ -217,7 +233,7 @@ class Pdfalyzer:
         print_fatal_error_and_exit(msg)
 
     def _resolve_indeterminate_nodes(self) -> None:
-        """Place all indeterminate nodes in the tree. Called after all nodes have been walked."""
+        """Place indeterminate nodes in the tree and place any unplaced /ObjStms at root."""
         indeterminate_nodes = [self.nodes_encountered[idnum] for idnum in self._indeterminate_ids]
         indeterminate_nodes_string = "\n   ".join([f"{node}" for node in indeterminate_nodes])
         log.info(f"Resolving {len(indeterminate_nodes)} indeterminate nodes: {indeterminate_nodes_string}")
@@ -229,7 +245,16 @@ class Pdfalyzer:
 
             IndeterminateNode(node).place_node()
 
-        # for node in self.missing_node_ids():
+        # Place /ObjStm at root if no other location found.
+        for idnum in self.missing_node_ids():
+            ref, obj = self.ref_and_obj_for_id(idnum)
+
+            if not isinstance(obj, DictionaryObject):
+                continue
+
+            if obj.get(TYPE) == OBJ_STM:
+                log.warning(f"Making unplaced {OBJ_STM} obj a child of root")
+                self.pdf_tree.add_child(self._build_or_find_node(ref, OBJ_STM))
 
     def _extract_font_infos(self) -> None:
         """Extract information about fonts in the tree and place it in `self.font_infos`."""

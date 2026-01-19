@@ -39,7 +39,7 @@ class PdfTreeVerifier:
         log.warning(f"Important missing node IDs: {self.notable_missing_node_ids()}")
 
         for idnum in self.pdfalyzer.missing_node_ids():
-            _ref, obj = self._ref_and_obj_for_id(idnum)
+            _ref, obj = self.pdfalyzer.ref_and_obj_for_id(idnum)
             log.warning(f"Missing node ID {idnum} ({type(obj).__name__})")
 
         log.warning(f"Unplaced nodes: {self.unplaced_encountered_nodes}\n")
@@ -49,7 +49,7 @@ class PdfTreeVerifier:
         notable_ids = []
 
         for idnum in self.pdfalyzer.missing_node_ids():
-            _ref, obj = self._ref_and_obj_for_id(idnum)
+            _ref, obj = self.pdfalyzer.ref_and_obj_for_id(idnum)
 
             if isinstance(obj, OK_UNPLACED_TYPES):
                 log.info(f"Missing node {idnum} but it's an acceptable type ({type(obj).__name__}, value={obj}")
@@ -62,22 +62,6 @@ class PdfTreeVerifier:
         """Return True if no unplaced nodes or missing node IDs."""
         return (len(self.unplaced_encountered_nodes) + len(self.notable_missing_node_ids())) == 0
 
-    def _ref_and_obj_for_id(self, idnum: int) -> tuple[IndirectObject, PdfObject | None]:
-        ref = IndirectObject(idnum, self.pdfalyzer.max_generation, self.pdfalyzer.pdf_reader)
-
-        try:
-            obj = ref.get_object()
-        except PdfReadError as e:
-            if 'Invalid Elementary Object' in str(e):
-                log.error(f"pypdf failed to find bad object: {e}")
-                obj = None
-            else:
-                console.print_exception()
-                log.error(str(e))
-                raise e
-
-        return (ref, obj)
-
     def _verify_unencountered_are_untraversable(self) -> None:
         """
         Make sure any PDF object IDs we can't find in tree are /ObjStm or /Xref nodes and
@@ -87,7 +71,7 @@ class PdfTreeVerifier:
             log.warning(f"Verification doesn't check revisions but this PDF's generation is {self.pdfalyzer.max_generation}")
 
         for idnum in self.pdfalyzer.missing_node_ids():
-            ref, obj = self._ref_and_obj_for_id(idnum)
+            ref, obj = self.pdfalyzer.ref_and_obj_for_id(idnum)
 
             if obj is None:
                 log.error(f"Couldn't verify elementary obj with id {idnum} is properly in tree")
@@ -104,11 +88,9 @@ class PdfTreeVerifier:
                 log.warning(msg)
                 continue
 
-            obj_type = obj[TYPE]
+            obj_type = obj.get(TYPE)
 
-            if obj_type == OBJECT_STREAM:
-                log.debug(f"Object with id {idnum} not found in tree because it's an {OBJECT_STREAM}")
-            elif obj[TYPE] == XREF:
+            if obj_type == XREF:
                 placeable = XREF_STREAM in self.pdfalyzer.pdf_reader.trailer
 
                 for k, v in self.pdfalyzer.pdf_reader.trailer.items():
