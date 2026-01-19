@@ -235,7 +235,7 @@ class Pdfalyzer:
                 if relationship.to_obj.idnum not in self._indeterminate_ids and to_node.parent is None:
                     raise PdfWalkError(f"{relationship} - ref has no parent and is not indeterminate")
                 else:
-                    log.debug(f"  Already saw {relationship}; not scanning next")
+                    log_trace(f"  Already saw {relationship}; not scanning next")
                     return None
             elif relationship.is_indeterminate or (relationship.is_link and not self.is_in_tree(to_node)):
                 # Indeterminate relationships need to wait until everything has been scanned to be placed
