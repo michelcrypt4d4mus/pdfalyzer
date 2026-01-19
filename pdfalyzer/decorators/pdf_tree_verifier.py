@@ -14,7 +14,7 @@ from yaralyzer.output.rich_console import console
 from yaralyzer.helpers.bytes_helper import print_bytes
 from yaralyzer.util.logging import log
 
-from pdfalyzer.decorators.document_model_printer import print_with_header
+from pdfalyzer.decorators.document_model_printer import highlighted_raw_pdf_obj_str
 from pdfalyzer.decorators.pdf_tree_node import PdfTreeNode
 from pdfalyzer.util.adobe_strings import *
 
@@ -179,7 +179,7 @@ class PdfTreeVerifier:
             s += f" but it's an empty object so not particularly concerning. "
         else:
             s += f" here's the contents for you to assess:\n\n"
-            s += print_with_header(obj, header=f"unplaced object {idnum}")
+            s += highlighted_raw_pdf_obj_str(obj, header=f"unplaced object {idnum}")
 
         s += f"It has an embedded binary stream:\n{obj.get_data()}" if isinstance(obj, StreamObject) else ''
         (log_fxn or log.warning)(f"{s}\n")

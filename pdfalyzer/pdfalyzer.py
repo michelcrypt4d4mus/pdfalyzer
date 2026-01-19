@@ -20,7 +20,7 @@ from yaralyzer.output.rich_console import console
 from yaralyzer.util.logging import log
 
 from pdfalyzer.config import PDFALYZE
-from pdfalyzer.decorators.document_model_printer import print_with_header
+from pdfalyzer.decorators.document_model_printer import highlighted_raw_pdf_obj_str
 from pdfalyzer.decorators.indeterminate_node import IndeterminateNode
 from pdfalyzer.decorators.pdf_tree_node import PdfTreeNode
 from pdfalyzer.decorators.pdf_tree_verifier import PdfTreeVerifier
@@ -123,7 +123,7 @@ class Pdfalyzer:
 
     def walk_node(self, node: PdfTreeNode) -> None:
         """Recursively walk the PDF's tree structure starting at a given node."""
-        log.info(f'walk_node() called with {node}. Object dump:\n{print_with_header(node.obj, node.label)}')
+        log.info(f'walk_node() called with {node}. Object dump:\n{highlighted_raw_pdf_obj_str(node.obj, node.label)}')
         nodes_to_walk_next = [self._add_relationship_to_pdf_tree(r) for r in node.references_to_other_nodes()]
         node.all_references_processed = True
 
