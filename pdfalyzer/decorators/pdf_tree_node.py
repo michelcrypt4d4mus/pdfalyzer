@@ -74,6 +74,7 @@ class PdfTreeNode(NodeMixin, PdfObjectProperties):
         """Set the parent of this node."""
         if self.parent is not None and self.parent != parent:
             # Some objs in Arrays have the array's parent in /Parent but it's not worth warning about
+            # import pdb;pdb.set_trace()
             log_fxn = log.info if isinstance(self.parent.obj, ArrayObject) else log.warning
             log_fxn(f"Cannot set {parent} as parent of {self}, parent is already {self.parent}")
             return
