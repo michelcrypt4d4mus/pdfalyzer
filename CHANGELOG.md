@@ -6,6 +6,7 @@
 * Make `PdfObjectProperties`, `IndeterminateNode`, `PdfObjectRelationship` into dataclasses
 * Red blinking alert on font binaries whose length does not match the one they advertise in `/Length` props
 * Sort `Pdfalyzer.font_infos` array by node id
+* Better handling of `FileNotFoundError` at start
 
 ### 1.17.13
 * Remove YARA rule `invalid_trailer_structure` because it's causing YARA to crash with `internal error 46: TOO_MANY_RE_FIBERS` on some files (opened [issue](https://github.com/VirusTotal/yara/issues/2190) in YARA repo)
