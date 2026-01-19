@@ -10,7 +10,6 @@ from pypdf.errors import PdfReadError
 from pypdf.generic import (BooleanObject, DictionaryObject, IndirectObject, NameObject, NullObject,
      NumberObject, PdfObject, StreamObject)
 from rich.markup import escape
-from yaralyzer.output.rich_console import console
 from yaralyzer.util.logging import log
 
 from pdfalyzer.decorators.document_model_printer import highlighted_raw_pdf_obj_str
@@ -52,7 +51,7 @@ class PdfTreeVerifier:
         log.warning(f"Important missing node IDs: {self.notable_missing_node_ids()}")
 
         for idnum in self.pdfalyzer.missing_node_ids():
-            _ref, obj = self._ref_and_obj_for_id(idnum)
+            _ref, obj = self.pdfalyzer.ref_and_obj_for_id(idnum)
             log.warning(f"Missing node ID {idnum} ({type(obj).__name__})")
 
         log.warning(f"Unplaced nodes: {self.unplaced_encountered_nodes}\n")
@@ -62,7 +61,7 @@ class PdfTreeVerifier:
         notable_ids = []
 
         for idnum in self.pdfalyzer.missing_node_ids():
-            _ref, obj = self._ref_and_obj_for_id(idnum)
+            _ref, obj = self.pdfalyzer.ref_and_obj_for_id(idnum)
 
             if isinstance(obj, OK_UNPLACED_TYPES):
                 log.info(f"Missing node {idnum} but it's an acceptable type ({type(obj).__name__}, value={obj}")
@@ -75,29 +74,13 @@ class PdfTreeVerifier:
         """Return True if no unplaced nodes or missing node IDs."""
         return (len(self.unplaced_encountered_nodes) + len(self.notable_missing_node_ids())) == 0
 
-    def _ref_and_obj_for_id(self, idnum: int) -> tuple[IndirectObject, PdfObject | None]:
-        ref = IndirectObject(idnum, self.pdfalyzer.max_generation, self.pdfalyzer.pdf_reader)
-
-        try:
-            obj = ref.get_object()
-        except PdfReadError as e:
-            if 'Invalid Elementary Object' in str(e):
-                log.error(f"pypdf failed to find bad object: {e}")
-                obj = None
-            else:
-                console.print_exception()
-                log.error(str(e))
-                raise e
-
-        return (ref, obj)
-
     def _verify_unencountered_are_untraversable(self) -> None:
         """
         Make sure any PDF object IDs we can't find in tree are /ObjStm or /Xref nodes and
         make a final attempt to place a few select kinds of nodes.
         """
         for idnum in self.pdfalyzer.missing_node_ids():
-            ref, obj = self._ref_and_obj_for_id(idnum)
+            ref, obj = self.pdfalyzer.ref_and_obj_for_id(idnum)
 
             if obj is None:
                 log.error(f"Couldn't verify elementary obj with id {idnum} is properly in tree")
@@ -112,25 +95,9 @@ class PdfTreeVerifier:
                 self._log_failure(idnum, obj, f"has no {TYPE}")
                 continue
 
-            obj_type = obj[TYPE]
+            obj_type = obj.get(TYPE)
 
-            if obj_type == OBJ_STM:
-                self._log_failure(idnum, obj, f"placing at root bc it's an {OBJ_STM}", log.info)
-                self.pdfalyzer.pdf_tree.add_child(self.pdfalyzer._build_or_find_node(ref, OBJ_STM))
-                continue
-                # # Didier Stevens parses /ObjStm as a synthetic PDF here: https://github.com/DidierStevens/DidierStevensSuite/blob/master/pdf-parser.py#L1605
-                # if idnum != 2:
-                #     continue
-
-                # from io import BytesIO
-                # stream_data = obj.get_data()
-                # stream_offset = obj.get('/First') or 0
-                # offset_stream_data = stream_data[stream_offset:]
-                # log.warning(f"Offset stream: {offset_stream_data[0:100]}")
-                # stream = BytesIO(offset_stream_data)
-                # import pdb;pdb.set_trace()
-                # p = PdfReader(stream)
-            elif obj[TYPE] == XREF:
+            if obj_type == XREF:
                 placeable = XREF_STREAM in self.pdfalyzer.pdf_reader.trailer
 
                 for k, v in self.pdfalyzer.pdf_reader.trailer.items():
