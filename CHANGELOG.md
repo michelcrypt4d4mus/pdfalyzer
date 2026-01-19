@@ -8,6 +8,7 @@
 * Sort `Pdfalyzer.font_infos` array by node id
 * Better handling of `FileNotFoundError` at start
 * Improve logging about unplaced PDF nodes
+* Put unplaced `/ObjStm` nodes at the root of the tree
 
 ### 1.17.13
 * Remove YARA rule `invalid_trailer_structure` because it's causing YARA to crash with `internal error 46: TOO_MANY_RE_FIBERS` on some files (opened [issue](https://github.com/VirusTotal/yara/issues/2190) in YARA repo)

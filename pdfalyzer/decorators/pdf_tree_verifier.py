@@ -4,6 +4,7 @@ Verify that the PDF tree is complete/contains all the nodes in the PDF file.
 from dataclasses import dataclass
 from typing import Callable, cast
 
+from pypdf import PdfReader
 from pypdf.errors import PdfReadError
 from pypdf.generic import DictionaryObject, IndirectObject, NameObject, NumberObject, PdfObject, StreamObject
 from rich.markup import escape
@@ -78,8 +79,22 @@ class PdfTreeVerifier:
 
             obj_type = obj[TYPE]
 
-            if obj_type == OBJECT_STREAM:
-                log.debug(f"Object with id {idnum} not found in tree because it's an {OBJECT_STREAM}")
+            if obj_type == OBJ_STM:
+                self._log_failure(idnum, obj, f"placing at root bc it's an {OBJ_STM}", log.debug)
+                self.pdfalyzer.pdf_tree.add_child(self.pdfalyzer._build_or_find_node(ref, OBJ_STM))
+                continue
+                # # Didier Stevens parses /ObjStm as a synthetic PDF here: https://github.com/DidierStevens/DidierStevensSuite/blob/master/pdf-parser.py#L1605
+                # if idnum != 2:
+                #     continue
+
+                # from io import BytesIO
+                # stream_data = obj.get_data()
+                # stream_offset = obj.get('/First') or 0
+                # offset_stream_data = stream_data[stream_offset:]
+                # log.warning(f"Offset stream: {offset_stream_data[0:100]}")
+                # stream = BytesIO(offset_stream_data)
+                # import pdb;pdb.set_trace()
+                # p = PdfReader(stream)
             elif obj[TYPE] == XREF:
                 placeable = XREF_STREAM in self.pdfalyzer.pdf_reader.trailer
 
@@ -104,12 +119,22 @@ class PdfTreeVerifier:
                 self._log_failure(idnum, obj)
 
     def _log_failure(self, idnum: int, obj: PdfObject, msg: str = '', log_fxn: Callable | None = None) -> None:
-        obj = cast(DictionaryObject, obj)
-        s = f"{obj.get(TYPE)} " if TYPE in obj else ''
+        s = f"{obj.get(TYPE)} " if isinstance(obj, DictionaryObject) and TYPE in obj else ''
         s += f"Obj {idnum} ({type(obj).__name__}) is not in tree"
         s += f" ({msg})." if msg else '.'
-        s += f" Either a loose node w/no data or an error in pdfalyzer, here's the contents for you to assess:\n\n"
-        s += print_with_header(obj, header="unplaced object")
-        s += f"\nIt has an embedded binary stream: {obj.get_data()}" if isinstance(obj, StreamObject) else ''
-        log_fxn = log_fxn or log.warning
-        log_fxn(f"{s}\n")
+        s += f" Either a loose node w/no data or an error in pdfalyzer"
+
+        if len([k for k in obj]) == 0:
+            s += f" but it's an empty object so not particularly concerning. "
+        else:
+            s += f" here's the contents for you to assess:\n\n"
+            s += print_with_header(obj, header=f"unplaced object {idnum}")
+
+        s += f"It has an embedded binary stream:\n{obj.get_data()}" if isinstance(obj, StreamObject) else ''
+        (log_fxn or log.warning)(f"{s}\n")
+
+        # if isinstance(obj, StreamObject):
+        #     try:
+        #         (log_fxn or log.warning)(f"{obj.get_data().decode()}")
+        #     except Exception as e:
+        #         log.warning(f"Failed to decode obj stream data to str")
