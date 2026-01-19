@@ -61,7 +61,7 @@ def test_yara_rules_option(adobe_type1_fonts_pdf_path, additional_yara_rules_pat
     _assert_args_yield_lines(1797, adobe_type1_fonts_pdf_path, '--no-default-yara-rules', '-Y', additional_yara_rules_path)  # noqa: E501
 
 
-@pytest.mark.slow
+# @pytest.mark.slow
 def test_quote_extraction(adobe_type1_fonts_pdf_path):
     _assert_args_yield_lines(2914, adobe_type1_fonts_pdf_path, '--extract-quoted', 'backtick', '-s')
     _assert_args_yield_lines(5736, adobe_type1_fonts_pdf_path, '--extract-quoted', 'backtick', '--extract-quoted', 'frontslash', '-s')  # noqa: E501

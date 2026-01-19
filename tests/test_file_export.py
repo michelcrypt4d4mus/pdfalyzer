@@ -8,7 +8,7 @@ from yaralyzer.helpers.file_helper import files_in_dir
 from pdfalyzer.config import PDFALYZE
 
 
-@pytest.mark.slow
+# @pytest.mark.slow
 def test_file_export(analyzing_malicious_pdf_path, tmp_dir):
     args = [
         '--min-decode-length', '50',
