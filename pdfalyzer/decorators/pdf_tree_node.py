@@ -5,7 +5,7 @@ from typing import Callable, List, Optional, Self
 
 from anytree import NodeMixin, SymlinkNode
 from pypdf.errors import PdfReadError
-from pypdf.generic import IndirectObject, PdfObject, StreamObject
+from pypdf.generic import ArrayObject, IndirectObject, PdfObject, StreamObject
 from rich.markup import escape
 from rich.text import Text
 from yaralyzer.output.rich_console import console
@@ -73,7 +73,10 @@ class PdfTreeNode(NodeMixin, PdfObjectProperties):
     def set_parent(self, parent: Self) -> None:
         """Set the parent of this node."""
         if self.parent is not None and self.parent != parent:
-            raise PdfWalkError(f"Cannot set {parent} as parent of {self}, parent is already {self.parent}")
+            # Some objs in Arrays have the array's parent in /Parent but it's not worth warning about
+            log_fxn = log.info if isinstance(self.parent.obj, ArrayObject) else log.warning
+            log_fxn(f"Cannot set {parent} as parent of {self}, parent is already {self.parent}")
+            return
 
         self.parent = parent
         self.remove_non_tree_relationship(parent)
