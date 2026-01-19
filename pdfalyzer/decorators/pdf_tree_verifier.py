@@ -20,17 +20,16 @@ OK_UNPLACED_TYPES = (BooleanObject, NameObject, NoneType, NullObject, NumberObje
 class PdfTreeVerifier:
     """Class to verify that the PDF tree is complete/contains all the nodes in the PDF file."""
     pdfalyzer: 'Pdfalyzer'
-    unplaced_encountered_nodes: list[PdfTreeNode] = field(init=False)
 
     def __post_init__(self):
-        self.unplaced_encountered_nodes = self.pdfalyzer.unplaced_encountered_nodes()
         self._verify_unencountered_are_untraversable()
 
     def log_final_warnings(self) -> None:
         print('')
+        unplaced_encountered_nodes = self.pdfalyzer.unplaced_encountered_nodes()
 
-        if len(self.unplaced_encountered_nodes) > 0:
-            msg = f"Some nodes were traversed but never placed: {escape(str(self.unplaced_encountered_nodes))}\n\n" + \
+        if len(unplaced_encountered_nodes) > 0:
+            msg = f"Some nodes were traversed but never placed: {escape(str(unplaced_encountered_nodes))}\n\n" + \
                    "For link nodes like /First, /Next, /Prev, and /Last this might be no big deal - depends " + \
                    "on the PDF. But for other node typtes this could indicate missing data in the tree.\n"
             log.warning(msg)
@@ -77,7 +76,7 @@ class PdfTreeVerifier:
 
     def was_successful(self):
         """Return True if no unplaced nodes or missing node IDs."""
-        return (len(self.unplaced_encountered_nodes) + len(self.notable_missing_node_ids())) == 0
+        return (len(self.pdfalyzer.unplaced_encountered_nodes()) + len(self.notable_missing_node_ids())) == 0
 
     def _verify_unencountered_are_untraversable(self) -> None:
         """
