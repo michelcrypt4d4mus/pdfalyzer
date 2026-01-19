@@ -56,9 +56,10 @@ def analyzing_malicious_pdfalyzer(analyzing_malicious_pdf_path):
 def adobe_type1_fonts_pdfalyzer(adobe_type1_fonts_pdf_path):
     return Pdfalyzer(adobe_type1_fonts_pdf_path)
 
+# Has mysterious unplaced nodes
 @pytest.fixture(scope='session')
 def form_evince_pdfalyzer():
-    return Pdfalyzer(str(FIXTURES_DIR.joinpath('form_evince.pdf')))  # Has mysterious unplaced nodes
+    return Pdfalyzer(str(FIXTURES_DIR.joinpath('form_evince.pdf')))
 
 
 # /Page and /Pages nodes

@@ -273,7 +273,7 @@ class Pdfalyzer:
 
             IndeterminateNode(node).place_node()
 
-        # Place /ObjStm at root if no other location found.
+        # Place /ObjStm at root if no other location found, make a weak attemp at /XRef nodes
         for idnum in self.missing_node_ids():
             ref, obj = self.ref_and_obj_for_id(idnum)
 
@@ -283,18 +283,32 @@ class Pdfalyzer:
             if obj.get(TYPE) == OBJ_STM:
                 log.warning(f"Making unplaced {OBJ_STM} obj a child of root")
                 self.pdf_tree.add_child(self._build_or_find_node(ref, OBJ_STM))
-                # # Didier Stevens parses /ObjStm as a synthetic PDF here: https://github.com/DidierStevens/DidierStevensSuite/blob/master/pdf-parser.py#L1605
-                # if idnum != 2:
-                #     continue
-
-                # from io import BytesIO
-                # stream_data = obj.get_data()
-                # stream_offset = obj.get('/First') or 0
-                # offset_stream_data = stream_data[stream_offset:]
+                # Didier Stevens parses /ObjStm as a synthetic PDF here: https://github.com/DidierStevens/DidierStevensSuite/blob/master/pdf-parser.py#L1605
+                # offset_stream_data = obj.get_data()[obj.get('/First', 0):]
                 # log.warning(f"Offset stream: {offset_stream_data[0:100]}")
                 # stream = BytesIO(offset_stream_data)
-                # import pdb;pdb.set_trace()
                 # p = PdfReader(stream)
+            elif obj.get(TYPE) == XREF:
+                # TODO: this is highly questionable
+                placeable = XREF_STREAM in self.pdf_reader.trailer
+
+                for k, v in self.pdf_reader.trailer.items():
+                    xref_val_for_key = obj.get(k)
+
+                    if k in [XREF_STREAM, PREV]:
+                        continue
+                    elif k == SIZE:
+                        if xref_val_for_key is None or v != (xref_val_for_key + 1):
+                            log.info(f"{XREF} has {SIZE} of {xref_val_for_key}, trailer has {SIZE} of {v}")
+                            placeable = False
+
+                        continue
+                    elif k not in obj or v != obj.get(k):
+                        log.info(f"Trailer has {k} -> {v} but {XREF} obj has {obj.get(k)} at that key")
+                        placeable = False
+
+                if placeable:
+                    self.pdf_tree.add_child(self._build_or_find_node(ref, XREF_STREAM))
 
     def _extract_font_infos(self) -> None:
         """Extract information about fonts in the tree and place it in `self.font_infos`."""

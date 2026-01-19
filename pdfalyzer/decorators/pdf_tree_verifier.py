@@ -33,7 +33,6 @@ class PdfTreeVerifier:
 
     def __post_init__(self):
         self.unplaced_encountered_nodes = self.pdfalyzer.unplaced_encountered_nodes()
-        self._verify_unencountered_are_untraversable()
 
     def log_final_warnings(self) -> None:
         print('')
@@ -47,14 +46,9 @@ class PdfTreeVerifier:
                    "on the PDF. But for other node typtes this could indicate missing data in the tree.\n"
             log.warning(msg)
 
-        log.warning(f"All missing node ids: {self.pdfalyzer.missing_node_ids()}\n")
-        log.warning(f"Important missing node IDs: {self.notable_missing_node_ids()}")
-
-        for idnum in self.pdfalyzer.missing_node_ids():
-            _ref, obj = self.pdfalyzer.ref_and_obj_for_id(idnum)
-            log.warning(f"Missing node ID {idnum} ({type(obj).__name__})")
-
-        log.warning(f"Unplaced nodes: {self.unplaced_encountered_nodes}\n")
+        log.warning(f"All missing node ids: {self.pdfalyzer.missing_node_ids()}")
+        log.warning(f"Important missing node IDs: {self.notable_missing_node_ids()}\n")
+        self._verify_unencountered_are_untraversable()
 
     def notable_missing_node_ids(self) -> list[int]:
         """Missing idnums that aren't NullObject, NumberObject, etc."""
@@ -75,10 +69,7 @@ class PdfTreeVerifier:
         return (len(self.unplaced_encountered_nodes) + len(self.notable_missing_node_ids())) == 0
 
     def _verify_unencountered_are_untraversable(self) -> None:
-        """
-        Make sure any PDF object IDs we can't find in tree are /ObjStm or /Xref nodes and
-        make a final attempt to place a few select kinds of nodes.
-        """
+        """Make sure any PDF object IDs we can't find in tree are /Xref nodes."""  # TODO: is this still accurate?
         for idnum in self.pdfalyzer.missing_node_ids():
             ref, obj = self.pdfalyzer.ref_and_obj_for_id(idnum)
 
@@ -86,39 +77,16 @@ class PdfTreeVerifier:
                 log.error(f"Couldn't verify elementary obj with id {idnum} is properly in tree")
                 continue
             elif isinstance(obj, (NumberObject, NameObject)):
-                log.info(f"Obj {idnum} is a {type(obj)} w/value {obj}; if relationshipd by /Length etc. this is a nonissue but maybe worth doublechecking")  # noqa: E501
+                log.info(f"Obj {idnum} is a {type(obj)} w/value {obj}; if relationship by /Length etc. this is a nonissue but maybe worth doublechecking")  # noqa: E501
                 continue
-            elif not isinstance(obj, dict):
-                self._log_failure(idnum, obj, "isn't a dict, cannot determine if it should be in tree", log.error)
+            elif not isinstance(obj, DictionaryObject):
+                self._log_failure(idnum, obj, "isn't a dict, cannot determine if it should be in tree")
                 continue
             elif TYPE not in obj:
                 self._log_failure(idnum, obj, f"has no {TYPE}")
                 continue
 
-            obj_type = obj.get(TYPE)
-
-            if obj_type == XREF:
-                placeable = XREF_STREAM in self.pdfalyzer.pdf_reader.trailer
-
-                for k, v in self.pdfalyzer.pdf_reader.trailer.items():
-                    xref_val_for_key = obj.get(k)
-
-                    if k in [XREF_STREAM, PREV]:
-                        continue
-                    elif k == SIZE:
-                        if xref_val_for_key is None or v != (xref_val_for_key + 1):
-                            log.info(f"{XREF} has {SIZE} of {xref_val_for_key}, trailer has {SIZE} of {v}")
-                            placeable = False
-
-                        continue
-                    elif k not in obj or v != obj.get(k):
-                        log.info(f"Trailer has {k} -> {v} but {XREF} obj has {obj.get(k)} at that key")
-                        placeable = False
-
-                if placeable:
-                    self.pdfalyzer.pdf_tree.add_child(self.pdfalyzer._build_or_find_node(ref, XREF_STREAM))
-            else:
-                self._log_failure(idnum, obj)
+            self._log_failure(idnum, obj)
 
     def _log_failure(self, idnum: int, obj: PdfObject, msg: str = '', log_fxn: Callable | None = None) -> None:
         s = f"{obj.get(TYPE)} " if isinstance(obj, DictionaryObject) and TYPE in obj else ''
