@@ -1,11 +1,19 @@
 """
 Fun with dicts.
+# TODO: rename collection_helper
 """
+import itertools
+from typing import Any
+
 from pypdf.generic import ArrayObject, DictionaryObject
 from yaralyzer.util.logging import log
 
 
 without_nones = lambda _list: [e for e in _list if e]
+
+
+def flatten(_list: list[list[Any]]) -> list:
+    return list(itertools.chain.from_iterable(_list))
 
 
 def get_dict_key_by_value(_dict: dict, value):

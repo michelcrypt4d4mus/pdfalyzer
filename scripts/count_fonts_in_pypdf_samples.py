@@ -11,15 +11,23 @@ from yaralyzer.output.rich_console import console
 from yaralyzer.util.logging import log
 
 from pdfalyzer.font_info import FontInfo, unique_font_string
+from pdfalyzer.helpers.dict_helper import flatten
 from pdfalyzer.helpers.filesystem_helper import file_size_in_mb
-from pdfalyzer.output.layout import print_section_subheader
+from pdfalyzer.output.layout import print_section_subheader, _print_header_panel
 from pdfalyzer.pdfalyzer import Pdfalyzer
 
 PYPDF_REPO_DIR = Path("../pypdf")
 PYPDF_RESOURCES_DIR = PYPDF_REPO_DIR.joinpath('resources')
 PYPDF_ENCRYPTED_DIR = PYPDF_RESOURCES_DIR.joinpath('encyrpted')
 PYPDF_SAMPLES_DIR = PYPDF_REPO_DIR.joinpath('sample-files')
+PYPDF_CACHE_DIR = PYPDF_REPO_DIR.joinpath('tests', 'pdf_cache')
 PICKLED_PATH = Path('./count_fonts_in_pypdf_samples.pkl.gz')
+
+PDF_DIRS = [
+    PYPDF_CACHE_DIR,
+    PYPDF_RESOURCES_DIR,
+    PYPDF_SAMPLES_DIR,
+]
 
 SLOW_PDFS = [
     'issue-604.pdf',
@@ -28,12 +36,13 @@ SLOW_PDFS = [
 
 file_fonts: dict[str, list[FontInfo]] = {}
 
-for file in PYPDF_RESOURCES_DIR.glob('*.pdf'):
+for file in flatten([dir.glob('*.pdf') for dir in PDF_DIRS]):
     if file.name in SLOW_PDFS:
         continue
 
     file_key = str(file).removeprefix(str(PYPDF_REPO_DIR) + '/')
-    print_section_subheader(f"pdfalyzing '{file}' ({file_size_in_mb(file)} MB)")
+    panel_txt = Text('pdfalyzing ').append(f"{file}", 'bright_cyan').append(f" ({file_size_in_mb(file)} MB)", style='dim')
+    _print_header_panel(panel_txt, 'grey50', False, 100, internal_padding=(1,4))
 
     try:
         pdfalyzer = Pdfalyzer(file, 'password')
@@ -44,9 +53,6 @@ for file in PYPDF_RESOURCES_DIR.glob('*.pdf'):
         for i, name in enumerate(font_names, 1):
             console.print(f"        - {name}", style='cyan')
 
-        if len(pdfalyzer.missing_node_ids()) > 0:
-            console.print(f"    '{file}' had missing node ids: {pdfalyzer.missing_node_ids()}", style='red')
-            console.print(f"    '{file}' notable node ids: {pdfalyzer.verifier.notable_missing_node_ids()}", style='red')
     except Exception as e:
         console.print_exception()
         log.error(f"Error processing '{file}': {type(e).__name__} ({e})")
