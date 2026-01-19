@@ -16,6 +16,7 @@ from pdfalyzer.decorators.document_model_printer import highlighted_raw_pdf_obj_
 from pdfalyzer.decorators.pdf_tree_node import PdfTreeNode
 from pdfalyzer.util.adobe_strings import *
 
+NUM_PREVIEW_BYTES = 2_500
 OK_UNPLACED_TYPES = (BooleanObject, NameObject, NoneType, NullObject, NumberObject)
 
 
@@ -100,7 +101,12 @@ class PdfTreeVerifier:
             s += f" here's the contents for you to assess:\n\n"
             s += highlighted_raw_pdf_obj_str(obj, header=f"Unplaced PdfObject (ID={idnum}, type='{type(obj).__name__}')")
 
-        s += f"It has an embedded binary stream:\n{obj.get_data()}" if isinstance(obj, StreamObject) else ''
+        if isinstance(obj, StreamObject):
+            data = obj.get_data()
+            s += "It has an embedded binary stream"
+            s += f", here's a preview of the first {NUM_PREVIEW_BYTES} bytes" if len(data) > NUM_PREVIEW_BYTES else ''
+            s += f":\n{data[:NUM_PREVIEW_BYTES]}"
+
         (log_fxn or log.warning)(f"{s}\n")
 
         # if isinstance(obj, StreamObject):
