@@ -125,7 +125,7 @@ class PdfTreeVerifier:
             obj_type = obj[TYPE]
 
             if obj_type == OBJ_STM:
-                self._log_failure(idnum, obj, f"placing at root bc it's an {OBJ_STM}", log.debug)
+                self._log_failure(idnum, obj, f"placing at root bc it's an {OBJ_STM}", log.info)
                 self.pdfalyzer.pdf_tree.add_child(self.pdfalyzer._build_or_find_node(ref, OBJ_STM))
                 continue
                 # # Didier Stevens parses /ObjStm as a synthetic PDF here: https://github.com/DidierStevens/DidierStevensSuite/blob/master/pdf-parser.py#L1605
