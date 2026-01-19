@@ -4,7 +4,7 @@ Deprecated old, pre-tree, more rawformat reader. Only used for debugging these d
 from io import StringIO
 
 from pypdf.generic import ArrayObject, DictionaryObject, IndirectObject
-from rich.console import Console
+from rich.console import Console, RenderableType
 from rich.markup import escape
 
 from pdfalyzer.helpers.pdf_object_helper import pypdf_class_name
@@ -62,7 +62,7 @@ def print_all_props(pdf_obj, console, verbose=False, indent=''):
 
 
 # Prints with a header of your choosing
-def print_with_header(obj, header, depth=0, print_props=True, print_header=True):
+def print_with_header(obj, header, depth=0, print_props=True, print_header=True) -> RenderableType:
     console = Console(file=StringIO())
     box_horiz = '-' * (len(header) + 4)
     box_elements = [box_horiz, f'| {escape(header)} |', box_horiz]
