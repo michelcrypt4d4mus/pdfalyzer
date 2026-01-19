@@ -62,7 +62,7 @@ def print_all_props(pdf_obj, console, verbose=False, indent=''):
 
 
 # Prints with a header of your choosing
-def print_with_header(obj, header, depth=0, print_props=True, print_header=True) -> RenderableType:
+def print_with_header(obj, header, depth=0, print_props=True, print_header=True) -> str:
     console = Console(file=StringIO())
     box_horiz = '-' * (len(header) + 4)
     box_elements = [box_horiz, f'| {escape(header)} |', box_horiz]
