@@ -37,10 +37,15 @@ class PdfTreeVerifier:
 
         missing_node_ids = self.pdfalyzer.missing_node_ids()
         notable_missing_node_ids = self.notable_missing_node_ids()
-        log.warning(f"Found {len(notable_missing_node_ids)} important missing node IDs: {notable_missing_node_ids}")
+        all_missing_nodes_msg = f"{len(missing_node_ids)} missing node ids: {missing_node_ids}\n"
 
-        if missing_node_ids != notable_missing_node_ids:
-            log.warning(f"All {len(missing_node_ids)} missing node ids: {missing_node_ids}\n")
+        if notable_missing_node_ids:
+            log.warning(f"Found {len(notable_missing_node_ids)} important missing node IDs: {notable_missing_node_ids}")
+
+            if missing_node_ids != notable_missing_node_ids:
+                log.warning(f"All of the {all_missing_nodes_msg}")
+        elif missing_node_ids:
+            log.warning(f"Probably unimportant {all_missing_nodes_msg}")
 
         for idnum in self.pdfalyzer.missing_node_ids():
             _ref, obj = self.pdfalyzer.ref_and_obj_for_id(idnum)
