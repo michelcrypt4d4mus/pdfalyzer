@@ -33,7 +33,7 @@ for file in PYPDF_RESOURCES_DIR.glob('*.pdf'):
         continue
 
     file_key = str(file).removeprefix(str(PYPDF_REPO_DIR) + '/')
-    print_section_subheader(f"pdfalyzing '{file}'")
+    print_section_subheader(f"pdfalyzing '{file}' ({file_size_in_mb(file)} MB)")
 
     try:
         pdfalyzer = Pdfalyzer(file, 'password')
@@ -43,6 +43,10 @@ for file in PYPDF_RESOURCES_DIR.glob('*.pdf'):
 
         for i, name in enumerate(font_names, 1):
             console.print(f"        - {name}", style='cyan')
+
+        if len(pdfalyzer.missing_node_ids()) > 0:
+            console.print(f"    '{file}' had missing node ids: {pdfalyzer.missing_node_ids()}", style='red')
+            console.print(f"    '{file}' notable node ids: {pdfalyzer.verifier.notable_missing_node_ids()}", style='red')
     except Exception as e:
         console.print_exception()
         log.error(f"Error processing '{file}': {type(e).__name__} ({e})")
