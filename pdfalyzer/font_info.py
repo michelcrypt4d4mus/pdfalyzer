@@ -83,6 +83,24 @@ class FontInfo:
 
         self.prepared_char_map = prepare_cm(self.font_dict) if TO_UNICODE in self.font_dict else None
 
+    def print_summary(self):
+        """Prints a table of info about the font drawn from the various PDF objects. quote_type of None means all."""
+        print_section_subheader(str(self), style='font.title')
+        console.print(self._summary_table())
+        console.line()
+
+        if self.font_obj.character_map:
+            print_character_mapping(self)
+        else:
+            log.info(f"No character map found in {self}")
+
+        if self.prepared_char_map:
+            print_prepared_charmap(self)
+        else:
+            log.info(f"No prepared_charmap found in {self}")
+
+        console.line()
+
     def _extract_font_descriptor_props(self) -> None:
         """Set various properties that come from /FontDescriptor."""
         if not (FONT_DESCRIPTOR in self.font_dict or DESCENDANT_FONTS in self.font_dict):
@@ -123,24 +141,6 @@ class FontInfo:
         stream_data = self.font_obj.font_descriptor.font_file.get_data()
         scanner_label = Text(self.display_title, get_label_style(FONT_FILE))
         self.binary_scanner = BinaryScanner(stream_data, self, scanner_label)
-
-    def print_summary(self):
-        """Prints a table of info about the font drawn from the various PDF objects. quote_type of None means all."""
-        print_section_subheader(str(self), style='font.title')
-        console.print(self._summary_table())
-        console.line()
-
-        if self.font_obj.character_map:
-            print_character_mapping(self)
-        else:
-            log.info(f"No character map found in {self}")
-
-        if self.prepared_char_map:
-            print_prepared_charmap(self)
-        else:
-            log.info(f"No prepared_charmap found in {self}")
-
-        console.line()
 
     def _first_and_last_char(self) -> list[int]:
         return without_nones([self.font_dict.get('/FirstChar'), self.font_dict.get('/LastChar')])
