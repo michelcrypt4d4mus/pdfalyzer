@@ -13,10 +13,10 @@ from rich.text import Text
 from yaralyzer.util.argument_parser import debug, export, parser, parse_arguments as parse_yaralyzer_args, source
 from yaralyzer.util.logging import log, log_argparse_result, log_current_config, log_invocation
 
-from pdfalyzer.util.output_section import ALL_STREAMS, DOCINFO, TREE, RICH, FONTS, COUNTS, STREAMS, YARA
-from pdfalyzer.config import PDFALYZER, PdfalyzerConfig
+from pdfalyzer.config import PDFALYZE, PDFALYZER, PdfalyzerConfig
 from pdfalyzer.detection.constants.binary_regexes import QUOTE_PATTERNS
 from pdfalyzer.helpers.rich_text_helper import print_highlighted
+from pdfalyzer.util.output_section import ALL_STREAMS, DOCINFO, TREE, RICH, FONTS, COUNTS, STREAMS, YARA
 
 RichHelpFormatterPlus.choose_theme('prince')
 
@@ -111,12 +111,13 @@ select.add_argument('--password', help='only required for encrypted PDFs', type=
 
 # Make sure the selection section is at the top
 parser._action_groups = parser._action_groups[:2] + [parser._action_groups[-1]] + parser._action_groups[2:-1]
+is_pdfalyze_script = (parser.prog == PDFALYZE)
 
 
 ################################
 # Main argument parsing begins #
 ################################
-def parse_arguments():
+def parse_arguments() -> Namespace:
     """Parse command line args. Most args can also be communicated to the app by setting env vars."""
     if '--version' in sys.argv:
         print(f"pdfalyzer {version(PDFALYZER)}")
@@ -151,7 +152,7 @@ def parse_arguments():
     return args
 
 
-def all_sections_chosen(args):
+def all_sections_chosen(args: Namespace) -> bool:
     """Returns True if all flags are set or no flags are set."""
     return len([s for s in ALL_SECTIONS if vars(args)[s]]) == len(ALL_SECTIONS)
 
