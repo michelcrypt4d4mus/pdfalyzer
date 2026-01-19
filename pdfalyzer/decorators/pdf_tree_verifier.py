@@ -43,8 +43,12 @@ class PdfTreeVerifier:
 
     def log_final_warnings(self) -> None:
         print('')
-        log.warning(f"All missing node ids: {self.missing_node_ids()}\n")
-        log.warning(f"Important missing node IDs: {self.notable_missing_node_ids()}")
+
+        if self.pdfalyzer.max_generation > 0:
+            log.warning(f"Verification doesn't check revisions (this PDF's generation is {self.pdfalyzer.max_generation})\n")
+
+        log.warning(f"All missing node ids: {self.missing_node_ids()}")
+        log.warning(f"Important missing node IDs: {self.notable_missing_node_ids()}\n")
 
         for idnum in self.missing_node_ids():
             _ref, obj = self._ref_and_obj_for_id(idnum)
@@ -102,9 +106,6 @@ class PdfTreeVerifier:
         Make sure any PDF object IDs we can't find in tree are /ObjStm or /Xref nodes and
         make a final attempt to place a few select kinds of nodes.
         """
-        if self.pdfalyzer.max_generation > 0:
-            log.warning(f"Verification doesn't check revisions but this PDF's generation is {self.pdfalyzer.max_generation}")
-
         for idnum in self.missing_node_ids():
             ref, obj = self._ref_and_obj_for_id(idnum)
 
