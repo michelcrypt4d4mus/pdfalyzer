@@ -49,7 +49,7 @@ class PdfTreeVerifier:
 
         log.warning(f"All missing node ids: {self.pdfalyzer.missing_node_ids()}")
         log.warning(f"Important missing node IDs: {self.notable_missing_node_ids()}\n")
-        self._verify_unencountered_are_untraversable()
+        self._log_all_unplaced_nodes()
 
     def notable_missing_node_ids(self) -> list[int]:
         """Missing idnums that aren't NullObject, NumberObject, etc."""
@@ -69,8 +69,8 @@ class PdfTreeVerifier:
         """Return True if no unplaced nodes or missing node IDs."""
         return (len(self.unplaced_encountered_nodes) + len(self.notable_missing_node_ids())) == 0
 
-    def _verify_unencountered_are_untraversable(self) -> None:
-        """Make sure any PDF object IDs we can't find in tree are /Xref nodes."""  # TODO: is this still accurate?
+    def _log_all_unplaced_nodes(self) -> None:
+        """Log warning for each unplaced node."""
         for idnum in self.pdfalyzer.missing_node_ids():
             ref, obj = self.pdfalyzer.ref_and_obj_for_id(idnum)
 
