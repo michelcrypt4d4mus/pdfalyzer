@@ -32,15 +32,15 @@ def analyzing_malicious_pdf_path():
 def attachment_pdf_pdfalyzer():
     return Pdfalyzer(str(FIXTURES_DIR.joinpath('attachment.pdf')))
 
-# Has a /Resources key with fonts that is not an indirect object (it's a DictionaryObject)
-# Also has a /DescendantFonts key
+# Has /Resources that is not an IndirectObject, also has multiple /DescendantFonts
 @pytest.fixture(scope='session')
 def geobase_pdfalyzer():
     return Pdfalyzer(str(FIXTURES_DIR.joinpath('GeoBase_NHNC1_Data_Model_UML_EN.pdf')))
 
+# Has TONS of unplaced nodes
 @pytest.fixture(scope='session')
 def SF424_page2_pdf_path():
-    return FIXTURES_DIR.joinpath('SF424_page2.pdf')  # Has TONS of unplaced nodes
+    return FIXTURES_DIR.joinpath('SF424_page2.pdf')
 
 
 # Some obj ids for use with -f when you want to limit yourself to the font
