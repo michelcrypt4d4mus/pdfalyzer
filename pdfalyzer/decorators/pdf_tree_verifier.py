@@ -4,7 +4,7 @@ Verify that the PDF tree is complete/contains all the nodes in the PDF file.
 from dataclasses import dataclass
 
 from pypdf.errors import PdfReadError
-from pypdf.generic import IndirectObject, NameObject, NumberObject
+from pypdf.generic import IndirectObject, NameObject, NumberObject, PdfObject, StreamObject
 from rich.markup import escape
 from yaralyzer.output.rich_console import console
 from yaralyzer.util.logging import log
@@ -54,8 +54,9 @@ class PdfTreeVerifier:
                 if 'Invalid Elementary Object' in str(e):
                     log.warning(f"Couldn't verify elementary obj with id {idnum} is properly in tree")
                     continue
-                log.error(str(e))
+
                 console.print_exception()
+                log.error(str(e))
                 obj = None
                 raise e
 
@@ -66,12 +67,10 @@ class PdfTreeVerifier:
                 log.info(f"Obj {idnum} is a {type(obj)} w/value {obj}; if relationshipd by /Length etc. this is a nonissue but maybe worth doublechecking")  # noqa: E501
                 continue
             elif not isinstance(obj, dict):
-                log.error(f"Obj {idnum} ({obj}) of type {type(obj)} isn't dict, cannot determine if it should be in tree")  # noqa: E501
+                log.error(self._obj_msg(idnum, obj, "Isn't a dict, cannot determine if it should be in tree"))
                 continue
             elif TYPE not in obj:
-                msg = f"Obj {idnum} has no {TYPE} and is not in tree. Either a loose node w/no data or an error in pdfalyzer."  # noqa: E501
-                msg += f"\nHere's the contents for you to assess:\n{obj}"
-                log.warning(msg)
+                log.warning(self._obj_msg(idnum, obj, f"has no {TYPE}"))
                 continue
 
             obj_type = obj[TYPE]
@@ -99,4 +98,10 @@ class PdfTreeVerifier:
                 if placeable:
                     self.pdfalyzer.pdf_tree.add_child(self.pdfalyzer._build_or_find_node(ref, XREF_STREAM))
             else:
-                log.warning(f"{obj_type} Obj {idnum} not found in tree! Here's the contents for you to assess:\n{obj}")
+                log.warning(f"{obj_type} {self._obj_msg(idnum, obj)}")
+
+    def _obj_msg(self, idnum: int, obj: PdfObject, msg: str = '') -> str:
+        s = f"Obj {idnum} ({type(obj).__name__}) is not in tree"
+        s += f" ({msg})." if msg else '.'
+        s += " It has an embedded binary stream." if isinstance(obj, StreamObject) else ''
+        return f"{s} Either a loose node w/no data or an error in pdfalyzer, here's the contents for you to assess:\n{obj}\n"
