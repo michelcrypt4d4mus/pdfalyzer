@@ -1,0 +1,8 @@
+Released v1.x.x. of The Pdfalyzer, the surprisingly popular tool for analyzing (possibly malicious) PDFs I created after my own unpleasant experience. Now ships with two simple helper tools for working with PDF files:
+
+* Github: https://github.com/michelcrypt4d4mus/pdfalyzer
+* Pypi: https://pypi.org/project/pdfalyzer/
+* Homebrew: https://formulae.brew.sh/formula/pdfalyzer
+* Fun thread someone made using Pdfalyzer: https://x.com/VikParuchuri/status/1965773078585344215
+
+#cybersecurity #FOSS #GPL #homebrew #infosec #maldoc #malware #malwareanalysis #threatassessment #pdf #pdfs #pypi #python #reversing #yara #yararule

@@ -149,6 +149,14 @@ class Pdfalyzer:
         """Returns true if `search_for_node` is in the tree already."""
         return any([node == search_for_node for node in self.node_iterator()])
 
+    def missing_node_ids(self) -> list[int]:
+        """We expect to see all ordinals up to the number of nodes /Trailer claims exist as obj IDs."""
+        if self.pdf_size is None:
+            log.error(f"{SIZE} not found in PDF trailer; cannot verify all nodes are in tree")
+            return []
+
+        return [i for i in range(1, self.pdf_size) if self.find_node_by_idnum(i) is None]
+
     def node_iterator(self) -> Iterator[PdfTreeNode]:
         """Iterate over nodes, grouping them by distance from the root."""
         return LevelOrderIter(self.pdf_tree)
@@ -157,6 +165,10 @@ class Pdfalyzer:
         """List of actual nodes (not SymlinkNodes) containing streams sorted by PDF object ID"""
         stream_filter = lambda node: node.contains_stream() and not isinstance(node, SymlinkNode)  # noqa: E731
         return sorted(findall(self.pdf_tree, stream_filter), key=lambda r: r.idnum)
+
+    def unplaced_encountered_nodes(self) -> list[PdfTreeNode]:
+        """Nodes that were encountered by walk_node() but didn't end up in the tree."""
+        return [node for id, node in self.nodes_encountered.items() if self.find_node_by_idnum(id) is None]
 
     def _add_relationship_to_pdf_tree(self, relationship: PdfObjectRelationship) -> Optional[PdfTreeNode]:
         """
@@ -244,6 +256,8 @@ class Pdfalyzer:
                 continue
 
             IndeterminateNode(node).place_node()
+
+        # for node in self.missing_node_ids():
 
     def _extract_font_infos(self) -> None:
         """Extract information about fonts in the tree and place it in `self.font_infos`."""
