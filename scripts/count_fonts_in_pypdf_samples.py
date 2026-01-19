@@ -21,6 +21,10 @@ PYPDF_ENCRYPTED_DIR = PYPDF_RESOURCES_DIR.joinpath('encyrpted')
 PYPDF_SAMPLES_DIR = PYPDF_REPO_DIR.joinpath('sample-files')
 PICKLED_PATH = Path('./count_fonts_in_pypdf_samples.pkl.gz')
 
+SLOW_PDFS = [
+    'issue-604.pdf',
+]
+
 
 file_fonts: dict[str, list[FontInfo]] = {}
 
