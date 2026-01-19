@@ -42,13 +42,17 @@ class PdfTreeVerifier:
         log.warning(f"Important missing node IDs: {self.notable_missing_node_ids()}")
 
         for idnum in self.missing_node_ids():
-            ref, obj = self._ref_and_obj_for_id(idnum)
+            _ref, obj = self._ref_and_obj_for_id(idnum)
             log.warning(f"Missing node ID {idnum} ({type(obj).__name__})")
 
         log.warning(f"Unplaced nodes: {self.unplaced_encountered_nodes}\n")
 
     def missing_node_ids(self) -> list[int]:
         """We expect to see all ordinals up to the number of nodes /Trailer claims exist as obj IDs."""
+        if self.pdfalyzer.pdf_size is None:
+            log.error(f"{SIZE} not found in PDF trailer; cannot verify all nodes are in tree")
+            return []
+
         return [
             i for i in range(1, self.pdfalyzer.pdf_size)
             if self.pdfalyzer.find_node_by_idnum(i) is None
@@ -93,10 +97,6 @@ class PdfTreeVerifier:
         Make sure any PDF object IDs we can't find in tree are /ObjStm or /Xref nodes and
         make a final attempt to place a few select kinds of nodes.
         """
-        if self.pdfalyzer.pdf_size is None:
-            log.error(f"{SIZE} not found in PDF trailer; cannot verify all nodes are in tree")
-            return
-
         if self.pdfalyzer.max_generation > 0:
             log.warning(f"Verification doesn't check revisions but this PDF's generation is {self.pdfalyzer.max_generation}")
 
