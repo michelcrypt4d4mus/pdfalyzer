@@ -72,42 +72,57 @@ class FontInfo:
         else:
             self.display_title += f"({self.font_obj.sub_type})"
 
-        if FONT_DESCRIPTOR in self.font_dict or DESCENDANT_FONTS in self.font_dict:
-            # CID or composite fonts have a 1 element array in /DescendantFonts that has the /FontDescriptor
-            if DESCENDANT_FONTS in self.font_dict:
-                descendant_font = self.font_dict[DESCENDANT_FONTS][0].get_object()
-
-                if FONT_DESCRIPTOR in descendant_font:
-                    self.font_descriptor_dict = descendant_font[FONT_DESCRIPTOR].get_object()
-
-                self.descendant_fonts_subtype = descendant_font.get(SUBTYPE)
-                self.raw_widths = descendant_font.get(WIDTHS) or descendant_font.get(W)
-            elif FONT_DESCRIPTOR in self.font_dict:
-                self.font_descriptor_dict = cast(DictionaryObject, self.font_dict[FONT_DESCRIPTOR].get_object())
-
-            # pypdf FontDescriptor fills in defaults for these props so we have to extract from source
-            if self.font_descriptor_dict:
-                self.bounding_box = self.font_descriptor_dict['/FontBBox']
-                self.flags = int(self.font_descriptor_dict['/Flags'])
-            else:
-                log.warning(f"Found no {FONT_DESCRIPTOR} for font {self.display_title}")
+        try:
+            self._extract_font_descriptor_props()
+            self._extract_font_file_props()
+        except Exception as e:
+            log.warning(f"Failed to extract data from /FontDescriptor or /FontFile\n{self.font_descriptor_dict}")
 
         if isinstance(self.raw_widths, IndirectObject):
             self.raw_widths = self.raw_widths.get_object()
 
-        # /FontFile attributes
-        if self.font_obj.font_descriptor.font_file is not None:
-            self.lengths = [
-                self.font_obj.font_descriptor.font_file[k] for k in FONT_LENGTHS
-                if k in self.font_obj.font_descriptor.font_file
-            ]
-
-            self.advertised_length = sum(self.lengths)
-            stream_data = self.font_obj.font_descriptor.font_file.get_data()
-            scanner_label = Text(self.display_title, get_label_style(FONT_FILE))
-            self.binary_scanner = BinaryScanner(stream_data, self, scanner_label)
-
         self.prepared_char_map = prepare_cm(self.font_dict) if TO_UNICODE in self.font_dict else None
+
+    def _extract_font_descriptor_props(self) -> None:
+        """Set various properties that come from /FontDescriptor."""
+        if not (FONT_DESCRIPTOR in self.font_dict or DESCENDANT_FONTS in self.font_dict):
+            return
+
+        # CID or composite fonts have a 1 element array in /DescendantFonts that has the /FontDescriptor
+        if DESCENDANT_FONTS in self.font_dict:
+            descendant_font = self.font_dict[DESCENDANT_FONTS][0].get_object()
+
+            if FONT_DESCRIPTOR in descendant_font:
+                self.font_descriptor_dict = descendant_font[FONT_DESCRIPTOR].get_object()
+
+            self.descendant_fonts_subtype = descendant_font.get(SUBTYPE)
+            self.raw_widths = descendant_font.get(WIDTHS) or descendant_font.get(W)
+        elif FONT_DESCRIPTOR in self.font_dict:
+            self.font_descriptor_dict = cast(DictionaryObject, self.font_dict[FONT_DESCRIPTOR].get_object())
+
+        # pypdf FontDescriptor fills in defaults for these props so we have to extract from source
+        if self.font_descriptor_dict:
+            self.bounding_box = self.font_descriptor_dict.get('/FontBBox')
+            self.flags = int(self.font_descriptor_dict.get('/Flags'))
+        else:
+            log.warning(f"Found no {FONT_DESCRIPTOR} for font {self.display_title}")
+
+    def _extract_font_file_props(self) -> None:
+        """Set various properties that come from /FontFileX."""
+        if not self.font_obj.font_descriptor.font_file:
+            return
+
+        self.lengths = [
+            self.font_obj.font_descriptor.font_file[k] for k in FONT_LENGTHS
+            if k in self.font_obj.font_descriptor.font_file
+        ]
+
+        if len(without_nones(self.lengths)) > 0:
+            self.advertised_length = sum(without_nones(self.lengths))
+
+        stream_data = self.font_obj.font_descriptor.font_file.get_data()
+        scanner_label = Text(self.display_title, get_label_style(FONT_FILE))
+        self.binary_scanner = BinaryScanner(stream_data, self, scanner_label)
 
     def print_summary(self):
         """Prints a table of info about the font drawn from the various PDF objects. quote_type of None means all."""
@@ -157,7 +172,7 @@ class FontInfo:
         add_table_row('pypdf interpretable', self.font_obj.interpretable)
 
         if self.binary_scanner is not None:
-            row_style = 'red_alert' if self.binary_scanner.stream_length != self.advertised_length else ''
+            row_style = 'red_alert' if self.advertised_length and self.binary_scanner.stream_length != self.advertised_length else ''
             add_table_row('/Length properties', self.lengths)
             add_table_row('embedded binary length', self.binary_scanner.stream_length, row_style=row_style)
             add_table_row('advertised binary length', self.advertised_length, row_style=row_style)
