@@ -29,6 +29,9 @@ SLOW_PDFS = [
 file_fonts: dict[str, list[FontInfo]] = {}
 
 for file in PYPDF_RESOURCES_DIR.glob('*.pdf'):
+    if file.name in SLOW_PDFS:
+        continue
+
     file_key = str(file).removeprefix(str(PYPDF_REPO_DIR) + '/')
     print_section_subheader(f"pdfalyzing '{file}'")
 
