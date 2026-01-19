@@ -1,5 +1,6 @@
 # NEXT RELEASE
 * Handle encrypted PDFs via `--password` option and/or prompting user for the password
+* Better placement of nodes that are members of an `ArrayObject`
 * Use `pypdf` new `Font` object
 * Improved handling of `/DescendantFonts` prop for CID and composite fonts (finds more fonts)
 * Translate each font's `/Flags` bits into human readable format in the font info table

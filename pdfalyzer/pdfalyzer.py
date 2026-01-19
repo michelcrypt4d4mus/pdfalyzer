@@ -24,8 +24,7 @@ from pdfalyzer.decorators.document_model_printer import highlighted_raw_pdf_obj_
 from pdfalyzer.decorators.indeterminate_node import IndeterminateNode
 from pdfalyzer.decorators.pdf_tree_node import PdfTreeNode
 from pdfalyzer.decorators.pdf_tree_verifier import PdfTreeVerifier
-from pdfalyzer.font_info import FontInfo, uniquify_fonts, unique_font_string
-from pdfalyzer.helpers.dict_helper import compare_dicts
+from pdfalyzer.font_info import FontInfo
 from pdfalyzer.helpers.rich_text_helper import print_error
 from pdfalyzer.pdf_object_relationship import PdfObjectRelationship
 from pdfalyzer.util.adobe_strings import *
