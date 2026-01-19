@@ -23,7 +23,13 @@ OK_UNPLACED_TYPES = (BooleanObject, NameObject, NoneType, NullObject, NumberObje
 
 @dataclass
 class PdfTreeVerifier:
-    """Class to verify that the PDF tree is complete/contains all the nodes in the PDF file."""
+    """
+    Class to verify that the PDF tree is complete/contains all the nodes in the PDF file.
+
+    Attributes:
+        pdfalyzer (Pdfalyzer): The Pdfalyzer instance being verified
+        unplaced_encountered_nodes (list[PdfTreeNode]): Nodes encounted by walk_node() that aren't in the tree
+    """
     pdfalyzer: 'Pdfalyzer'
     unplaced_encountered_nodes: list[PdfTreeNode] = field(init=False)
 
@@ -33,12 +39,6 @@ class PdfTreeVerifier:
             if self.pdfalyzer.find_node_by_idnum(idnum) is None
         ]
 
-        if len(self.unplaced_encountered_nodes) > 0:
-            msg = f"Nodes were traversed but never placed: {escape(str(self.unplaced_encountered_nodes))}\n\n" + \
-                   "For link nodes like /First, /Next, /Prev, and /Last this might be no big deal - depends " + \
-                   "on the PDF. But for other node typtes this could indicate missing data in the tree."
-            log.warning(msg)
-
         self._verify_unencountered_are_untraversable()
 
     def log_final_warnings(self) -> None:
@@ -47,8 +47,14 @@ class PdfTreeVerifier:
         if self.pdfalyzer.max_generation > 0:
             log.warning(f"Verification doesn't check revisions (this PDF's generation is {self.pdfalyzer.max_generation})\n")
 
-        log.warning(f"All missing node ids: {self.missing_node_ids()}")
-        log.warning(f"Important missing node IDs: {self.notable_missing_node_ids()}\n")
+        if len(self.unplaced_encountered_nodes) > 0:
+            msg = f"Some nodes were traversed but never placed: {escape(str(self.unplaced_encountered_nodes))}\n\n" + \
+                   "For link nodes like /First, /Next, /Prev, and /Last this might be no big deal - depends " + \
+                   "on the PDF. But for other node typtes this could indicate missing data in the tree.\n"
+            log.warning(msg)
+
+        log.warning(f"All missing node ids: {self.missing_node_ids()}\n")
+        log.warning(f"Important missing node IDs: {self.notable_missing_node_ids()}")
 
         for idnum in self.missing_node_ids():
             _ref, obj = self._ref_and_obj_for_id(idnum)
