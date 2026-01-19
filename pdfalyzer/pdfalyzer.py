@@ -68,16 +68,16 @@ class Pdfalyzer:
         """
         self.pdf_path = pdf_path
         self.pdf_basename = basename(pdf_path)
-        self.pdf_bytes = load_binary_data(pdf_path)
-        self.pdf_bytes_info = compute_file_hashes(self.pdf_bytes)
-        self.pdf_filehandle = open(pdf_path, 'rb')  # Filehandle must be left open for PyPDF to perform seeks
 
         try:
+            self.pdf_filehandle = open(pdf_path, 'rb')  # Filehandle must be left open for PyPDF to perform seeks
             self.pdf_reader = PdfReader(self.pdf_filehandle)
-        except PdfReadError as e:
-            self._handle_fatal_error(f'PdfReadError: "{pdf_path}" doesn\'t seem to be a valid PDF file.', e)
         except DependencyError as e:
             self._handle_fatal_error(f"Missing dependency required for this file.", e)
+        except FileNotFoundError as e:
+            self._handle_fatal_error(f"Invalid file", e)
+        except PdfReadError as e:
+            self._handle_fatal_error(f'PdfReadError: "{pdf_path}" doesn\'t seem to be a valid PDF file.', e)
         except Exception as e:
             console.print_exception()
             self._handle_fatal_error(f"{PYPDF_ERROR_MSG}\n", e)
@@ -85,6 +85,10 @@ class Pdfalyzer:
         if self.pdf_reader.is_encrypted:
             if not self.pdf_reader.decrypt(password or Prompt.ask(PASSWORD_PROMPT)):
                 self._handle_fatal_error(f"Wrong password", FileNotDecryptedError("encrypted PDF"))
+
+        # Load bytes etc
+        self.pdf_bytes = load_binary_data(pdf_path)
+        self.pdf_bytes_info = compute_file_hashes(self.pdf_bytes)
 
         # Initialize tracking variables
         self.font_infos: List[FontInfo] = []  # Font summary objects
@@ -220,8 +224,10 @@ class Pdfalyzer:
         return to_node
 
     def _handle_fatal_error(self, msg: str, e: Exception) -> None:
-        self.pdf_reader.close()
-        self.pdf_filehandle.close()
+        if 'pdf_reader' in vars(self):
+            self.pdf_reader.close()
+        if 'pdf_filehandle' in vars(self):
+            self.pdf_filehandle.close()
 
         # Only exit if running in a 'pdfalyze some_file.pdf context'
         if parser.prog == PDFALYZE:

@@ -26,10 +26,10 @@ file_fonts: dict[str, list[FontInfo]] = {}
 
 for file in PYPDF_RESOURCES_DIR.glob('*.pdf'):
     file_key = str(file).removeprefix(str(PYPDF_REPO_DIR) + '/')
-    print_section_subheader(f"pdfalyzing '{file}'...")
+    print_section_subheader(f"pdfalyzing '{file}'")
 
     try:
-        pdfalyzer = Pdfalyzer(file)
+        pdfalyzer = Pdfalyzer(file, 'password')
         file_fonts[file_key] = pdfalyzer.font_infos
         font_names = [f"{fi.display_title}: {unique_font_string(fi.font_obj)}" for fi in pdfalyzer.font_infos]
         console.print(f"\n    -> Found {len(font_names)} FontInfos", style='bright_green bold')
@@ -40,15 +40,16 @@ for file in PYPDF_RESOURCES_DIR.glob('*.pdf'):
         console.print_exception()
         log.error(f"Error processing '{file}': {type(e).__name__} ({e})")
 
+console.line(5)
 
 for file in sorted(file_fonts.keys(), key=lambda f: -1 if isinstance(f, str) else len(file_fonts[f])):
-    font_infos = file_fonts[file]
     console.line()
-    console.print(Text('').append(file, style='bright_green bold').append(f"has {len(font_infos)} FontInfos"))
+    font_infos = file_fonts[file]
+    console.print(Text('').append(file, style='bright_green bold').append(f" has {len(font_infos)} FontInfos"))
 
-    for fi in font_infos:
-        font_name = f"{fi.display_title}: {unique_font_string(fi.font_obj)}"
-        console.print(Text(f'        [{i}]', style='grey27').append(font_name, style='cyan'))
+    for i, fi in enumerate(font_infos):
+        txt = Text(f'        [{i}] ', style='grey27').append(fi.display_title, style='bright_cyan')
+        console.print(txt.append(': ').append(unique_font_string(fi.font_obj), style='dim'))
 
 
 # with gzip.open(PICKLED_PATH, 'wb') as file:
