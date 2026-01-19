@@ -7,14 +7,14 @@ from typing import Callable, cast
 
 from pypdf import PdfReader
 from pypdf.errors import PdfReadError
-from pypdf.generic import (BooleanObject, DictionaryObject, IndirectObject, NameObject, NullObject,
+from pypdf.generic import (ArrayObject, BooleanObject, DictionaryObject, IndirectObject, NameObject, NullObject,
      NumberObject, PdfObject, StreamObject)
 from rich.markup import escape
 from yaralyzer.util.logging import log
 
 from pdfalyzer.decorators.document_model_printer import highlighted_raw_pdf_obj_str
 from pdfalyzer.decorators.pdf_tree_node import PdfTreeNode
-from pdfalyzer.helpers.dict_helper import without_nones
+from pdfalyzer.helpers.pdf_object_helper import describe_obj
 from pdfalyzer.util.adobe_strings import *
 
 NUM_PREVIEW_BYTES = 2_500
@@ -73,9 +73,12 @@ class PdfTreeVerifier:
 
         for idnum in self.pdfalyzer.missing_node_ids():
             _ref, obj = self.pdfalyzer.ref_and_obj_for_id(idnum)
+            msg = f"Missing node {idnum} {describe_obj(obj)}"
 
             if isinstance(obj, OK_UNPLACED_TYPES):
-                log.info(f"Missing node {idnum} but it's an acceptable type ({type(obj).__name__}, value={obj}")
+                log.info(f"{msg} but it's an acceptable type (value={obj})")
+            elif isinstance(obj, (ArrayObject, DictionaryObject)) and len(obj) == 0:
+                log.info(f"{msg} but it's empty, so it's ok")
             else:
                 notable_ids.append(idnum)
 

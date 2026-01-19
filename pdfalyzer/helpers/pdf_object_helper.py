@@ -9,7 +9,7 @@ from pdfalyzer.pdf_object_relationship import PdfObjectRelationship
 from pdfalyzer.util.adobe_strings import TYPE
 
 
-def describe_obj(obj: PdfObject) -> str:
+def describe_obj(obj: PdfObject | None) -> str:
     obj_str = f"({type(obj).__name__})"
 
     if isinstance(obj, DictionaryObject):
