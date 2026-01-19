@@ -7,7 +7,6 @@ from types import NoneType
 from pypdf.errors import PdfReadError
 from pypdf.generic import BooleanObject, IndirectObject, NameObject, NullObject, NumberObject, PdfObject
 from rich.markup import escape
-from yaralyzer.output.rich_console import console
 from yaralyzer.util.logging import log
 
 from pdfalyzer.decorators.pdf_tree_node import PdfTreeNode
