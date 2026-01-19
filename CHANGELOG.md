@@ -1,4 +1,5 @@
 # NEXT RELEASE
+* Handle encrypted PDFs by asking for the password
 * Use `pypdf` new `Font` object
 * Improved handling of `/DescendantFonts` prop for CID and composite fonts
 * Translate each font's `/Flags` bits into human readable format in the font info table

@@ -3,7 +3,6 @@ Parse command line arguments for `pdfalyze` and construct the `PdfalyzerConfig` 
 """
 import sys
 from argparse import ArgumentParser, Namespace
-from collections import namedtuple
 from importlib.metadata import version
 from os import getcwd, path
 from typing import Optional
@@ -102,6 +101,8 @@ select.add_argument('--preview-stream-length',
                     help='number of bytes at the beginning and end of stream data to show as a preview',
                     metavar='BYTES',
                     type=int)
+
+select.add_argument('--password', help='only required for encrypted PDFs', type=str)
 
 # Make sure the selection section is at the top
 parser._action_groups = parser._action_groups[:2] + [parser._action_groups[-1]] + parser._action_groups[2:-1]

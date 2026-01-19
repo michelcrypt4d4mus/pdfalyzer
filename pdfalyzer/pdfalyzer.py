@@ -9,9 +9,10 @@ from typing import Dict, Iterator, List, Optional
 from anytree import LevelOrderIter, SymlinkNode
 from anytree.search import findall, findall_by_attr
 from pypdf import PdfReader
-from pypdf._font import Font
-from pypdf.errors import DependencyError, PdfReadError
+from pypdf.errors import DependencyError, FileNotDecryptedError, PdfReadError
 from pypdf.generic import DictionaryObject, IndirectObject
+from rich.prompt import Prompt
+from rich.text import Text
 from yaralyzer.helpers.file_helper import load_binary_data
 from yaralyzer.helpers.rich_text_helper import print_fatal_error_and_exit
 from yaralyzer.output.file_hashes_table import compute_file_hashes
@@ -31,8 +32,9 @@ from pdfalyzer.util.adobe_strings import *
 from pdfalyzer.util.argument_parser import parser
 from pdfalyzer.util.exceptions import PdfWalkError
 
-TRAILER_FALLBACK_ID = 10_000_000
+PASSWORD_PROMPT = Text(f"\nThis PDF is encrypted. What's the password?", style='bright_cyan bold')
 PYPDF_ERROR_MSG = "Failed to open file with PyPDF. Consider filing a PyPDF bug report: https://github.com/py-pdf/pypdf/issues"
+TRAILER_FALLBACK_ID = 10_000_000
 
 
 class Pdfalyzer:
@@ -58,10 +60,11 @@ class Pdfalyzer:
         verifier (PdfTreeVerifier): PdfTreeVerifier that can validate the PDF has been walked successfully.
     """
 
-    def __init__(self, pdf_path: str | Path):
+    def __init__(self, pdf_path: str | Path, password: str | None = None):
         """
         Args:
-            pdf_path: Path to the PDF file to analyze
+            pdf_path (str | Path): Path to the PDF file to analyze
+            password (str): Required for encrypted PDFs
         """
         self.pdf_path = pdf_path
         self.pdf_basename = basename(pdf_path)
@@ -80,7 +83,8 @@ class Pdfalyzer:
             self._handle_fatal_error(f"{PYPDF_ERROR_MSG}\n", e)
 
         if self.pdf_reader.is_encrypted:
-            import pdb;pdb.set_trace
+            if not self.pdf_reader.decrypt(password or Prompt.ask(PASSWORD_PROMPT)):
+                self._handle_fatal_error(f"Wrong password", FileNotDecryptedError("encrypted PDF"))
 
         # Initialize tracking variables
         self.font_infos: List[FontInfo] = []  # Font summary objects
@@ -216,6 +220,7 @@ class Pdfalyzer:
         return to_node
 
     def _handle_fatal_error(self, msg: str, e: Exception) -> None:
+        self.pdf_reader.close()
         self.pdf_filehandle.close()
 
         # Only exit if running in a 'pdfalyze some_file.pdf context'
