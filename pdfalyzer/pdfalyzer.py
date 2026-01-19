@@ -8,7 +8,9 @@ from anytree import LevelOrderIter, SymlinkNode
 from anytree.search import findall, findall_by_attr
 from pypdf import PdfReader
 from pypdf.errors import PdfReadError
-from pypdf.generic import DictionaryObject, IndirectObject, PdfObject
+from pypdf.generic import ArrayObject, DictionaryObject, IndirectObject, PdfObject
+from rich.prompt import Prompt
+from rich.text import Text
 from yaralyzer.helpers.file_helper import load_binary_data
 from yaralyzer.helpers.rich_text_helper import print_fatal_error_and_exit
 from yaralyzer.output.file_hashes_table import compute_file_hashes
@@ -191,11 +193,14 @@ class Pdfalyzer:
             if relationship.is_parent:
                 from_node.set_parent(to_node)
             elif to_node.parent is not None:
+                log_msg = f"{relationship} fail: {to_node} parent is already {to_node.parent}"
+
                 # Some StructElem nodes I have seen use /P or /K despire not being the real parent/child
-                if relationship.from_node.type.startswith(STRUCT_ELEM):
-                    log.info(f"{relationship} fail: {to_node} parent is already {to_node.parent}")
+                if relationship.from_node.type.startswith(STRUCT_ELEM) \
+                        or isinstance(relationship.from_node.obj, ArrayObject):
+                    log.info(log_msg)
                 else:
-                    log.warning(f"{relationship} fail: {to_node} parent is already {to_node.parent}")
+                    log.info(log_msg)
             else:
                 from_node.add_child(to_node)
 
