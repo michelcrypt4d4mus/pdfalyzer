@@ -14,6 +14,7 @@ from yaralyzer.util.logging import log
 
 from pdfalyzer.decorators.document_model_printer import highlighted_raw_pdf_obj_str
 from pdfalyzer.decorators.pdf_tree_node import PdfTreeNode
+from pdfalyzer.helpers.dict_helper import without_nones
 from pdfalyzer.util.adobe_strings import *
 
 NUM_PREVIEW_BYTES = 2_500
@@ -50,10 +51,20 @@ class PdfTreeVerifier:
         self._log_all_unplaced_nodes()
         missing_node_ids = self.pdfalyzer.missing_node_ids()
         notable_missing_node_ids = self.notable_missing_node_ids()
-        log.warning(f"Found {len(notable_missing_node_ids)} important missing node IDs: {notable_missing_node_ids}")
+        indeterminate_missing_node_ids = [id for id in missing_node_ids if id in self.pdfalyzer._indeterminate_ids]
+        log.warning(f"Found {len(notable_missing_node_ids)} important missing node IDs:\n{notable_missing_node_ids}\n")
 
         if missing_node_ids != notable_missing_node_ids:
-            log.warning(f"All {len(missing_node_ids)} missing node ids: {missing_node_ids}\n")
+            log.warning(f"All {len(missing_node_ids)} missing node ids:\n{missing_node_ids}\n")
+
+        if indeterminate_missing_node_ids:
+            log.warning(f"These missing IDs were marked as indeterminate when treewalking:\n{indeterminate_missing_node_ids}\n")
+
+        nodes_without_parents = [n for n in self.pdfalyzer.unplaced_encountered_nodes() if n.parent is None]
+        node_ids_without_parents = [n.idnum for n in nodes_without_parents]
+
+        if node_ids_without_parents:
+            log.warning(f"These node IDs were parsed but have no no parent:\n{node_ids_without_parents}\n")
 
     def notable_missing_node_ids(self) -> list[int]:
         """Missing idnums that aren't NullObject, NumberObject, etc."""
