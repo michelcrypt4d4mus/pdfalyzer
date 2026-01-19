@@ -7,7 +7,8 @@ from typing import Callable, cast
 
 from pypdf import PdfReader
 from pypdf.errors import PdfReadError
-from pypdf.generic import BooleanObject, DictionaryObject, IndirectObject, NameObject, NullObject, NumberObject, PdfObject, StreamObject
+from pypdf.generic import (BooleanObject, DictionaryObject, IndirectObject, NameObject, NullObject,
+     NumberObject, PdfObject, StreamObject)
 from rich.markup import escape
 from yaralyzer.output.rich_console import console
 from yaralyzer.helpers.bytes_helper import print_bytes
