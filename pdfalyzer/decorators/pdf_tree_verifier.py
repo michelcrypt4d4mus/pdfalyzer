@@ -99,4 +99,4 @@ class PdfTreeVerifier:
                 if placeable:
                     self.pdfalyzer.pdf_tree.add_child(self.pdfalyzer._build_or_find_node(ref, XREF_STREAM))
             else:
-                log.warning(f"{XREF} Obj {idnum} not found in tree!")
+                log.warning(f"{obj_type} Obj {idnum} not found in tree! Here's the contents for you to assess:\n{obj}")
