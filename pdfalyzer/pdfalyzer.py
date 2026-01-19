@@ -131,19 +131,21 @@ class Pdfalyzer:
             if not next_node.all_references_processed:
                 self.walk_node(next_node)
 
-    def find_node_by_idnum(self, idnum) -> Optional[PdfTreeNode]:
+    def find_node_by_idnum(self, idnum: int) -> Optional[PdfTreeNode]:
         """Find node with `idnum` in the tree. Return `None` if that node is not reachable from the root."""
-        nodes = [
-            node for node in findall_by_attr(self.pdf_tree, name='idnum', value=idnum)
+        nodes = self.find_nodes_with_attr('idnum', idnum)
+
+        if len(nodes) == 1:
+            return nodes[0]
+        elif len(nodes) > 1:
+            raise PdfWalkError(f"Too many nodes had id {idnum}: {nodes}")
+
+    def find_nodes_with_attr(self, attr_name: str, attr_value: str | int) -> list[PdfTreeNode]:
+        """Find nodes in tree where 'attr_name' prop has the value 'attr_value'."""
+        return [
+            node for node in findall_by_attr(self.pdf_tree, name=attr_name, value=attr_value)
             if not isinstance(node, SymlinkNode)
         ]
-
-        if len(nodes) == 0:
-            return None
-        elif len(nodes) == 1:
-            return nodes[0]
-        else:
-            raise PdfWalkError(f"Too many nodes had id {idnum}: {nodes}")
 
     def is_in_tree(self, search_for_node: PdfTreeNode) -> bool:
         """Returns true if `search_for_node` is in the tree already."""
