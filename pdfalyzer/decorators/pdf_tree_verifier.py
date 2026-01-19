@@ -47,14 +47,13 @@ class PdfTreeVerifier:
                    "on the PDF. But for other node typtes this could indicate missing data in the tree.\n"
             log.warning(msg)
 
+        self._log_all_unplaced_nodes()
         missing_node_ids = self.pdfalyzer.missing_node_ids()
         notable_missing_node_ids = self.notable_missing_node_ids()
         log.warning(f"Found {len(notable_missing_node_ids)} important missing node IDs: {notable_missing_node_ids}")
 
         if missing_node_ids != notable_missing_node_ids:
             log.warning(f"All {len(missing_node_ids)} missing node ids: {missing_node_ids}\n")
-
-        self._log_all_unplaced_nodes()
 
     def notable_missing_node_ids(self) -> list[int]:
         """Missing idnums that aren't NullObject, NumberObject, etc."""
