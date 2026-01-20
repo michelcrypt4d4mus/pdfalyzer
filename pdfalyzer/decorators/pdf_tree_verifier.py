@@ -113,27 +113,27 @@ class PdfTreeVerifier:
     def _log_failure(self, idnum: int, obj: PdfObject, msg: str = '', log_fxn: Callable | None = None) -> None:
         s = f"{obj.get(TYPE)} " if isinstance(obj, DictionaryObject) and TYPE in obj else ''
         s += f"Obj {idnum} ({type(obj).__name__}) failed to be placed in the PDF tree"
-        s += f" ({msg})." if msg else '.'
+        s += f" ({msg})" if msg else ''
 
         if len([k for k in obj]) == 0:
             s += f" but it's an empty object so not particularly concerning. "
         else:
-            s += f" Could be a bad PDF or an error in pdfalyzer; here's the contents for you to assess:\n\n"
+            s += f". Could be a bad PDF or an error in pdfalyzer; here's the contents for you to assess:\n\n"
             s += highlighted_raw_pdf_obj_str(obj, header=f"Unplaced PdfObject {idnum}")
 
         if isinstance(obj, StreamObject):
             data = obj.get_data()
-            s += "\nIt has an embedded binary stream"
+            binary_msg = "It has an embedded binary stream"
 
             if len(data) == 0:
-                s+= " but the stream has 0 bytes in it."
+                s+= f"{binary_msg} but the stream has 0 bytes in it."
             else:
-                s += f" of {len(data):,} bytes"
+                s += f"\n{binary_msg} of {len(data):,} bytes"
                 s += f", here's a preview of the first {NUM_PREVIEW_BYTES:,} bytes" if len(data) > NUM_PREVIEW_BYTES else ''
                 s += f":\n{data[:NUM_PREVIEW_BYTES]}"
 
         s = f"{s}\n" if '\n' in (s + self._last_missing_node_log_msg) else s
-        self._last_missing_node_log_msg = s
+        self._last_missing_node_log_msg = s[:-1]
         (log_fxn or log.warning)(s)
 
         # if isinstance(obj, StreamObject):
