@@ -23,7 +23,7 @@ PDF_NON_TREE_REF = 'color(243)'
 NODE_TYPE_STYLES = [
     ClassStyle(Number, 'cyan bold'),
     ClassStyle(IndirectObject, 'color(225)'),
-    ClassStyle(ByteStringObject, 'bytes'),
+    ClassStyle(ByteStringObject, YARALYZER_THEME_DICT['bytes']),
     ClassStyle(EncodedStreamObject, YARALYZER_THEME_DICT['bytes']),
     ClassStyle(StreamObject, YARALYZER_THEME_DICT['bytes.title']),
     ClassStyle(TextStringObject, YARALYZER_THEME_DICT['grey.light']),
