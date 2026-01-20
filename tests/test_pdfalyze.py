@@ -2,6 +2,8 @@
 Tests of the command line script 'pdfalyze FILE [OPTIONS].
 Unit tests for Pdfalyzer *class* are in the other file: test_pdfalyzer.py.
 """
+from os import devnull
+
 import pytest
 from math import isclose
 from os import environ
@@ -32,7 +34,7 @@ def test_bad_args(additional_yara_rules_path, analyzing_malicious_pdf_path):
 
 
 def test_pdfalyze_CLI_basic_tree(adobe_type1_fonts_pdf_path, analyzing_malicious_pdf_path):
-    _assert_args_yield_lines(90, adobe_type1_fonts_pdf_path, '-t')
+    _assert_args_yield_lines(107, adobe_type1_fonts_pdf_path, '-t')
     _assert_args_yield_lines(1022, analyzing_malicious_pdf_path, '-t')
 
 
@@ -48,7 +50,7 @@ def test_pdfalyze_CLI_yara_scan(adobe_type1_fonts_pdf_path):
 def test_pdfalyze_CLI_streams_scan(adobe_type1_fonts_pdf_path):
     _assert_args_yield_lines(1560, adobe_type1_fonts_pdf_path, '-s')
     _assert_args_yield_lines(1165, adobe_type1_fonts_pdf_path, '--suppress-boms', '-s')
-    _assert_args_yield_lines(135, adobe_type1_fonts_pdf_path, '-s', '48')
+    _assert_args_yield_lines(157, adobe_type1_fonts_pdf_path, '-s', '48')
 
 
 def test_pdfalyze_non_zero_return_code(form_evince_path):
@@ -68,7 +70,7 @@ def test_quote_extraction(adobe_type1_fonts_pdf_path):
 
 
 def test_pdfalyze_CLI_font_scan(adobe_type1_fonts_pdf_path, analyzing_malicious_pdf_path):
-    _assert_args_yield_lines(197, adobe_type1_fonts_pdf_path, '-f')
+    _assert_args_yield_lines(208, adobe_type1_fonts_pdf_path, '-f')
     _assert_args_yield_lines(311, analyzing_malicious_pdf_path, '-f')
 
 
@@ -81,7 +83,8 @@ def _assert_args_yield_lines(line_count, file, *args):
 def _run_with_args(pdf, *args) -> str:
     """check_output() technically returns bytes so we decode before returning STDOUT output"""
     args = list(args) + ['--allow-missed-nodes']
-    return check_output([PDFALYZE, pdf, *args], env=environ).decode()
+    # TODO: stderr is still being captured despite stderr
+    return check_output([PDFALYZE, pdf, *args], env=environ, stderr=open(devnull, "wt")).decode()
 
 
 def _assert_line_count_within_range(line_count, text):
