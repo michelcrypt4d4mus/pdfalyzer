@@ -29,14 +29,15 @@ class LogHighlighter(ReprHighlighter):
     ]
 
 
-# Redirect pypdf logs
-pypdf_log_handler = RichHandler(
-    console=log_console,
-    highlighter=LogHighlighter(),
-    omit_repeated_times=False,
-    rich_tracebacks=True
-)
+log_handler_kwargs = {
+    'console': log_console,
+    'highlighter': LogHighlighter(),
+    'omit_repeated_times': False,
+    'rich_tracebacks': True,
+}
 
+# Redirect pypdf logs
+pypdf_log_handler = RichHandler(**log_handler_kwargs)
 log_console.push_theme(LOG_THEME)
 pypdf_log_handler.setLevel(logging.WARNING)
 pypdf_log_handler.formatter = logging.Formatter(PYPDF_LOG_PFX + ' %(message)s')
