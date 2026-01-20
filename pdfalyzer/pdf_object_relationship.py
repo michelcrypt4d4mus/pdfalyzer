@@ -93,7 +93,8 @@ class PdfObjectRelationship:
         return self.from_node.idnum == other.from_node.idnum
 
     def __str__(self) -> str:
-        return f"{self.from_node} ref_key: {self.reference_key}, addr: {self.address} => nodeID {self.to_obj.idnum}"
+        s = f"Relationship from {self.from_node} (ref_key={self.reference_key}, address='{self.address}')"
+        return f"{s} to node {self.to_obj.idnum}"
 
 
 def _build_address(ref_key: Union[str, int], base_address: Optional[str] = None) -> str:
