@@ -411,7 +411,7 @@ class Pdfalyzer:
             new_fonts = self._add_font_infos(node)
 
             if new_fonts:
-                log.warning(f"Found {len(new_fonts)} in unplaced node {node}!")
+                log.warning(f"Found {len(new_fonts)} fonts in unplaced node {node}!")
 
         self.font_infos = sorted(self.font_infos, key=lambda fi: fi.idnum)
 
