@@ -99,8 +99,6 @@ class PdfTreeVerifier:
     def _log_all_unplaced_nodes(self, missing_node_ids: list[int]) -> None:
         """Log warning for each unplaced node."""
         for idnum in missing_node_ids:
-            if idnum == 3170:
-                import pdb;pdb.set_trace()
             obj = self.pdfalyzer.ref_and_obj_for_id(idnum).obj
 
             if obj is None:

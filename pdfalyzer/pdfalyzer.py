@@ -145,6 +145,10 @@ class Pdfalyzer:
             if not next_node.all_references_processed:
                 self.walk_node(next_node)
 
+            # TODO: Premature optimization can be bad, but this is an attempt
+            if self.find_node_by_idnum(next_node.idnum):
+                self._tree_nodes[next_node.idnum] = next_node
+
     def find_node_by_idnum(self, idnum: int) -> Optional[PdfTreeNode]:
         """Find node with `idnum` in the tree. Return `None` if that node is not reachable from the root."""
         self._tree_nodes[idnum] = self._tree_nodes.get(idnum) or self.find_node_with_attr('idnum', idnum, True)
