@@ -1,7 +1,6 @@
 """
 PDFalyzer: Analyze and explore the structure of PDF files.
 """
-import json
 from os.path import basename
 from pathlib import Path
 from typing import Dict, Iterator, List, Optional
