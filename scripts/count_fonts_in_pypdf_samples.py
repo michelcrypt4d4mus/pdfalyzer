@@ -47,7 +47,7 @@ for file in files:
 
     console.line()
     file_key = str(file).removeprefix(str(PYPDF_REPO_DIR) + '/')
-    panel_txt = Text('pdfalyzing ').append(f"{file}", 'bright_cyan').append(f" ({file_size_in_mb(file)} MB)", style='dim')
+    panel_txt = Text('pdfalyze ').append(f"{file}", 'bright_cyan').append(f" ({file_size_in_mb(file)} MB)", style='dim')
     _print_header_panel(panel_txt, 'grey50', False, 100, internal_padding=(1,4))
 
     try:
