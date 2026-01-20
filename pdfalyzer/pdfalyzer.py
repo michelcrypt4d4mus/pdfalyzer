@@ -128,7 +128,7 @@ class Pdfalyzer:
         """Find node with `idnum` in the tree. Return `None` if that node is not reachable from the root."""
         return self.find_node_with_attr('idnum', idnum, True)
 
-    def find_node_with_attr(self, attr: str, value: str | int, should_raise: bool = False) -> PdfTreeNode | None:
+    def find_node_with_attr(self, attr: str, value: str | int, raise_if_multiple: bool = False) -> PdfTreeNode | None:
         """Find node with a property where you only expect one of those nodes to exist"""
         nodes = self.find_nodes_with_attr(attr, value)
 
@@ -137,7 +137,7 @@ class Pdfalyzer:
         elif len(nodes) > 1:
             msg = f"Found {len(nodes)} nodes with {attr}={value}, expected 1! {nodes}"
 
-            if should_raise:
+            if raise_if_multiple:
                 raise PdfWalkError(msg)
             else:
                 log.warning(msg)
