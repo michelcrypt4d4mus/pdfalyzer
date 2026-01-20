@@ -25,7 +25,7 @@ from pdfalyzer.decorators.indeterminate_node import IndeterminateNode
 from pdfalyzer.decorators.pdf_tree_node import PdfTreeNode
 from pdfalyzer.decorators.pdf_tree_verifier import PdfTreeVerifier
 from pdfalyzer.font_info import FontInfo
-from pdfalyzer.helpers.pdf_object_helper import describe_obj
+from pdfalyzer.helpers.pdf_object_helper import RefAndObj, describe_obj
 from pdfalyzer.helpers.rich_text_helper import print_error
 from pdfalyzer.pdf_object_relationship import PdfObjectRelationship
 from pdfalyzer.util.adobe_strings import *
@@ -191,7 +191,7 @@ class Pdfalyzer:
         """Return nodes that were encountered but have no parent set yet."""
         return [n for n in self.unplaced_encountered_nodes() if n.parent is None]
 
-    def ref_and_obj_for_id(self, idnum: int) -> tuple[IndirectObject, PdfObject | None]:
+    def ref_and_obj_for_id(self, idnum: int) -> RefAndObj:
         ref = IndirectObject(idnum, self.max_generation, self.pdf_reader)
 
         try:
@@ -205,7 +205,7 @@ class Pdfalyzer:
                 log.error(str(e))
                 raise e
 
-        return (ref, obj)
+        return RefAndObj(ref, obj)
 
     def stream_nodes(self) -> List[PdfTreeNode]:
         """List of actual nodes (not SymlinkNodes) containing streams sorted by PDF object ID"""
@@ -321,7 +321,9 @@ class Pdfalyzer:
 
         # Place /ObjStm at root if no other location found.
         for idnum in missing_node_ids:
-            ref, obj = self.ref_and_obj_for_id(idnum)
+            ref_and_obj = self.ref_and_obj_for_id(idnum)
+            ref = ref_and_obj.ref
+            obj = ref_and_obj.obj
 
             if not isinstance(obj, DictionaryObject):
                 continue
