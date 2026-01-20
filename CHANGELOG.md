@@ -11,6 +11,7 @@
 * Print missing node warnings at end not beginning
 * Upgrade `pypdf` to 6.6.0 and make use of new `Font` object
 * Extract fonts from nodes even if they can't be placed in the tree
+* Cache nodes being looked up in the tree in `Pdfalyzer._tree_nodes` dict
 * Send logs to `stderr` instead of `stdout`, redirect and reformat `pypdf` logs, other logging improvements
 * Placement of formerly orphaned nodes:
    * Force unplaced `/ObjStm` nodes under the root node
