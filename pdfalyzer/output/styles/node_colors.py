@@ -19,15 +19,18 @@ DEFAULT_LABEL_STYLE = 'yellow'
 FONT_OBJ_BLUE = 'deep_sky_blue4 bold'
 PDF_NON_TREE_REF = 'color(243)'
 
-# Subclasses of the key type will be styled with the value string
-NODE_TYPE_STYLES = [
-    ClassStyle(Number, 'cyan bold'),
+PDF_TYPE_STYLES = [
     ClassStyle(IndirectObject, 'color(225)'),
     ClassStyle(ByteStringObject, YARALYZER_THEME_DICT['bytes']),
     ClassStyle(EncodedStreamObject, YARALYZER_THEME_DICT['bytes']),
     ClassStyle(StreamObject, YARALYZER_THEME_DICT['bytes.title']),
     ClassStyle(TextStringObject, YARALYZER_THEME_DICT['grey.light']),
     ClassStyle(ArrayObject, PDF_ARRAY),
+]
+
+# Subclasses of the key type will be styled with the value string
+NODE_TYPE_STYLES = PDF_TYPE_STYLES + [
+    ClassStyle(Number, 'cyan bold'),
     ClassStyle(dict, 'color(64)'),
     ClassStyle(list, 'color(143)'),
     ClassStyle(str, 'bright_white bold'),
