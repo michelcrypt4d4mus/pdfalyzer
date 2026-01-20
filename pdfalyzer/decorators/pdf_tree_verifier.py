@@ -28,7 +28,6 @@ class PdfTreeVerifier:
 
     Attributes:
         pdfalyzer (Pdfalyzer): The Pdfalyzer instance being verified
-        unplaced_encountered_nodes (list[PdfTreeNode]): Nodes encounted by walk_node() that aren't in the tree
     """
     pdfalyzer: 'Pdfalyzer'
 
