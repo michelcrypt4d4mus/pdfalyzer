@@ -9,11 +9,10 @@
 * Translate each font's `/Flags` bits into human readable format in the font info table
 * Make `PdfObjectProperties`, `IndeterminateNode`, `PdfObjectRelationship` into dataclasses
 * Red blinking alert on font binaries whose length does not match the one they advertise in `/Length` props
-* Sort `Pdfalyzer.font_infos` array by node id
 * Better handling of `FileNotFoundError` at start
 * Improve logging about unplaced PDF nodes
 * Put unplaced `/ObjStm` nodes at the root of the tree
-* Sort `Pdfalyzer.font_infos` array by font name
+* Sort `Pdfalyzer.font_infos` array by node ID
 * `pdfalyze` now returns 1 to shell if there are unplaced nodes unless the `--allow-missed-nodes` option is used
 * Print missing node warnings at end not beginning
 
