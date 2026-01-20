@@ -319,7 +319,6 @@ class Pdfalyzer:
         if len(missing_node_ids) > MISSING_NODE_WARN_THRESHOLD:
             log.warning(f"Found {len(missing_node_ids)} missing nodes; this could take a while to sort out...")
 
-        # Place /ObjStm at root if no other location found.
         for idnum in missing_node_ids:
             ref_and_obj = self.ref_and_obj_for_id(idnum)
             ref = ref_and_obj.ref
@@ -333,6 +332,7 @@ class Pdfalyzer:
                 log.warning(f"Placing special /Linearized node {describe_obj(obj)} as child of /Info or /Trailer")
                 (self._info_node() or self.pdf_tree).add_child(self._build_or_find_node(ref, '/Linearized'))
             elif obj.get(TYPE) == OBJ_STM:
+                # Place /ObjStm at root if no other location found.
                 # Didier Stevens parses /ObjStm as a synthetic PDF here: https://github.com/DidierStevens/DidierStevensSuite/blob/master/pdf-parser.py#L1605
                 # offset_stream_data = obj.get_data()[obj.get('/First', 0):]
                 # log.warning(f"Offset stream: {offset_stream_data[0:100]}")
