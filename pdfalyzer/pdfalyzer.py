@@ -343,7 +343,7 @@ class Pdfalyzer:
 
             # Handle special Linearization info nodes
             if obj.get(TYPE) is None and '/Linearized' in obj:
-                log.warning(f"Placing special /Linearized node {describe_obj(obj)} as child of /Info or /Trailer")
+                log.warning(f"Placing special /Linearized node {describe_obj(ref_and_obj)} as child of info or root")
                 (self._info_node() or self.pdf_tree).add_child(self._build_or_find_node(ref, '/Linearized'))
             elif obj.get(TYPE) == OBJ_STM:
                 # Place /ObjStm at root if no other location found.
@@ -352,8 +352,14 @@ class Pdfalyzer:
                 # log.warning(f"Offset stream: {offset_stream_data[0:100]}")
                 # stream = BytesIO(offset_stream_data)
                 # p = PdfReader(stream)
-                log.warning(f"Forcing homeless {OBJ_STM} obj {describe_obj(obj)} to appear as a child of root node")
+                log.warning(f"Forcing homeless {describe_obj(ref_and_obj)} to appear as child of root node")
                 self.pdf_tree.add_child(self._build_or_find_node(ref, OBJ_STM))
+            elif obj.get(TYPE) == XOBJECT and obj.get(SUBTYPE) == '/Form':
+                form = self.find_node_with_attr('type', ACRO_FORM)
+
+                if form:
+                    log.warning(f"Forcing homeless {describe_obj(ref_and_obj)} to be child of {ACRO_FORM}")
+                    form.add_child(self._build_or_find_node(ref, XOBJECT))
             elif obj.get(TYPE) == XREF:
                 if '/Root' in obj:
                     root_ref = obj['/Root']
