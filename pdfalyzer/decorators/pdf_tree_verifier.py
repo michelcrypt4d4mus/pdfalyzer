@@ -33,6 +33,7 @@ class PdfTreeVerifier:
     _last_missing_node_log_msg: str = ''  # Just to avoid logging unnecessary newlines in warnings
 
     def log_missing_node_warnings(self) -> None:
+        """Log information about nodes that failed to be placed in the PDF tree."""
         print('')
         unplaced_encountered_nodes = self.pdfalyzer.unplaced_encountered_nodes()
 
