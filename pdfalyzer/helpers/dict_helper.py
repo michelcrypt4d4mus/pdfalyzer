@@ -21,11 +21,6 @@ def get_dict_key_by_value(_dict: dict, value):
     return list(_dict.keys())[list(_dict.values()).index(value)]
 
 
-def merge(dict1: dict, dict2: dict) -> dict:
-    """Merge two dicts into a new dict"""
-    return {**dict1, **dict2}
-
-
 def compare_dicts(d1: DictionaryObject, d2: DictionaryObject, already_compared_keys: list[str] | None = None) -> None:
     should_call_again = already_compared_keys is None
     already_compared_keys = already_compared_keys or []
