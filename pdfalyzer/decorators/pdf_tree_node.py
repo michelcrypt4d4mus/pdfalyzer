@@ -206,7 +206,7 @@ class PdfTreeNode(NodeMixin, PdfObjectProperties):
 
         for relationship in self.non_tree_relationships:
             if relationship.from_node in self.tree_relationships():
-                log.warning(f"  {relationship} is still 'non-tree' but is a parent or child of {self}")
+                log.warning(f"{relationship} is still 'non-tree' but is a parent or child of {self}")
             else:
                 log.debug(f"   SymLinking {relationship} to {self}")
                 SymlinkNode(self, parent=relationship.from_node)
