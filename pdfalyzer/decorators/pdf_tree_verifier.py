@@ -25,6 +25,7 @@ class PdfTreeVerifier:
         self._verify_unencountered_are_untraversable()
 
     def log_missing_node_warnings(self) -> None:
+        """Log information about nodes that failed to be placed in the PDF tree."""
         print('')
         unplaced_encountered_nodes = self.pdfalyzer.unplaced_encountered_nodes()
 
