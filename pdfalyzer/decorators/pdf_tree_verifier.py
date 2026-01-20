@@ -44,7 +44,7 @@ class PdfTreeVerifier:
             if missing_node_ids != notable_missing_node_ids:
                 log.warning(f"All of the {all_missing_nodes_msg(' including empty objs')}")
         elif missing_node_ids:
-            log.warning(f"Identified {all_missing_nodes_msg(' but they are all empty objects')}")
+            log.warning(f"Identified {all_missing_nodes_msg(' but they are all scalars or empty objects')}")
 
         for idnum in self.pdfalyzer.missing_node_ids():
             _ref, obj = self.pdfalyzer.ref_and_obj_for_id(idnum)
