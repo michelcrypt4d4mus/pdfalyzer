@@ -80,7 +80,10 @@ class PdfTreeVerifier:
             if isinstance(obj, OK_UNPLACED_TYPES):
                 log.info(f"{msg} but it's an acceptable type (value={obj})")
             elif isinstance(obj, (ArrayObject, DictionaryObject)) and len(obj) == 0:
-                log.info(f"{msg} but it's empty, so it's ok")
+                if isinstance(obj, StreamObject) and len(obj.get_data()) > 0:
+                    notable_ids.append(idnum)
+                else:
+                    log.info(f"{msg} but it's empty, so it's ok")
             else:
                 notable_ids.append(idnum)
 
