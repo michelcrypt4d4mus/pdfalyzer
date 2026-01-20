@@ -30,6 +30,7 @@ class PdfTreeVerifier:
         pdfalyzer (Pdfalyzer): The Pdfalyzer instance being verified
     """
     pdfalyzer: 'Pdfalyzer'
+    _last_missing_node_log_msg: str = ''  # Just to avoid logging unnecessary newlines in warnings
 
     def log_missing_node_warnings(self) -> None:
         print('')
@@ -97,22 +98,16 @@ class PdfTreeVerifier:
     def _log_all_unplaced_nodes(self) -> None:
         """Log warning for each unplaced node."""
         for idnum in self.pdfalyzer.missing_node_ids():
-            ref, obj = self.pdfalyzer.ref_and_obj_for_id(idnum)
+            _ref, obj = self.pdfalyzer.ref_and_obj_for_id(idnum)
 
             if obj is None:
                 log.warning(f"No object with ID {idnum} seems to exist in the PDF...")
-                continue
             elif isinstance(obj, OK_UNPLACED_TYPES):
                 log.info(f"Obj {idnum} is a {describe_obj(obj)} w/value {obj}; if relationship by /Length etc. this is a nonissue but maybe worth doublechecking")  # noqa: E501
-                continue
             elif not isinstance(obj, DictionaryObject):
                 self._log_failure(idnum, obj, "isn't a dict, cannot determine if it should be in tree")
-                continue
-            elif TYPE not in obj:
-                self._log_failure(idnum, obj, f"has no {TYPE}")
-                continue
-
-            self._log_failure(idnum, obj)
+            else:
+                self._log_failure(idnum, obj)
 
     def _log_failure(self, idnum: int, obj: PdfObject, msg: str = '', log_fxn: Callable | None = None) -> None:
         s = f"{obj.get(TYPE)} " if isinstance(obj, DictionaryObject) and TYPE in obj else ''
@@ -136,7 +131,9 @@ class PdfTreeVerifier:
                 s += f", here's a preview of the first {NUM_PREVIEW_BYTES:,} bytes" if len(data) > NUM_PREVIEW_BYTES else ''
                 s += f":\n{data[:NUM_PREVIEW_BYTES]}"
 
-        (log_fxn or log.warning)(f"{s}\n")
+        s = f"{s}\n" if '\n' in (s + self._last_missing_node_log_msg) else s
+        self._last_missing_node_log_msg = s
+        (log_fxn or log.warning)(s)
 
         # if isinstance(obj, StreamObject):
         #     try:
