@@ -20,7 +20,7 @@ You can use `pip` but `pipx` is a cleaner way to install for normal users. Devel
 ```sh
 # If you want to open encrypted PDFs or use the tools that ship with Pdfalyzer (e.g. extract_pdf_text):
 pipx install pdfalyzer[extract]
-# Or if you don't care about brute force extracting text from PDFs and just want to pdfalyze, do this:
+# Or if you don't care about extracting text, encrypted PDFs, etc. just do this:
 pipx install pdfalyzer
 
 # Then pdfalyze to your hearts content:
