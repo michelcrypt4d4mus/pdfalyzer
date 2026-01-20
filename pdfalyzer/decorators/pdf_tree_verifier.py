@@ -99,8 +99,7 @@ class PdfTreeVerifier:
     def _log_all_unplaced_nodes(self) -> None:
         """Log warning for each unplaced node."""
         for idnum in self.pdfalyzer.missing_node_ids():
-            ref_and_obj = self.pdfalyzer.ref_and_obj_for_id(idnum)
-            obj = ref_and_obj.obj
+            obj = self.pdfalyzer.ref_and_obj_for_id(idnum).obj
 
             if obj is None:
                 log.warning(f"No object with ID {idnum} seems to exist in the PDF...")
