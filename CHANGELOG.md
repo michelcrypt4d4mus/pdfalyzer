@@ -4,7 +4,7 @@
 * Force stranded `/Pages` nodes to be children of `/Catalog`
 * Use `pypdf` new `Font` object
 * Make `PdfObjectProperties`, `IndeterminateNode`, `PdfObjectRelationship` into dataclasses
-* Sort `Pdfalyzer.font_infos` array by font name
+* Sort `Pdfalyzer.font_infos` array by node ID
 * `pdfalyze` now returns 1 to shell if there are unplaced nodes unless the `--allow-missed-nodes` option is used
 
 ### 1.17.13
