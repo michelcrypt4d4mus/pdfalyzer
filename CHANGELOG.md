@@ -1,4 +1,6 @@
 # NEXT RELEASE
+
+### 1.18.1
 * Ensure `cryptography` package is installable as an extra
 
 # 1.18.0
