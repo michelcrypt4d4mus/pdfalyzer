@@ -9,6 +9,7 @@ from yaralyzer.util.logging import log
 
 from pdfalyzer.helpers.string_helper import bracketed, is_prefixed_by_any
 from pdfalyzer.util.adobe_strings import *
+from pdfalyzer.util.exceptions import PdfWalkError
 
 INCOMPARABLE_PROPS = ['from_obj', 'to_obj']
 
@@ -20,6 +21,10 @@ class PdfObjectRelationship:
     reference_key: str
     address: str
     from_obj: Any | None = None
+    is_child: bool = False
+    is_indeterminate: bool = False
+    is_link: bool = field(init=False)
+    is_parent: bool = field(init=False)
 
     def __post_init__(self) -> None:
         """
@@ -33,8 +38,6 @@ class PdfObjectRelationship:
                 or self.reference_key in INDETERMINATE_REF_KEYS:
             log.info(f"Indeterminate node: {self.from_node}")
             self.is_indeterminate = True
-        else:
-            self.is_indeterminate = False
 
         self.is_link = self.reference_key in NON_TREE_KEYS or is_prefixed_by_any(self.from_node.label, LINK_NODE_KEYS)
         self.is_parent = self.reference_key == PARENT or (self.from_node.type == STRUCT_ELEM and self.reference_key == P)
@@ -45,8 +48,9 @@ class PdfObjectRelationship:
             self.is_child = True
         elif self.reference_key == KIDS or (self.from_node.type == STRUCT_ELEM and self.reference_key == K):
             self.is_child = True
-        else:
-            self.is_child = False
+
+        if self.is_parent and self.is_child:
+            raise PdfWalkError(f"{self} is both parent->child and child->parent")
 
     @classmethod
     def build_node_references(
@@ -93,8 +97,12 @@ class PdfObjectRelationship:
         return self.from_node.idnum == other.from_node.idnum
 
     def __str__(self) -> str:
-        s = f"Relationship from {self.from_node} (ref_key={self.reference_key}, address='{self.address}')"
-        return f"{s} to node {self.to_obj.idnum}"
+        s = f"Relationship of {self.from_node} (ref_key={self.reference_key}, address='{self.address}')"
+        s += f" to {self.to_obj.idnum}"
+        s += f" is parent/child" if self.is_parent else ''
+        s += f" is child/parent" if self.is_child else ''
+        s += f" via symlink" if self.is_link else ''
+        return s
 
 
 def _build_address(ref_key: Union[str, int], base_address: Optional[str] = None) -> str:
