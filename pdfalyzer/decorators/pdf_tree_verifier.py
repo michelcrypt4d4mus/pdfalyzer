@@ -80,7 +80,7 @@ class PdfTreeVerifier:
 
     def was_successful(self):
         """Return True if no unplaced nodes or missing node IDs."""
-        return (len(self.pdfalyzer.unplaced_encountered_nodes()) + len(self.notable_missing_node_ids())) == 0
+        return (len(self.pdfalyzer.unplaced_encountered_nodes() + self.notable_missing_node_ids())) == 0
 
     def _verify_unencountered_are_untraversable(self) -> None:
         """
