@@ -13,10 +13,13 @@ from rich.theme import Theme
 from yaralyzer.util.logging import log, log_console, log_trace  # noqa: F401  # Trigger log setup
 
 LOG_THEME_DICT = {
+    "child": "orange3 bold",
     "failed": "bright_red",
+    "parent": "violet bold",
     "pypdf_line": "dim",
     "pypdf_prefix": "light_slate_gray",
     "relationship": 'light_pink4',
+    "stream_object": 'light_slate_blue bold',
 }
 
 PYPDF_LOG_PFX_PATTERN = r"\(pypdf\)"
@@ -26,10 +29,15 @@ LOG_THEME = Theme({f"{ReprHighlighter.base_style}{k}": v for k, v in LOG_THEME_D
 # Augment the standard log highlighter
 class LogHighlighter(ReprHighlighter):
     highlights = ReprHighlighter.highlights + [
-        fr"(?P<failed>fail(ed|ure)?)",
-        fr"(?P<pypdf_prefix>{PYPDF_LOG_PFX_PATTERN})",
+        r"(?P<child>[cC]hild(ren)?)",
+        r"(?P<failed>failed)",
+        r"(?P<parent>[pP]arent)",
         fr"(?P<pypdf_line>{PYPDF_LOG_PFX_PATTERN} .*)",
-        fr"(?P<relationship>[Rr]elationship)",
+        fr"(?P<pypdf_prefix>{PYPDF_LOG_PFX_PATTERN})",
+        r"(?P<relationship>Relationship)",
+        r"(?P<stream_object>((De|En)coded)?Stream(Object)?)",
+        # *[regex_to_highlight_pattern(label_style[0]) for label_style in LABEL_STYLES],
+        # *[regex_to_highlight_pattern(re.compile(cs[0].__name__)) for cs in NODE_TYPE_STYLES],
     ]
 
 
