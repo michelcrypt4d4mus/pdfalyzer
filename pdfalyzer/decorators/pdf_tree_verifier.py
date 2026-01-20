@@ -57,7 +57,7 @@ class PdfTreeVerifier:
             if missing_node_ids != notable_missing_node_ids:
                 log.warning(f"All of the {all_missing_nodes_msg(' including empty objs')}")
         elif missing_node_ids:
-            log.warning(f"Identified {all_missing_nodes_msg(' but they are all empty objects')}")
+            log.warning(f"Identified {all_missing_nodes_msg(' but they are all scalars or empty objects')}")
 
         if indeterminate_missing_node_ids:
             log.warning(f"These missing IDs were marked as indeterminate when treewalking:\n{indeterminate_missing_node_ids}\n")
