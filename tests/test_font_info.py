@@ -8,10 +8,11 @@ def embedded_font(attachment_pdf_pdfalyzer) -> FontInfo:
     return attachment_pdf_pdfalyzer.font_infos[0]
 
 
-def test_font_extraction(attachment_pdf_pdfalyzer, embedded_font, geobase_pdfalyzer):
+def test_font_extraction(attachment_pdf_pdfalyzer, embedded_font, form_evince_pdfalyzer, geobase_pdfalyzer):
     assert len(attachment_pdf_pdfalyzer.font_infos) == 3
     assert embedded_font._first_and_last_char() == [67, 122]
     assert embedded_font.flags == 70
     assert embedded_font._flag_names() == ['serif', 'symbolic', 'italic']
 
     assert len(geobase_pdfalyzer.font_infos) == 16
+    assert len(form_evince_pdfalyzer.font_infos) == 3  # Unplaced fonts
