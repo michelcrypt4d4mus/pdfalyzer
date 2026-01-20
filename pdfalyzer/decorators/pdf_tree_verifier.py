@@ -125,8 +125,12 @@ class PdfTreeVerifier:
         if isinstance(obj, StreamObject):
             data = obj.get_data()
             s += "It has an embedded binary stream"
-            s += f", here's a preview of the first {NUM_PREVIEW_BYTES} bytes" if len(data) > NUM_PREVIEW_BYTES else ''
-            s += f":\n{data[:NUM_PREVIEW_BYTES]}"
+
+            if len(data) == 0:
+                s+= " but the stream has 0 bytes in it."
+            else:
+                s += f", here's a preview of the first {NUM_PREVIEW_BYTES} bytes" if len(data) > NUM_PREVIEW_BYTES else ''
+                s += f":\n{data[:NUM_PREVIEW_BYTES]}"
 
         (log_fxn or log.warning)(f"{s}\n")
 
