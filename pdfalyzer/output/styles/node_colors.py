@@ -36,7 +36,7 @@ NODE_TYPE_STYLES = [
 ]
 
 LABEL_STYLES = [
-    [re.compile(fr"^{adobe_strings.OBJ_STM}"),            'grey23 on gray58'],
+    [re.compile(fr"^({adobe_strings.OBJ_STM}|{adobe_strings.NUMS})"),            'grey23 on gray58'],
     [re.compile(r'^(JavaScript|JS|OpenAction)', re.I | re.M), 'blink bold red'],
     [re.compile(f'^{adobe_strings.FONT_DESCRIPTOR}'),     'cornflower_blue'],
     [re.compile(f'^{adobe_strings.FONT_FILE}'),           'steel_blue1'],
@@ -71,7 +71,12 @@ LABEL_STYLES += [
 
 def get_class_style(obj: Any) -> str:
     """Style for various types of data (e.g. DictionaryObject)"""
-    return next((cs.style for cs in NODE_TYPE_STYLES if isinstance(obj, cs.klass)), '')
+    if obj is True:
+        return 'bright_green bold'
+    elif obj is False:
+        return 'bright_red bold'
+    else:
+        return next((cs.style for cs in NODE_TYPE_STYLES if isinstance(obj, cs.klass)), '')
 
 
 def get_class_style_dim(obj: Any) -> str:
