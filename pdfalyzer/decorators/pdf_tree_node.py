@@ -19,6 +19,7 @@ from pdfalyzer.util.exceptions import PdfWalkError
 
 DEFAULT_MAX_ADDRESS_LENGTH = 90
 DECODE_FAILURE_LEN = -1
+LOG_JOINER = '\n   - '
 
 
 class PdfTreeNode(NodeMixin, PdfObjectProperties):
@@ -109,13 +110,13 @@ class PdfTreeNode(NodeMixin, PdfObjectProperties):
         log.info(f'Added other relationship: {relationship} {self}')
 
     def remove_non_tree_relationship(self, from_node: Self) -> None:
-        """Remove all non_tree_relationships from from_node to this node."""
+        """Remove all non_tree_relationships from 'from_node' to this node."""
         relationships_to_remove = [r for r in self.non_tree_relationships if r.from_node == from_node]
         num_to_remove = len(relationships_to_remove)
 
         if num_to_remove > 1 and not all(r.reference_key in [FIRST, LAST] for r in relationships_to_remove):
-            log.warning(f"{num_to_remove} non-tree relationships to remove between {from_node} and {self}.\n" \
-                        f"Removing:\n{relationships_to_remove}")
+            log.warning(f"Removing {num_to_remove} non-tree relationships between {from_node} and {self}." \
+                        f"{LOG_JOINER}" + LOG_JOINER.join([str(r) for r in relationships_to_remove]))
 
         for relationship in relationships_to_remove:
             log.debug(f"Removing relationship {relationship} from {self}")
