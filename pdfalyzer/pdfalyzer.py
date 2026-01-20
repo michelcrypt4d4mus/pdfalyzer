@@ -216,8 +216,15 @@ class Pdfalyzer:
         """Nodes that were encountered by walk_node() but didn't end up in the tree."""
         return [node for id, node in self.nodes_encountered.items() if self.find_node_by_idnum(id) is None]
 
-    def _add_font_infos(self, font_infos: list[FontInfo]) -> list[FontInfo]:
+    def _add_font_infos(self, node: PdfTreeNode) -> list[FontInfo]:
         """Add fonts to self.font_infos. Returns list of new fonts that were added."""
+        try:
+            font_infos = FontInfo.extract_font_infos(node)
+        except Exception as e:
+            self.font_info_extraction_error = e
+            log.error(f"Failed to extract font information from node: {node} (error: {e})\n")
+            return []
+
         known_font_ids = [fi.idnum for fi in self.font_infos]
         new_font_infos = [fi for fi in font_infos if fi.idnum not in known_font_ids]
         self.font_infos += new_font_infos
@@ -396,20 +403,15 @@ class Pdfalyzer:
     def _extract_font_infos(self) -> None:
         """Extract information about fonts in the tree and place it in `self.font_infos`."""
         for node in self.node_iterator():
-            try:
-                self._add_font_infos(FontInfo.extract_font_infos(node))
-            except Exception as e:
-                self.font_info_extraction_error = e
-                log.error(f"Failed to extract font information from node: {node} (error: {e})\n")
+            self._add_font_infos(node)
 
         # Check missing nodes
         for id in self.missing_node_ids():
-            ref_and_obj = self.ref_and_obj_for_id(id)
-            node = PdfTreeNode.from_reference(ref_and_obj.ref, '/UNPLACED_NODE')
-            new_fonts = self._add_font_infos(FontInfo.extract_font_infos(node))
+            node = PdfTreeNode.from_reference(self.ref_and_obj_for_id(id).ref, '/UNPLACED_NODE')
+            new_fonts = self._add_font_infos(node)
 
             if new_fonts:
-                log.warning(f"Found {len(new_fonts)} in unplaced node {id}!")
+                log.warning(f"Found {len(new_fonts)} in unplaced node {node}!")
 
         self.font_infos = sorted(self.font_infos, key=lambda fi: fi.idnum)
 
