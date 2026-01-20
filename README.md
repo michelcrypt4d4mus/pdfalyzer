@@ -29,6 +29,9 @@ pdfalyze martin_heidegger-being_illmatic.pdf
 
 # Consult the help screen if needed:
 pdfalyze -h
+
+# Forcibly extract text (including from embedded images) if you feel like it:
+extract_pdf_text martin_heidegger-being_illmatic.pdf
 ```
 
 ### What It Do
