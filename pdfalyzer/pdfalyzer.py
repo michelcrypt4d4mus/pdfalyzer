@@ -69,8 +69,6 @@ class Pdfalyzer:
         """
         self.pdf_path = pdf_path
         self.pdf_basename = basename(pdf_path)
-        self.pdf_bytes = load_binary_data(pdf_path)
-        self.pdf_bytes_info = compute_file_hashes(self.pdf_bytes)
 
         try:
             self.pdf_filehandle = open(pdf_path, 'rb')  # Filehandle must be left open for PyPDF to perform seeks
@@ -79,11 +77,14 @@ class Pdfalyzer:
             self._handle_fatal_error(f'PdfReadError: "{pdf_path}" doesn\'t seem to be a valid PDF file.', e)
         except Exception as e:
             console.print_exception()
-            self._handle_fatal_error(f"{PYPDF_ERROR_MSG}\n{e}", e)
+            self._handle_fatal_error(f"{PYPDF_ERROR_MSG}", e)
 
         if self.pdf_reader.is_encrypted:
             if not self.pdf_reader.decrypt(password or Prompt.ask(PASSWORD_PROMPT)):
                 self._handle_fatal_error(f"Wrong password", FileNotDecryptedError("encrypted PDF"))
+
+        self.pdf_bytes = load_binary_data(pdf_path)
+        self.pdf_bytes_info = compute_file_hashes(self.pdf_bytes)
 
         # Initialize tracking variables
         self.font_infos: List[FontInfo] = []  # Font summary objects
@@ -336,7 +337,7 @@ class Pdfalyzer:
                 catalog_node = self._catalog_node()
 
                 if catalog_node:
-                    log.warning(f"Forcing orphaned /Pages node {node} to be child of {catalog_node}")
+                    log.warning(f"Forcing orphaned {PAGES} node {node} to be child of {catalog_node}")
                     node.set_parent(catalog_node)
 
     def _extract_font_infos(self) -> None:
