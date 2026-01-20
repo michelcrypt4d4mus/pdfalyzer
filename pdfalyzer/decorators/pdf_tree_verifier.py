@@ -17,7 +17,7 @@ from pdfalyzer.decorators.pdf_tree_node import PdfTreeNode
 from pdfalyzer.helpers.pdf_object_helper import describe_obj
 from pdfalyzer.util.adobe_strings import *
 
-NUM_PREVIEW_BYTES = 2_500
+NUM_PREVIEW_BYTES = 1_024
 OK_UNPLACED_TYPES = (BooleanObject, NameObject, NoneType, NullObject, NumberObject)
 
 
@@ -116,14 +116,13 @@ class PdfTreeVerifier:
 
     def _log_failure(self, idnum: int, obj: PdfObject, msg: str = '', log_fxn: Callable | None = None) -> None:
         s = f"{obj.get(TYPE)} " if isinstance(obj, DictionaryObject) and TYPE in obj else ''
-        s += f"Obj {idnum} ({type(obj).__name__}) is not in tree"
+        s += f"Obj {idnum} ({type(obj).__name__}) failed to be placed in the PDF tree"
         s += f" ({msg})." if msg else '.'
-        s += f" Either a loose node w/no data or an error in pdfalyzer"
 
         if len([k for k in obj]) == 0:
             s += f" but it's an empty object so not particularly concerning. "
         else:
-            s += f" here's the contents for you to assess:\n\n"
+            s += f" Could be a bad PDF or an error in pdfalyzer; here's the contents for you to assess:\n\n"
             s += highlighted_raw_pdf_obj_str(obj, header=f"Unplaced PdfObject {idnum}")
 
         if isinstance(obj, StreamObject):
