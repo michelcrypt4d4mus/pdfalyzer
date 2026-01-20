@@ -12,14 +12,14 @@ from yaralyzer.output.rich_console import console
 from yaralyzer.util.logging import log
 
 from pdfalyzer.decorators.pdf_object_properties import PdfObjectProperties
-from pdfalyzer.helpers.string_helper import is_prefixed_by_any
+from pdfalyzer.helpers.string_helper import is_prefixed_by_any, numbered_list
 from pdfalyzer.pdf_object_relationship import PdfObjectRelationship
 from pdfalyzer.util.adobe_strings import *
 from pdfalyzer.util.exceptions import PdfWalkError
 
 DEFAULT_MAX_ADDRESS_LENGTH = 90
 DECODE_FAILURE_LEN = -1
-LOG_JOINER = '\n   - '
+MAX_REFS_TO_WARN = 10
 
 
 class PdfTreeNode(NodeMixin, PdfObjectProperties):
@@ -115,8 +115,8 @@ class PdfTreeNode(NodeMixin, PdfObjectProperties):
         num_to_remove = len(relationships_to_remove)
 
         if num_to_remove > 1 and not all(r.reference_key in [FIRST, LAST] for r in relationships_to_remove):
-            log.warning(f"Removing {num_to_remove} non-tree relationships between {from_node} and {self}." \
-                        f"{LOG_JOINER}" + LOG_JOINER.join([str(r) for r in relationships_to_remove]))
+            log.warning(f"Removing {num_to_remove} non-tree relationships between {from_node} and {self}.\n" \
+                        + numbered_list(relationships_to_remove))
 
         for relationship in relationships_to_remove:
             log.debug(f"Removing relationship {relationship} from {self}")
@@ -190,9 +190,17 @@ class PdfTreeNode(NodeMixin, PdfObjectProperties):
             if not (is_prefixed_by_any(from_node.label, NON_STANDARD_ADDRESS_NODES)
                     or
                     all(ref.address in NON_STANDARD_ADDRESS_NODES for ref in refs_to_this_node)):
-                refs_to_this_node_str = "\n   ".join([f"{i + 1}. {r}" for i, r in enumerate(refs_to_this_node)])
-                msg = f"Multiple refs from {from_node} to {self}:\n   {refs_to_this_node_str}"
-                log.warning(msg + f"\nCommon address of refs: {address}")
+                # import pdb;pdb.set_trace()
+                ref_addresses = [r.address for r in refs_to_this_node]
+                common_key = next((k for k in MULT_REF_RESOURCE_KEYS if all(k in a for a in ref_addresses)), None)
+                msg = f"Found {len(refs_to_this_node)} refs from {from_node} to {self}"
+                refs_to_print = refs_to_this_node
+
+                if common_key and len(ref_addresses) > MAX_REFS_TO_WARN:
+                    msg += f", they're all {common_key} so showing only first {MAX_REFS_TO_WARN}"
+                    refs_to_print = refs_to_this_node[0:MAX_REFS_TO_WARN]
+
+                log.warning(f"{msg}:\n{numbered_list(refs_to_print)}\nCommon address of refs: {address}")
 
             return address
 

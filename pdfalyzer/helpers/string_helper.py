@@ -58,6 +58,17 @@ def has_a_common_substring(strings: List[str]) -> bool:
     return all([is_substring_of_longer_strings_in_list(s, strings) for s in strings])
 
 
+def indented(s: str, spaces: int = 4, prefix: str = '') -> str:
+    indent = ' ' * spaces
+    indent += prefix
+    return indent + f"\n{indent}".join(s.split('\n'))
+
+
+def numbered_list(objs: list, indent: int = 4) -> str:
+    list_str = '\n'.join([f"[{i + 1}] {e}" for i, e in enumerate(objs)])
+    return indented(list_str, spaces=indent)
+
+
 def is_prefixed_by_any(_string: str, prefixes: List[str]) -> bool:
     """Returns True if _string starts with anything in 'prefixes'."""
     return any([_string.startswith(prefix) for prefix in prefixes])
