@@ -46,11 +46,11 @@ class PdfTreeVerifier:
                    "on the PDF. But for other node typtes this could indicate missing data in the tree.\n"
             log.warning(msg)
 
-        self._log_all_unplaced_nodes()
         missing_node_ids = self.pdfalyzer.missing_node_ids()
         notable_missing_node_ids = self.notable_missing_node_ids()
         indeterminate_missing_node_ids = [id for id in missing_node_ids if id in self.pdfalyzer._indeterminate_ids]
         all_missing_nodes_msg = lambda s: f"{len(missing_node_ids)} missing node ids{s}: {missing_node_ids}"
+        self._log_all_unplaced_nodes(missing_node_ids)
 
         if notable_missing_node_ids:
             log.warning(f"Found {len(notable_missing_node_ids)} important missing node IDs: {notable_missing_node_ids}")
@@ -96,9 +96,11 @@ class PdfTreeVerifier:
         """Return True if no unplaced nodes or missing node IDs."""
         return (len(self.pdfalyzer.unplaced_encountered_nodes() + self.notable_missing_node_ids())) == 0
 
-    def _log_all_unplaced_nodes(self) -> None:
+    def _log_all_unplaced_nodes(self, missing_node_ids: list[int]) -> None:
         """Log warning for each unplaced node."""
-        for idnum in self.pdfalyzer.missing_node_ids():
+        for idnum in missing_node_ids:
+            if idnum == 3170:
+                import pdb;pdb.set_trace()
             obj = self.pdfalyzer.ref_and_obj_for_id(idnum).obj
 
             if obj is None:
