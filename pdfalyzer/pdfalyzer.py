@@ -352,7 +352,7 @@ class Pdfalyzer:
                 # log.warning(f"Offset stream: {offset_stream_data[0:100]}")
                 # stream = BytesIO(offset_stream_data)
                 # p = PdfReader(stream)
-                log.warning(f"Forcing unplaced {OBJ_STM} obj {describe_obj(obj)} to be child of root node")
+                log.warning(f"Forcing homeless {OBJ_STM} obj {describe_obj(obj)} to appear as a child of root node")
                 self.pdf_tree.add_child(self._build_or_find_node(ref, OBJ_STM))
             elif obj.get(TYPE) == XREF:
                 if '/Root' in obj:
