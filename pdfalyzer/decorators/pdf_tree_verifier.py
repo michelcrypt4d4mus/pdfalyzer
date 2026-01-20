@@ -98,10 +98,10 @@ class PdfTreeVerifier:
             ref, obj = self.pdfalyzer.ref_and_obj_for_id(idnum)
 
             if obj is None:
-                log.error(f"Couldn't verify elementary obj with id {idnum} is properly in tree")
+                log.warning(f"No object with ID {idnum} seems to exist in the PDF...")
                 continue
-            elif isinstance(obj, (NumberObject, NameObject)):
-                log.info(f"Obj {idnum} is a {type(obj)} w/value {obj}; if relationship by /Length etc. this is a nonissue but maybe worth doublechecking")  # noqa: E501
+            elif isinstance(obj, OK_UNPLACED_TYPES):
+                log.info(f"Obj {idnum} is a {describe_obj(obj)} w/value {obj}; if relationship by /Length etc. this is a nonissue but maybe worth doublechecking")  # noqa: E501
                 continue
             elif not isinstance(obj, DictionaryObject):
                 self._log_failure(idnum, obj, "isn't a dict, cannot determine if it should be in tree")
@@ -126,11 +126,12 @@ class PdfTreeVerifier:
 
         if isinstance(obj, StreamObject):
             data = obj.get_data()
-            s += "It has an embedded binary stream"
+            s += "\nIt has an embedded binary stream"
 
             if len(data) == 0:
                 s+= " but the stream has 0 bytes in it."
             else:
+                s += f" of {len(data):,} bytes"
                 s += f", here's a preview of the first {NUM_PREVIEW_BYTES} bytes" if len(data) > NUM_PREVIEW_BYTES else ''
                 s += f":\n{data[:NUM_PREVIEW_BYTES]}"
 
