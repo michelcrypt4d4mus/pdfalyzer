@@ -16,16 +16,21 @@ class RefAndObj:
     obj: PdfObject | None
 
 
-def describe_obj(obj: PdfObject | None) -> str:
-    obj_str = f"({type(obj).__name__})"
+def describe_obj(_obj: PdfObject | RefAndObj | None) -> str:
+    obj = _obj.obj if isinstance(_obj, RefAndObj) else _obj
+    obj_str = ''
 
     if isinstance(obj, DictionaryObject):
         obj_type = obj.get(TYPE)
-        obj_str += f" {obj_type}" if obj_type else ''
-    elif isinstance(obj, (ArrayObject, list)):
-        obj_str += f" {len(obj)} elements"
+        obj_str += f"{obj_type} " if obj_type else ''
 
-    return obj_str
+    obj_str += f"{_obj.ref.idnum} " if isinstance(_obj, RefAndObj) else ''
+    obj_str += f"({type(obj).__name__}) "
+
+    if isinstance(obj, (ArrayObject, list)):
+        obj_str += f"{len(obj)} elements"
+
+    return obj_str.strip()
 
 
 def does_list_have_any_references(_list) -> bool:
