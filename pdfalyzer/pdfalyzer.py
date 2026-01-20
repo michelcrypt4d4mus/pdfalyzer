@@ -19,7 +19,6 @@ from yaralyzer.output.file_hashes_table import compute_file_hashes
 from yaralyzer.output.rich_console import console
 from yaralyzer.util.logging import log
 
-from pdfalyzer.config import PDFALYZE
 from pdfalyzer.decorators.document_model_printer import highlighted_raw_pdf_obj_str
 from pdfalyzer.decorators.indeterminate_node import IndeterminateNode
 from pdfalyzer.decorators.pdf_tree_node import PdfTreeNode
@@ -349,8 +348,14 @@ class Pdfalyzer:
                 parent = self.find_node_by_idnum(obj.get(P).idnum)
 
                 if parent:
-                    log.warning(f"Placing lost {describe_obj(obj)} with /P ref pointing to {parent}")
+                    log.warning(f"Placing lost {describe_obj(ref_and_obj)} with /P ref pointing to {parent}")
                     parent.add_child(self._build_or_find_node(ref, '/P(arent)'))
+            elif isinstance(obj.get(COLOR_SPACE), IndirectObject):
+                parent = self.find_node_by_idnum(obj.get(COLOR_SPACE).idnum)
+
+                if parent:  # TODO: maybe this should be inserted as parent in the middle instead of as child?
+                    log.warning(f"Placing lost {describe_obj(ref_and_obj)} with {COLOR_SPACE} ref pointing to {parent}")
+                    parent.add_child(self._build_or_find_node(ref, '/C(olorSpace))'))
             elif obj.get(TYPE) == OBJ_STM:
                 # Place /ObjStm at root if no other location found.
                 # Didier Stevens parses /ObjStm as a synthetic PDF here: https://github.com/DidierStevens/DidierStevensSuite/blob/master/pdf-parser.py#L1605
@@ -358,7 +363,8 @@ class Pdfalyzer:
                 # log.warning(f"Offset stream: {offset_stream_data[0:100]}")
                 # stream = BytesIO(offset_stream_data)
                 # p = PdfReader(stream)
-                log.warning(f"Forcing homeless {describe_obj(ref_and_obj)} to appear as child of root node")
+                # TODO: these /ObjStm objs should have been unrolled into other PDF objects
+                log.warning(f"Forcing {describe_obj(ref_and_obj)} to appear as child of root node")
                 self.pdf_tree.add_child(self._build_or_find_node(ref, OBJ_STM))
             elif obj.get(TYPE) == XOBJECT and obj.get(SUBTYPE) == '/Form':
                 form = self.find_node_with_attr('type', ACRO_FORM)
@@ -377,7 +383,7 @@ class Pdfalyzer:
                         root_node = self.find_node_by_idnum(root_ref.idnum)
 
                     if root_node:
-                        log.info(f"Placing {describe_obj(obj)} under {root_node} based on /Root property")
+                        log.info(f"Placing {describe_obj(ref_and_obj)} under {root_node} based on /Root property")
                         root_node.add_child(self._build_or_find_node(ref, XREF))
                         continue
 
@@ -400,7 +406,7 @@ class Pdfalyzer:
                         placeable = False
 
                 if placeable:
-                    log.warning(f"Forcing {describe_obj(obj)} to be child of root node")
+                    log.warning(f"Forcing {describe_obj(ref_and_obj)} to be child of root node")
                     self.pdf_tree.add_child(self._build_or_find_node(ref, XREF_STREAM))
 
         # Force /Pages to be children of /Catalog
