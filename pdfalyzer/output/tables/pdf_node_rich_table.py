@@ -69,7 +69,15 @@ def build_pdf_node_table(node: 'PdfTreeNode') -> Table:
     Dangerous things like /JavaScript, /OpenAction, Type1 fonts, etc, will be highlighted red.
     """
     title = f"{node.idnum}.{escape(node.label)}"
-    table = Table(title, escape(node.tree_address()), pypdf_class_name(node.obj))
+    address = escape(node.tree_address())
+
+    if node.type == OBJ_STM:
+        address += ' (should have been decompressed into other objs)'
+        table_style = 'dim'
+    else:
+        table_style = ''
+
+    table = Table(title, address, pypdf_class_name(node.obj), style=table_style)
     table.columns[0].header_style = f'reverse {get_label_style(node.label)}'
     table.columns[1].header_style = 'dim'
     table.columns[1].overflow = 'fold'
