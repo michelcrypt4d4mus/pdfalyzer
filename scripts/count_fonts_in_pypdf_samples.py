@@ -24,9 +24,9 @@ PYPDF_CACHE_DIR = PYPDF_REPO_DIR.joinpath('tests', 'pdf_cache')
 PICKLED_PATH = Path('./count_fonts_in_pypdf_samples.pkl.gz')
 
 PDF_DIRS = [
-    PYPDF_CACHE_DIR,
     PYPDF_RESOURCES_DIR,
     PYPDF_SAMPLES_DIR,
+    PYPDF_CACHE_DIR,  # Wonky PDFs
 ]
 
 SLOW_PDFS = [
