@@ -34,9 +34,10 @@ from pdfalyzer.util.debugging import log_trace
 from pdfalyzer.util.exceptions import PdfWalkError
 
 MISSING_NODE_WARN_THRESHOLD = 200
+NODE_COUNT_WARN_THRESHOLD = 10_000
+TRAILER_FALLBACK_ID = 10_000_000
 PASSWORD_PROMPT = Text(f"\nThis PDF is encrypted. What's the password?", style='bright_cyan bold')
 PYPDF_ERROR_MSG = "Failed to open file with PyPDF. Consider filing a PyPDF bug report: https://github.com/py-pdf/pypdf/issues"
-TRAILER_FALLBACK_ID = 10_000_000
 
 
 class Pdfalyzer:
@@ -106,6 +107,11 @@ class Pdfalyzer:
         trailer_id = self.pdf_size if self.pdf_size is not None else TRAILER_FALLBACK_ID
         self.pdf_tree = PdfTreeNode(trailer, TRAILER, trailer_id)
         self.nodes_encountered[self.pdf_tree.idnum] = self.pdf_tree
+
+        if not self.pdf_size:
+            log.warning(f"Could not determine number of nodes in this PDF!")
+        elif self.pdf_size > NODE_COUNT_WARN_THRESHOLD:
+            log.warning(f"This PDF has {self.pdf_size:,} nodes; could take a while to parse...")
 
         # Build tree by recursively following relationships between nodes
         self.walk_node(self.pdf_tree)
