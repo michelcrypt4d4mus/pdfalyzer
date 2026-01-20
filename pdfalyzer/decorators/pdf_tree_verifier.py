@@ -49,15 +49,15 @@ class PdfTreeVerifier:
         missing_node_ids = self.pdfalyzer.missing_node_ids()
         notable_missing_node_ids = self.notable_missing_node_ids()
         indeterminate_missing_node_ids = [id for id in missing_node_ids if id in self.pdfalyzer._indeterminate_ids]
-        all_missing_nodes_msg = f"{len(missing_node_ids)} missing node ids: {missing_node_ids}\n"
+        all_missing_nodes_msg = lambda s: f"{len(missing_node_ids)} missing node ids{s}: {missing_node_ids}"
 
         if notable_missing_node_ids:
             log.warning(f"Found {len(notable_missing_node_ids)} important missing node IDs: {notable_missing_node_ids}")
 
             if missing_node_ids != notable_missing_node_ids:
-                log.warning(f"All of the {all_missing_nodes_msg}")
+                log.warning(f"All of the {all_missing_nodes_msg(' including empty objs')}")
         elif missing_node_ids:
-            log.warning(f"Probably unimportant {all_missing_nodes_msg}")
+            log.warning(f"Identified {all_missing_nodes_msg(' but they are all empty objects')}")
 
         if indeterminate_missing_node_ids:
             log.warning(f"These missing IDs were marked as indeterminate when treewalking:\n{indeterminate_missing_node_ids}\n")
