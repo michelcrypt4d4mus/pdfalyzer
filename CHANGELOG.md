@@ -16,6 +16,7 @@
    * Better placement of nodes that are members of an `ArrayObject`
    * Place orphaned `/XRef` nodes with valid `/Root` property in tree
    * Insert grandparents in situations where there's nodes that are in any array but also claim a node other than the array is their parent
+   * Place special `/Linearization` nodes under `/Info` or root
 
 ### 1.17.13
 * Remove YARA rule `invalid_trailer_structure` because it's causing YARA to crash with `internal error 46: TOO_MANY_RE_FIBERS` on some files (opened [issue](https://github.com/VirusTotal/yara/issues/2190) in YARA repo)

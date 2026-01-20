@@ -146,12 +146,23 @@ class Pdfalyzer:
 
     def find_node_by_idnum(self, idnum: int) -> Optional[PdfTreeNode]:
         """Find node with `idnum` in the tree. Return `None` if that node is not reachable from the root."""
-        nodes = self.find_nodes_with_attr('idnum', idnum)
+        return self.find_node_with_attr('idnum', idnum, True)
 
-        if len(nodes) == 1:
-            return nodes[0]
+    def find_node_with_attr(self, attr: str, value: str | int, should_raise: bool = False) -> PdfTreeNode | None:
+        """Find node with a property where you only expect one of those nodes to exist"""
+        nodes = self.find_nodes_with_attr(attr, value)
+
+        if len(nodes) == 0:
+            return None
         elif len(nodes) > 1:
-            raise PdfWalkError(f"Too many nodes had id {idnum}: {nodes}")
+            msg = f"Found {len(nodes)} nodes with {attr}={value}, expected 1! {nodes}"
+
+            if should_raise:
+                raise PdfWalkError(msg)
+            else:
+                log.warning(msg)
+
+        return nodes[0]
 
     def find_nodes_with_attr(self, attr_name: str, attr_value: str | int) -> list[PdfTreeNode]:
         """Find nodes in tree where 'attr_name' prop has the value 'attr_value'."""
@@ -270,14 +281,7 @@ class Pdfalyzer:
         return to_node
 
     def _catalog_node(self) -> PdfTreeNode | None:
-        catalog_nodes = self.find_nodes_with_attr('type', '/Catalog')
-
-        if not catalog_nodes:
-            return None
-        elif len(catalog_nodes) > 1:
-            log.warning(f"Found multiple /Catalog nodes! {catalog_nodes}")
-
-        return catalog_nodes[0]
+        return self.find_node_with_attr('type', '/Catalog')
 
     def _handle_fatal_error(self, msg: str, e: Exception) -> None:
         if 'pdf_reader' in vars(self):
@@ -291,6 +295,9 @@ class Pdfalyzer:
         else:
             print_error(msg)
             raise e
+
+    def _info_node(self) -> PdfTreeNode | None:
+        return self.find_node_with_attr('type', '/Info')
 
     def _resolve_indeterminate_nodes(self) -> None:
         """Place indeterminate nodes in the tree."""
@@ -319,14 +326,18 @@ class Pdfalyzer:
             if not isinstance(obj, DictionaryObject):
                 continue
 
-            if obj.get(TYPE) == OBJ_STM:
-                log.warning(f"Forcing unplaced {OBJ_STM} obj {describe_obj(obj)} to be child of root node")
-                self.pdf_tree.add_child(self._build_or_find_node(ref, OBJ_STM))
+            # Handle special Linearization info nodes
+            if obj.get(TYPE) is None and '/Linearized' in obj:
+                log.warning(f"Placing special /Linearized node {describe_obj(obj)} as child of /Info or /Trailer")
+                (self._info_node() or self.pdf_tree).add_child(self._build_or_find_node(ref, '/Linearized'))
+            elif obj.get(TYPE) == OBJ_STM:
                 # Didier Stevens parses /ObjStm as a synthetic PDF here: https://github.com/DidierStevens/DidierStevensSuite/blob/master/pdf-parser.py#L1605
                 # offset_stream_data = obj.get_data()[obj.get('/First', 0):]
                 # log.warning(f"Offset stream: {offset_stream_data[0:100]}")
                 # stream = BytesIO(offset_stream_data)
                 # p = PdfReader(stream)
+                log.warning(f"Forcing unplaced {OBJ_STM} obj {describe_obj(obj)} to be child of root node")
+                self.pdf_tree.add_child(self._build_or_find_node(ref, OBJ_STM))
             elif obj.get(TYPE) == XREF:
                 if '/Root' in obj:
                     root_ref = obj['/Root']
