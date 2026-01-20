@@ -41,6 +41,7 @@ for file in flatten([dir.glob('*.pdf') for dir in PDF_DIRS]):
     if file.name in SLOW_PDFS:
         continue
 
+    console.line()
     file_key = str(file).removeprefix(str(PYPDF_REPO_DIR) + '/')
     panel_txt = Text('pdfalyzing ').append(f"{file}", 'bright_cyan').append(f" ({file_size_in_mb(file)} MB)", style='dim')
     _print_header_panel(panel_txt, 'grey50', False, 100, internal_padding=(1,4))
@@ -49,7 +50,7 @@ for file in flatten([dir.glob('*.pdf') for dir in PDF_DIRS]):
         pdfalyzer = Pdfalyzer(file, 'password')
         file_fonts[file_key] = pdfalyzer.font_infos
         font_names = [f"{fi.display_title}: {unique_font_string(fi.font_obj)}" for fi in pdfalyzer.font_infos]
-        console.print(f"\n    -> Found {len(font_names)} FontInfos", style='bright_green bold')
+        console.print(f"    -> Found {len(font_names)} FontInfos", style='bright_green bold')
 
         for i, name in enumerate(font_names, 1):
             console.print(f"        - {name}", style='cyan')
