@@ -222,7 +222,7 @@ class Pdfalyzer:
             font_infos = FontInfo.extract_font_infos(node)
         except Exception as e:
             self.font_info_extraction_error = e
-            log.error(f"Failed to extract font information from node: {node} (error: {e})\n")
+            log.error(f"Failed to extract font information from node: {node} (error: {e})")
             return []
 
         known_font_ids = [fi.idnum for fi in self.font_infos]
