@@ -83,7 +83,7 @@ class Pdfalyzer:
             self._handle_fatal_error(f'PdfReadError: "{pdf_path}" doesn\'t seem to be a valid PDF file.', e)
         except Exception as e:
             console.print_exception()
-            self._handle_fatal_error(f"{PYPDF_ERROR_MSG}\n", e)
+            self._handle_fatal_error(f"{PYPDF_ERROR_MSG}", e)
 
         if self.pdf_reader.is_encrypted:
             if not self.pdf_reader.decrypt(password or Prompt.ask(PASSWORD_PROMPT)):
