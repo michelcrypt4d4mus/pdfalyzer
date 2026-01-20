@@ -71,12 +71,13 @@ class PdfTreeNode(NodeMixin, PdfObjectProperties):
             log.warning(msg)
             return cls(ref, address, ref.idnum)
 
-    def set_parent(self, parent: Self | None) -> None:
+    def set_parent(self, parent: Self | None, force: bool = False) -> None:
+        """Set the parent of this node."""
+
         if parent is None:
             return
 
-        """Set the parent of this node."""
-        if self.parent is not None and self.parent != parent:
+        if self.parent is not None and self.parent != parent and not force:
             log_msg = f"Cannot set {parent} as parent of {self}, parent is already {self.parent}"
 
             # Some objs in Arrays have the array's parent in /Parent so we link through
@@ -92,7 +93,7 @@ class PdfTreeNode(NodeMixin, PdfObjectProperties):
         self.parent = parent
         self.remove_non_tree_relationship(parent)
         self.known_to_parent_as = self.address_of_this_node_in_other(parent) or self.first_address
-        log.info(f"  Added {parent} as parent of {self}")
+        log.info(f"  Added {parent} as parent of {self}" + (' by force' if force else ''))
 
     def add_child(self, child: Self) -> None:
         """Add a child to this node."""
