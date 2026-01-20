@@ -11,6 +11,9 @@
    * Place orphaned `/XRef` nodes with valid `/Root` property in tree
    * Place lost nodes with valid `/P` reference to some parent
 
+### 1.18.1
+* Ensure `cryptography` package is installable as an extra
+
 # 1.18.0
 * `pdfalyze` now returns error code (1) to shell if there are unplaced nodes unless the new `--allow-missed-nodes` option is used
 * Handle encrypted PDFs via `--password` option and/or prompting user for the password
