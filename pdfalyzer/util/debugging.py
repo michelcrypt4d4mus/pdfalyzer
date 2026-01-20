@@ -2,15 +2,24 @@ import logging
 
 import pypdf
 from rich.console import Console
+from rich.highlighter import ReprHighlighter
 from rich.logging import RichHandler
+from rich.theme import Theme
 
-from yaralyzer.util.logging import log
+from yaralyzer.util.logging import log, log_console
+
+
+# Augment the standard log highlighter
+class LogHighlighter(ReprHighlighter):
+    highlights = ReprHighlighter.highlights + [
+        r"(?P<pypdf_prefix>\(?pypdf[:\)])",
+    ]
 
 
 # Redirect pypdf logs
+log_console.push_theme(theme=Theme({"repr.pypdf_prefix": "light_slate_gray dim"}))
 pypdf_logger = logging.getLogger("pypdf")
-log_console = Console(stderr=True)
-pypdf_log_handler = RichHandler(console=log_console, rich_tracebacks=True)
+pypdf_log_handler = RichHandler(console=log_console, highlighter=LogHighlighter(), rich_tracebacks=True)
 pypdf_log_handler.setLevel(logging.WARNING)
 pypdf_log_handler.formatter = logging.Formatter('(pypdf) %(message)s')
 pypdf_logger.addHandler(pypdf_log_handler)
