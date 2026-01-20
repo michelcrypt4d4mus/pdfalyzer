@@ -301,8 +301,8 @@ class Pdfalyzer:
 
             # Handle special Linearization info nodes
             if obj.get(TYPE) is None and '/Linearized' in obj:
-                log.warning(f"Placing special /Linearized node {describe_obj(ref_and_obj)} as child of info or root")
-                (self._info_node() or self.pdf_tree).add_child(self._build_or_find_node(ref, '/Linearized'))
+                log.warning(f"Placing special /Linearized node {describe_obj(ref_and_obj)} as child of root")
+                self.pdf_tree.add_child(self._build_or_find_node(ref, '/Linearized'))
             elif obj.get(TYPE) == OBJ_STM:
                 log.warning(f"Forcing homeless {describe_obj(ref_and_obj)} to appear as child of root node")
                 self.pdf_tree.add_child(self._build_or_find_node(ref, OBJ_STM))
