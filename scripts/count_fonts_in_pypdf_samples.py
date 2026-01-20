@@ -32,6 +32,7 @@ PDF_DIRS = [
 SLOW_PDFS = [
     'issue-604.pdf',
     'iss_1134.pdf',
+    'iss2963.pdf',
 ]
 
 
