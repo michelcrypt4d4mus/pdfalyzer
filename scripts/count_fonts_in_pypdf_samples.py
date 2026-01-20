@@ -58,7 +58,6 @@ for file in files:
 
         for i, name in enumerate(font_names, 1):
             console.print(f"        - {name}", style='cyan')
-
     except Exception as e:
         console.print_exception()
         log.error(f"Error processing '{file}': {type(e).__name__} ({e})")
