@@ -1,4 +1,5 @@
 # NEXT RELEASE
+* Ensure `cryptography` package is installable as an extra
 
 # 1.18.0
 * `pdfalyze` now returns error code (1) to shell if there are unplaced nodes unless the new `--allow-missed-nodes` option is used
