@@ -60,7 +60,7 @@ class Pdfalyzer:
         pdf_size (int): Number of nodes as extracted from the PDF's Trailer node.
         pdf_tree (PdfTreeNode): The top node of the PDF data structure tree.
         verifier (PdfTreeVerifier): PdfTreeVerifier that can validate the PDF has been walked successfully.
-        _tree_nodes_by_id (Dict[int, PdfTreeNode): ID cache for nodes that are in the tree
+        _tree_nodes (Dict[int, PdfTreeNode): ID cache for nodes that are in the tree
     """
 
     def __init__(self, pdf_path: str | Path, password: str | None = None):

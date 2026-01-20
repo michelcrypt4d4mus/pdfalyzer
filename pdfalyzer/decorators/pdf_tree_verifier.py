@@ -135,9 +135,3 @@ class PdfTreeVerifier:
         s = f"{s}\n" if '\n' in (s + self._last_missing_node_log_msg) else s
         self._last_missing_node_log_msg = s[:-1]
         (log_fxn or log.warning)(s)
-
-        # if isinstance(obj, StreamObject):
-        #     try:
-        #         (log_fxn or log.warning)(f"{obj.get_data().decode()}")
-        #     except Exception as e:
-        #         log.warning(f"Failed to decode obj stream data to str")

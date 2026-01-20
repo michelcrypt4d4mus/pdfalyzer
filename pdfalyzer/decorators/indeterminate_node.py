@@ -51,7 +51,7 @@ class IndeterminateNode:
             self.node.set_parent(self.find_node_with_most_descendants(pages_nodes))
             return
         else:
-            log.warning(f"{self.node} parent {parent_str} chosen based on descendant count only...")
+            log.warning(f"{self.node} parent {parent_str} chosen based on descendant count only")
             self.node.log_non_tree_relationships()
 
         self.node.set_parent(parent)
