@@ -81,7 +81,7 @@ class PdfTreeNode(NodeMixin, PdfObjectProperties):
 
             # Some objs in Arrays have the array's parent in /Parent so we link through
             if isinstance(self.parent.obj, ArrayObject):
-                log.warning(f"Parent of {self} is already {self.parent} but it's an array so inserting {parent} as a grandparent")
+                log.warning(f"Parent of {self} is already {self.parent} but it's an array; inserting {parent} as grandparent")
                 parent.set_parent(self.parent)
                 self.parent = parent
             else:
@@ -214,7 +214,7 @@ class PdfTreeNode(NodeMixin, PdfObjectProperties):
 
         for relationship in self.non_tree_relationships:
             if relationship.from_node in self.tree_relationships():
-                log.warning(f"{relationship} is a non-tree symlink but {relationship.from_node} is parent or child of {self}")
+                log.warning(f"{relationship} is non-tree symlink but {relationship.from_node} is real parent/child of {self}")
             else:
                 log.debug(f"   SymLinking {relationship} to {self}")
                 SymlinkNode(self, parent=relationship.from_node)
