@@ -66,9 +66,13 @@ def adobe_type1_fonts_pdfalyzer(adobe_type1_fonts_pdf_path):
 def form_evince_pdfalyzer(form_evince_path):
     return Pdfalyzer(form_evince_path)
 
-@pytest.fixture
+@pytest.fixture(scope='session')
 def SF424_page2_pdfalyzer(SF424_page2_pdf_path):
     return Pdfalyzer(SF424_page2_pdf_path)
+
+@pytest.fixture(scope='session')
+def test_sweep_indirect_references_nullobject_exception_pdfalyzer():
+    return Pdfalyzer(FIXTURES_DIR.joinpath('test_sweep_indirect_references_nullobject_exception.pdf'))
 
 
 # /Page and /Pages nodes

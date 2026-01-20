@@ -345,6 +345,12 @@ class Pdfalyzer:
             if obj.get(TYPE) is None and '/Linearized' in obj:
                 log.warning(f"Placing special /Linearized node {describe_obj(ref_and_obj)} as child of info or root")
                 (self._info_node() or self.pdf_tree).add_child(self._build_or_find_node(ref, '/Linearized'))
+            elif isinstance(obj.get(P), IndirectObject):
+                parent = self.find_node_by_idnum(obj.get(P).idnum)
+
+                if parent:
+                    log.warning(f"Placing lost {describe_obj(obj)} with /P ref pointing to {parent}")
+                    parent.add_child(self._build_or_find_node(ref, '/P(arent)'))
             elif obj.get(TYPE) == OBJ_STM:
                 # Place /ObjStm at root if no other location found.
                 # Didier Stevens parses /ObjStm as a synthetic PDF here: https://github.com/DidierStevens/DidierStevensSuite/blob/master/pdf-parser.py#L1605

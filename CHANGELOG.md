@@ -20,6 +20,7 @@
    * Insert grandparents in situations where there's nodes that are in any array but also claim a node other than the array is their parent
    * Place special `/Linearization` nodes under `/Info` or root
    * Force `/Xobject` nodes with `/Subtype` of `/Form` to be children of `/AcroForm` nodes
+   * Place lost nodes with valid `/P` reference to some parent
    * Remove `non_tree_relationships` if actual parent/child relationship
 
 ### 1.17.13
