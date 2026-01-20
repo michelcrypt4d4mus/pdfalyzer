@@ -1,11 +1,12 @@
 # NEXT RELEASE
-* Better placement of nodes that are members of an `ArrayObject`
-* Insert grandparents in situations where there's nodes that are in any array but also claim a node other than the array is their parent
-* Force stranded `/Pages` nodes to be children of `/Catalog`
-* Use `pypdf` new `Font` object
+* `pdfalyze` now returns 1 to shell if there are unplaced nodes unless the new `--allow-missed-nodes` option is used
 * Make `PdfObjectProperties`, `IndeterminateNode`, `PdfObjectRelationship` into dataclasses
 * Sort `Pdfalyzer.font_infos` array by node ID
-* `pdfalyze` now returns 1 to shell if there are unplaced nodes unless the `--allow-missed-nodes` option is used
+* Use `pypdf` new `Font` object
+* Placement of formerly orphaned nodes:
+   * Force stranded `/Pages` nodes to be children of `/Catalog`
+   * Better placement of nodes that are members of an `ArrayObject`
+   * Insert grandparents in situations where there's nodes that are in any array but also claim a node other than the array is their parent
 
 ### 1.17.13
 * Remove YARA rule `invalid_trailer_structure` because it's causing YARA to crash with `internal error 46: TOO_MANY_RE_FIBERS` on some files (opened [issue](https://github.com/VirusTotal/yara/issues/2190) in YARA repo)
