@@ -12,7 +12,7 @@ pypdf_logger = logging.getLogger("pypdf")
 log_console = Console(stderr=True)
 pypdf_log_handler = RichHandler(console=log_console, rich_tracebacks=True)
 pypdf_log_handler.setLevel(logging.WARNING)
-pypdf_log_handler.formatter = logging.Formatter('[pypdf] %(message)s')
+pypdf_log_handler.formatter = logging.Formatter('(pypdf) %(message)s')
 pypdf_logger.addHandler(pypdf_log_handler)
 # pypdf_logger.warning(f"This is a pypddf warning, formatter is {pypdf_log_handler.formatter}")
 
