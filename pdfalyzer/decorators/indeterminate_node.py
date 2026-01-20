@@ -46,7 +46,7 @@ class IndeterminateNode:
         elif set(self.node.unique_labels_of_referring_nodes()) == set(PAGE_AND_PAGES):
             # Handle an edge case seen in the wild involving a PDF that doesn't conform to the PDF spec
             # in a particular way.
-            log.warning(f"  {self.node} seems to be a loose {PAGE}. Linking to first {PAGES}")
+            log.warning(f"{self.node} seems to be a loose {PAGE}. Linking to first {PAGES}")
             pages_nodes = [n for n in self.node.nodes_with_here_references() if self.node.type == PAGES]
             self.node.set_parent(self.find_node_with_most_descendants(pages_nodes))
             return

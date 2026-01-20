@@ -10,7 +10,7 @@ from rich.logging import RichHandler
 from rich.theme import Theme
 
 # Other files import log from here to trigger log setup
-from yaralyzer.util.logging import log, log_console, log_trace  # noqa: F401
+from yaralyzer.util.logging import log, log_console, log_trace  # noqa: F401  # Trigger log setup
 
 LOG_THEME_DICT = {
     "pypdf_line": "dim",
