@@ -116,7 +116,7 @@ class PdfTreeNode(NodeMixin, PdfObjectProperties):
         num_to_remove = len(relationships_to_remove)
 
         if num_to_remove > 1 and not all(r.reference_key in [FIRST, LAST] for r in relationships_to_remove):
-            log.warning(f"Removing {num_to_remove} non-tree relationships between {from_node} and {self}.\n" \
+            log.warning(f"Removing {num_to_remove} non-tree relationships between {from_node} and {self}.\n"
                         + numbered_list(relationships_to_remove))
 
         for relationship in relationships_to_remove:

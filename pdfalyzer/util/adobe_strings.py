@@ -156,5 +156,6 @@ NON_STANDARD_ADDRESS_NODES = IMPERMANENT_KEYS + MULTI_REF_NODE_TYPES
 # Keys that sometimes create a lot of log noise with multiple refs
 MULT_REF_RESOURCE_KEYS = [COLOR_SPACE, '/Shading']
 
+
 def has_indeterminate_prefix(address: str) -> bool:
     return is_prefixed_by_any(address, INDETERMINATE_PREFIXES)
