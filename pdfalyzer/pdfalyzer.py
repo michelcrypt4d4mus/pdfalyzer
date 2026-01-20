@@ -26,8 +26,8 @@ from pdfalyzer.helpers.pdf_object_helper import RefAndObj, describe_obj
 from pdfalyzer.helpers.rich_text_helper import print_error
 from pdfalyzer.pdf_object_relationship import PdfObjectRelationship
 from pdfalyzer.util.adobe_strings import *
-from pdfalyzer.util.debugging import log_trace
 from pdfalyzer.util.exceptions import PdfWalkError
+from pdfalyzer.util.logging import log_trace
 
 MISSING_NODE_WARN_THRESHOLD = 200
 NODE_COUNT_WARN_THRESHOLD = 10_000
@@ -288,7 +288,7 @@ class Pdfalyzer:
         missing_node_ids = self.missing_node_ids()
 
         if len(missing_node_ids) > MISSING_NODE_WARN_THRESHOLD:
-            log.warning(f"Found {len(missing_node_ids)} missing nodes; this could take a while to sort out...")
+            log.warning(f"Found {len(missing_node_ids)} missing node IDs. This could take a while to sort out...")
 
         # Place /ObjStm at root if no other location found.
         for idnum in missing_node_ids:
