@@ -35,6 +35,7 @@ SLOW_PDFS = [
     'iss2963.pdf',
     'test_write_outline_item_on_page_fitv.pdf',
     'LegIndex-page6.pdf',
+    'iss2343b.pdf',  # removes thousands of relationships
 ]
 
 
