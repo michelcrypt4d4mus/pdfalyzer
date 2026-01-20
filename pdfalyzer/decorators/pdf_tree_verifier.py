@@ -67,6 +67,8 @@ class PdfTreeVerifier:
         if node_ids_without_parents:
             node_id_to_child_count = {n.idnum: f"has {len(n.children)} children" for n in nodes_without_parents}
             log.warning(f"These node IDs were parsed but have no parent:\n{node_id_to_child_count}\n")
+        elif notable_missing_node_ids:
+            log.warning(f"None of the missing nodes were enountered while walking the tree.", extra={"highlighter": None})
 
     def notable_missing_node_ids(self) -> list[int]:
         """Missing idnums that aren't NullObject, NumberObject, etc."""
