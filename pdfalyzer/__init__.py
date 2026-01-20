@@ -23,7 +23,7 @@ from rich.text import Text
 from yaralyzer.helpers.rich_text_helper import prefix_with_style
 from yaralyzer.output.file_export import invoke_rich_export
 from yaralyzer.output.rich_console import console
-from yaralyzer.util.logging import log, log_and_print
+from yaralyzer.util.logging import log_and_print
 
 from pdfalyzer.decorators.pdf_file import PdfFile
 from pdfalyzer.helpers.filesystem_helper import file_size_in_mb, set_max_open_files
@@ -34,6 +34,7 @@ from pdfalyzer.pdfalyzer import Pdfalyzer
 from pdfalyzer.util.argument_parser import ask_to_proceed, parse_arguments
 from pdfalyzer.util.cli_tools_argument_parser import (MAX_QUALITY, parse_combine_pdfs_args,
      parse_pdf_page_extraction_args, parse_text_extraction_args)
+from pdfalyzer.util.logging import log  # Trigger log setup
 from pdfalyzer.util.output_section import OutputSection
 from pdfalyzer.util.pdf_parser_manager import PdfParserManager
 

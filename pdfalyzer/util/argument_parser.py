@@ -10,7 +10,7 @@ from typing import Optional
 from rich_argparse_plus import RichHelpFormatterPlus
 from rich.prompt import Confirm
 from rich.text import Text
-from yaralyzer.util.argument_parser import debug, export, parser, parse_arguments as parse_yaralyzer_args, source
+from yaralyzer.util.argument_parser import debug, epilog, export, parser, parse_arguments as parse_yaralyzer_args, source
 from yaralyzer.util.logging import log, log_argparse_result, log_current_config, log_invocation
 from yaralyzer.config import YaralyzerConfig
 
@@ -25,11 +25,6 @@ DESCRIPTION = "Explore PDF's inner data structure with absurdly large and in dep
               "Track the control flow of her darker impulses, scan rivers of her binary data for signs " + \
               "of evil sorcery, and generally peer deep into the dark heart of the Portable Document Format. " + \
               "Just make sure you also forgive her - she knows not what she does."
-
-EPILOG = "Values for various config options can be set permanently by a .pdfalyzer file in your home directory; " + \
-         "see the documentation for details. " + \
-         "A registry of previous pdfalyzer invocations will be inscribed to a file if the " + \
-         f"{YaralyzerConfig.LOG_DIR_ENV_VAR} environment variable is configured."
 
 DEFAULT_SECTIONS = [DOCINFO, TREE, RICH, FONTS, COUNTS, YARA]
 ALL_SECTIONS = DEFAULT_SECTIONS + [STREAMS]
@@ -55,7 +50,7 @@ debug.add_argument('--allow-missed-nodes',
 parser = ArgumentParser(
     formatter_class=RichHelpFormatterPlus,
     description=DESCRIPTION,
-    epilog=EPILOG,
+    epilog=epilog(PDFALYZER).rstrip(),
     parents=[parser],  # Extend yaralyzer args
     add_help=False)
 

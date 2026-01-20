@@ -684,13 +684,13 @@ files = [
 
 [[package]]
 name = "yaralyzer"
-version = "1.0.12"
+version = "1.0.13"
 description = "Visualize and force decode YARA and regex matches found in a file or byte stream with colors. Lots of colors."
 optional = false
 python-versions = "<4.0,>=3.10"
 files = [
-    {file = "yaralyzer-1.0.12-py3-none-any.whl", hash = "sha256:ca4cb523542e7b590c75d65c0fe47516a2585ddf698c9f85f8d63ff9fdf47aa8"},
-    {file = "yaralyzer-1.0.12.tar.gz", hash = "sha256:0547381e41fbf0ccd765c1ebee684f005612bea0e4feda0743bf250fc3b03a60"},
+    {file = "yaralyzer-1.0.13-py3-none-any.whl", hash = "sha256:b2a9c8cefa6c84120f46d0598f0b45293805d99169aea1a945368d9b0dbec44b"},
+    {file = "yaralyzer-1.0.13.tar.gz", hash = "sha256:1bba7045315844523d80a32a40a0d67e808a9b6c12d096a45e3a7bba69685b0a"},
 ]
 
 [package.dependencies]
@@ -706,4 +706,4 @@ extract = ["PyMuPDF", "cryptography", "pytesseract"]
 [metadata]
 lock-version = "2.0"
 python-versions = "^3.11.14"
-content-hash = "1d600ef5a0adfc27825e39ac1ae5541237a6cbabb8827dd701d71dae6e1d5b5c"
+content-hash = "971521cb2e1815e333f12db1b3e4f67ca0c5473d9de2754ef4d4850b0febe4a8"

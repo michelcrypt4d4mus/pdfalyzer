@@ -3,14 +3,13 @@ from typing import Any, List, Optional, Self, Union
 
 from pypdf.generic import ArrayObject, DictionaryObject, IndirectObject, NumberObject, PdfObject
 from rich.text import Text
-from yaralyzer.util.logging import log
+from yaralyzer.util.logging import log_trace
 
 from pdfalyzer.helpers.pdf_object_helper import pypdf_class_name
 from pdfalyzer.helpers.rich_text_helper import comma_join_txt, node_label
 from pdfalyzer.helpers.string_helper import root_address
 from pdfalyzer.output.styles.node_colors import get_class_style, get_class_style_dim
 from pdfalyzer.util.adobe_strings import *
-from pdfalyzer.util.debugging import log_trace
 
 
 @dataclass
