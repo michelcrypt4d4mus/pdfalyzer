@@ -1,30 +1,29 @@
 # NEXT RELEASE
+* Improved handling of `/DescendantFonts` prop for CID and composite fonts (finds more fonts)
+* Translate each font's `/Flags` bits into human readable format in the font info table
+* Red blinking alert on font binaries whose length does not match the one they advertise in `/Length` props
+* Improve logging about unplaced PDF nodes, print missing node warnings at end not beginning
+* Better handling of `FileNotFoundError` at start
+* Extract fonts from nodes even if they can't be placed in the tree
+* Cache nodes being looked up in the tree in `Pdfalyzer._tree_nodes` dict
+* Placement of formerly orphaned nodes:
+   * Force unplaced `/ObjStm` nodes under the root node
+   * Place orphaned `/XRef` nodes with valid `/Root` property in tree
+   * Place lost nodes with valid `/P` reference to some parent
 
 # 1.18.0
 * `pdfalyze` now returns error code (1) to shell if there are unplaced nodes unless the new `--allow-missed-nodes` option is used
 * Handle encrypted PDFs via `--password` option and/or prompting user for the password
-* Improved handling of `/DescendantFonts` prop for CID and composite fonts (finds more fonts)
-* Translate each font's `/Flags` bits into human readable format in the font info table
 * Make `PdfObjectProperties`, `IndeterminateNode`, `PdfObjectRelationship` into dataclasses
-* Red blinking alert on font binaries whose length does not match the one they advertise in `/Length` props
-* Better handling of `FileNotFoundError` at start
-* Improve logging about unplaced PDF nodes
 * Sort `Pdfalyzer.font_infos` array by node ID
-* Print missing node warnings at end not beginning
 * Upgrade `pypdf` to 6.6.0 and make use of new `Font` object
-* Extract fonts from nodes even if they can't be placed in the tree
-* Cache nodes being looked up in the tree in `Pdfalyzer._tree_nodes` dict
 * Send logs to `stderr` instead of `stdout`, redirect and reformat `pypdf` logs, other logging improvements
-* Placement of formerly orphaned nodes:
-   * Force unplaced `/ObjStm` nodes under the root node
    * Force stranded `/Pages` nodes to be children of `/Catalog`
-   * Better placement of nodes that are members of an `ArrayObject`
-   * Place orphaned `/XRef` nodes with valid `/Root` property in tree
-   * Insert grandparents in situations where there's nodes that are in any array but also claim a node other than the array is their parent
+   * Better placement of orphaned nodes that are members of an `ArrayObject`
    * Place special `/Linearization` nodes under root
    * Force `/Xobject` nodes with `/Subtype` of `/Form` to be children of `/AcroForm` nodes
-   * Place lost nodes with valid `/P` reference to some parent
    * Remove `non_tree_relationships` if actual parent/child relationship
+   * Insert grandparents in situations where there's nodes that are in any array but also claim a node other than the array is their parent
 
 ### 1.17.13
 * Remove YARA rule `invalid_trailer_structure` because it's causing YARA to crash with `internal error 46: TOO_MANY_RE_FIBERS` on some files (opened [issue](https://github.com/VirusTotal/yara/issues/2190) in YARA repo)
