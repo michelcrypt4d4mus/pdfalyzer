@@ -390,7 +390,7 @@ class Pdfalyzer:
                 catalog_node = self._catalog_node()
 
                 if catalog_node:
-                    log.warning(f"Forcing orphaned /Pages node {node} to be child of {catalog_node}")
+                    log.warning(f"Forcing orphaned {PAGES} node {node} to be child of {catalog_node}")
                     node.set_parent(catalog_node)
 
     def _extract_font_infos(self) -> None:
