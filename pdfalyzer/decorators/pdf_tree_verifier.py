@@ -38,7 +38,7 @@ class PdfTreeVerifier:
         unplaced_encountered_nodes = self.pdfalyzer.unplaced_encountered_nodes()
 
         if self.pdfalyzer.max_generation > 0:
-            log.warning(f"Verification doesn't check revisions (this PDF's generation is {self.pdfalyzer.max_generation})\n")
+            log.warning(f"Verification doesn't check revisions (this PDF's generation is {self.pdfalyzer.max_generation})\n")  # noqa: E501
 
         if len(unplaced_encountered_nodes) > 0:
             msg = f"Some nodes were traversed but never placed: {escape(str(unplaced_encountered_nodes))}\n\n" + \
@@ -61,7 +61,7 @@ class PdfTreeVerifier:
             log.warning(f"Identified {all_missing_nodes_msg(' but they are all scalars or empty objects')}")
 
         if indeterminate_missing_node_ids:
-            log.warning(f"These missing IDs were marked as indeterminate when treewalking:\n{indeterminate_missing_node_ids}\n")
+            log.warning(f"These missing IDs were marked as indeterminate when treewalking:\n{indeterminate_missing_node_ids}\n")  # noqa: E501
 
         nodes_without_parents = self.pdfalyzer.nodes_without_parents()
         node_ids_without_parents = [n.idnum for n in nodes_without_parents]
@@ -104,13 +104,13 @@ class PdfTreeVerifier:
             if obj is None:
                 log.warning(f"No object with ID {idnum} seems to exist in the PDF...")
             elif isinstance(obj, OK_UNPLACED_TYPES):
-                log.info(f"Obj {idnum} is a {describe_obj(obj)} w/value {obj}; if relationship by /Length etc. this is a nonissue but maybe worth doublechecking")  # noqa: E501
+                log.info(f"Obj {idnum} is a {describe_obj(obj)} w/value {obj}; usually this is a nonissue")  # noqa: E501
             elif not isinstance(obj, DictionaryObject):
-                self._log_failure(idnum, obj, "isn't a dict, cannot determine if it should be in tree")
+                self._log_missing_node(idnum, obj, "isn't a dict, cannot determine if it should be in tree")
             else:
-                self._log_failure(idnum, obj)
+                self._log_missing_node(idnum, obj)
 
-    def _log_failure(self, idnum: int, obj: PdfObject, msg: str = '', log_fxn: Callable | None = None) -> None:
+    def _log_missing_node(self, idnum: int, obj: PdfObject, msg: str = '') -> None:
         s = f"{obj.get(TYPE)} " if isinstance(obj, DictionaryObject) and TYPE in obj else ''
         s += f"Obj {idnum} ({type(obj).__name__}) failed to be placed in the PDF tree"
         s += f" ({msg})" if msg else ''
@@ -134,4 +134,4 @@ class PdfTreeVerifier:
 
         s = f"{s}\n" if '\n' in (s + self._last_missing_node_log_msg) else s
         self._last_missing_node_log_msg = s[:-1]
-        (log_fxn or log.warning)(s)
+        log.warning(s)
