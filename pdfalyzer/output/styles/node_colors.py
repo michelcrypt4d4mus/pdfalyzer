@@ -36,7 +36,7 @@ NODE_TYPE_STYLES = [
 ]
 
 LABEL_STYLES = [
-    [re.compile(fr"^{adobe_strings.OBJ_STM}"),            'grey23 on gray58'],
+    [re.compile(fr"^({adobe_strings.OBJ_STM}|{adobe_strings.NUMS})"),            'grey23 on gray58'],
     [re.compile(r'^(JavaScript|JS|OpenAction)', re.I | re.M), 'blink bold red'],
     [re.compile(f'^{adobe_strings.FONT_DESCRIPTOR}'),     'cornflower_blue'],
     [re.compile(f'^{adobe_strings.FONT_FILE}'),           'steel_blue1'],
