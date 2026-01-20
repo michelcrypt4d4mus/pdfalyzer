@@ -367,11 +367,6 @@ class Pdfalyzer:
                     parent.add_child(self._build_or_find_node(ref, '/C(olorSpace))'))
             elif obj.get(TYPE) == OBJ_STM:
                 # Place /ObjStm at root if no other location found.
-                # Didier Stevens parses /ObjStm as a synthetic PDF here: https://github.com/DidierStevens/DidierStevensSuite/blob/master/pdf-parser.py#L1605
-                # offset_stream_data = obj.get_data()[obj.get('/First', 0):]
-                # log.warning(f"Offset stream: {offset_stream_data[0:100]}")
-                # stream = BytesIO(offset_stream_data)
-                # p = PdfReader(stream)
                 # TODO: these /ObjStm objs should have been unrolled into other PDF objects
                 log.warning(f"Forcing {describe_obj(ref_and_obj)} to appear as child of root node")
                 self.pdf_tree.add_child(self._build_or_find_node(ref, OBJ_STM))
