@@ -11,7 +11,7 @@ from yaralyzer.util.logging import log
 
 from pdfalyzer.binary.binary_scanner import BinaryScanner
 from pdfalyzer.decorators.pdf_tree_node import PdfTreeNode
-from pdfalyzer.helpers.dict_helper import without_nones
+from pdfalyzer.helpers.collections_helper import without_falsey
 from pdfalyzer.output.character_mapping import print_character_mapping, print_prepared_charmap
 from pdfalyzer.output.layout import print_section_subheader, subheading_width
 from pdfalyzer.output.styles.node_colors import get_class_style, get_label_style
@@ -135,15 +135,15 @@ class FontInfo:
             if k in self.font_obj.font_descriptor.font_file
         ]
 
-        if len(without_nones(self.lengths)) > 0:
-            self.advertised_length = sum(without_nones(self.lengths))
+        if len(without_falsey(self.lengths)) > 0:
+            self.advertised_length = sum(without_falsey(self.lengths))
 
         stream_data = self.font_obj.font_descriptor.font_file.get_data()
         scanner_label = Text(self.display_title, get_label_style(FONT_FILE))
         self.binary_scanner = BinaryScanner(stream_data, self, scanner_label)
 
     def _first_and_last_char(self) -> list[int]:
-        return without_nones([self.font_dict.get('/FirstChar'), self.font_dict.get('/LastChar')])
+        return without_falsey([self.font_dict.get('/FirstChar'), self.font_dict.get('/LastChar')])
 
     def _flag_names(self) -> list[str]:
         flags = self.flags or 0

@@ -11,7 +11,7 @@ from yaralyzer.output.rich_console import console
 from yaralyzer.util.logging import log
 
 from pdfalyzer.font_info import FontInfo, unique_font_string
-from pdfalyzer.helpers.dict_helper import flatten
+from pdfalyzer.helpers.collections_helper import flatten
 from pdfalyzer.helpers.filesystem_helper import file_size_in_mb
 from pdfalyzer.output.layout import print_section_subheader, _print_header_panel
 from pdfalyzer.pdfalyzer import Pdfalyzer
