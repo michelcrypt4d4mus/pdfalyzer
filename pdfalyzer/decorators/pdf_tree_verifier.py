@@ -18,7 +18,12 @@ OK_UNPLACED_TYPES = (BooleanObject, NameObject, NoneType, NullObject, NumberObje
 
 @dataclass
 class PdfTreeVerifier:
-    """Class to verify that the PDF tree is complete/contains all the nodes in the PDF file."""
+    """
+    Class to verify that the PDF tree is complete/contains all the nodes in the PDF file.
+
+    Attributes:
+        pdfalyzer (Pdfalyzer): The Pdfalyzer instance being verified
+    """
     pdfalyzer: 'Pdfalyzer'
 
     def __post_init__(self):

@@ -50,7 +50,7 @@ class Pdfalyzer:
         font_infos (List[FontInfo]): Font summary objects
         font_info_extraction_error (Optional[Exception]): Error encountered extracting FontInfo (if any)
         max_generation (int): Max revision number ("generation") encounted in this PDF.
-        nodes_encountered (Dict[int, PdfTreeNode]): Nodes we've traversed already.
+        nodes_encountered (Dict[int, PdfTreeNode]): Nodes we've traversed already even if not in tree yet.
         pdf_basename (str): The base name of the PDF file (with extension).
         pdf_bytes (bytes): PDF binary data.
         pdf_bytes_info (BytesInfo): File size, hashes, and other data points about the PDF's raw bytes.
@@ -59,6 +59,7 @@ class Pdfalyzer:
         pdf_size (int): Number of nodes as extracted from the PDF's Trailer node.
         pdf_tree (PdfTreeNode): The top node of the PDF data structure tree.
         verifier (PdfTreeVerifier): PdfTreeVerifier that can validate the PDF has been walked successfully.
+        _tree_nodes (Dict[int, PdfTreeNode): ID cache for nodes that are in the tree
     """
 
     def __init__(self, pdf_path: str | Path, password: str | None = None):
@@ -87,6 +88,7 @@ class Pdfalyzer:
             if not self.pdf_reader.decrypt(password or Prompt.ask(PASSWORD_PROMPT)):
                 self._handle_fatal_error(f"Wrong password", FileNotDecryptedError("encrypted PDF"))
 
+        # Load bytes etc
         self.pdf_bytes = load_binary_data(pdf_path)
         self.pdf_bytes_info = compute_file_hashes(self.pdf_bytes)
 
@@ -95,7 +97,7 @@ class Pdfalyzer:
         self.font_info_extraction_error: Optional[Exception] = None
         self.max_generation = 0  # PDF revisions are "generations"; this is the max generation encountered
         self.nodes_encountered: Dict[int, PdfTreeNode] = {}  # Nodes we've seen already
-        self._tree_nodes: Dict[int, PdfTreeNode | None] = {} # Nodes in the tree we've looked up already
+        self._tree_nodes: Dict[int, PdfTreeNode | None] = {}  # Nodes in the tree we've looked up already
         self._indeterminate_ids = set()  # See INDETERMINATE_REF_KEYS comment
 
         # Bootstrap the root of the tree with the trailer. PDFs are always read trailer first.
