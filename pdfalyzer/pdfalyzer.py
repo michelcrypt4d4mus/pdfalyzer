@@ -8,7 +8,7 @@ from typing import Dict, Iterator, List, Optional
 from anytree import LevelOrderIter, SymlinkNode
 from anytree.search import findall, findall_by_attr
 from pypdf import PdfReader
-from pypdf.errors import FileNotDecryptedError, PdfReadError
+from pypdf.errors import DependencyError, FileNotDecryptedError, PdfReadError
 from pypdf.generic import ArrayObject, DictionaryObject, IndirectObject, PdfObject
 from rich.prompt import Prompt
 from rich.text import Text
@@ -73,6 +73,10 @@ class Pdfalyzer:
         try:
             self.pdf_filehandle = open(pdf_path, 'rb')  # Filehandle must be left open for PyPDF to perform seeks
             self.pdf_reader = PdfReader(self.pdf_filehandle)
+        except DependencyError as e:
+            self._handle_fatal_error(f"Missing dependency required for this file.", e)
+        except FileNotFoundError as e:
+            self._handle_fatal_error(f"Invalid file", e)
         except PdfReadError as e:
             self._handle_fatal_error(f'PdfReadError: "{pdf_path}" doesn\'t seem to be a valid PDF file.', e)
         except Exception as e:
@@ -91,6 +95,7 @@ class Pdfalyzer:
         self.font_info_extraction_error: Optional[Exception] = None
         self.max_generation = 0  # PDF revisions are "generations"; this is the max generation encountered
         self.nodes_encountered: Dict[int, PdfTreeNode] = {}  # Nodes we've seen already
+        self._tree_nodes: Dict[int, PdfTreeNode | None] = {} # Nodes in the tree we've looked up already
         self._indeterminate_ids = set()  # See INDETERMINATE_REF_KEYS comment
 
         # Bootstrap the root of the tree with the trailer. PDFs are always read trailer first.
@@ -133,9 +138,13 @@ class Pdfalyzer:
             if not next_node.all_references_processed:
                 self.walk_node(next_node)
 
+            # Trigger update of self._tree_nodes cache if next_node was placed in the tree successfully
+            self.find_node_by_idnum(next_node.idnum)
+
     def find_node_by_idnum(self, idnum: int) -> Optional[PdfTreeNode]:
         """Find node with `idnum` in the tree. Return `None` if that node is not reachable from the root."""
-        return self.find_node_with_attr('idnum', idnum, True)
+        self._tree_nodes[idnum] = self._tree_nodes.get(idnum) or self.find_node_with_attr('idnum', idnum, True)
+        return self._tree_nodes[idnum]
 
     def find_node_with_attr(self, attr: str, value: str | int, raise_if_multiple: bool = False) -> PdfTreeNode | None:
         """Find node with a property where you only expect one of those nodes to exist"""
@@ -254,7 +263,7 @@ class Pdfalyzer:
                 if relationship.to_obj.idnum not in self._indeterminate_ids and to_node.parent is None:
                     raise PdfWalkError(f"{relationship} - ref has no parent and is not indeterminate")
                 else:
-                    log.debug(f"  Already saw {relationship}; not scanning next")
+                    log_trace(f"  Already saw {relationship}; not scanning next")
                     return None
             elif relationship.is_indeterminate or (relationship.is_link and not self.is_in_tree(to_node)):
                 # Indeterminate relationships need to wait until everything has been scanned to be placed
@@ -273,6 +282,8 @@ class Pdfalyzer:
         return self.find_node_with_attr('type', '/Catalog')
 
     def _handle_fatal_error(self, msg: str, e: Exception) -> None:
+        msg = f"{msg} ({e})"
+
         if 'pdf_reader' in vars(self):
             self.pdf_reader.close()
         if 'pdf_filehandle' in vars(self):
@@ -280,7 +291,7 @@ class Pdfalyzer:
 
         # Only exit if running in a 'pdfalyze some_file.pdf context', otherwise raise Exception.
         if is_pdfalyze_script:
-            print_fatal_error_and_exit(f"{msg} ({e})")
+            print_fatal_error_and_exit(msg)
         else:
             print_error(msg)
             raise e
@@ -313,8 +324,10 @@ class Pdfalyzer:
             ref_and_obj = self.ref_and_obj_for_id(idnum)
             ref = ref_and_obj.ref
             obj = ref_and_obj.obj
+            # Make sure we didn't already fix this node up in the course of other repairs
+            node = self.find_node_by_idnum(ref.idnum)
 
-            if not isinstance(obj, DictionaryObject):
+            if not isinstance(obj, DictionaryObject) or (node is not None and node.parent):
                 continue
 
             # Handle special Linearization info nodes

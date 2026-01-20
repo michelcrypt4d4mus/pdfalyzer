@@ -37,6 +37,7 @@ class PdfTreeVerifier:
 
         missing_node_ids = self.pdfalyzer.missing_node_ids()
         notable_missing_node_ids = self.notable_missing_node_ids()
+        indeterminate_missing_node_ids = [id for id in missing_node_ids if id in self.pdfalyzer._indeterminate_ids]
         all_missing_nodes_msg = lambda s: f"{len(missing_node_ids)} missing node ids{s}: {missing_node_ids}"
 
         if notable_missing_node_ids:

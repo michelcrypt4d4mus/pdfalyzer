@@ -36,7 +36,7 @@ class PdfObjectRelationship:
         # Compute tree placement logic booleans
         if (has_indeterminate_prefix(self.from_node.type) and not isinstance(self.from_node.obj, (dict, list))) \
                 or self.reference_key in INDETERMINATE_REF_KEYS:
-            log.info(f"Indeterminate node: {self.from_node}")
+            log.info(f"Indeterminate node {self.from_node} has relationship to {self.to_obj.idnum}")
             self.is_indeterminate = True
 
         self.is_link = self.reference_key in NON_TREE_KEYS or is_prefixed_by_any(self.from_node.label, LINK_NODE_KEYS)
