@@ -1,6 +1,3 @@
-"""
-Decorator for PyPDF PdfObject that extracts a couple of properties (type, label, etc).
-"""
 from dataclasses import dataclass
 from typing import Any, List, Optional, Self, Union
 
@@ -13,11 +10,20 @@ from pdfalyzer.helpers.rich_text_helper import comma_join_txt, node_label
 from pdfalyzer.helpers.string_helper import root_address
 from pdfalyzer.output.styles.node_colors import get_class_style, get_class_style_dim
 from pdfalyzer.util.adobe_strings import *
+from pdfalyzer.util.debugging import log_trace
 
 
 @dataclass
 class PdfObjectProperties:
-    """Simple class to extract critical features of a `PdfObject`."""
+    """
+    Decorator for PyPDF PdfObject that extracts a couple of properties (type, label, etc).
+
+    Attributes:
+        obj (PdfObject): The underyling PDF object
+        address (str): The location of the PDF object in the tree, e.g
+        idnum (int): ID of the PDF object
+        indirect_object (IndirectObject | None): IndirectObject that points to this one
+    """
     obj: PdfObject
     address: str
     idnum: int
@@ -55,7 +61,7 @@ class PdfObjectProperties:
         else:
             self.first_address = self.address
 
-        log.debug(f"Node ID: {self.idnum}, type: {self.type}, subtype: {self.sub_type}, " +
+        log_trace(f"Node ID: {self.idnum}, type: {self.type}, subtype: {self.sub_type}, " +
                   f"label: {self.label}, first_address: {self.first_address}")
 
     @classmethod
