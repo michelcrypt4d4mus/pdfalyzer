@@ -33,6 +33,7 @@ from pdfalyzer.util.logging import log, log_trace  # Triggers log setup
 
 MISSING_NODE_WARN_THRESHOLD = 200
 NODE_COUNT_WARN_THRESHOLD = 10_000
+PASSWORD_PROMPT = Text(f"\nThis PDF is encrypted. What's the password?", style='bright_cyan bold')
 TRAILER_FALLBACK_ID = 10_000_000
 PASSWORD_PROMPT = Text(f"\nThis PDF is encrypted. What's the password?", style='bright_cyan bold')
 PYPDF_ERROR_MSG = "Failed to open file with PyPDF. Consider filing a PyPDF bug report: https://github.com/py-pdf/pypdf/issues"
@@ -303,6 +304,8 @@ class Pdfalyzer:
         return self.find_node_with_attr('type', '/Catalog')
 
     def _handle_fatal_error(self, msg: str, e: Exception) -> None:
+        msg = f"{msg} ({e})"
+
         if 'pdf_reader' in vars(self):
             self.pdf_reader.close()
         if 'pdf_filehandle' in vars(self):
@@ -310,7 +313,7 @@ class Pdfalyzer:
 
         # Only exit if running in a 'pdfalyze some_file.pdf context', otherwise raise Exception.
         if is_pdfalyze_script:
-            print_fatal_error_and_exit(f"{msg} ({e})")
+            print_fatal_error_and_exit(msg)
         else:
             print_error(msg)
             raise e
