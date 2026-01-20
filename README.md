@@ -18,18 +18,18 @@ A PDF analysis tool for [visualizing](#example-output) the inner tree-like data 
 You can use `pip` but `pipx` is a cleaner way to install for normal users. Developers should probably use `poetry`.
 
 ```sh
-# If you want to open encrypted PDFs or use the tools that ship with the Pdfalyzer (e.g. extract_pdf_text, etc):
+# If you want to open encrypted PDFs or use the tools that ship with Pdfalyzer (e.g. extract_pdf_text):
 pipx install pdfalyzer[extract]
 # Or if you don't care about extracting text, encrypted PDFs, etc. just do this:
 pipx install pdfalyzer
 
-# Then Pdfalyze to your hearts content:
+# Then pdfalyze to your hearts content:
 pdfalyze martin_heidegger-being_illmatic.pdf
 
 # Consult the help screen if needed:
 pdfalyze -h
 
-# Forcibly extract text (including from embedded images) if you feel like it:
+# (Optional) Forcibly extract all text (including from embedded images) from a file:
 extract_pdf_text martin_heidegger-being_illmatic.pdf
 ```
 
