@@ -9,7 +9,7 @@
 * Improve logging about unplaced PDF nodes
 * Sort `Pdfalyzer.font_infos` array by node ID
 * Print missing node warnings at end not beginning
-* Use `pypdf` new `Font` object
+* Upgrade `pypdf` to 6.6.0 and make use of new `Font` object
 * Extract fonts from nodes even if they can't be placed in the tree
 * Placement of formerly orphaned nodes:
    * Force unplaced `/ObjStm` nodes under the root node
