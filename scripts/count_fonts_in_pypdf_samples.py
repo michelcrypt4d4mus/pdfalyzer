@@ -33,6 +33,8 @@ SLOW_PDFS = [
     'issue-604.pdf',
     'iss_1134.pdf',
     'iss2963.pdf',
+    'test_write_outline_item_on_page_fitv.pdf',
+    'LegIndex-page6.pdf',
 ]
 
 
