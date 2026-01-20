@@ -91,7 +91,8 @@ class PdfTreeVerifier:
             log.warning(f"Verification doesn't check revisions but this PDF's generation is {self.pdfalyzer.max_generation}")
 
         for idnum in self.pdfalyzer.missing_node_ids():
-            obj = self.pdfalyzer.ref_and_obj_for_id(idnum).obj
+            ref_and_obj = self.pdfalyzer.ref_and_obj_for_id(idnum)
+            obj = ref_and_obj.obj
 
             if obj is None:
                 log.error(f"Couldn't verify elementary obj with id {idnum} is properly in tree")
@@ -129,6 +130,6 @@ class PdfTreeVerifier:
                         placeable = False
 
                 if placeable:
-                    self.pdfalyzer.pdf_tree.add_child(self.pdfalyzer._build_or_find_node(ref, XREF_STREAM))
+                    self.pdfalyzer.pdf_tree.add_child(self.pdfalyzer._build_or_find_node(ref_and_obj.ref, XREF_STREAM))
             else:
                 log.warning(f"{XREF} Obj {idnum} not found in tree!")
