@@ -1,5 +1,6 @@
 # NEXT RELEASE
 * `pdfalyze` now returns error code (1) to shell if there are unplaced nodes unless the new `--allow-missed-nodes` option is used
+* Handle encrypted PDFs via `--password` option and/or prompting user for the password
 * Make `PdfObjectProperties`, `IndeterminateNode`, `PdfObjectRelationship` into dataclasses
 * Sort `Pdfalyzer.font_infos` array by node ID
 * Upgrade `pypdf` to 6.6.0 and make use of new `Font` object

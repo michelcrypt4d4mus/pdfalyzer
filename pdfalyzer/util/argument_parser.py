@@ -103,6 +103,8 @@ select.add_argument('--preview-stream-length',
                     metavar='BYTES',
                     type=int)
 
+select.add_argument('--password', help='only required for encrypted PDFs', type=str)
+
 # Make sure the selection section is at the top
 parser._action_groups = parser._action_groups[:2] + [parser._action_groups[-1]] + parser._action_groups[2:-1]
 is_pdfalyze_script = (parser.prog == PDFALYZE)
