@@ -225,7 +225,7 @@ class PdfTreeNode(NodeMixin, PdfObjectProperties):
 
     def log_non_tree_relationships(self) -> None:
         """log this node's non tree relationships (represented by SymlinkNodes in the tree)."""
-        self._write_non_tree_relationships(log.warning)
+        self._write_non_tree_relationships(log.info)
 
     def _write_non_tree_relationships(self, write_method: Callable) -> None:
         """Use write_method() to write self.non_tree_relationships."""
