@@ -111,12 +111,11 @@ class PdfTreeNode(NodeMixin, PdfObjectProperties):
     def remove_non_tree_relationship(self, from_node: Self) -> None:
         """Remove all non_tree_relationships from from_node to this node."""
         relationships_to_remove = [r for r in self.non_tree_relationships if r.from_node == from_node]
+        num_to_remove = len(relationships_to_remove)
 
-        if len(relationships_to_remove) == 0:
-            return
-        elif len(relationships_to_remove) > 1 and \
-                not all(r.reference_key in [FIRST, LAST] for r in relationships_to_remove):
-            log.warning(f"> 1 relationships to remove from {from_node} to {self}: {relationships_to_remove}")
+        if num_to_remove > 1 and not all(r.reference_key in [FIRST, LAST] for r in relationships_to_remove):
+            log.warning(f"{num_to_remove} non-tree relationships to remove between {from_node} and {self}.\n" \
+                        f"Removing:\n{relationships_to_remove}")
 
         for relationship in relationships_to_remove:
             log.debug(f"Removing relationship {relationship} from {self}")
