@@ -32,6 +32,7 @@ from pdfalyzer.util.argument_parser import is_pdfalyze_script
 from pdfalyzer.util.debugging import log_trace
 from pdfalyzer.util.exceptions import PdfWalkError
 
+MISSING_NODE_WARN_THRESHOLD = 200
 PASSWORD_PROMPT = Text(f"\nThis PDF is encrypted. What's the password?", style='bright_cyan bold')
 PYPDF_ERROR_MSG = "Failed to open file with PyPDF. Consider filing a PyPDF bug report: https://github.com/py-pdf/pypdf/issues"
 TRAILER_FALLBACK_ID = 10_000_000
@@ -299,8 +300,13 @@ class Pdfalyzer:
 
     def _resolve_missing_nodes(self) -> None:
         """Make a best effort to place nodes we have so far failed to get into the tree hierarchy."""
+        missing_node_ids = self.missing_node_ids()
+
+        if len(missing_node_ids) > MISSING_NODE_WARN_THRESHOLD:
+            log.warning(f"Found {len(missing_node_ids)} missing nodes; this could take a while to sort out...")
+
         # Place /ObjStm at root if no other location found.
-        for idnum in self.missing_node_ids():
+        for idnum in missing_node_ids:
             ref, obj = self.ref_and_obj_for_id(idnum)
 
             if not isinstance(obj, DictionaryObject):
