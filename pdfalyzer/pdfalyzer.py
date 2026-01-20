@@ -25,6 +25,7 @@ from pdfalyzer.decorators.indeterminate_node import IndeterminateNode
 from pdfalyzer.decorators.pdf_tree_node import PdfTreeNode
 from pdfalyzer.decorators.pdf_tree_verifier import PdfTreeVerifier
 from pdfalyzer.font_info import FontInfo
+from pdfalyzer.helpers.pdf_object_helper import describe_obj
 from pdfalyzer.helpers.rich_text_helper import print_error
 from pdfalyzer.pdf_object_relationship import PdfObjectRelationship
 from pdfalyzer.util.adobe_strings import *
@@ -313,7 +314,7 @@ class Pdfalyzer:
                 continue
 
             if obj.get(TYPE) == OBJ_STM:
-                log.warning(f"Forcing unplaced {OBJ_STM} obj to be a child of root node")
+                log.warning(f"Forcing unplaced {OBJ_STM} obj {describe_obj(obj)} to be child of root node")
                 self.pdf_tree.add_child(self._build_or_find_node(ref, OBJ_STM))
                 # Didier Stevens parses /ObjStm as a synthetic PDF here: https://github.com/DidierStevens/DidierStevensSuite/blob/master/pdf-parser.py#L1605
                 # offset_stream_data = obj.get_data()[obj.get('/First', 0):]
@@ -321,7 +322,21 @@ class Pdfalyzer:
                 # stream = BytesIO(offset_stream_data)
                 # p = PdfReader(stream)
             elif obj.get(TYPE) == XREF:
-                # TODO: this is highly questionable
+                if '/Root' in obj:
+                    root_ref = obj['/Root']
+                    root_node = None
+
+                    if isinstance(root_ref, DictionaryObject):
+                        root_node = self.find_node_by_idnum(root_ref.indirect_reference.idnum)
+                    elif isinstance(root_ref, IndirectObject):
+                        root_node = self.find_node_by_idnum(root_ref.idnum)
+
+                    if root_node:
+                        log.info(f"Placing {describe_obj(obj)} under {root_node} based on /Root property")
+                        root_node.add_child(self._build_or_find_node(ref, XREF))
+                        continue
+
+                # TODO: everything under here is highly questionable
                 placeable = XREF_STREAM in self.pdf_reader.trailer
 
                 for k, v in self.pdf_reader.trailer.items():
@@ -340,18 +355,8 @@ class Pdfalyzer:
                         placeable = False
 
                 if placeable:
+                    log.warning(f"Forcing {describe_obj(obj)} to be child of root node")
                     self.pdf_tree.add_child(self._build_or_find_node(ref, XREF_STREAM))
-
-        for node in self.nodes_without_parents():
-            if node.type == PAGES:
-                catalog_nodes = self.find_nodes_with_attr('type', '/Catalog')
-
-                if not catalog_nodes:
-                    return
-
-                catalog_node = catalog_nodes[0]
-                log.warning(f"Forcing orphaned /Pages node {node} to be child of {catalog_node}")
-                node.set_parent(catalog_node)
 
         # Force /Pages to be children of /Catalog
         for node in self.nodes_without_parents():
