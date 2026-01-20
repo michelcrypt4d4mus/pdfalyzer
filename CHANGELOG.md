@@ -1,5 +1,5 @@
 # NEXT RELEASE
-* `pdfalyze` now returns 1 to shell if there are unplaced nodes unless the new `--allow-missed-nodes` option is used
+* `pdfalyze` now returns error code (1) to shell if there are unplaced nodes unless the new `--allow-missed-nodes` option is used
 * Make `PdfObjectProperties`, `IndeterminateNode`, `PdfObjectRelationship` into dataclasses
 * Sort `Pdfalyzer.font_infos` array by node ID
 * Use `pypdf` new `Font` object
