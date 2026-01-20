@@ -1,4 +1,6 @@
 # NEXT RELEASE
+
+# 1.18.0
 * `pdfalyze` now returns error code (1) to shell if there are unplaced nodes unless the new `--allow-missed-nodes` option is used
 * Handle encrypted PDFs via `--password` option and/or prompting user for the password
 * Improved handling of `/DescendantFonts` prop for CID and composite fonts (finds more fonts)
