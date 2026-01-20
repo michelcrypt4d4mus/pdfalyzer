@@ -2,12 +2,13 @@
 PDFalyzer: Analyze and explore the structure of PDF files.
 """
 from os.path import basename
+from pathlib import Path
 from typing import Dict, Iterator, List, Optional
 
 from anytree import LevelOrderIter, SymlinkNode
 from anytree.search import findall, findall_by_attr
 from pypdf import PdfReader
-from pypdf.errors import PdfReadError
+from pypdf.errors import FileNotDecryptedError, PdfReadError
 from pypdf.generic import ArrayObject, DictionaryObject, IndirectObject, PdfObject
 from rich.prompt import Prompt
 from rich.text import Text
@@ -26,11 +27,13 @@ from pdfalyzer.helpers.pdf_object_helper import RefAndObj, describe_obj
 from pdfalyzer.helpers.rich_text_helper import print_error
 from pdfalyzer.pdf_object_relationship import PdfObjectRelationship
 from pdfalyzer.util.adobe_strings import *
+from pdfalyzer.util.argument_parser import is_pdfalyze_script
 from pdfalyzer.util.exceptions import PdfWalkError
 from pdfalyzer.util.logging import log  # Triggers log setup
 
 MISSING_NODE_WARN_THRESHOLD = 200
 NODE_COUNT_WARN_THRESHOLD = 10_000
+PASSWORD_PROMPT = Text(f"\nThis PDF is encrypted. What's the password?", style='bright_cyan bold')
 TRAILER_FALLBACK_ID = 10_000_000
 PYPDF_ERROR_MSG = "Failed to open file with PyPDF. Consider filing a PyPDF bug report: https://github.com/py-pdf/pypdf/issues"
 
@@ -58,24 +61,29 @@ class Pdfalyzer:
         verifier (PdfTreeVerifier): PdfTreeVerifier that can validate the PDF has been walked successfully.
     """
 
-    def __init__(self, pdf_path: str):
+    def __init__(self, pdf_path: str | Path, password: str | None = None):
         """
         Args:
-            pdf_path: Path to the PDF file to analyze
+            pdf_path (str | Path): Path to the PDF file to analyze
+            password (str): Required for encrypted PDFs
         """
         self.pdf_path = pdf_path
         self.pdf_basename = basename(pdf_path)
         self.pdf_bytes = load_binary_data(pdf_path)
         self.pdf_bytes_info = compute_file_hashes(self.pdf_bytes)
-        self.pdf_filehandle = open(pdf_path, 'rb')  # Filehandle must be left open for PyPDF to perform seeks
 
         try:
+            self.pdf_filehandle = open(pdf_path, 'rb')  # Filehandle must be left open for PyPDF to perform seeks
             self.pdf_reader = PdfReader(self.pdf_filehandle)
-        except PdfReadError:
-            self._handle_fatal_error(f'PdfReadError: "{pdf_path}" doesn\'t seem to be a valid PDF file.')
+        except PdfReadError as e:
+            self._handle_fatal_error(f'PdfReadError: "{pdf_path}" doesn\'t seem to be a valid PDF file.', e)
         except Exception as e:
             console.print_exception()
-            self._handle_fatal_error(f"{PYPDF_ERROR_MSG}\n{e}")
+            self._handle_fatal_error(f"{PYPDF_ERROR_MSG}\n{e}", e)
+
+        if self.pdf_reader.is_encrypted:
+            if not self.pdf_reader.decrypt(password or Prompt.ask(PASSWORD_PROMPT)):
+                self._handle_fatal_error(f"Wrong password", FileNotDecryptedError("encrypted PDF"))
 
         # Initialize tracking variables
         self.font_infos: List[FontInfo] = []  # Font summary objects
@@ -263,9 +271,18 @@ class Pdfalyzer:
     def _catalog_node(self) -> PdfTreeNode | None:
         return self.find_node_with_attr('type', '/Catalog')
 
-    def _handle_fatal_error(self, msg: str) -> None:
-        self.pdf_filehandle.close()
-        print_fatal_error_and_exit(msg)
+    def _handle_fatal_error(self, msg: str, e: Exception) -> None:
+        if 'pdf_reader' in vars(self):
+            self.pdf_reader.close()
+        if 'pdf_filehandle' in vars(self):
+            self.pdf_filehandle.close()
+
+        # Only exit if running in a 'pdfalyze some_file.pdf context', otherwise raise Exception.
+        if is_pdfalyze_script:
+            print_fatal_error_and_exit(f"{msg} ({e})")
+        else:
+            print_error(msg)
+            raise e
 
     def _info_node(self) -> PdfTreeNode | None:
         return self.find_node_with_attr('type', '/Info')
