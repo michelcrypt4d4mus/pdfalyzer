@@ -4,12 +4,13 @@ Log formatting and redirection. This file yields a lot of pypdf warnings:
 """
 import logging
 
-import pypdf  # Triggers pypdf log setup?
+import pypdf   # noqa: F401  # Trigger log setup?
 from rich.highlighter import ReprHighlighter
 from rich.logging import RichHandler
 from rich.theme import Theme
 
-from yaralyzer.util.logging import log, log_console, log_trace  # Other files import log from here to trigger log setup
+# Other files import log from here to trigger log setup
+from yaralyzer.util.logging import log, log_console, log_trace  # noqa: F401
 
 LOG_THEME_DICT = {
     "pypdf_line": "dim",
@@ -18,7 +19,7 @@ LOG_THEME_DICT = {
 
 PYPDF_LOG_PFX_PATTERN = r"\(pypdf\)"
 PYPDF_LOG_PFX = PYPDF_LOG_PFX_PATTERN.replace("\\", '')
-LOG_THEME = Theme({f"{ReprHighlighter.base_style}{k}": v for k,v in LOG_THEME_DICT.items()})
+LOG_THEME = Theme({f"{ReprHighlighter.base_style}{k}": v for k, v in LOG_THEME_DICT.items()})
 
 # Augment the standard log highlighter
 class LogHighlighter(ReprHighlighter):

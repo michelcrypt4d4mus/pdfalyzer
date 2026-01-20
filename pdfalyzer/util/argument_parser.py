@@ -12,7 +12,6 @@ from rich.prompt import Confirm
 from rich.text import Text
 from yaralyzer.util.argument_parser import debug, epilog, export, parser, parse_arguments as parse_yaralyzer_args, source
 from yaralyzer.util.logging import log, log_argparse_result, log_current_config, log_invocation
-from yaralyzer.config import YaralyzerConfig
 
 from pdfalyzer.config import PDFALYZE, PDFALYZER, PdfalyzerConfig
 from pdfalyzer.detection.constants.binary_regexes import QUOTE_PATTERNS
