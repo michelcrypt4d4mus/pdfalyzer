@@ -35,9 +35,10 @@ SLOW_PDFS = [
 ]
 
 
+files = [f for f in flatten([dir.glob('*.pdf') for dir in PDF_DIRS]) if '_img' not in str(f)]
 file_fonts: dict[str, list[FontInfo]] = {}
 
-for file in flatten([dir.glob('*.pdf') for dir in PDF_DIRS]):
+for file in files:
     if file.name in SLOW_PDFS:
         continue
 
