@@ -51,7 +51,7 @@ class Pdfalyzer:
         font_infos (List[FontInfo]): Font summary objects
         font_info_extraction_error (Optional[Exception]): Error encountered extracting FontInfo (if any)
         max_generation (int): Max revision number ("generation") encounted in this PDF.
-        nodes_encountered (Dict[int, PdfTreeNode]): Nodes we've traversed already.
+        nodes_encountered (Dict[int, PdfTreeNode]): Nodes we've traversed already even if not in tree yet.
         pdf_basename (str): The base name of the PDF file (with extension).
         pdf_bytes (bytes): PDF binary data.
         pdf_bytes_info (BytesInfo): File size, hashes, and other data points about the PDF's raw bytes.
@@ -60,6 +60,7 @@ class Pdfalyzer:
         pdf_size (int): Number of nodes as extracted from the PDF's Trailer node.
         pdf_tree (PdfTreeNode): The top node of the PDF data structure tree.
         verifier (PdfTreeVerifier): PdfTreeVerifier that can validate the PDF has been walked successfully.
+        _tree_nodes_by_id (Dict[int, PdfTreeNode): ID cache for nodes that are in the tree
     """
 
     def __init__(self, pdf_path: str | Path, password: str | None = None):
@@ -97,6 +98,7 @@ class Pdfalyzer:
         self.font_info_extraction_error: Optional[Exception] = None
         self.max_generation = 0  # PDF revisions are "generations"; this is the max generation encountered
         self.nodes_encountered: Dict[int, PdfTreeNode] = {}  # Nodes we've seen already
+        self._tree_nodes_by_id: Dict[int, PdfTreeNode | None] = {}  # Nodes in the tree we've looked up already
         self._indeterminate_ids = set()  # See INDETERMINATE_REF_KEYS comment
 
         # Bootstrap the root of the tree with the trailer. PDFs are always read trailer first.
@@ -145,7 +147,8 @@ class Pdfalyzer:
 
     def find_node_by_idnum(self, idnum: int) -> Optional[PdfTreeNode]:
         """Find node with `idnum` in the tree. Return `None` if that node is not reachable from the root."""
-        return self.find_node_with_attr('idnum', idnum, True)
+        self._tree_nodes_by_id[idnum] = self._tree_nodes_by_id.get(idnum, self.find_node_with_attr('idnum', idnum, True))
+        return self._tree_nodes_by_id[idnum]
 
     def find_node_with_attr(self, attr: str, value: str | int, should_raise: bool = False) -> PdfTreeNode | None:
         """Find node with a property where you only expect one of those nodes to exist"""
@@ -336,8 +339,10 @@ class Pdfalyzer:
             ref_and_obj = self.ref_and_obj_for_id(idnum)
             ref = ref_and_obj.ref
             obj = ref_and_obj.obj
+            # Make sure we didn't already fix this node up in the course of other repairs
+            node = self.find_node_by_idnum(ref.idnum)
 
-            if not isinstance(obj, DictionaryObject):
+            if not isinstance(obj, DictionaryObject) or (node is not None and node.parent):
                 continue
 
             # Handle special Linearization info nodes
@@ -366,6 +371,22 @@ class Pdfalyzer:
                 # TODO: these /ObjStm objs should have been unrolled into other PDF objects
                 log.warning(f"Forcing {describe_obj(ref_and_obj)} to appear as child of root node")
                 self.pdf_tree.add_child(self._build_or_find_node(ref, OBJ_STM))
+            elif obj.get(TYPE) == ANNOT and isinstance(obj.get('/AP'), DictionaryObject) and '/N' in obj['/AP']:
+                annot_normal_appearance_ref = obj['/AP'].get('/N')
+
+                if isinstance(annot_normal_appearance_ref, IndirectObject):
+                    appearance_node = self.find_node_by_idnum(annot_normal_appearance_ref.idnum) or \
+                                            self._build_or_find_node(annot_normal_appearance_ref, '[/AP]/N')
+
+                    if appearance_node.type == XOBJECT and appearance_node.obj.get(SUBTYPE) == '/Form':
+                        form = self.find_node_with_attr('type', ACRO_FORM)
+
+                        if form:
+                            annot_node = self._build_or_find_node(ref, '/A(nnot)')
+                            annot_node.set_parent(form)
+                            appearance_node.set_parent(annot_node)
+                            # log.warning(f"Calling emergency walk_node({annot_node})")
+                            # self.walk_node(annot_node)
             elif obj.get(TYPE) == XOBJECT and obj.get(SUBTYPE) == '/Form':
                 form = self.find_node_with_attr('type', ACRO_FORM)
 
@@ -430,6 +451,16 @@ class Pdfalyzer:
 
             if new_fonts:
                 log.warning(f"Found {len(new_fonts)} fonts in unplaced node {node}!")
+
+        fonts_without_nodes = [fi for fi in self.font_infos if not self.find_node_by_idnum(fi.idnum)]
+
+        for font_info in fonts_without_nodes:
+            # TODO: this should be a walk_node() call bc it misses the /FontDescriptor as is
+            ref_and_obj = self.ref_and_obj_for_id(font_info.idnum)
+            log.warning(f'Found font {font_info} but no corresponding node for {ref_and_obj}!')
+            font_node = self._build_or_find_node(ref_and_obj.ref, f"{FONT}/{font_info.label}")
+            font_node.set_parent(node)
+            # import pdb;pdb.set_trace()
 
         self.font_infos = sorted(self.font_infos, key=lambda fi: fi.idnum)
 

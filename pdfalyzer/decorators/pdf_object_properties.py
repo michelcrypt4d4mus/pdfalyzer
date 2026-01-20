@@ -60,8 +60,8 @@ class PdfObjectProperties:
         else:
             self.first_address = self.address
 
-        log.debug(f"Node ID: {self.idnum}, type: {self.type}, subtype: {self.sub_type}, " +
-                  f"label: {self.label}, first_address: {self.first_address}")
+        # log.debug(f"Node ID: {self.idnum}, type: {self.type}, subtype: {self.sub_type}, " +
+        #           f"label: {self.label}, first_address: {self.first_address}")
 
     @classmethod
     def from_reference(cls, reference: IndirectObject, address: str) -> Self:
