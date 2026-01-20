@@ -2,7 +2,7 @@
 * `pdfalyze` now returns error code (1) to shell if there are unplaced nodes unless the new `--allow-missed-nodes` option is used
 * Make `PdfObjectProperties`, `IndeterminateNode`, `PdfObjectRelationship` into dataclasses
 * Sort `Pdfalyzer.font_infos` array by node ID
-* Use `pypdf` new `Font` object
+* Upgrade `pypdf` to 6.6.0 and make use of new `Font` object
 * Placement of formerly orphaned nodes:
    * Force stranded `/Pages` nodes to be children of `/Catalog`
    * Better placement of nodes that are members of an `ArrayObject`
