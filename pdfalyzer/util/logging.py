@@ -9,7 +9,7 @@ from rich.highlighter import ReprHighlighter
 from rich.logging import RichHandler
 from rich.theme import Theme
 
-from yaralyzer.util.logging import log, log_console  # Other files import log from here to trigger log setup
+from yaralyzer.util.logging import log, log_console, log_trace  # Other files import log from here to trigger log setup
 
 LOG_THEME_DICT = {
     "pypdf_line": "dim",

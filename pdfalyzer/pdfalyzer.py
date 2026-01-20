@@ -1,6 +1,7 @@
 """
 PDFalyzer: Analyze and explore the structure of PDF files.
 """
+import json
 from os.path import basename
 from pathlib import Path
 from typing import Dict, Iterator, List, Optional
@@ -8,7 +9,7 @@ from typing import Dict, Iterator, List, Optional
 from anytree import LevelOrderIter, SymlinkNode
 from anytree.search import findall, findall_by_attr
 from pypdf import PdfReader
-from pypdf.errors import FileNotDecryptedError, PdfReadError
+from pypdf.errors import DependencyError, FileNotDecryptedError, PdfReadError
 from pypdf.generic import ArrayObject, DictionaryObject, IndirectObject, PdfObject
 from rich.prompt import Prompt
 from rich.text import Text
@@ -16,7 +17,6 @@ from yaralyzer.helpers.file_helper import load_binary_data
 from yaralyzer.helpers.rich_text_helper import print_fatal_error_and_exit
 from yaralyzer.output.file_hashes_table import compute_file_hashes
 from yaralyzer.output.rich_console import console
-from yaralyzer.util.logging import log_trace
 
 from pdfalyzer.decorators.document_model_printer import highlighted_raw_pdf_obj_str
 from pdfalyzer.decorators.indeterminate_node import IndeterminateNode
@@ -29,12 +29,13 @@ from pdfalyzer.pdf_object_relationship import PdfObjectRelationship
 from pdfalyzer.util.adobe_strings import *
 from pdfalyzer.util.argument_parser import is_pdfalyze_script
 from pdfalyzer.util.exceptions import PdfWalkError
-from pdfalyzer.util.logging import log  # Triggers log setup
+from pdfalyzer.util.logging import log, log_trace  # Triggers log setup
 
 MISSING_NODE_WARN_THRESHOLD = 200
 NODE_COUNT_WARN_THRESHOLD = 10_000
 PASSWORD_PROMPT = Text(f"\nThis PDF is encrypted. What's the password?", style='bright_cyan bold')
 TRAILER_FALLBACK_ID = 10_000_000
+PASSWORD_PROMPT = Text(f"\nThis PDF is encrypted. What's the password?", style='bright_cyan bold')
 PYPDF_ERROR_MSG = "Failed to open file with PyPDF. Consider filing a PyPDF bug report: https://github.com/py-pdf/pypdf/issues"
 
 
@@ -50,7 +51,7 @@ class Pdfalyzer:
         font_infos (List[FontInfo]): Font summary objects
         font_info_extraction_error (Optional[Exception]): Error encountered extracting FontInfo (if any)
         max_generation (int): Max revision number ("generation") encounted in this PDF.
-        nodes_encountered (Dict[int, PdfTreeNode]): Nodes we've traversed already.
+        nodes_encountered (Dict[int, PdfTreeNode]): Nodes we've traversed already even if not in tree yet.
         pdf_basename (str): The base name of the PDF file (with extension).
         pdf_bytes (bytes): PDF binary data.
         pdf_bytes_info (BytesInfo): File size, hashes, and other data points about the PDF's raw bytes.
@@ -59,6 +60,7 @@ class Pdfalyzer:
         pdf_size (int): Number of nodes as extracted from the PDF's Trailer node.
         pdf_tree (PdfTreeNode): The top node of the PDF data structure tree.
         verifier (PdfTreeVerifier): PdfTreeVerifier that can validate the PDF has been walked successfully.
+        _tree_nodes_by_id (Dict[int, PdfTreeNode): ID cache for nodes that are in the tree
     """
 
     def __init__(self, pdf_path: str | Path, password: str | None = None):
@@ -69,27 +71,34 @@ class Pdfalyzer:
         """
         self.pdf_path = pdf_path
         self.pdf_basename = basename(pdf_path)
-        self.pdf_bytes = load_binary_data(pdf_path)
-        self.pdf_bytes_info = compute_file_hashes(self.pdf_bytes)
 
         try:
             self.pdf_filehandle = open(pdf_path, 'rb')  # Filehandle must be left open for PyPDF to perform seeks
             self.pdf_reader = PdfReader(self.pdf_filehandle)
+        except DependencyError as e:
+            self._handle_fatal_error(f"Missing dependency required for this file.", e)
+        except FileNotFoundError as e:
+            self._handle_fatal_error(f"Invalid file", e)
         except PdfReadError as e:
             self._handle_fatal_error(f'PdfReadError: "{pdf_path}" doesn\'t seem to be a valid PDF file.', e)
         except Exception as e:
             console.print_exception()
-            self._handle_fatal_error(f"{PYPDF_ERROR_MSG}\n{e}", e)
+            self._handle_fatal_error(f"{PYPDF_ERROR_MSG}\n", e)
 
         if self.pdf_reader.is_encrypted:
             if not self.pdf_reader.decrypt(password or Prompt.ask(PASSWORD_PROMPT)):
                 self._handle_fatal_error(f"Wrong password", FileNotDecryptedError("encrypted PDF"))
+
+        # Load bytes etc
+        self.pdf_bytes = load_binary_data(pdf_path)
+        self.pdf_bytes_info = compute_file_hashes(self.pdf_bytes)
 
         # Initialize tracking variables
         self.font_infos: List[FontInfo] = []  # Font summary objects
         self.font_info_extraction_error: Optional[Exception] = None
         self.max_generation = 0  # PDF revisions are "generations"; this is the max generation encountered
         self.nodes_encountered: Dict[int, PdfTreeNode] = {}  # Nodes we've seen already
+        self._tree_nodes: Dict[int, PdfTreeNode | None] = {}  # Nodes in the tree we've looked up already
         self._indeterminate_ids = set()  # See INDETERMINATE_REF_KEYS comment
 
         # Bootstrap the root of the tree with the trailer. PDFs are always read trailer first.
@@ -120,6 +129,10 @@ class Pdfalyzer:
             if not isinstance(node, SymlinkNode):
                 node.symlink_non_tree_relationships()
 
+        # Defer warnings if currently running in a 'pdfalyze SOME_PDF.pdf' context
+        if not is_pdfalyze_script:
+            self.verifier.log_missing_node_warnings()
+
         log.info(f"Walk complete.")
 
     def walk_node(self, node: PdfTreeNode) -> None:
@@ -132,9 +145,14 @@ class Pdfalyzer:
             if not next_node.all_references_processed:
                 self.walk_node(next_node)
 
+            # TODO: Premature optimization can be bad, but this is an attempt
+            if self.find_node_by_idnum(next_node.idnum):
+                self._tree_nodes[next_node.idnum] = next_node
+
     def find_node_by_idnum(self, idnum: int) -> Optional[PdfTreeNode]:
         """Find node with `idnum` in the tree. Return `None` if that node is not reachable from the root."""
-        return self.find_node_with_attr('idnum', idnum, True)
+        self._tree_nodes[idnum] = self._tree_nodes.get(idnum) or self.find_node_with_attr('idnum', idnum, True)
+        return self._tree_nodes[idnum]
 
     def find_node_with_attr(self, attr: str, value: str | int, raise_if_multiple: bool = False) -> PdfTreeNode | None:
         """Find node with a property where you only expect one of those nodes to exist"""
@@ -204,6 +222,20 @@ class Pdfalyzer:
         """Nodes that were encountered by walk_node() but didn't end up in the tree."""
         return [node for id, node in self.nodes_encountered.items() if self.find_node_by_idnum(id) is None]
 
+    def _add_font_infos(self, node: PdfTreeNode) -> list[FontInfo]:
+        """Add fonts to self.font_infos. Returns list of new fonts that were added."""
+        try:
+            font_infos = FontInfo.extract_font_infos(node)
+        except Exception as e:
+            self.font_info_extraction_error = e
+            log.error(f"Failed to extract font information from node: {node} (error: {e})")
+            return []
+
+        known_font_ids = [fi.idnum for fi in self.font_infos]
+        new_font_infos = [fi for fi in font_infos if fi.idnum not in known_font_ids]
+        self.font_infos += new_font_infos
+        return new_font_infos
+
     def _add_relationship_to_pdf_tree(self, relationship: PdfObjectRelationship) -> Optional[PdfTreeNode]:
         """
         Place the `relationship` node in the tree. Returns an optional node that should be
@@ -253,7 +285,7 @@ class Pdfalyzer:
                 if relationship.to_obj.idnum not in self._indeterminate_ids and to_node.parent is None:
                     raise PdfWalkError(f"{relationship} - ref has no parent and is not indeterminate")
                 else:
-                    log.debug(f"  Already saw {relationship}; not scanning next")
+                    log_trace(f"  Already saw {relationship}; not scanning next")
                     return None
             elif relationship.is_indeterminate or (relationship.is_link and not self.is_in_tree(to_node)):
                 # Indeterminate relationships need to wait until everything has been scanned to be placed
@@ -272,6 +304,8 @@ class Pdfalyzer:
         return self.find_node_with_attr('type', '/Catalog')
 
     def _handle_fatal_error(self, msg: str, e: Exception) -> None:
+        msg = f"{msg} ({e})"
+
         if 'pdf_reader' in vars(self):
             self.pdf_reader.close()
         if 'pdf_filehandle' in vars(self):
@@ -279,7 +313,7 @@ class Pdfalyzer:
 
         # Only exit if running in a 'pdfalyze some_file.pdf context', otherwise raise Exception.
         if is_pdfalyze_script:
-            print_fatal_error_and_exit(f"{msg} ({e})")
+            print_fatal_error_and_exit(msg)
         else:
             print_error(msg)
             raise e
@@ -307,28 +341,100 @@ class Pdfalyzer:
         if len(missing_node_ids) > MISSING_NODE_WARN_THRESHOLD:
             log.warning(f"Found {len(missing_node_ids)} missing node IDs. This could take a while to sort out...")
 
-        # Place /ObjStm at root if no other location found.
         for idnum in missing_node_ids:
             ref_and_obj = self.ref_and_obj_for_id(idnum)
             ref = ref_and_obj.ref
             obj = ref_and_obj.obj
+            # Make sure we didn't already fix this node up in the course of other repairs
+            node = self.find_node_by_idnum(ref.idnum)
 
-            if not isinstance(obj, DictionaryObject):
+            if not isinstance(obj, DictionaryObject) or (node is not None and node.parent):
                 continue
 
             # Handle special Linearization info nodes
             if obj.get(TYPE) is None and '/Linearized' in obj:
                 log.warning(f"Placing special /Linearized node {describe_obj(ref_and_obj)} as child of root")
                 self.pdf_tree.add_child(self._build_or_find_node(ref, '/Linearized'))
+            elif isinstance(obj.get(P), IndirectObject):
+                parent = self.find_node_by_idnum(obj.get(P).idnum)
+
+                if parent:
+                    log.warning(f"Placing lost {describe_obj(ref_and_obj)} with /P ref pointing to {parent}")
+                    parent.add_child(self._build_or_find_node(ref, '/P(arent)'))
+            elif isinstance(obj.get(COLOR_SPACE), IndirectObject):
+                parent = self.find_node_by_idnum(obj.get(COLOR_SPACE).idnum)
+
+                if parent:  # TODO: maybe this should be inserted as parent in the middle instead of as child?
+                    log.warning(f"Placing lost {describe_obj(ref_and_obj)} with {COLOR_SPACE} ref pointing to {parent}")
+                    parent.add_child(self._build_or_find_node(ref, '/C(olorSpace))'))
             elif obj.get(TYPE) == OBJ_STM:
-                log.warning(f"Forcing homeless {describe_obj(ref_and_obj)} to appear as child of root node")
+                # Place /ObjStm at root if no other location found.
+                # Didier Stevens parses /ObjStm as a synthetic PDF here: https://github.com/DidierStevens/DidierStevensSuite/blob/master/pdf-parser.py#L1605
+                # offset_stream_data = obj.get_data()[obj.get('/First', 0):]
+                # log.warning(f"Offset stream: {offset_stream_data[0:100]}")
+                # stream = BytesIO(offset_stream_data)
+                # p = PdfReader(stream)
+                # TODO: these /ObjStm objs should have been unrolled into other PDF objects
+                log.warning(f"Forcing {describe_obj(ref_and_obj)} to appear as child of root node")
                 self.pdf_tree.add_child(self._build_or_find_node(ref, OBJ_STM))
+            elif obj.get(TYPE) == ANNOT and isinstance(obj.get('/AP'), DictionaryObject) and '/N' in obj['/AP']:
+                annot_normal_appearance_ref = obj['/AP'].get('/N')
+
+                if isinstance(annot_normal_appearance_ref, IndirectObject):
+                    appearance_node = self.find_node_by_idnum(annot_normal_appearance_ref.idnum) or \
+                                            self._build_or_find_node(annot_normal_appearance_ref, '[/AP]/N')
+
+                    if appearance_node.type == XOBJECT and appearance_node.obj.get(SUBTYPE) == '/Form':
+                        form = self.find_node_with_attr('type', ACRO_FORM)
+
+                        if form:
+                            annot_node = self._build_or_find_node(ref, '/A(nnot)')
+                            annot_node.set_parent(form)
+                            appearance_node.set_parent(annot_node)
+                            # log.warning(f"Calling emergency walk_node({annot_node})")
+                            # self.walk_node(annot_node)
             elif obj.get(TYPE) == XOBJECT and obj.get(SUBTYPE) == '/Form':
                 form = self.find_node_with_attr('type', ACRO_FORM)
 
                 if form:
                     log.warning(f"Forcing homeless {describe_obj(ref_and_obj)} to be child of {ACRO_FORM}")
                     form.add_child(self._build_or_find_node(ref, XOBJECT))
+            elif obj.get(TYPE) == XREF:
+                if '/Root' in obj:
+                    root_ref = obj['/Root']
+                    root_node = None
+
+                    if isinstance(root_ref, DictionaryObject):
+                        root_node = self.find_node_by_idnum(root_ref.indirect_reference.idnum)
+                    elif isinstance(root_ref, IndirectObject):
+                        root_node = self.find_node_by_idnum(root_ref.idnum)
+
+                    if root_node:
+                        log.info(f"Placing {describe_obj(ref_and_obj)} under {root_node} based on /Root property")
+                        root_node.add_child(self._build_or_find_node(ref, XREF))
+                        continue
+
+                # TODO: everything under here is highly questionable
+                placeable = XREF_STREAM in self.pdf_reader.trailer
+
+                for k, v in self.pdf_reader.trailer.items():
+                    xref_val_for_key = obj.get(k)
+
+                    if k in [XREF_STREAM, PREV]:
+                        continue
+                    elif k == SIZE:
+                        if xref_val_for_key is None or v != (xref_val_for_key + 1):
+                            log.info(f"{XREF} has {SIZE} of {xref_val_for_key}, trailer has {SIZE} of {v}")
+                            placeable = False
+
+                        continue
+                    elif k not in obj or v != obj.get(k):
+                        log.info(f"Trailer has {k} -> {v} but {XREF} obj has {obj.get(k)} at that key")
+                        placeable = False
+
+                if placeable:
+                    log.warning(f"Forcing {describe_obj(ref_and_obj)} to be child of root node")
+                    self.pdf_tree.add_child(self._build_or_find_node(ref, XREF_STREAM))
 
         # Force /Pages to be children of /Catalog
         for node in self.nodes_without_parents():
@@ -336,28 +442,31 @@ class Pdfalyzer:
                 catalog_node = self._catalog_node()
 
                 if catalog_node:
-                    log.warning(f"Forcing orphaned /Pages node {node} to be child of {catalog_node}")
+                    log.warning(f"Forcing orphaned {PAGES} node {node} to be child of {catalog_node}")
                     node.set_parent(catalog_node)
 
     def _extract_font_infos(self) -> None:
         """Extract information about fonts in the tree and place it in `self.font_infos`."""
         for node in self.node_iterator():
-            if not (isinstance(node.obj, dict) and RESOURCES in node.obj):
-                continue
+            self._add_font_infos(node)
 
-            log.debug(f"Extracting fonts from node with '{RESOURCES}' key: {node}...")
-            known_font_ids = [fi.idnum for fi in self.font_infos]
+        # Check missing nodes
+        for id in self.missing_node_ids():
+            node = PdfTreeNode.from_reference(self.ref_and_obj_for_id(id).ref, '/UNPLACED_NODE')
+            new_fonts = self._add_font_infos(node)
 
-            try:
-                self.font_infos += [
-                    fi for fi in FontInfo.extract_font_infos(node.obj)
-                    if fi.idnum not in known_font_ids
-                ]
-            except Exception as e:
-                self.font_info_extraction_error = e
-                console.line()
-                log.warning(f"Failed to extract font information from node: {node} (error: {e})")
-                console.line()
+            if new_fonts:
+                log.warning(f"Found {len(new_fonts)} fonts in unplaced node {node}!")
+
+        fonts_without_nodes = [fi for fi in self.font_infos if not self.find_node_by_idnum(fi.idnum)]
+
+        for font_info in fonts_without_nodes:
+            # TODO: this should be a walk_node() call bc it misses the /FontDescriptor as is
+            ref_and_obj = self.ref_and_obj_for_id(font_info.idnum)
+            log.warning(f'Found font {font_info} but no corresponding node for {ref_and_obj}!')
+            font_node = self._build_or_find_node(ref_and_obj.ref, f"{FONT}/{font_info.label}")
+            font_node.set_parent(node)
+            # import pdb;pdb.set_trace()
 
         self.font_infos = sorted(self.font_infos, key=lambda fi: fi.idnum)
 

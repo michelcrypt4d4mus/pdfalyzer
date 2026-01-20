@@ -14,10 +14,12 @@ UNLABELED = '/UnlabeledArrayElement'
 # Actual PDF instructions
 AA              = CatalogDictionary.AA  # Automatic Action
 ACRO_FORM       = CatalogDictionary.ACRO_FORM  # Can trigger Javascript on open
+ANNOT           = '/Annot'
 ANNOTS          = '/Annots'
 COLOR_SPACE     = Resources.COLOR_SPACE
 D               = '/D'  # Destination, usually of a link or action
 CONTENTS        = '/Contents'
+DESCENDANT_FONTS = '/DescendantFonts'
 DEST            = '/Dest'  # Similar to /D?
 ENCODING        = '/Encoding'
 EXT_G_STATE     = Resources.EXT_G_STATE

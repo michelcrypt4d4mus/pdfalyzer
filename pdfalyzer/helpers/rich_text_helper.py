@@ -82,7 +82,7 @@ def pct_txt(_number: int, total: int, digits: int = 1) -> Text:
     return Text(f"({pct}%)", style='blue')
 
 
-def print_error(text: Union[str, Text]) -> Text:
+def print_error(text: Union[str, Text]) -> None:
     console.line()
     console.print(error_text(text))
 

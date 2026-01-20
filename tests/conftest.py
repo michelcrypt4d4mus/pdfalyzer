@@ -18,7 +18,9 @@ RENDERED_IMAGES_DIR = SVG_DIR.joinpath('rendered_images')
 FIXTURES_DIR = PROJECT_DIR.joinpath('tests', 'fixtures')
 
 
-# Full paths to PDF test fixtures
+#######################
+#    PDF test paths   #
+#######################
 @pytest.fixture(scope='session')
 def adobe_type1_fonts_pdf_path() -> Path:
     return _pdf_in_doc_dir('Type1_Acrobat_Font_Explanation.pdf')
@@ -27,7 +29,17 @@ def adobe_type1_fonts_pdf_path() -> Path:
 def analyzing_malicious_pdf_path() -> Path:
     return _pdf_in_doc_dir('analyzing-malicious-document-files.pdf')
 
-# Has unplaced nodes
+# Has a Type1 font with character map. PDF comes from pypdf repo.
+@pytest.fixture(scope='session')
+def attachment_pdf_pdfalyzer():
+    return Pdfalyzer(str(FIXTURES_DIR.joinpath('attachment.pdf')))
+
+# Has /Resources that is not an IndirectObject, also has multiple /DescendantFonts
+@pytest.fixture(scope='session')
+def geobase_pdfalyzer():
+    return Pdfalyzer(str(FIXTURES_DIR.joinpath('GeoBase_NHNC1_Data_Model_UML_EN.pdf')))
+
+# Has TONS of unplaced nodes
 @pytest.fixture(scope='session')
 def SF424_page2_pdf_path() -> Path:
     return FIXTURES_DIR.joinpath('SF424_page2.pdf')
@@ -38,13 +50,9 @@ def form_evince_path() -> Path:
     return FIXTURES_DIR.joinpath('form_evince.pdf')
 
 
-# Some obj ids for use with -f when you want to limit yourself to the font
-@pytest.fixture(scope="session")
-def font_obj_ids_in_analyzing_malicious_docs_pdf():
-    return [5, 9, 11, 13, 15, 17]
-
-
-# PDFalyzers to parse them
+##########################
+#    Pdfalyzer objects   #
+##########################
 @pytest.fixture(scope="session")
 def analyzing_malicious_pdfalyzer(analyzing_malicious_pdf_path):
     return Pdfalyzer(analyzing_malicious_pdf_path)
@@ -52,6 +60,19 @@ def analyzing_malicious_pdfalyzer(analyzing_malicious_pdf_path):
 @pytest.fixture(scope="session")
 def adobe_type1_fonts_pdfalyzer(adobe_type1_fonts_pdf_path):
     return Pdfalyzer(adobe_type1_fonts_pdf_path)
+
+# Has mysterious unplaced nodes
+@pytest.fixture(scope='session')
+def form_evince_pdfalyzer(form_evince_path):
+    return Pdfalyzer(form_evince_path)
+
+@pytest.fixture(scope='session')
+def SF424_page2_pdfalyzer(SF424_page2_pdf_path):
+    return Pdfalyzer(SF424_page2_pdf_path)
+
+@pytest.fixture(scope='session')
+def test_sweep_indirect_references_nullobject_exception_pdfalyzer():
+    return Pdfalyzer(FIXTURES_DIR.joinpath('test_sweep_indirect_references_nullobject_exception.pdf'))
 
 
 # /Page and /Pages nodes
@@ -68,6 +89,12 @@ def pages_node(analyzing_malicious_pdfalyzer):
 @pytest.fixture(scope="session")
 def font_info(analyzing_malicious_pdfalyzer):
     return next(fi for fi in analyzing_malicious_pdfalyzer.font_infos if fi.idnum == 5)
+
+
+# Some obj ids for use with -f when you want to limit yourself to the font
+@pytest.fixture(scope="session")
+def font_obj_ids_in_analyzing_malicious_docs_pdf():
+    return [5, 9, 11, 13, 15, 17]
 
 
 @pytest.fixture(scope="session")

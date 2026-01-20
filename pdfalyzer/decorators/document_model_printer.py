@@ -31,7 +31,6 @@ def highlighted_raw_pdf_obj_str(obj: PdfObject, header: str = '', depth=0) -> st
     indent_join = "\n" + indent
     console.print(f'{indent}' + indent_join.join(box_elements))
     _print_all_props(obj, console, indent=indent)
-    console.line()
     return console.file.getvalue()
 
 

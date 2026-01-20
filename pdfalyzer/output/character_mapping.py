@@ -13,7 +13,8 @@ from pdfalyzer.helpers.rich_text_helper import quoted_text
 from pdfalyzer.helpers.string_helper import pp
 from pdfalyzer.output.layout import print_headline_panel, subheading_width
 
-CHARMAP_TITLE = 'Character Mapping (As Extracted By PyPDF)'
+CHARMAP_TITLE = 'Embedded Character Mapping (As Extracted By PyPDF)'
+PREPARED_CHARMAP_TITLE = 'Embedded Adobe PostScript charmap prepared by PyPDF'
 CHARMAP_INDENT = 8
 CHARMAP_PADDING = (0, 2, 0, 10)
 PREPARED_CHARMAP_PADDING = (0, 0, 0, CHARMAP_INDENT)
@@ -24,7 +25,7 @@ CHARMAP_PANEL_INTERNAL_INDENT = 1
 def print_character_mapping(font: 'FontInfo') -> None:  # noqa: F821
     """Prints the character mapping extracted by PyPDF._charmap in tidy columns."""
     _print_charmap_header(f"{font} {CHARMAP_TITLE}", 'charmap.title')
-    charmap_entries = [_format_charmap_entry(k, v) for k, v in font.character_mapping.items()]
+    charmap_entries = [_format_charmap_entry(k, v) for k, v in  font.font_obj.character_map.items()]
 
     charmap_columns = Columns(
         charmap_entries,
@@ -40,7 +41,7 @@ def print_character_mapping(font: 'FontInfo') -> None:  # noqa: F821
 
 def print_prepared_charmap(font: 'FontInfo'):  # noqa: F821
     """Prints the prepared_charmap returned by PyPDF."""
-    _print_charmap_header(f"{font} Adobe PostScript charmap prepared by PyPDF", 'charmap.prepared_title')
+    _print_charmap_header(f"{font} {PREPARED_CHARMAP_TITLE}", 'charmap.prepared_title')
     console.line()
     print_bytes(font.prepared_char_map, style='charmap.prepared', indent=CHARMAP_INDENT + 2)
     console.line()
