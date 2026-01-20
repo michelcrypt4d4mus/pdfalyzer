@@ -147,7 +147,7 @@ class Pdfalyzer:
 
     def find_node_by_idnum(self, idnum: int) -> Optional[PdfTreeNode]:
         """Find node with `idnum` in the tree. Return `None` if that node is not reachable from the root."""
-        self._tree_nodes[idnum] = self._tree_nodes.get(idnum, self.find_node_with_attr('idnum', idnum, True))
+        self._tree_nodes[idnum] = self._tree_nodes.get(idnum) or self.find_node_with_attr('idnum', idnum, True)
         return self._tree_nodes[idnum]
 
     def find_node_with_attr(self, attr: str, value: str | int, raise_if_multiple: bool = False) -> PdfTreeNode | None:
