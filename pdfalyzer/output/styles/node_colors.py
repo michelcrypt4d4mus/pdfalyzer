@@ -36,7 +36,8 @@ NODE_TYPE_STYLES = [
 ]
 
 LABEL_STYLES = [
-    [re.compile('JavaScript|JS|OpenAction', re.I | re.M), 'blink bold red'],
+    [re.compile(fr"^{adobe_strings.OBJ_STM}"),            'grey23 on gray58'],
+    [re.compile(r'^(JavaScript|JS|OpenAction)', re.I | re.M), 'blink bold red'],
     [re.compile(f'^{adobe_strings.FONT_DESCRIPTOR}'),     'cornflower_blue'],
     [re.compile(f'^{adobe_strings.FONT_FILE}'),           'steel_blue1'],
     [re.compile(f'^{adobe_strings.FONT}'),                FONT_OBJ_BLUE],
@@ -45,7 +46,7 @@ LABEL_STYLES = [
     [re.compile(f'^{adobe_strings.WIDTHS}'),              'color(67)'],
     [re.compile(f'^{adobe_strings.W}'),                   'color(67)'],
     [re.compile(f'^{adobe_strings.RESOURCES}'),           'magenta'],
-    [re.compile('/(Trailer|Root|Info|Outlines)'),         'bright_green'],
+    [re.compile(r'/(Trailer|Root|Info|Outlines)'),         'bright_green'],
     [re.compile('/Catalog'),                              'color(47)'],
     [re.compile('/(Metadata|ViewerPreferences)'),         'color(35)'],
     [re.compile('^/Contents'),                            'medium_purple1'],
