@@ -220,7 +220,7 @@ class Pdfalyzer:
         Place the `relationship` node in the tree. Returns an optional node that should be
         placed in the PDF node processing queue.
         """
-        log.info(f'Assessing relationship {relationship}...')
+        log.info(f'Assessing {relationship}...')
         was_seen_before = (relationship.to_obj.idnum in self.nodes_encountered)  # Must come before _build_or_find()
         from_node = relationship.from_node
         to_node = self._build_or_find_node(relationship.to_obj, relationship.address)

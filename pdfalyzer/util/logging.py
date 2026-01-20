@@ -13,8 +13,10 @@ from rich.theme import Theme
 from yaralyzer.util.logging import log, log_console, log_trace  # noqa: F401  # Trigger log setup
 
 LOG_THEME_DICT = {
+    "failed": "bright_red",
     "pypdf_line": "dim",
     "pypdf_prefix": "light_slate_gray",
+    "relationship": 'light_pink4',
 }
 
 PYPDF_LOG_PFX_PATTERN = r"\(pypdf\)"
@@ -24,8 +26,10 @@ LOG_THEME = Theme({f"{ReprHighlighter.base_style}{k}": v for k, v in LOG_THEME_D
 # Augment the standard log highlighter
 class LogHighlighter(ReprHighlighter):
     highlights = ReprHighlighter.highlights + [
+        fr"(?P<failed>fail(ed|ure)?)",
         fr"(?P<pypdf_prefix>{PYPDF_LOG_PFX_PATTERN})",
         fr"(?P<pypdf_line>{PYPDF_LOG_PFX_PATTERN} .*)",
+        fr"(?P<relationship>[Rr]elationship)",
     ]
 
 
@@ -43,3 +47,8 @@ pypdf_log_handler.setLevel(logging.WARNING)
 pypdf_log_handler.formatter = logging.Formatter(PYPDF_LOG_PFX + ' %(message)s')
 pypdf_logger = logging.getLogger("pypdf")
 pypdf_logger.addHandler(pypdf_log_handler)
+
+# pdfalyzer log highlighting
+pdfalyzer_log_handler = RichHandler(**log_handler_kwargs)
+log.handlers = [pdfalyzer_log_handler]
+log_highlighter = log_handler_kwargs['highlighter']
