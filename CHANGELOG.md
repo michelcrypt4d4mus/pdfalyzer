@@ -3,7 +3,7 @@
 * Make `PdfObjectProperties`, `IndeterminateNode`, `PdfObjectRelationship` into dataclasses
 * Sort `Pdfalyzer.font_infos` array by node ID
 * Upgrade `pypdf` to 6.6.0 and make use of new `Font` object
-* Send logs to `stderr` instead of `stdout`, redirect `pypdf logs`
+* Send logs to `stderr` instead of `stdout`, redirect and reformat `pypdf` logs, other logging improvements
 * Placement of formerly orphaned nodes:
    * Force stranded `/Pages` nodes to be children of `/Catalog`
    * Better placement of nodes that are members of an `ArrayObject`

@@ -304,7 +304,7 @@ class Pdfalyzer:
                 log.warning(f"Placing special /Linearized node {describe_obj(obj)} as child of info or root")
                 (self._info_node() or self.pdf_tree).add_child(self._build_or_find_node(ref, '/Linearized'))
             elif obj.get(TYPE) == OBJ_STM:
-                log.warning(f"Forcing unplaced {OBJ_STM} obj to be a child of root node")
+                log.warning(f"Forcing homeless {OBJ_STM} obj to appear as a child of root node")
                 self.pdf_tree.add_child(self._build_or_find_node(ref, OBJ_STM))
 
         # Force /Pages to be children of /Catalog
