@@ -63,7 +63,7 @@ class PdfTreeVerifier:
         notable_ids = []
 
         for idnum in self.pdfalyzer.missing_node_ids():
-            _ref, obj = self.pdfalyzer.ref_and_obj_for_id(idnum)
+            obj = self.pdfalyzer.ref_and_obj_for_id(idnum).obj
             msg = f"Missing node {idnum} {describe_obj(obj)}"
 
             if isinstance(obj, OK_UNPLACED_TYPES):
@@ -91,7 +91,7 @@ class PdfTreeVerifier:
             log.warning(f"Verification doesn't check revisions but this PDF's generation is {self.pdfalyzer.max_generation}")
 
         for idnum in self.pdfalyzer.missing_node_ids():
-            ref, obj = self.pdfalyzer.ref_and_obj_for_id(idnum)
+            obj = self.pdfalyzer.ref_and_obj_for_id(idnum).obj
 
             if obj is None:
                 log.error(f"Couldn't verify elementary obj with id {idnum} is properly in tree")

@@ -1,12 +1,19 @@
 """
 Some methods to help with the direct manipulation/processing of PyPDF's PdfObjects
 """
+from dataclasses import dataclass
 from typing import List, Optional
 
 from pypdf.generic import ArrayObject, DictionaryObject, IndirectObject, PdfObject
 
 from pdfalyzer.pdf_object_relationship import PdfObjectRelationship
 from pdfalyzer.util.adobe_strings import TYPE
+
+
+@dataclass
+class RefAndObj:
+    ref: IndirectObject
+    obj: PdfObject | None
 
 
 def describe_obj(obj: PdfObject | None) -> str:
