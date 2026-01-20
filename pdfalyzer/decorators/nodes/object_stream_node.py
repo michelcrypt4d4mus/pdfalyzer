@@ -12,3 +12,25 @@ Something like:
     stream = BytesIO(offset_stream_data)
     p = PdfReader(stream)
 """
+from pypdf.generic import DictionaryObject, PdfObject, StreamObject
+
+from pdfalyzer.decorators.pdf_tree_node import PdfTreeNode
+from pdfalyzer.util.adobe_strings import *
+
+
+class ObjStmNode(PdfTreeNode):
+    def __init__(self, obj: StreamObject, address: str, idnum: int):
+        super().__init__(obj, address, idnum)
+
+        if not isinstance(self.obj, DictionaryObject):
+            raise ValueError(f"{OBJ_STM} should be a DictionaryObject")
+        elif self.stream_data is None:
+            raise ValueError(f"{OBJ_STM} nodes should have stream data!")
+        elif FIRST not in self.obj:
+            raise ValueError(f"{OBJ_STM} nodes should have a {FIRST} property")
+
+        self.first_byte_idx: int = int(self.obj[FIRST])
+        self.objects_bytes = self.stream_data[self.first_byte_idx:]
+        self.number_of_objects: int = int(self.obj['/N'])
+
+        # import pdb;pdb.set_trace()
