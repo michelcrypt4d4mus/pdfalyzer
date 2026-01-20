@@ -10,6 +10,7 @@ from pdfalyzer.helpers.rich_text_helper import comma_join_txt, node_label
 from pdfalyzer.helpers.string_helper import root_address
 from pdfalyzer.output.styles.node_colors import get_class_style, get_class_style_dim
 from pdfalyzer.util.adobe_strings import *
+from pdfalyzer.util.debugging import log_trace
 
 
 @dataclass
@@ -60,8 +61,8 @@ class PdfObjectProperties:
         else:
             self.first_address = self.address
 
-        # log.debug(f"Node ID: {self.idnum}, type: {self.type}, subtype: {self.sub_type}, " +
-        #           f"label: {self.label}, first_address: {self.first_address}")
+        log_trace(f"Node ID: {self.idnum}, type: {self.type}, subtype: {self.sub_type}, " +
+                  f"label: {self.label}, first_address: {self.first_address}")
 
     @classmethod
     def from_reference(cls, reference: IndirectObject, address: str) -> Self:
