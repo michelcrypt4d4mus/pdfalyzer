@@ -28,13 +28,12 @@ from pdfalyzer.pdf_object_relationship import PdfObjectRelationship
 from pdfalyzer.util.adobe_strings import *
 from pdfalyzer.util.argument_parser import is_pdfalyze_script
 from pdfalyzer.util.exceptions import PdfWalkError
-from pdfalyzer.util.logging import log, log_trace  # Triggers log setup
+from pdfalyzer.util.logging import log, log_trace # Triggers log setup
 
 MISSING_NODE_WARN_THRESHOLD = 200
 NODE_COUNT_WARN_THRESHOLD = 10_000
 PASSWORD_PROMPT = Text(f"\nThis PDF is encrypted. What's the password?", style='bright_cyan bold')
 TRAILER_FALLBACK_ID = 10_000_000
-PASSWORD_PROMPT = Text(f"\nThis PDF is encrypted. What's the password?", style='bright_cyan bold')
 PYPDF_ERROR_MSG = "Failed to open file with PyPDF. Consider filing a PyPDF bug report: https://github.com/py-pdf/pypdf/issues"
 
 
