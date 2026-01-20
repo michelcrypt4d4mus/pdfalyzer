@@ -9,7 +9,7 @@ from pypdf.generic import ArrayObject, DictionaryObject
 from yaralyzer.util.logging import log
 
 
-without_nones = lambda _list: [e for e in _list if e]
+without_falsey = lambda _list: [e for e in _list if e]
 
 
 def flatten(_list: list[list[Any]]) -> list:
