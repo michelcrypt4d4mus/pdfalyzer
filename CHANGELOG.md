@@ -11,6 +11,7 @@
 * Print missing node warnings at end not beginning
 * Upgrade `pypdf` to 6.6.0 and make use of new `Font` object
 * Extract fonts from nodes even if they can't be placed in the tree
+* Send logs to `stderr` instead of `stdout`, redirect `pypdf logs`
 * Placement of formerly orphaned nodes:
    * Force unplaced `/ObjStm` nodes under the root node
    * Force stranded `/Pages` nodes to be children of `/Catalog`
