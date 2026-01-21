@@ -1,8 +1,10 @@
+from copy import copy
 from os import environ, path, remove
 from pathlib import Path
 environ['INVOKED_BY_PYTEST'] = 'True'  # Must be set before importing yaralyzer (?)
 
 import pytest                                           # noqa: E402
+from yaralyzer.config import is_env_var_set_and_not_false
 from yaralyzer.helpers.file_helper import files_in_dir  # noqa: E402
 
 from pdfalyzer.pdfalyzer import Pdfalyzer               # noqa: E402
@@ -16,6 +18,21 @@ DOCUMENTATION_DIR = PROJECT_DIR.joinpath('doc')
 SVG_DIR = DOCUMENTATION_DIR.joinpath('svgs')
 RENDERED_IMAGES_DIR = SVG_DIR.joinpath('rendered_images')
 FIXTURES_DIR = PROJECT_DIR.joinpath('tests', 'fixtures')
+RENDERED_FIXTURES_DIR = FIXTURES_DIR.joinpath('rendered')
+REBUILD_FIXTURES_ENV_VAR = 'PYTEST_REBUILD_FIXTURES'
+
+BASE_ARGS = [
+    '--min-decode-length', '50',
+    '--max-decode-length', '51',
+    '--suppress-decodes',
+    '--allow-missed-nodes',
+    '--export-txt',
+]
+
+
+@pytest.fixture
+def pytests_dir():
+    return PYTESTS_DIR
 
 
 #######################
@@ -108,9 +125,27 @@ def multipage_pdf_path():
 
 
 @pytest.fixture
-def tmp_dir():
+def should_rebuild_fixtures() -> bool:
+    return is_env_var_set_and_not_false(REBUILD_FIXTURES_ENV_VAR)
+
+
+@pytest.fixture
+def rendered_output_dir(should_rebuild_fixtures, tmp_dir) -> Path:
+    if should_rebuild_fixtures:
+        return RENDERED_FIXTURES_DIR
+    else:
+        return tmp_dir
+
+
+@pytest.fixture
+def rendered_fixtures_dir() -> Path:
+    return RENDERED_FIXTURES_DIR
+
+
+@pytest.fixture
+def tmp_dir(pytests_dir) -> Path:
     """Clear the tmp dir when fixture is loaded"""
-    tmpdir = path.join(path.dirname(__file__), 'tmp')
+    tmpdir = pytests_dir.joinpath('tmp')
 
     for file in files_in_dir(tmpdir):
         remove(file)
@@ -121,3 +156,19 @@ def tmp_dir():
 def _pdf_in_doc_dir(filename: str) -> Path:
     """The couple of PDFs in the /doc dir make handy fixtures"""
     return DOCUMENTATION_DIR.joinpath(filename)
+
+
+# Argument fixtures
+@pytest.fixture
+def base_args():
+    return copy(BASE_ARGS)
+
+
+@pytest.fixture
+def pdfalyze_analyzing_malicious_args(analyzing_malicious_pdf_path, base_args):
+    return base_args + [str(analyzing_malicious_pdf_path)]
+
+
+@pytest.fixture
+def export_analyzing_malicious_args(pdfalyze_analyzing_malicious_args, tmp_dir):
+    return ['--output-dir', str(tmp_dir)] + pdfalyze_analyzing_malicious_args

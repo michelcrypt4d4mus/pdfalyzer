@@ -392,6 +392,28 @@ class Pdfalyzer:
                     log.warning(f"Forcing homeless {describe_obj(ref_and_obj)} to be child of {ACRO_FORM}")
                     form.add_child(self._build_or_find_node(ref, XOBJECT))
             elif obj.get(TYPE) == XREF:
+                is_child_of_trailer = XREF_STREAM in self.pdf_reader.trailer
+
+                for k, v in self.pdf_reader.trailer.items():
+                    xref_val_for_key = obj.get(k)
+
+                    if k in [XREF_STREAM, PREV]:
+                        continue
+                    elif k == SIZE:
+                        if xref_val_for_key is None or v != (xref_val_for_key + 1):
+                            log.warning(f"{XREF} has {SIZE} of {xref_val_for_key}, trailer has {SIZE} of {v}")
+                            is_child_of_trailer = False
+
+                        continue
+                    elif k not in obj or v != obj.get(k):
+                        log.info(f"Trailer has {k} -> {v} but {XREF} obj has {obj.get(k)} at that key")
+                        is_child_of_trailer = False
+
+                if is_child_of_trailer:
+                    log.warning(f"Forcing {describe_obj(ref_and_obj)} to be child of root node")
+                    self.pdf_tree.add_child(self._build_or_find_node(ref, XREF_STREAM))
+                    continue
+
                 if '/Root' in obj:
                     root_ref = obj['/Root']
                     root_node = None
@@ -403,30 +425,13 @@ class Pdfalyzer:
 
                     if root_node:
                         log.info(f"Placing {describe_obj(ref_and_obj)} under {root_node} based on /Root property")
-                        root_node.add_child(self._build_or_find_node(ref, XREF))
+                        relationship_key = XREF
+
+                        if isinstance(root_node.obj, DictionaryObject):
+                            relationship_key = XREF_STREAM if XREF_STREAM in root_node.obj else XREF
+
+                        root_node.add_child(self._build_or_find_node(ref, relationship_key))
                         continue
-
-                # TODO: everything under here is highly questionable
-                placeable = XREF_STREAM in self.pdf_reader.trailer
-
-                for k, v in self.pdf_reader.trailer.items():
-                    xref_val_for_key = obj.get(k)
-
-                    if k in [XREF_STREAM, PREV]:
-                        continue
-                    elif k == SIZE:
-                        if xref_val_for_key is None or v != (xref_val_for_key + 1):
-                            log.info(f"{XREF} has {SIZE} of {xref_val_for_key}, trailer has {SIZE} of {v}")
-                            placeable = False
-
-                        continue
-                    elif k not in obj or v != obj.get(k):
-                        log.info(f"Trailer has {k} -> {v} but {XREF} obj has {obj.get(k)} at that key")
-                        placeable = False
-
-                if placeable:
-                    log.warning(f"Forcing {describe_obj(ref_and_obj)} to be child of root node")
-                    self.pdf_tree.add_child(self._build_or_find_node(ref, XREF_STREAM))
 
         # Force /Pages to be children of /Catalog
         for node in self.nodes_without_parents():

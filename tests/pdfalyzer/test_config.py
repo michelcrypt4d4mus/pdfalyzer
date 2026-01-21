@@ -1,24 +1,12 @@
-from os import environ
-from pdfalyzer.config import PYTEST_FLAG, is_env_var_set_and_not_false
+from pathlib import Path
 
-ENV_VAR_NAME = 'THE_WORLD_IS_YOURS'
+from pdfalyzer.config import PDFALYZE, PdfalyzerConfig
+from pdfalyzer.output.pdfalyzer_presenter import PdfalyzerPresenter
+from pdfalyzer.util.argument_parser import parse_arguments
 
 
-def test_is_env_var_set_and_not_false():
-    # Not set
-    assert is_env_var_set_and_not_false(ENV_VAR_NAME) is False
-
-    # Should be set by conftest
-    assert is_env_var_set_and_not_false(PYTEST_FLAG) is True
-
-    # Set to empty string
-    environ[ENV_VAR_NAME] = ''
-    assert is_env_var_set_and_not_false(ENV_VAR_NAME) is False
-
-    # Set to FALSE
-    environ[ENV_VAR_NAME] = 'FALSE'
-    assert is_env_var_set_and_not_false(ENV_VAR_NAME) is False
-
-    # Set to anything else
-    environ[ENV_VAR_NAME] = 'FLASER'
-    assert is_env_var_set_and_not_false(ENV_VAR_NAME) is True
+def test_get_output_basepath(export_analyzing_malicious_args, analyzing_malicious_pdfalyzer, tmp_dir):
+    parse_arguments(export_analyzing_malicious_args)
+    presenter = PdfalyzerPresenter(analyzing_malicious_pdfalyzer)
+    output_path = PdfalyzerConfig.get_output_basepath(presenter.print_document_info)
+    assert output_path == (f'{tmp_dir}/analyzing-malicious-document-files.pdf.document_info')

@@ -112,13 +112,13 @@ is_pdfalyze_script = (parser.prog == PDFALYZE)
 ################################
 # Main argument parsing begins #
 ################################
-def parse_arguments() -> Namespace:
+def parse_arguments(_argv: list[str] | None = None) -> Namespace:
     """Parse command line args. Most args can also be communicated to the app by setting env vars."""
     if '--version' in sys.argv:
         print(f"pdfalyzer {version(PDFALYZER)}")
         sys.exit()
 
-    args = parser.parse_args()
+    args = parser.parse_args(_argv)
     args = parse_yaralyzer_args(args)
     log_invocation()
 

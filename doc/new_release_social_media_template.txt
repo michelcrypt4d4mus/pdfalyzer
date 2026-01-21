@@ -6,3 +6,7 @@ Released v1.x.x. of The Pdfalyzer, the surprisingly popular tool for analyzing (
 * Fun thread someone made using Pdfalyzer: https://x.com/VikParuchuri/status/1965773078585344215
 
 #cybersecurity #FOSS #GPL #homebrew #infosec #maldoc #malware #malwareanalysis #threatassessment #pdf #pdfs #pypi #python #reversing #yara #yararule
+
+
+# More hashtags:
+#ascii #asciiArt #blueteam #cybersecurity #detectionEngineering #DFIR #forensics #FOSS #hacking #homebrew #infosec #KaliLinux #malware #malwareDetection #malwareAnalysis #openSource #pdf #pdfs #pdfalyzer #pypi #python #redteam #reverseEngineering #reversing #Threatassessment #threathunting #yaralyze #yaralyzer #YARA #YARArule #YARArules
