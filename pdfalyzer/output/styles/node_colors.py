@@ -10,7 +10,7 @@ from pypdf.generic import (ArrayObject, ByteStringObject, EncodedStreamObject, I
      NullObject, StreamObject, TextStringObject)
 from yaralyzer.output.rich_console import YARALYZER_THEME_DICT
 
-from pdfalyzer.output.styles.rich_theme import PDF_ARRAY
+from pdfalyzer.output.styles.rich_theme import PDF_ARRAY_STYLE
 from pdfalyzer.util import adobe_strings
 
 ClassStyle = namedtuple('ClassStyle', ['klass', 'style'])
@@ -26,7 +26,7 @@ PDF_TYPE_STYLES = [
     ClassStyle(EncodedStreamObject, YARALYZER_THEME_DICT['bytes']),
     ClassStyle(StreamObject, YARALYZER_THEME_DICT['bytes.title']),
     ClassStyle(TextStringObject, YARALYZER_THEME_DICT['grey.light']),
-    ClassStyle(ArrayObject, PDF_ARRAY),
+    ClassStyle(ArrayObject, PDF_ARRAY_STYLE),
     ClassStyle(NullObject, 'grey23'),
 ]
 

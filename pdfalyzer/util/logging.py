@@ -13,13 +13,16 @@ from rich.theme import Theme
 # Other files import log from here to trigger log setup
 from yaralyzer.util.logging import log, log_console, log_trace  # noqa: F401  # Trigger log setup
 
-from pdfalyzer.output.styles.node_colors import LABEL_STYLES, PDF_TYPE_STYLES, ClassStyle
 from pdfalyzer.helpers.string_helper import regex_to_highlight_pattern, regex_to_capture_group_label
+from pdfalyzer.output.styles.node_colors import LABEL_STYLES, PDF_TYPE_STYLES, ClassStyle
+from pdfalyzer.output.styles.rich_theme import PDF_ARRAY_STYLE, PDF_DICTIONARY_STYLE
 
 LONG_ENOUGH_LABEL_STYLES = [l for l in LABEL_STYLES if len(l[0].pattern) > 4]
 
 LOG_THEME_DICT = {
+    "array_obj": f"{PDF_ARRAY_STYLE} italic",
     "child": "orange3 bold",
+    "dictionary_obj": f"{PDF_DICTIONARY_STYLE} italic",
     "failed": "bright_red",
     "indeterminate": 'bright_black',
     "indirect_object": 'light_coral',
@@ -46,7 +49,9 @@ LOG_THEME = Theme({f"{ReprHighlighter.base_style}{k}": v for k, v in LOG_THEME_D
 # Augment the standard log highlighter
 class LogHighlighter(ReprHighlighter):
     highlights = ReprHighlighter.highlights + [
+        r"(?P<array_obj>Array(Object)?)",
         r"(?P<child>[cC]hild(ren)?|Kids)",
+        r"(?P<dictionary_obj>Dictionary(Object)?)",
         r"(?P<failed>failed)",
         r"(?P<indeterminate>[Ii]ndeterminate( ?[nN]odes?)?)",
         r"(?P<indirect_object>IndirectObject)",

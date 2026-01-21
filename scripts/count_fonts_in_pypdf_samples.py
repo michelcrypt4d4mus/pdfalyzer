@@ -38,6 +38,7 @@ SLOW_PDFS = [
     'LegIndex-page6.pdf',
     'iss2343b.pdf',  # removes thousands of relationships
     'issue3220.pdf',  # Limit reached while decompressing
+    'iss2812.pdf',
 ]
 
 
