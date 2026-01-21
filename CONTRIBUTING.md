@@ -63,8 +63,8 @@ pytest
 pytest -m slow --slow:
 ```
 
+If you make changes to the output for a test fixture you may need to update the recorded fixture files in [`tests/fixtures/rendered/`](tests/fixtures/rendered/), which you can do like this:
 
-#### Hashtags
-```
-#ascii #asciiArt #blueteam #cybersecurity #detectionEngineering #DFIR #forensics #FOSS #hacking #homebrew #infosec #KaliLinux #malware #malwareDetection #malwareAnalysis #openSource #pdf #pdfs #pdfalyzer #pypi #python #redteam #reverseEngineering #reversing #Threatassessment #threathunting #yaralyze #yaralyzer #YARA #YARArule #YARArules
+```bash
+PYTEST_REBUILD_FIXTURES pytest
 ```

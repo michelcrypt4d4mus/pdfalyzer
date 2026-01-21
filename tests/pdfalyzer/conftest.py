@@ -1,3 +1,5 @@
+from copy import copy
+
 import pytest
 
 BASE_ARGS = [
@@ -10,8 +12,15 @@ BASE_ARGS = [
 
 
 @pytest.fixture
-def pdfalyzer_args(analyzing_malicious_pdf_path, tmp_dir):
-    return BASE_ARGS + [
-        '--output-dir', str(tmp_dir),
-        str(analyzing_malicious_pdf_path),
-    ]
+def base_args():
+    return copy(BASE_ARGS)
+
+
+@pytest.fixture
+def pdfalyze_analyzing_malicious_args(analyzing_malicious_pdf_path, base_args):
+    return base_args + [str(analyzing_malicious_pdf_path)]
+
+
+@pytest.fixture
+def export_analyzing_malicious_args(pdfalyze_analyzing_malicious_args, tmp_dir):
+    return ['--output-dir', str(tmp_dir)] + pdfalyze_analyzing_malicious_args
