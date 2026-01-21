@@ -50,7 +50,6 @@ class PdfalyzerConfig:
             if cls._args.extract_quoteds:
                 output_basename += f"_extractquoteds-{','.join(cls._args.extract_quoteds)}"
 
-        return path.join(
-            cls._args.output_dir,
-            output_basename + cls._args.file_suffix + f"___pdfalyzed_{cls._args.invoked_at_str}"
-        )
+        output_basename += cls._args.file_suffix
+        output_basename += '' if is_invoked_by_pytest() else f"___pdfalyzed_{cls._args.invoked_at_str}"
+        return path.join(cls._args.output_dir, output_basename)
