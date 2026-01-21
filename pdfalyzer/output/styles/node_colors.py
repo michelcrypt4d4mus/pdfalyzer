@@ -7,7 +7,7 @@ from numbers import Number
 from typing import Any
 
 from pypdf.generic import (ArrayObject, ByteStringObject, EncodedStreamObject, IndirectObject,
-     StreamObject, TextStringObject)
+     NullObject, StreamObject, TextStringObject)
 from yaralyzer.output.rich_console import YARALYZER_THEME_DICT
 
 from pdfalyzer.output.styles.rich_theme import PDF_ARRAY
@@ -18,6 +18,7 @@ ClassStyle = namedtuple('ClassStyle', ['klass', 'style'])
 DEFAULT_LABEL_STYLE = 'yellow'
 FONT_OBJ_BLUE = 'deep_sky_blue4 bold'
 PDF_NON_TREE_REF = 'color(243)'
+PARENT_STYLE = 'violet'
 
 PDF_TYPE_STYLES = [
     ClassStyle(IndirectObject, 'color(225)'),
@@ -26,6 +27,7 @@ PDF_TYPE_STYLES = [
     ClassStyle(StreamObject, YARALYZER_THEME_DICT['bytes.title']),
     ClassStyle(TextStringObject, YARALYZER_THEME_DICT['grey.light']),
     ClassStyle(ArrayObject, PDF_ARRAY),
+    ClassStyle(NullObject, 'grey23'),
 ]
 
 # Subclasses of the key type will be styled with the value string
@@ -39,7 +41,7 @@ NODE_TYPE_STYLES = PDF_TYPE_STYLES + [
 ]
 
 LABEL_STYLES = [
-    [re.compile(fr"^({adobe_strings.OBJ_STM}|{adobe_strings.NUMS})"),            'grey23 on gray58'],
+    [re.compile(fr"^({adobe_strings.OBJ_STM}|{adobe_strings.NUMS})"), 'grey23 on gray58'],
     [re.compile(r'^(JavaScript|JS|OpenAction)', re.I | re.M), 'blink bold red'],
     [re.compile(f'^{adobe_strings.FONT_DESCRIPTOR}'),     'cornflower_blue'],
     [re.compile(f'^{adobe_strings.FONT_FILE}'),           'steel_blue1'],
@@ -57,12 +59,13 @@ LABEL_STYLES = [
     [re.compile('^/Annots'),                              'deep_sky_blue4'],
     [re.compile('^/Annot'),                               'color(24)'],
     [re.compile('^/Pages'),                               'dark_orange3'],
-    [re.compile('^/Page'),                                'light_salmon3'],
+    [re.compile('^/(Page|Pg)'),                           'light_salmon3'],
     [re.compile('^/ColorSpace'),                          'medium_orchid1'],
     [re.compile('^/(URI|Names)'),                         'white'],
     [re.compile(f'^{adobe_strings.XOBJECT}'),             'grey37'],
     [re.compile(f'^{adobe_strings.UNLABELED}'),           'grey35 reverse'],
     [re.compile(f'^{adobe_strings.XREF}'),                'color(148)'],
+    [re.compile(f'^{adobe_strings.PARENT}'),              PARENT_STYLE],
 ]
 
 # Add common color for all NON_TREE_REFERENCES

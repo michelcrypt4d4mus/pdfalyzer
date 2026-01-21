@@ -83,8 +83,8 @@ def build_pdf_node_table(node: 'PdfTreeNode') -> Table:
     table.columns[1].overflow = 'fold'
     table.columns[2].header_style = get_class_style_italic(node.obj)
 
-    if node.label != node.known_to_parent_as:
-        table.add_row(Text('AddressInParent', style='grey'), Text(str(node.known_to_parent_as), style='grey'), '')
+    if node.label != node.known_to_parent_as and node.type != TRAILER:
+        table.add_row(Text('AddressInParent', style='italic'), Text(str(node.known_to_parent_as)), '', style='gray58')
 
     if isinstance(node.obj, dict):
         for k, v in node.obj.items():
