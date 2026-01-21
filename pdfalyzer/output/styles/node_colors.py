@@ -65,7 +65,9 @@ LABEL_STYLES = [
     [re.compile(f'^{adobe_strings.XOBJECT}'),             'grey37'],
     [re.compile(f'^{adobe_strings.UNLABELED}'),           'grey35 reverse'],
     [re.compile(f'^{adobe_strings.XREF}'),                'color(148)'],
-    [re.compile(f'^{adobe_strings.PARENT}'),              PARENT_STYLE],
+    [re.compile(f'^{adobe_strings.PARENT}'),               PARENT_STYLE],
+    [re.compile(adobe_strings.FALSE),                     'bright_red'],
+    [re.compile(adobe_strings.TRUE),                      'green bold'],
 ]
 
 # Add common color for all NON_TREE_REFERENCES

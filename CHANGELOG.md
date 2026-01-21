@@ -1,4 +1,5 @@
 # NEXT RELEASE
+* Fancier table for PDF metadata that also contains the number of pages and images (if possible)
 
 ### 1.18.1
 * Ensure `cryptography` package is installable as an extra
