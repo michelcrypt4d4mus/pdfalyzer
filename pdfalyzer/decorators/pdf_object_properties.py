@@ -1,15 +1,16 @@
-from dataclasses import dataclass
+from dataclasses import dataclass, field
 from typing import Any, List, Optional, Self, Union
 
+from pypdf.errors import PdfReadError
 from pypdf.generic import ArrayObject, DictionaryObject, IndirectObject, NumberObject, PdfObject
 from rich.text import Text
-from yaralyzer.util.logging import log_trace
 
 from pdfalyzer.helpers.pdf_object_helper import pypdf_class_name
 from pdfalyzer.helpers.rich_text_helper import comma_join_txt, node_label
 from pdfalyzer.helpers.string_helper import root_address
 from pdfalyzer.output.styles.node_colors import get_class_style, get_class_style_dim
 from pdfalyzer.util.adobe_strings import *
+from pdfalyzer.util.logging import log, log_console, log_trace
 
 
 @dataclass
@@ -19,26 +20,33 @@ class PdfObjectProperties:
 
     Attributes:
         obj (PdfObject): The underyling PDF object
-        address (str): The location of the PDF object in the tree, e.g
+        address (str): The location of the PDF object in the tree, e.g '/Root/Pages/Kids[0]'
         idnum (int): ID of the PDF object
         indirect_object (IndirectObject | None): IndirectObject that points to this one
+        label (str): A string that meaningfully describes this object
+        sub_type (str | None): The value found in the /Subtype or /S props, if it exists
+        type (str | None): The value found in the /Type, defaulting to the address
     """
     obj: PdfObject
-    address: str
+    address: str | int
     idnum: int
     indirect_object: IndirectObject | None = None
 
-    def __post_init__(self,):
-        self.sub_type = None
-        self.all_references_processed = False
-        self.known_to_parent_as: Optional[str] = None
+    # Computed fields
+    label: str = field(init=False)
+    sub_type: str | None = None
+    type: str | None = None
 
+    def __post_init__(self,):
         if isinstance(self.obj, DictionaryObject):
-            self.type = self.obj.get(TYPE) or self.address
+            self.type = self.obj.get(TYPE, self.address if isinstance(self.address, str) else None)
             self.sub_type = self.obj.get(SUBTYPE) or self.obj.get(S)
 
             if TYPE in self.obj and self.sub_type is not None:
                 self.label = f"{self.type}:{self.sub_type[1:]}"
+            elif self.type is None:
+                log.warning(f"Unable to determine obj type from {self.obj}, address={self.address}!")
+                self.label = "???"
             else:
                 self.label = self.type
 
@@ -48,7 +56,7 @@ class PdfObjectProperties:
         else:
             # If it's not a DictionaryObject all we have as far as naming is the address passed in.
             self.label = self.address
-            self.type = root_address(self.address) if isinstance(self.address, str) else None
+            self.type = root_address(self.address) if isinstance(self.address, str) else None  # TODO: addresses are not types
 
         # Force self.label to be a string. TODO this sucks.
         if isinstance(self.label, int):
@@ -64,8 +72,14 @@ class PdfObjectProperties:
                   f"label: {self.label}, first_address: {self.first_address}")
 
     @classmethod
-    def from_reference(cls, reference: IndirectObject, address: str) -> Self:
-        return cls(reference.get_object(), address, reference.idnum, reference)
+    def from_reference(cls, ref: IndirectObject, address: str) -> Self:
+        """Alternate constructor to build from an IndirectObject."""
+        try:
+            return cls(ref.get_object(), address, ref.idnum, ref)
+        except PdfReadError as e:
+            log_console.print_exception()
+            log.error(f"Failed to build node because, integrity not guaranteed. Error: {e}")
+            return cls(ref, address, ref.idnum)
 
     @classmethod
     def resolve_references(cls, reference_key: str, obj: PdfObject) -> Any:

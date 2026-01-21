@@ -104,7 +104,7 @@ class Pdfalyzer:
         trailer = self.pdf_reader.trailer
         self.pdf_size = trailer.get(SIZE)
         trailer_id = self.pdf_size if self.pdf_size is not None else TRAILER_FALLBACK_ID
-        self.pdf_tree = PdfTreeNode(trailer, TRAILER, trailer_id)
+        self.pdf_tree = PdfTreeNode.from_obj(trailer, TRAILER, trailer_id)
         self.nodes_encountered[self.pdf_tree.idnum] = self.pdf_tree
 
         if not self.pdf_size:
