@@ -7,17 +7,17 @@ from yaralyzer.output.rich_console import GREY_ADDRESS, YARALYZER_THEME_DICT, co
 
 # Colors / PDF object styles
 DANGER_HEADER = 'color(88) on white'  # Red
-PDF_ARRAY = 'color(120)'
-PDF_NON_TREE_REF = 'color(243)'
-
+PDF_ARRAY_STYLE = 'color(143)' # color(120)
+PDF_DICTIONARY_STYLE = 'color(64)'
+PDF_NON_TREE_REF_STYLE = 'color(243)'
 PDFALYZER_THEME_DICT = YARALYZER_THEME_DICT.copy()
 
 PDFALYZER_THEME_DICT.update({
     'address': GREY_ADDRESS,
     'BOM': 'bright_green',
     # PDF objects
-    'pdf.array': PDF_ARRAY,
-    'pdf.non_tree_ref': PDF_NON_TREE_REF,
+    'pdf.array': PDF_ARRAY_STYLE,
+    'pdf.non_tree_ref': PDF_NON_TREE_REF_STYLE,
     # fonts
     'font.property': 'color(135)',
     'font.title': 'reverse dark_blue on color(253)',
