@@ -1,4 +1,5 @@
 # NEXT RELEASE
+* Fancier table for PDF metadata that also contains the number of pages and images (if possible)
 * Improved handling of `/DescendantFonts` prop for CID and composite fonts (finds more fonts)
 * Translate each font's `/Flags` bits into human readable format in the font info table
 * Red blinking alert on font binaries whose length does not match the one they advertise in `/Length` props

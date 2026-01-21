@@ -33,6 +33,8 @@ LOG_THEME_DICT = {
     # Overload default theme
     'call': 'magenta',
     "filename": 'medium_purple',
+    'ipv4': 'cyan',
+    'ipv6': 'cyan',
     "path": 'medium_purple',
 }
 
