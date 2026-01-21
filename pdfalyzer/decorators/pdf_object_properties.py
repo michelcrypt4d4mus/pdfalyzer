@@ -20,7 +20,7 @@ class PdfObjectProperties:
 
     Attributes:
         obj (PdfObject): The underyling PDF object
-        address (str): The location of the PDF object in the tree, e.g '/Root/Pages/Kids[0]'
+        address (str | int): The location of the PDF object in the tree, e.g '/Root/Pages/Kids[0]'
         idnum (int): ID of the PDF object
         indirect_object (IndirectObject | None): IndirectObject that points to this one
         label (str): A string that meaningfully describes this object
