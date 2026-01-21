@@ -68,7 +68,7 @@ python = "^3.11.14"
 anytree = "~=2.13"
 #pypdf = "6.6.0"  # Version locked in case Font class changes
 pypdf = {path = "../pypdf", develop = true}
-yaralyzer = "^1.0.13"
+yaralyzer = "^1.0.14"
 
 
 # The OCR library pytesseract is kinda heavyweight and not required for basic pdfalyzing.
