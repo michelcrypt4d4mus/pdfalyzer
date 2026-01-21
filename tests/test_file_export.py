@@ -26,14 +26,14 @@ def test_file_export(fixture_mismatch_msg, pdfalyze_analyzing_malicious_args, re
 
         return
 
-    for file in rendered_files:
-        tmp_file = Path(file)
-        fixture_path = rendered_fixtures_dir.joinpath(tmp_file.name)
-        assert fixture_path.exists()  # Check same filename
+    for output_path in rendered_files:
+        tmp_path = Path(output_path)
+        fixture_path = rendered_fixtures_dir.joinpath(tmp_path.name)
+        assert fixture_path.exists()
         fixture_contents = load_file(fixture_path)
-        test_output = load_file(tmp_file)
-        assert fixture_contents != test_output, fixture_mismatch_msg(fixture_path, tmp_file)
-        log.warning(f"'{tmp_file.relative_to(Path.cwd())}' matches fixture: '{fixture_path.relative_to(Path.cwd())}'")
+        test_output = load_file(tmp_path)
+        assert fixture_contents == test_output, fixture_mismatch_msg(fixture_path, tmp_path)
+        log.warning(f"'{tmp_path.relative_to(Path.cwd())}' matches fixture: '{fixture_path.relative_to(Path.cwd())}'")
 
 
 @pytest.fixture
