@@ -15,6 +15,7 @@ from pdfalyzer.helpers.collections_helper import flatten
 from pdfalyzer.helpers.filesystem_helper import file_size_in_mb
 from pdfalyzer.output.layout import print_section_subheader, _print_header_panel
 from pdfalyzer.pdfalyzer import Pdfalyzer
+from pdfalyzer.output.pdfalyzer_presenter import PdfalyzerPresenter
 
 PYPDF_REPO_DIR = Path("../pypdf")
 PYPDF_RESOURCES_DIR = PYPDF_REPO_DIR.joinpath('resources')
@@ -54,6 +55,8 @@ for file in files:
 
     try:
         pdfalyzer = Pdfalyzer(file, 'password')
+        presenter = PdfalyzerPresenter(pdfalyzer)
+        presenter.print_document_info()
         file_fonts[file_key] = pdfalyzer.font_infos
         font_names = [f"{fi.display_title}: {unique_font_string(fi.font_obj)}" for fi in pdfalyzer.font_infos]
         console.print(f"    -> Found {len(font_names)} FontInfos", style='bright_green bold')
