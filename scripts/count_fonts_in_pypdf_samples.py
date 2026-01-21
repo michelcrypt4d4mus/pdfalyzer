@@ -57,7 +57,8 @@ for file in files:
     try:
         pdfalyzer = Pdfalyzer(file, 'password')
         presenter = PdfalyzerPresenter(pdfalyzer)
-        presenter.print_document_info()
+        #presenter.print_document_info()
+        presenter.print_rich_table_tree()
         file_fonts[file_key] = pdfalyzer.font_infos
         font_names = [f"{fi.display_title}: {unique_font_string(fi.font_obj)}" for fi in pdfalyzer.font_infos]
         console.print(f"    -> Found {len(font_names)} FontInfos", style='bright_green bold')
