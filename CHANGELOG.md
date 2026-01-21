@@ -3,6 +3,7 @@
 * Translate each font's `/Flags` bits into human readable format in the font info table
 * Red blinking alert on font binaries whose length does not match the one they advertise in `/Length` props
 * Improve logging about unplaced PDF nodes, print missing node warnings at end not beginning
+* Color highlighting for logs
 * Better handling of `FileNotFoundError` at start
 * Extract fonts from nodes even if they can't be placed in the tree
 * Cache nodes being looked up in the tree in `Pdfalyzer._tree_nodes` dict
