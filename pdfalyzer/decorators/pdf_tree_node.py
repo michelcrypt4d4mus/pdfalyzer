@@ -1,6 +1,7 @@
 """
 `PdfTreeNode` decorates a `PdfObject` with tree structure information.
 """
+from dataclasses import dataclass, field
 from typing import Callable, List, Optional, Self
 
 from anytree import NodeMixin, SymlinkNode
@@ -29,9 +30,11 @@ class PdfTreeNode(NodeMixin, PdfObjectProperties):
 
     Child/parent relationships should be set using the `add_child()` and `set_parent()`
     methods and not set directly.
-
     TODO: this could be done better with anytree hooks.
     """
+    non_tree_relationships: List[PdfObjectRelationship] = field(default_factory=list)
+    stream_data: bytes | None = None
+    stream_length: int = 0
 
     def __init__(self, obj: PdfObject, address: str, idnum: int):
         """
