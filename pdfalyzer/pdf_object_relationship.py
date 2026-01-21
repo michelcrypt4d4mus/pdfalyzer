@@ -105,7 +105,7 @@ class PdfObjectRelationship:
         return s
 
 
-def _build_address(ref_key: Union[str, int], base_address: Optional[str] = None) -> str:
+def _build_address(ref_key: Union[str, int], base_address: Optional[str] = None) -> str | int:
     """
     Append either array index indicators e.g. [5] or reference_keys. reference_keys that appear in a
     PDF object are left as is. Any dict keys or array indices that refere to inner objects and not
