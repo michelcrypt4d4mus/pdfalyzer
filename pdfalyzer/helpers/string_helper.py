@@ -10,12 +10,14 @@ from yaralyzer.output.rich_console import console_width
 INDENT_DEPTH = 4
 PRETTY_PRINT_WIDTH = 60
 DIGIT_REGEX = re.compile("\\d+")
+NON_WORD_REGEX = re.compile(r"[^\w]")
 
 # Pretty Printer
 pp = PrettyPrinter(
     indent=INDENT_DEPTH,
     width=PRETTY_PRINT_WIDTH,
-    sort_dicts=True)
+    sort_dicts=True
+)
 
 
 def all_strings_are_same_ignoring_numbers(strings: List[str]) -> bool:
@@ -26,6 +28,10 @@ def all_strings_are_same_ignoring_numbers(strings: List[str]) -> bool:
 def bracketed(index: Union[int, str]) -> str:
     """Surround index with [ and ]."""
     return f"[{index}]"
+
+
+def class_name_regex(t: type) -> re.Pattern:
+    return re.compile(t.__name__)
 
 
 def count_pattern_matches_in_text(pattern: str, text: str) -> int:
@@ -78,6 +84,18 @@ def is_substring_of_longer_strings_in_list(_string: str, strings: List[str]) -> 
     """Return True if '_string' is a substring of all the 'strings' longer than '_string'."""
     longer_strings = [s for s in strings if len(s) > len(_string)]
     return all([_string in longer_string for longer_string in longer_strings])
+
+
+def regex_to_capture_group_label(regex: re.Pattern) -> str:
+    return NON_WORD_REGEX.sub('', regex.pattern.replace('|', '_'))
+
+
+def regex_to_highlight_pattern(regex: re.Pattern) -> str:
+    """(?P<stream_object>((De|En)coded)?StreamObject)"""
+    pattern = regex.pattern.replace('^', '')
+    pattern = pattern[1:] if pattern[0] == '/' else pattern
+    label = regex_to_capture_group_label(regex)
+    return fr"(?P<{label}>[\b/]{pattern}\b)"
 
 
 def replace_digits(string_with_digits: str) -> str:

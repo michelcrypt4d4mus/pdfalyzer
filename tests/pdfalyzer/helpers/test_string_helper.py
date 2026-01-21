@@ -1,7 +1,9 @@
-from pdfalyzer.helpers.string_helper import (all_strings_are_same_ignoring_numbers, is_prefixed_by_any,
-     has_a_common_substring, is_substring_of_longer_strings_in_list, replace_digits)
+import re
+
+from pdfalyzer.helpers.string_helper import *
 
 TEST_TITLE = "Jacques and Carl's Excellent Adventure"
+OBJ_REGEX = re.compile(r'^(JavaScript|JS|OpenAction)')
 
 
 def test_is_prefixed_by_any():
@@ -27,3 +29,11 @@ def test_is_substring_of_longer_strings_in_list():
 def test_has_a_common_substring():
     assert not has_a_common_substring(['blimp', 'blew', 'ruby'])
     assert has_a_common_substring(['blimp', 'blimpiest', 'it_is_blimpiest_out'])
+
+
+def test_regex_to_capture_group_label():
+    assert regex_to_capture_group_label(OBJ_REGEX) == 'JavaScript_JS_OpenAction'
+
+
+def test_regex_to_highlight_pattern():
+    assert regex_to_highlight_pattern(OBJ_REGEX) == "(?P<JavaScript_JS_OpenAction>(JavaScript|JS|OpenAction))"
