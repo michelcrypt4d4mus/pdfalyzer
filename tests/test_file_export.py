@@ -35,7 +35,6 @@ def test_file_export(fixture_mismatch_msg, pdfalyze_analyzing_malicious_args, re
         fixture_contents = load_file(fixture_path)
         test_output = load_file(tmp_path)
         assert fixture_contents == test_output, fixture_mismatch_msg(fixture_path, tmp_path)
-        log.warning(f"'{tmp_path.relative_to(Path.cwd())}' matches fixture: '{fixture_path.relative_to(Path.cwd())}'")
 
 
 @pytest.fixture
