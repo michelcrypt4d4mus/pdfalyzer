@@ -88,7 +88,7 @@ def build_pdf_node_table(node: 'PdfTreeNode') -> Table:
 
     if isinstance(node.obj, dict):
         for k, v in node.obj.items():
-            row = type(node).to_table_row(k, v)
+            row = node.pdf_object.to_table_row(k, v)
 
             # Make dangerous stuff look dangerous
             if (k in DANGEROUS_PDF_KEYS) or (node.label == FONT and k == SUBTYPE and v == TYPE1_FONT):
@@ -97,10 +97,10 @@ def build_pdf_node_table(node: 'PdfTreeNode') -> Table:
                 table.add_row(*row)
     elif isinstance(node.obj, list):
         for i, item in enumerate(node.obj):
-            table.add_row(*type(node).to_table_row(i, item))
+            table.add_row(*node.pdf_object.to_table_row(i, item))
     elif not isinstance(node.obj, StreamObject):
         # Then it's a single element node like a URI, TextString, etc.
-        table.add_row(*type(node).to_table_row('', node.obj, is_single_row_table=True))
+        table.add_row(*node.pdf_object.to_table_row('', node.obj, is_single_row_table=True))
 
     for row in _get_stream_preview_rows(node):
         row.append(Text(''))

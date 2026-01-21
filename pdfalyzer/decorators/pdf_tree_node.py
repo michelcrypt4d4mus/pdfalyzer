@@ -10,20 +10,21 @@ from pypdf.generic import ArrayObject, IndirectObject, PdfObject, StreamObject
 from rich.markup import escape
 from rich.text import Text
 from yaralyzer.output.rich_console import console
-from yaralyzer.util.logging import log
 
 from pdfalyzer.decorators.pdf_object_properties import PdfObjectProperties
 from pdfalyzer.helpers.string_helper import is_prefixed_by_any, numbered_list
 from pdfalyzer.pdf_object_relationship import PdfObjectRelationship
 from pdfalyzer.util.adobe_strings import *
 from pdfalyzer.util.exceptions import PdfWalkError
+from pdfalyzer.util.logging import log, log_console
 
 DEFAULT_MAX_ADDRESS_LENGTH = 90
 DECODE_FAILURE_LEN = -1
 MAX_REFS_TO_WARN = 10
 
 
-class PdfTreeNode(NodeMixin, PdfObjectProperties):
+@dataclass
+class PdfTreeNode(NodeMixin):
     """
     PDF node decorator - wraps actual PDF objects to make them `anytree` nodes.
     Also adds decorators/generators for Rich text representation.
@@ -32,47 +33,52 @@ class PdfTreeNode(NodeMixin, PdfObjectProperties):
     methods and not set directly.
     TODO: this could be done better with anytree hooks.
     """
+    pdf_object: PdfObjectProperties
+
+    # Computed fields
+    all_references_processed: bool = False
+    known_to_parent_as: str | None = None
     non_tree_relationships: List[PdfObjectRelationship] = field(default_factory=list)
     stream_data: bytes | None = None
     stream_length: int = 0
 
-    def __init__(self, obj: PdfObject, address: str, idnum: int):
-        """
-        Args:
-            obj (PdfObject): The underlying PDF object
-            address (str): The first address that points from some node to this one
-            idnum (int): ID used in the reference
-        """
-        PdfObjectProperties.__init__(self, obj, address, idnum)
-        self.non_tree_relationships: List[PdfObjectRelationship] = []
+    @property
+    def idnum(self) -> int:
+        return self.pdf_object.idnum
 
-        if isinstance(obj, StreamObject):
+    @property
+    def label(self) -> str:
+        return self.pdf_object.label
+
+    @property
+    def obj(self) -> PdfObject:
+        return self.pdf_object.obj
+
+    @property
+    def type(self) -> str | None:
+        return self.pdf_object.type
+
+    def __post_init__(self):
+        if self.contains_stream():
             try:
                 self.stream_data = self.obj.get_data()
                 self.stream_length = len(self.stream_data)
             except (NotImplementedError, PdfReadError) as e:
-                msg = f"PyPDF failed to decode stream in {self}: {e}.\n" + \
-                       "Trees will be unaffected but scans/extractions will not be able to check this stream."
-                console.print_exception()
-                log.warning(msg)
-                console.print(msg, style='error')
+                log_console.print_exception()
+                msg = f"Failed to decode stream in {self}, won't be able to scan/check this stream: {e}"
+                log.error(msg)
                 self.stream_data = msg.encode()
                 self.stream_length = DECODE_FAILURE_LEN
-        else:
-            self.stream_data = None
-            self.stream_length = 0
 
     @classmethod
     def from_reference(cls, ref: IndirectObject, address: str) -> Self:
         """Alternate constructor to Build a `PdfTreeNode` from an `IndirectObject`."""
-        try:
-            return cls(ref.get_object(), address, ref.idnum)
-        except PdfReadError as e:
-            console.print_exception()
-            msg = f"Failed to build node properly because of above exception ({e}). " + \
-                   "Tree integrity not guaranteed."
-            log.warning(msg)
-            return cls(ref, address, ref.idnum)
+        return cls(PdfObjectProperties.from_reference(ref, address))
+
+    @classmethod
+    def from_obj(cls, obj: PdfObject, address: str, idnum: int) -> Self:
+        """Alternate constructor to Build a `PdfTreeNode` from an `IndirectObject`."""
+        return cls(PdfObjectProperties(obj, address, idnum))
 
     def set_parent(self, parent: Self | None, force: bool = False) -> None:
         """Set the parent of this node."""
@@ -95,7 +101,7 @@ class PdfTreeNode(NodeMixin, PdfObjectProperties):
 
         self.parent = parent
         self.remove_non_tree_relationship(parent)
-        self.known_to_parent_as = self.address_of_this_node_in_other(parent) or self.first_address
+        self.known_to_parent_as = self.address_of_this_node_in_other(parent) or self.pdf_object.first_address
         log.info(f"  Added {parent} as parent of {self}" + (' by force' if force else ''))
 
     def add_child(self, child: Self) -> None:
@@ -254,10 +260,10 @@ class PdfTreeNode(NodeMixin, PdfObjectProperties):
         return text.append(self.tree_address(max_length), style='address')
 
     def __rich__(self) -> Text:
-        return PdfObjectProperties.__rich__(self)[:-1] + self._colored_address() + Text('>')
+        return self.pdf_object.__rich__()[:-1] + self._colored_address() + Text('>')
 
     def __str__(self) -> str:
-        return PdfObjectProperties.__rich__(self).plain
+        return self.pdf_object.__rich__().plain
 
     def __repr__(self) -> str:
         return self.__str__()
