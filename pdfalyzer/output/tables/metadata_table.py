@@ -9,9 +9,9 @@ from pdfalyzer.output.layout import generate_subtable, half_width, pad_header
 from pdfalyzer.util.logging import log, log_highlighter
 from pdfalyzer.util.adobe_strings import *
 
-COUNT_STYLE = 'light_steel_blue'
-PAGE_COUNT = Text('page count', style=COUNT_STYLE)
-IMAGE_COUNT = Text('image count', style=COUNT_STYLE)
+COUNT_LABEL_STYLE = 'navajo_white3'
+PAGE_COUNT = Text('page count', style=COUNT_LABEL_STYLE)
+IMAGE_COUNT = Text('image count', style=COUNT_LABEL_STYLE)
 HIGHLIGHT_IF = ['http', FALSE, TRUE]
 
 

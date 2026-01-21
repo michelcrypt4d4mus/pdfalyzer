@@ -36,4 +36,4 @@ def test_regex_to_capture_group_label():
 
 
 def test_regex_to_highlight_pattern():
-    assert regex_to_highlight_pattern(OBJ_REGEX) == "(?P<JavaScript_JS_OpenAction>(JavaScript|JS|OpenAction))"
+    assert regex_to_highlight_pattern(OBJ_REGEX) == r"(?P<JavaScript_JS_OpenAction>[\b/](JavaScript|JS|OpenAction)\b)"
