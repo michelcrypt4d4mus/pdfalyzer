@@ -24,7 +24,7 @@ class OutputSection:
     method: Callable
 
     @classmethod
-    def selected_sections(cls, args: Namespace, pdfalyzer: 'Pdfalyzer') -> list[Self]:  # noqa: F821
+    def selected_sections(cls, args: Namespace, presenter: 'PdfalyzerPresenter') -> list[Self]:  # noqa: F821
         """
         Determine which of the tree visualizations, font scans, etc should be run.
         If nothing is specified output ALL sections other than --streams which is v. slow/verbose.
@@ -39,19 +39,19 @@ class OutputSection:
         # Create a partial for print_font_info() because it's the only one that can take an argument
         # partials have no __name__ so update_wrapper() propagates the 'print_font_info' as this partial's name
         stream_id = None if args.streams == ALL_STREAMS else args.streams
-        stream_scan = partial(pdfalyzer.print_streams_analysis, idnum=stream_id)
-        update_wrapper(stream_scan, pdfalyzer.print_streams_analysis)
+        stream_scan = partial(presenter.print_streams_analysis, idnum=stream_id)
+        update_wrapper(stream_scan, presenter.print_streams_analysis)
 
         # 1st element string matches the argument in 'select' group
         # 2nd is fxn to call if selected.
         # Top to bottom is the default order of output.
         possible_output_sections = [
-            cls(DOCINFO, pdfalyzer.print_document_info),
-            cls(TREE, pdfalyzer.print_tree),
-            cls(RICH, pdfalyzer.print_rich_table_tree),
-            cls(FONTS, pdfalyzer.print_font_info),
-            cls(COUNTS, pdfalyzer.print_summary),
-            cls(YARA, pdfalyzer.print_yara_results),
+            cls(DOCINFO, presenter.print_document_info),
+            cls(TREE, presenter.print_tree),
+            cls(RICH, presenter.print_rich_table_tree),
+            cls(FONTS, presenter.print_font_info),
+            cls(COUNTS, presenter.print_summary),
+            cls(YARA, presenter.print_yara_results),
             cls(STREAMS, stream_scan),
         ]
 

@@ -2,9 +2,11 @@
 Some helpers for stuff with the local filesystem.
 """
 import re
+from os.path import getsize
 from pathlib import Path
 from typing import Optional, Union
 
+from yaralyzer.helpers.file_helper import files_in_dir
 from yaralyzer.output.rich_console import console
 from yaralyzer.util.logging import log
 
@@ -26,6 +28,10 @@ def create_dir_if_it_does_not_exist(dir: Path) -> None:
 
     log.warning(f"Need to create '{dir}'")
     dir.mkdir(parents=True, exist_ok=True)
+
+
+def file_sizes_in_dir(dir: Path) -> dict[Path, int]:
+    return {Path(f): getsize(f) for f in sorted(files_in_dir(dir))}
 
 
 def insert_suffix_before_extension(file_path: Path, suffix: str, separator: str = '__') -> Path:
