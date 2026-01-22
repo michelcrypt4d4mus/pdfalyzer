@@ -29,7 +29,7 @@ from pdfalyzer.output.layout import (print_fatal_error_panel, print_section_head
      print_section_sub_subheader)
 from pdfalyzer.output.tables.decoding_stats_table import build_decoding_stats_table
 from pdfalyzer.output.tables.metadata_table import metadata_table
-from pdfalyzer.output.tables.pdf_node_rich_table import build_pdf_node_table, get_symlink_representation
+from pdfalyzer.output.tables.pdf_node_rich_table import get_symlink_representation
 from pdfalyzer.output.tables.stream_objects_table import stream_objects_table
 from pdfalyzer.pdfalyzer import Pdfalyzer
 
@@ -201,8 +201,8 @@ class PdfalyzerPresenter:
         }
 
     def _generate_rich_tree(self, node: PdfTreeNode, tree: Optional[Tree] = None) -> Tree:
-        """Recursively generates a rich.tree.Tree object from this node"""
-        tree = tree or Tree(build_pdf_node_table(node))
+        """Recursively generates a rich.tree.Tree object from this node."""
+        tree = tree or Tree(node.as_tree_node_table(self.pdfalyzer))
 
         for child in node.children:
             if isinstance(child, SymlinkNode):
@@ -210,7 +210,7 @@ class PdfalyzerPresenter:
                 tree.add(Panel(symlink_rep.text, style=symlink_rep.style, expand=False))
                 continue
 
-            child_branch = tree.add(build_pdf_node_table(child))
+            child_branch = tree.add(child.as_tree_node_table(self.pdfalyzer))
             self._generate_rich_tree(child, child_branch)
 
         return tree

@@ -2,24 +2,18 @@
 Methods to create the rich table view for a PdfTreeNode.
 """
 from collections import namedtuple
-from typing import List, Optional
+from typing import List
 
-from anytree import SymlinkNode
-from pypdf.generic import StreamObject
 from rich.markup import escape
-from rich.panel import Panel
-from rich.table import Table
 from rich.text import Text
-from rich.tree import Tree
 from yaralyzer.encoding_detection.character_encodings import NEWLINE_BYTE
 from yaralyzer.helpers.bytes_helper import clean_byte_string, hex_text
 from yaralyzer.helpers.rich_text_helper import size_text
 from yaralyzer.output.rich_console import BYTES_NO_DIM
 from yaralyzer.util.logging import log
 
-from pdfalyzer.helpers.pdf_object_helper import pypdf_class_name
 from pdfalyzer.helpers.string_helper import root_address
-from pdfalyzer.output.styles.node_colors import get_label_style, get_class_style_italic
+from pdfalyzer.output.styles.node_colors import get_label_style
 from pdfalyzer.util.adobe_strings import *
 
 # For printing SymlinkNodes
@@ -46,54 +40,7 @@ def get_symlink_representation(from_node: 'PdfTreeNode', to_node: 'PdfTreeNode')
     return SymlinkRepresentation(symlink_str, symlink_style)
 
 
-def build_pdf_node_table(node: 'PdfTreeNode') -> Table:
-    """
-    Generate a Rich table representation of this node's PDF object and its properties.
-    Table cols are [title, address, class name] (not exactly headers but sort of).
-    Dangerous things like /JavaScript, /OpenAction, Type1 fonts, etc, will be highlighted red.
-    """
-    title = f"{node.idnum}.{escape(node.label)}"
-    address = escape(node.tree_address())
-
-    if node.type == OBJ_STM:
-        address += ' (should have been decompressed into other objs)'
-        table_style = 'dim'
-    else:
-        table_style = ''
-
-    table = Table(title, address, pypdf_class_name(node.obj), style=table_style)
-    table.columns[0].header_style = f'reverse {get_label_style(node.label)}'
-    table.columns[1].header_style = 'dim'
-    table.columns[1].overflow = 'fold'
-    table.columns[2].header_style = get_class_style_italic(node.obj)
-
-    if node.label != node.known_to_parent_as and node.type != TRAILER:
-        table.add_row(Text('AddressInParent', style='italic'), Text(str(node.known_to_parent_as)), '', style='gray58')
-
-    if isinstance(node.obj, dict):
-        for k, v in node.obj.items():
-            row = node.pdf_object.to_table_row(k, v)
-
-            # Make dangerous stuff look dangerous
-            if (k in DANGEROUS_PDF_KEYS) or (node.label == FONT and k == SUBTYPE and v == TYPE1_FONT):
-                table.add_row(*[col.plain for col in row], style='fail')
-            else:
-                table.add_row(*row)
-    elif isinstance(node.obj, list):
-        for i, item in enumerate(node.obj):
-            table.add_row(*node.pdf_object.to_table_row(i, item))
-    elif not isinstance(node.obj, StreamObject):
-        # Then it's a single element node like a URI, TextString, etc.
-        table.add_row(*node.pdf_object.to_table_row('', node.obj, is_single_row_table=True))
-
-    for row in _get_stream_preview_rows(node):
-        row.append(Text(''))
-        table.add_row(*row)
-
-    return table
-
-
-def _get_stream_preview_rows(node: 'PdfTreeNode') -> List[List[Text]]:
+def get_stream_preview_rows(node: 'PdfTreeNode') -> List[List[Text]]:
     """Get rows that preview the stream data"""
     return_rows: List[List[Text]] = []
 

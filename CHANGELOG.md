@@ -1,4 +1,5 @@
 # NEXT RELEASE
+* Display obj types/labels determined when walking the tree instead of newly constructed `PdfObjectProperties` which may lack nuance in their labeling
 * Better labeling of `/StructElem` objects in a `StructTreeRoot` hierarchy
 * Coerce `/Nums` number trees into `dict` like objects for the purposes of assigning addresses
 * `/Annots` and other indeterminate nodes now have `/Subtype` integrated into their labeling (e.g. `/Annots:Link` instead of just `/Annots`)

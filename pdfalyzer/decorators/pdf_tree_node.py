@@ -8,11 +8,15 @@ from anytree import NodeMixin, SymlinkNode
 from pypdf.errors import PdfReadError
 from pypdf.generic import ArrayObject, IndirectObject, PdfObject, StreamObject
 from rich.markup import escape
+from rich.table import Table
 from rich.text import Text
 from yaralyzer.output.rich_console import console
 
 from pdfalyzer.decorators.pdf_object_properties import PdfObjectProperties
+from pdfalyzer.helpers.pdf_object_helper import pypdf_class_name
 from pdfalyzer.helpers.string_helper import is_prefixed_by_any, numbered_list
+from pdfalyzer.output.styles.node_colors import get_label_style, get_class_style_italic
+from pdfalyzer.output.tables.pdf_node_rich_table import get_stream_preview_rows
 from pdfalyzer.pdf_object_relationship import PdfObjectRelationship
 from pdfalyzer.util.adobe_strings import *
 from pdfalyzer.util.exceptions import PdfWalkError
@@ -245,6 +249,55 @@ class PdfTreeNode(NodeMixin):
         """log this node's non tree relationships (represented by SymlinkNodes in the tree)."""
         self._write_non_tree_relationships(log.info)
 
+    # Presentation
+    def as_tree_node_table(self, pdfalyzer: 'Pdfalyzer') -> Table:
+        """
+        Generate a Rich table representation of this node's PDF object and its properties.
+        Table cols are [title, address, class name] (not exactly headers but sort of).
+        Dangerous things like /JavaScript, /OpenAction, Type1 fonts, etc, will be highlighted red.
+
+        Args:
+            pdfalyzer (Pdfalyzer): Used to lookup nodes with properly assigned types to use in the table
+        """
+        title = f"{self.idnum}.{escape(self.label)}"
+        address = escape(self.tree_address())
+
+        if self.type == OBJ_STM:
+            address += ' (should have been decompressed into other objs)'
+            table_style = 'dim'
+        else:
+            table_style = ''
+
+        table = Table(title, address, pypdf_class_name(self.obj), style=table_style)
+        table.columns[0].header_style = f'reverse {get_label_style(self.label)}'
+        table.columns[1].header_style = 'dim'
+        table.columns[1].overflow = 'fold'
+        table.columns[2].header_style = get_class_style_italic(self.obj)
+
+        if self.label != self.known_to_parent_as and self.type != TRAILER:
+            table.add_row(Text('AddressInParent', style='italic'), Text(str(self.known_to_parent_as)), '', style='gray58')
+
+        if isinstance(self.obj, dict):
+            for k, v in self.obj.items():
+                row = self.pdf_object.to_table_row(k, v, pdfalyzer)
+
+                # Make dangerous stuff look dangerous
+                if (k in DANGEROUS_PDF_KEYS) or (self.label == FONT and k == SUBTYPE and v == TYPE1_FONT):
+                    table.add_row(*[col.plain for col in row], style='fail')
+                else:
+                    table.add_row(*row)
+        elif isinstance(self.obj, list):
+            for i, item in enumerate(self.obj):
+                table.add_row(*self.pdf_object.to_table_row(i, item, pdfalyzer))
+        elif not isinstance(self.obj, StreamObject):
+            # Then it's a single element node like a URI, TextString, etc.
+            table.add_row(*self.pdf_object.to_table_row('', self.obj, pdfalyzer, empty_3rd_col=True))
+
+        for row in get_stream_preview_rows(self):
+            table.add_row(*(row + [Text('')]))
+
+        return table
+
     def _write_non_tree_relationships(self, write_method: Callable) -> None:
         """Use write_method() to write self.non_tree_relationships."""
         write_method(f"{escape(str(self))} parent from candidates:")
@@ -261,6 +314,7 @@ class PdfTreeNode(NodeMixin):
         return self.__str__()
 
     def __rich__(self) -> Text:
+        """Like the __rich__() of PdfObjectProperties but with address appended."""
         return self.pdf_object.__rich__()[:-1] + self._colored_address() + Text('>')
 
     def __str__(self) -> str:
