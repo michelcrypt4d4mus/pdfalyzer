@@ -30,6 +30,7 @@ SORT_KEYS = {
     TYPE: '/A',
     SUBTYPE: '/AA',
     NAME: '/AAA',
+    TITLE: '/AAAA',
 }
 
 
