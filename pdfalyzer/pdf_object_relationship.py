@@ -7,6 +7,7 @@ from typing import Any, List, Optional, Self, Union
 from pypdf.generic import IndirectObject, PdfObject
 from yaralyzer.util.logging import log
 
+from pdfalyzer.helpers.pdf_object_helper import coerce_nums_array_to_dict
 from pdfalyzer.helpers.string_helper import bracketed, coerce_address, is_prefixed_by_any
 from pdfalyzer.util.adobe_strings import *
 from pdfalyzer.util.exceptions import PdfWalkError
@@ -19,7 +20,7 @@ class PdfObjectRelationship:
     from_node: 'PdfTreeNode'
     to_obj: IndirectObject
     reference_key: str
-    address: str
+    address: str  # ints will be coerced to strings
     from_obj: Any | None = None
     is_child: bool = False
     is_indeterminate: bool = False
@@ -58,7 +59,7 @@ class PdfObjectRelationship:
     def build_node_references(
         cls,
         from_node: 'PdfTreeObject',
-        from_obj: PdfObject | None = None,
+        from_obj: PdfObject | dict | None = None,
         ref_key: str | int | None = None,
         address: str | int | None = None
     ) -> list[Self]:
@@ -82,6 +83,9 @@ class PdfObjectRelationship:
                 references += cls.build_node_references(from_node, item, ref_key or i, _build_address(i, address))
         elif isinstance(from_obj, dict):
             for key, val in from_obj.items():
+                if key == NUMS and isinstance(val, list) and len(val) % 2 == 0:
+                    val = coerce_nums_array_to_dict(val)
+
                 references += cls.build_node_references(from_node, val, ref_key or key, _build_address(key, address))
         else:
             log.debug(f"Adding no references for PdfObject reference '{ref_key}' -> '{from_obj}'")

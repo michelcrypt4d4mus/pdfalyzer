@@ -6,14 +6,34 @@ from typing import List, Optional
 
 from pypdf.generic import ArrayObject, DictionaryObject, IndirectObject, PdfObject
 
-from pdfalyzer.pdf_object_relationship import PdfObjectRelationship
 from pdfalyzer.util.adobe_strings import TYPE
+from pdfalyzer.util.logging import log
+
+BAD_NUMBER_TREE_MSG = '/Nums tree failed to be coerced to a DictionaryObject'
 
 
 @dataclass
 class RefAndObj:
     ref: IndirectObject
     obj: PdfObject | None
+
+
+def coerce_nums_array_to_dict(nums: PdfObject | list) -> PdfObject | dict:
+    """/Nums (number trees) are dict-like pairs in an array, e.g. [0, objA, 1, objB, 4, objC]."""
+    bad_nums_log_msg = f"{BAD_NUMBER_TREE_MSG}:\n{nums}"
+
+    if not (isinstance(nums, list) and len(nums) % 2 == 0):
+        log.warning(bad_nums_log_msg)
+        return nums
+
+    nums_dict = {nums[i]: nums[i + 1] for i in range(0, len(nums), 2)}
+
+    if not all(isinstance(k, int) and isinstance(v, (PdfObject, float, int, str)) for k, v in nums_dict.items()):
+        log.warning(bad_nums_log_msg)
+        return nums
+
+    log.info(f"Coerced /Nums list to a dict with {len(nums_dict)} keys")
+    return nums_dict
 
 
 def describe_obj(_obj: PdfObject | RefAndObj | None) -> str:
@@ -48,8 +68,3 @@ def pypdf_class_name(obj: PdfObject) -> str:
     class_pkgs = type(obj).__name__.split('.')
     class_pkgs.reverse()
     return class_pkgs[0].removesuffix('Object')
-
-
-def _sort_pdf_object_refs(refs: List[PdfObjectRelationship]) -> List[PdfObjectRelationship]:
-    """Sort a list of PdfObjectRelationship objects by their to_obj's idnum. Only used by pytest."""
-    return sorted(refs, key=lambda ref: ref.to_obj.idnum)
