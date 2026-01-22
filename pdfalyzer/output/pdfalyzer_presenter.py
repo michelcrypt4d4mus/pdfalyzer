@@ -3,7 +3,7 @@ Handles formatting of console text output for Pdfalyzer class.
 """
 from collections import defaultdict, namedtuple
 from dataclasses import dataclass, field
-from typing import Optional
+from typing import Callable, Optional
 
 import yara
 from anytree import LevelOrderIter, RenderTree, SymlinkNode
@@ -17,7 +17,6 @@ from yaralyzer.config import YaralyzerConfig
 from yaralyzer.helpers.rich_text_helper import size_in_bytes_text
 from yaralyzer.output.file_hashes_table import bytes_hashes_table
 from yaralyzer.output.rich_console import BYTES_HIGHLIGHT, console
-from yaralyzer.util.logging import log
 from yaralyzer.yara.error import yara_error_msg
 from yaralyzer.yaralyzer import Yaralyzer
 
@@ -31,11 +30,18 @@ from pdfalyzer.output.layout import (print_fatal_error_panel, print_section_head
      print_section_sub_subheader)
 from pdfalyzer.output.styles.node_colors import get_label_style
 from pdfalyzer.output.tables.decoding_stats_table import build_decoding_stats_table
-from pdfalyzer.output.tables.metadata_table import metadata_table
 from pdfalyzer.pdfalyzer import Pdfalyzer
-from pdfalyzer.util.adobe_strings import DANGEROUS_PDF_KEYS
+from pdfalyzer.util.adobe_strings import DANGEROUS_PDF_KEYS, FALSE, TRUE
+from pdfalyzer.util.logging import log, log_highlighter
 
 SymlinkRepresentation = namedtuple('SymlinkRepresentation', ['text', 'style'])
+
+COUNT_LABEL_STYLE = 'navajo_white3'
+HIGHLIGHT_IF = ['http', FALSE, TRUE]
+
+count_label = lambda count_type: f"{count_type} count"
+count_txt = lambda count_type: Text(count_label(count_type), style=COUNT_LABEL_STYLE)
+failed_count_msg = lambda count_type: f"Failed to get {count_label(count_type)}!"
 
 
 @dataclass
@@ -66,7 +72,7 @@ class PdfalyzerPresenter:
     def print_document_info(self) -> None:
         """Print the embedded document info (author, timestamps, version, etc)."""
         print_section_header(f'Document Info for {self.pdfalyzer.pdf_basename}')
-        console.print(metadata_table(self.pdfalyzer.pdf_reader))
+        console.print(self._metadata_table())
         console.line()
         console.print(bytes_hashes_table(self.pdfalyzer.pdf_bytes, self.pdfalyzer.pdf_basename))
         console.line()
@@ -240,4 +246,33 @@ class PdfalyzerPresenter:
         for node in self.pdfalyzer.stream_nodes():
             table.add_row(size_in_bytes_text(node.stream_length), node.__rich__())
 
+        return table
+
+    def _metadata_table(self) -> Table:
+        """Build a table of metadata extracted from/computed about the PDF."""
+        table = Table(header_style='bold', title=' Metadata', title_style='grey', title_justify='left')
+        table.add_column('Property', justify='right')
+        table.add_column('Value', min_width=40)
+        metadata = self.pdfalyzer.pdf_reader.metadata or {}
+
+        if metadata:
+            for k, v in metadata.items():
+                v = log_highlighter(str(v)) if isinstance(v, str) and any(hif in v for hif in HIGHLIGHT_IF) else str(v)
+                table.add_row(Text(k, style='wheat4'), v)
+        else:
+            table.add_row('', Text('(no formal metadata found in file)'), style='dim italic')
+
+        def add_count_row(count_type: str, count_fxn: Callable[[], int]) -> None:
+            row_label = count_txt(count_type)
+
+            try:
+                table.add_row(row_label, log_highlighter(f"{count_fxn():,}"))
+            except Exception as e:
+                fail_msg = failed_count_msg(count_type)
+                log.error(f"{fail_msg} {e}")
+                table.add_row(row_label, Text(fail_msg, style='bright_red'))
+
+        add_count_row('page', lambda: len(self.pdfalyzer.pdf_reader.pages))
+        add_count_row('images', lambda: sum([len(p.images) for p in self.pdfalyzer.pdf_reader.pages]))
+        add_count_row('revision', lambda: self.pdfalyzer.max_generation)
         return table
