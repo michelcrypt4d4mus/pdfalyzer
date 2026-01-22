@@ -46,22 +46,6 @@ def get_symlink_representation(from_node: 'PdfTreeNode', to_node: 'PdfTreeNode')
     return SymlinkRepresentation(symlink_str, symlink_style)
 
 
-def generate_rich_tree(node: 'PdfTreeNode', tree: Optional[Tree] = None, depth: int = 0) -> Tree:
-    """Recursively generates a rich.tree.Tree object from this node"""
-    tree = tree or Tree(build_pdf_node_table(node))
-
-    for child in node.children:
-        if isinstance(child, SymlinkNode):
-            symlink_rep = get_symlink_representation(node, child)
-            tree.add(Panel(symlink_rep.text, style=symlink_rep.style, expand=False))
-            continue
-
-        child_branch = tree.add(build_pdf_node_table(child))
-        generate_rich_tree(child, child_branch)
-
-    return tree
-
-
 def build_pdf_node_table(node: 'PdfTreeNode') -> Table:
     """
     Generate a Rich table representation of this node's PDF object and its properties.

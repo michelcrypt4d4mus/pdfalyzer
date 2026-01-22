@@ -2,6 +2,7 @@
 Handles formatting of console text output for Pdfalyzer class.
 """
 from collections import defaultdict
+from dataclasses import dataclass, field
 from typing import Optional
 
 import yara
@@ -11,6 +12,8 @@ from rich.markup import escape
 from rich.panel import Panel
 from rich.table import Table
 from rich.text import Text
+from rich.tree import Tree
+from yaralyzer.yaralyzer import Yaralyzer
 from yaralyzer.config import YaralyzerConfig
 from yaralyzer.output.rich_console import BYTES_HIGHLIGHT, console
 from yaralyzer.output.file_hashes_table import bytes_hashes_table
@@ -19,19 +22,19 @@ from yaralyzer.util.logging import log
 
 from pdfalyzer.binary.binary_scanner import BinaryScanner
 from pdfalyzer.config import PdfalyzerConfig
-from pdfalyzer.decorators.pdf_tree_node import DECODE_FAILURE_LEN
+from pdfalyzer.decorators.pdf_tree_node import DECODE_FAILURE_LEN, PdfTreeNode
 from pdfalyzer.detection.yaralyzer_helper import get_bytes_yaralyzer, get_file_yaralyzer
 from pdfalyzer.helpers.rich_text_helper import print_error
-from pdfalyzer.helpers.string_helper import pp
 from pdfalyzer.output.layout import (print_fatal_error_panel, print_section_header, print_section_subheader,
      print_section_sub_subheader)
 from pdfalyzer.output.tables.decoding_stats_table import build_decoding_stats_table
 from pdfalyzer.output.tables.metadata_table import metadata_table
-from pdfalyzer.output.tables.pdf_node_rich_table import generate_rich_tree, get_symlink_representation
+from pdfalyzer.output.tables.pdf_node_rich_table import build_pdf_node_table, get_symlink_representation
 from pdfalyzer.output.tables.stream_objects_table import stream_objects_table
 from pdfalyzer.pdfalyzer import Pdfalyzer
 
 
+@dataclass
 class PdfalyzerPresenter:
     """
     Handles formatting of console text output for Pdfalyzer class.
@@ -40,9 +43,10 @@ class PdfalyzerPresenter:
         pdfalyzer (Pdfalyzer): Pdfalyzer for a given PDF file
         yaralyzer (Yaralyzer): Yaralyzer for a given PDF file
     """
+    pdfalyzer: Pdfalyzer
+    yaralyzer: Yaralyzer = field(init=False)
 
-    def __init__(self, pdfalyzer: Pdfalyzer):
-        self.pdfalyzer = pdfalyzer
+    def __post_init__(self):
         self.yaralyzer = get_file_yaralyzer(self.pdfalyzer.pdf_path)
 
     def print_everything(self) -> None:
@@ -80,7 +84,7 @@ class PdfalyzerPresenter:
     def print_rich_table_tree(self) -> None:
         """Print the rich view of the PDF tree."""
         print_section_header(f'Rich tree view of {self.pdfalyzer.pdf_basename}')
-        console.print(generate_rich_tree(self.pdfalyzer.pdf_tree))
+        console.print(self._generate_rich_tree(self.pdfalyzer.pdf_tree))
 
     def print_summary(self) -> None:
         """Print node type counts and so on."""
@@ -195,6 +199,21 @@ class PdfalyzerPresenter:
             'node_labels': node_labels,
             'pdf_object_types': pdf_object_types,
         }
+
+    def _generate_rich_tree(self, node: PdfTreeNode, tree: Optional[Tree] = None) -> Tree:
+        """Recursively generates a rich.tree.Tree object from this node"""
+        tree = tree or Tree(build_pdf_node_table(node))
+
+        for child in node.children:
+            if isinstance(child, SymlinkNode):
+                symlink_rep = get_symlink_representation(node, child)
+                tree.add(Panel(symlink_rep.text, style=symlink_rep.style, expand=False))
+                continue
+
+            child_branch = tree.add(build_pdf_node_table(child))
+            self._generate_rich_tree(child, child_branch)
+
+        return tree
 
     def _stream_objects_table(self) -> Table:
         return stream_objects_table(self.pdfalyzer.stream_nodes())
