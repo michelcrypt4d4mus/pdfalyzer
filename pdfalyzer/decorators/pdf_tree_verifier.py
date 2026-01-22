@@ -94,7 +94,7 @@ class PdfTreeVerifier:
         make a final attempt to place a few select kinds of nodes.
         """
         if self.pdfalyzer.max_generation > 0:
-            log.warning(f"Verification doesn't check revisions but this PDF's generation is {self.pdfalyzer.max_generation}")
+            log.warning(f"Verification doesn't check revisions but this PDF's generation is {self.pdfalyzer.max_generation}")  # noqa: E501
 
         for idnum in self.pdfalyzer.missing_node_ids():
             ref_and_obj = self.pdfalyzer.ref_and_obj_for_id(idnum)

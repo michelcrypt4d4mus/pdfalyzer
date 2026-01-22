@@ -168,7 +168,7 @@ class PdfTreeNode(NodeMixin):
         elif self.parent is None:
             raise PdfWalkError(f"{self} does not have a parent; cannot get accurate node address.")
         elif self.parent.label == TRAILER:
-            return self.known_to_parent_as
+            return self.known_to_parent_as   # noqa: if there's a parent there's always a known_to_parent_as
 
         address = self.parent.tree_address() + self.known_to_parent_as
 

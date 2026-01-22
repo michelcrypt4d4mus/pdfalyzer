@@ -1,5 +1,4 @@
-from math import isclose
-from os import environ, path, remove
+from os import environ
 from pathlib import Path
 from subprocess import check_output
 from typing import Callable
@@ -45,8 +44,8 @@ def fixture_mismatch_msg() -> Callable[[Path, Path], str]:
         fixture_path = fixture_path.relative_to(Path.cwd())
         output_path = output_path.relative_to(Path.cwd())
         error_msg = f"Contents of '{output_path}'\n  does not match fixture: '{fixture_path}'\n\n"
-        error_msg += f"Fixtures can be updated by running '{REBUILD_FIXTURES_ENV_VAR}=True pytest tests/test_file_export.py'\n\n"
-        error_msg += f"pytest diffs can be slow, here's the manual diff cmd:\n\n   diff '{fixture_path}' '{output_path}'\n\n"
+        error_msg += f"Fixtures can be updated by running '{REBUILD_FIXTURES_ENV_VAR}=True pytest tests/test_file_export.py'\n\n"  # noqa: E501
+        error_msg += f"pytest diffs can be slow, here's the manual diff cmd:\n\n   diff '{fixture_path}' '{output_path}'\n\n"  # noqa: E501
         return error_msg
 
     return msg

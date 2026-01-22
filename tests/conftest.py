@@ -3,11 +3,11 @@ from os import environ, path, remove
 from pathlib import Path
 environ['INVOKED_BY_PYTEST'] = 'True'  # Must be set before importing yaralyzer (?)
 
-import pytest                                           # noqa: E402
-from yaralyzer.config import is_env_var_set_and_not_false
-from yaralyzer.helpers.file_helper import files_in_dir  # noqa: E402
+import pytest                                              # noqa: E402
+from yaralyzer.config import is_env_var_set_and_not_false  # noqa: E402
+from yaralyzer.helpers.file_helper import files_in_dir     # noqa: E402
 
-from pdfalyzer.pdfalyzer import Pdfalyzer               # noqa: E402
+from pdfalyzer.pdfalyzer import Pdfalyzer                  # noqa: E402
 
 # TODO: importlib doesn't play nice with running tests via GitHub actions
 # import importlib.resources

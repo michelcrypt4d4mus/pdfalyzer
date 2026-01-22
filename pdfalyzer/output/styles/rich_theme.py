@@ -7,7 +7,7 @@ from yaralyzer.output.rich_console import GREY_ADDRESS, YARALYZER_THEME_DICT, co
 
 # Colors / PDF object styles
 DANGER_HEADER = 'color(88) on white'  # Red
-PDF_ARRAY_STYLE = 'color(143)' # color(120)
+PDF_ARRAY_STYLE = 'color(143)'  # color(120)
 PDF_DICTIONARY_STYLE = 'color(64)'
 PDF_NON_TREE_REF_STYLE = 'color(243)'
 PDFALYZER_THEME_DICT = YARALYZER_THEME_DICT.copy()

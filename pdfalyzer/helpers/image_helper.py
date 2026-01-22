@@ -8,7 +8,7 @@ from pdfalyzer.helpers.rich_text_helper import print_warning
 def ocr_text(image: "Image.Image", image_name: str) -> Optional[str]:  # noqa F821
     """Use pytesseract to OCR the text in the image and return it as a string."""
     import pytesseract
-    from PIL import Image
+    from PIL import Image  # noqa: F401
     text = None
 
     try:

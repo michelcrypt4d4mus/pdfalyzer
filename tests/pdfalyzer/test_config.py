@@ -1,6 +1,4 @@
-from pathlib import Path
-
-from pdfalyzer.config import PDFALYZE, PdfalyzerConfig
+from pdfalyzer.config import PdfalyzerConfig
 from pdfalyzer.output.pdfalyzer_presenter import PdfalyzerPresenter
 from pdfalyzer.util.argument_parser import parse_arguments
 
