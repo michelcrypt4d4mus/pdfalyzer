@@ -229,8 +229,7 @@ class Pdfalyzer:
             if not next_node.all_references_processed:
                 self.walk_node(next_node)
 
-            # Trigger update of self._tree_nodes cache if next_node was placed in the tree successfully
-            self.find_node_by_idnum(next_node.idnum)
+            self.find_node_by_idnum(next_node.idnum)  # Trigger update of self._tree_nodes cache
 
     def _add_relationship_to_pdf_tree(self, relationship: PdfObjectRelationship) -> Optional[PdfTreeNode]:
         """
