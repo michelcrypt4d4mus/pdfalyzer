@@ -82,8 +82,6 @@ class PdfObjectRelationship:
             for i, item in enumerate(from_obj):
                 references += cls.build_node_references(from_node, item, ref_key or i, _build_address(i, address))
         elif isinstance(from_obj, dict):
-            if '/Name' in from_obj:
-
             for key, val in from_obj.items():
                 if key == NUMS and isinstance(val, list) and len(val) % 2 == 0:
                     val = coerce_nums_array_to_dict(val)
