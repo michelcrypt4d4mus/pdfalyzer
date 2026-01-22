@@ -1,16 +1,17 @@
 """
 PDFalyzer: Analyze and explore the structure of PDF files.
 """
+import time
 from dataclasses import dataclass, field
 from io import BufferedReader
 from pathlib import Path
-from typing import Dict, Iterator, List, Optional
+from typing import Iterator, Optional
 
 from anytree import LevelOrderIter, SymlinkNode
 from anytree.search import findall, findall_by_attr
 from pypdf import PdfReader
 from pypdf.errors import DependencyError, FileNotDecryptedError, PdfReadError
-from pypdf.generic import ArrayObject, DictionaryObject, IndirectObject, PdfObject
+from pypdf.generic import DictionaryObject, IndirectObject
 from rich.prompt import Prompt
 from rich.text import Text
 from yaralyzer.helpers.file_helper import load_binary_data
@@ -43,12 +44,16 @@ class Pdfalyzer:
     """
     Walks a PDF's internals and builds the PDF logical structure tree.
 
-    Each of the PDF's internal objects isw rapped in a `PdfTreeNode` object. The tree is managed
+    Each of the PDF's internal objects is wrapped in a `PdfTreeNode` object. The tree is managed
     by the `anytree` library. Information about the tree as a whole is stored in this class.
     Once the PDF is parsed this class provides access to info about or from the underlying PDF tree.
 
+    Args:
+        pdf_path (str): Path to the PDF file
+        password (str | None): Password used to decrypt the PDF (if it's encrypted)
+
     Attributes:
-        font_infos (List[FontInfo]): Font summary objects
+        font_infos (list[FontInfo]): Font summary objects
         font_info_extraction_error (Optional[Exception]): Error encountered extracting FontInfo (if any)
         max_generation (int): Max revision number ("generation") encounted in this PDF.
         nodes_encountered (Dict[int, PdfTreeNode]): Nodes we've traversed already even if not in tree yet.
@@ -56,7 +61,6 @@ class Pdfalyzer:
         pdf_bytes (bytes): PDF binary data.
         pdf_bytes_info (BytesInfo): File size, hashes, and other data points about the PDF's raw bytes.
         pdf_filehandle (BufferedReader): File handle that reads the PDF.
-        pdf_path (str): The path to the PDF file.
         pdf_size (int): Number of nodes as extracted from the PDF's Trailer node.
         pdf_tree (PdfTreeNode): The top node of the PDF data structure tree.
         verifier (PdfTreeVerifier): PdfTreeVerifier that can validate the PDF has been walked successfully.
@@ -82,7 +86,7 @@ class Pdfalyzer:
 
     def __post_init__(self):
         self.pdf_path = Path(self.pdf_path)
-        self.pdf_basename = self.pdf_path.name
+        started_at = time.perf_counter()
 
         try:
             self.pdf_filehandle = open(self.pdf_path, 'rb')  # Filehandle must be left open for PyPDF to perform seeks
@@ -102,6 +106,7 @@ class Pdfalyzer:
                 self._handle_fatal_error(f"Wrong password", FileNotDecryptedError("encrypted PDF"))
 
         # Load bytes etc
+        self.pdf_basename = self.pdf_path.name
         self.pdf_bytes = load_binary_data(self.pdf_path)
         self.pdf_bytes_info = compute_file_hashes(self.pdf_bytes)
 
@@ -137,7 +142,7 @@ class Pdfalyzer:
         if not is_pdfalyze_script:
             self.verifier.log_missing_node_warnings()
 
-        log.info(f"Walk complete.")
+        log.info(f"PDF walk completed in {time.perf_counter() - started_at:.2} seconds.")
 
     def close(self) -> None:
         for attr in ['pdf_reader', 'pdf_filehandle']:
@@ -185,7 +190,7 @@ class Pdfalyzer:
         return [i for i in range(1, self.num_nodes) if self.find_node_by_idnum(i) is None]
 
     def node_iterator(self) -> Iterator[PdfTreeNode]:
-        """Iterate over nodes, grouping them by distance from the root."""
+        """Iterate over nodes walking the tree from the top, grouped by distance from the root."""
         return LevelOrderIter(self.pdf_tree)
 
     def nodes_without_parents(self) -> list[PdfTreeNode]:
@@ -193,6 +198,7 @@ class Pdfalyzer:
         return [n for n in self.unplaced_encountered_nodes() if n.parent is None]
 
     def ref_and_obj_for_id(self, idnum: int) -> RefAndObj:
+        """Build a new IndirectObject and PdfObject based on what's in the PDF."""
         ref = IndirectObject(idnum, self.max_generation, self.pdf_reader)
 
         try:
@@ -208,7 +214,7 @@ class Pdfalyzer:
 
         return RefAndObj(ref, obj)
 
-    def stream_nodes(self) -> List[PdfTreeNode]:
+    def stream_nodes(self) -> list[PdfTreeNode]:
         """List of actual nodes (not SymlinkNodes) containing streams sorted by PDF object ID"""
         stream_filter = lambda node: node.contains_stream() and not isinstance(node, SymlinkNode)  # noqa: E731
         return sorted(findall(self.pdf_tree, stream_filter), key=lambda r: r.idnum)
@@ -227,8 +233,7 @@ class Pdfalyzer:
             if not next_node.all_references_processed:
                 self.walk_node(next_node)
 
-            # Trigger update of self._tree_nodes cache if next_node was placed in the tree successfully
-            self.find_node_by_idnum(next_node.idnum)
+            self.find_node_by_idnum(next_node.idnum)  # Trigger update of self._tree_nodes cache
 
     def _add_font_infos(self, node: PdfTreeNode) -> list[FontInfo]:
         """Add fonts to self.font_infos. Returns list of new fonts that were added."""
