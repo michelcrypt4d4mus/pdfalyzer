@@ -1,4 +1,5 @@
 # NEXT RELEASE
+* Highlight some of the interesting object reference keys in the rich tree view
 * In rich tree view sort `DictionaryObject` key/value pairs by key alphabetically, except `/Type` and `/Subtype` are at the top
 * Display the number of revisions (max `generation` value) in metadata table
 * Display obj types/labels determined when walking the tree instead of newly constructed `PdfObjectProperties` which may lack nuance in their labeling

@@ -96,14 +96,17 @@ class PdfObjectProperties:
 
         with_resolved_refs = self._resolve_references(reference_key, row_obj, pdfalyzer)
 
-        return (
-            Text(f"{reference_key}", style='grey' if isinstance(reference_key, int) else ''),
-            # Prefix the Text() obj with an empty string to set unstyled chars to the class style of the object
-            # they are in.
-            Text('', style=get_class_style(row_obj)).append_text(self._obj_to_rich_text(with_resolved_refs)),
-            # 3rd col (AKA type(value)) is redundant if it's a TextString/Number/etc. node so we make it empty
-            Text('') if empty_3rd_col else Text(pypdf_class_name(row_obj), style=get_class_style_dim(row_obj))
-        )
+        if isinstance(reference_key, int):
+            key_style = 'grey'
+        else:
+            key_style = log_highlighter.get_style(reference_key)
+
+        value_style = key_style if isinstance(row_obj, str) else get_class_style(row_obj)
+        col1 = Text(f"{reference_key}", style=key_style)
+        # Prefix the Text() with empty string to set unstyled chars to style of the object they are in.
+        col2 = Text('', style=value_style).append_text(self._obj_to_rich_text(with_resolved_refs))
+        col3 = Text('' if empty_3rd_col else pypdf_class_name(row_obj), style=get_class_style_dim(row_obj))
+        return (col1, col2, col3)
 
     def _resolve_references(self, reference_key: str | int, obj: PdfObject, pdfalyzer: 'Pdfalyzer') -> Any:
         """Recursively build the same data structure except IndirectObjects are resolved to nodes."""
@@ -138,7 +141,7 @@ class PdfObjectProperties:
         if isinstance(obj, cls):
             return cls.__rich_without_underline__(obj)
         elif isinstance(obj, str):
-            if 'http' in obj:
+            if 'http' in obj or obj.startswith('/'):
                 return log_highlighter(obj)
             else:
                 return Text(obj)
