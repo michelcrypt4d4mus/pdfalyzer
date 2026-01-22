@@ -19,7 +19,6 @@ CONTAINS_STREAM_REGEX = re.compile('\\s+Contains stream$')
 DIDIER_STEVENS_RAW_GITHUB_URL = 'https://raw.githubusercontent.com/DidierStevens/DidierStevensSuite/master/'
 INSTALL_SCRIPT_PATH = SCRIPTS_DIR.joinpath('install_didier_stevens_pdf_tools.sh').relative_to(PROJECT_ROOT)
 PDF_PARSER_TOOL_PATH = DEFAULT_PDF_PARSER_EXECUTABLE.relative_to(PROJECT_ROOT)
-PDF_PARSER_ENV={**environ, 'PDFPARSER_OPTIONS': '-O'}
 PDF_PARSER_GITHUB_URL = DIDIER_STEVENS_RAW_GITHUB_URL + 'pdf-parser.py'
 PDF_PARSER_INSTALL_MSG = f"If you need to install pdf-parser.py it's a single .py file that can be " \
                          f"found at {PDF_PARSER_GITHUB_URL}. There's a script in the Pdfalyzer repo that " \
@@ -52,7 +51,7 @@ class PdfParserManager:
     def extract_object_ids(self) -> None:
         """Examine output of pdf-parser.py to find all object IDs as well as those object IDs that have streams"""
         try:
-            pdf_parser_output = check_output(self.base_shell_cmd, env=PDF_PARSER_ENV, shell=True, text=True)
+            pdf_parser_output = check_output(self.base_shell_cmd, env=environ, shell=True, text=True)
         except:
             raise PdfParserError(f"Failed to execute '{self.base_shell_cmd}'")
 
