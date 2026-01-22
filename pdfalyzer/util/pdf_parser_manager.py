@@ -1,12 +1,15 @@
 import re
 from argparse import Namespace
-from os import path, system
+from dataclasses import dataclass, field
+from os import environ, path, system
 from pathlib import Path
 from subprocess import check_output
 
 from yaralyzer.util.logging import log, log_and_print
 
-from pdfalyzer.config import PDF_PARSER_EXECUTABLE_ENV_VAR, PdfalyzerConfig
+from pdfalyzer.config import (DEFAULT_PDF_PARSER_EXECUTABLE, PDF_PARSER_EXECUTABLE_ENV_VAR, PROJECT_ROOT,
+     SCRIPTS_DIR, PdfalyzerConfig)
+from pdfalyzer.util.exceptions import PdfParserError
 
 # PDF Internal Data Regexes
 PDF_OBJECT_START_REGEX = re.compile('^obj (\\d+) \\d+$')
@@ -14,36 +17,48 @@ CONTAINS_STREAM_REGEX = re.compile('\\s+Contains stream$')
 
 # Install info
 DIDIER_STEVENS_RAW_GITHUB_URL = 'https://raw.githubusercontent.com/DidierStevens/DidierStevensSuite/master/'
+INSTALL_SCRIPT_PATH = SCRIPTS_DIR.joinpath('install_didier_stevens_pdf_tools.sh').relative_to(PROJECT_ROOT)
+PDF_PARSER_TOOL_PATH = DEFAULT_PDF_PARSER_EXECUTABLE.relative_to(PROJECT_ROOT)
 PDF_PARSER_GITHUB_URL = DIDIER_STEVENS_RAW_GITHUB_URL + 'pdf-parser.py'
-PDF_PARSER_INSTALL_MSG = f"If you need to install pdf-parser.py, it's a single .py file that can be " + \
-                          "found at '{PDF_PARSER_GITHUB_URL}'."
+PDF_PARSER_INSTALL_MSG = f"If you need to install pdf-parser.py it's a single .py file that can be " \
+                         f"found at {PDF_PARSER_GITHUB_URL}. There's a script in the Pdfalyzer repo that " \
+                         f"will install it to {PDF_PARSER_TOOL_PATH} for you at {INSTALL_SCRIPT_PATH}."
 
 
+@dataclass
 class PdfParserManager:
     """Instances of this class manage external calls to Didier Stevens's pdf-parser.py for a given PDF."""
-    def __init__(self, args: Namespace):
-        if PdfalyzerConfig.PDF_PARSER_EXECUTABLE is None:
-            raise RuntimeError(f"{PDF_PARSER_EXECUTABLE_ENV_VAR} not configured.\n\n{PDF_PARSER_INSTALL_MSG}")
+    args: Namespace
+    base_shell_cmd: str = field(init=False)
+    path_to_pdf: Path = field(init=False)
+    object_ids: list[int] = field(default_factory=list)
+    object_ids_containing_stream_data: list[int] = field(default_factory=list)
 
-        if not path.exists(PdfalyzerConfig.PDF_PARSER_EXECUTABLE):
+    def __post_init__(self):
+        if PdfalyzerConfig.PDF_PARSER_EXECUTABLE is None:
+            raise PdfParserError(f"{PDF_PARSER_EXECUTABLE_ENV_VAR} not configured.\n\n{PDF_PARSER_INSTALL_MSG}")
+
+        if not PdfalyzerConfig.PDF_PARSER_EXECUTABLE.exists():
             msg = f"pdf-parser.py not found at configured location '{PdfalyzerConfig.PDF_PARSER_EXECUTABLE}'\n\n"
             msg += PDF_PARSER_INSTALL_MSG
-            raise RuntimeError(msg)
+            raise PdfParserError(msg)
 
-        self.path_to_pdf = args.file_to_scan_path
+        self.path_to_pdf = Path(self.args.file_to_scan_path)
         self.base_shell_cmd = f'{PdfalyzerConfig.PDF_PARSER_EXECUTABLE} -O "{self.path_to_pdf}"'
-        self.output_dir = args.output_dir
-        self.object_ids = []
         self.object_ids_containing_stream_data = []
         self.extract_object_ids()
 
     def extract_object_ids(self) -> None:
         """Examine output of pdf-parser.py to find all object IDs as well as those object IDs that have streams"""
-        log.debug(f"Running '{self.base_shell_cmd}'")
-        self.pdf_parser_output_lines = check_output(self.base_shell_cmd, shell=True, text=True).split("\n")
+        try:
+            pdf_parser_output = check_output(self.base_shell_cmd, env=environ, shell=True, text=True)
+        except:
+            raise PdfParserError(f"Failed to execute '{self.base_shell_cmd}'")
+
+        pdf_parser_output_lines = pdf_parser_output.split("\n")
         current_object_id = None
 
-        for line in self.pdf_parser_output_lines:
+        for line in pdf_parser_output_lines:
             match = PDF_OBJECT_START_REGEX.match(line)
 
             if match:
@@ -62,12 +77,12 @@ class PdfParserManager:
 
     def extract_all_streams(self) -> None:
         """Use pdf-parser.py to find binary data streams in the PDF and dump each of them to a separate file"""
-        log_and_print(f"Extracting binary streams in '{self.path_to_pdf}' to files in '{self.output_dir}'...")
+        log_and_print(f"Extracting binary streams in '{self.path_to_pdf}' to files in '{self.args.output_dir}'...")
 
         for object_id in self.object_ids_containing_stream_data:
-            stream_dump_file = path.join(self.output_dir, f'{path.basename(self.path_to_pdf)}.object_{object_id}.bin')
+            stream_dump_file = path.join(self.args.output_dir, f'{path.basename(self.path_to_pdf)}.object_{object_id}.bin')
             shell_cmd = self.base_shell_cmd + f' -f -o {object_id} -d "{stream_dump_file}"'
-            log.debug(f'Dumping stream from object {object_id}: {shell_cmd}')
+            log.info(f'Dumping stream from object {object_id}: {shell_cmd}')
             system(shell_cmd)
 
-        log_and_print(f"Binary stream extraction complete, files written to '{self.output_dir}'.\nExiting.\n")
+        log_and_print(f"Binary stream extraction complete, files written to '{self.args.output_dir}'.\nExiting.\n")

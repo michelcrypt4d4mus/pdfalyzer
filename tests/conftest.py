@@ -49,15 +49,14 @@ def analyzing_malicious_pdf_path() -> Path:
 # Has a Type1 font with character map. PDF comes from pypdf repo.
 @pytest.fixture(scope='session')
 def attachment_pdf_pdfalyzer():
-    return Pdfalyzer(str(FIXTURES_DIR.joinpath('attachment.pdf')))
+    return Pdfalyzer(FIXTURES_DIR.joinpath('attachment.pdf'))
 
 # Has /Resources that is not an IndirectObject, also has multiple /DescendantFonts and /ObjStm
 @pytest.fixture(scope='session')
 def geobase_pdfalyzer():
-    return Pdfalyzer(str(FIXTURES_DIR.joinpath('GeoBase_NHNC1_Data_Model_UML_EN.pdf')))
+    return Pdfalyzer(FIXTURES_DIR.joinpath('GeoBase_NHNC1_Data_Model_UML_EN.pdf'))
 
-# Has TONS of unplaced nodes
-# Has unplaced empty nodes and formerly unplaced nodes
+# Has unplaced empty nodes, formerly unplaced nodes, and /AA /JavaScript nodes
 @pytest.fixture(scope='session')
 def sf424_page2_pdf_path() -> Path:
     return FIXTURES_DIR.joinpath('SF424_page2.pdf')
@@ -145,7 +144,7 @@ def rendered_fixtures_dir() -> Path:
 
 @pytest.fixture
 def tmp_dir(pytests_dir) -> Path:
-    """Clear the tmp dir when fixture is loaded"""
+    """Clear the tmp dir when fixture is loaded."""
     tmpdir = pytests_dir.joinpath('tmp')
 
     for file in files_in_dir(tmpdir):

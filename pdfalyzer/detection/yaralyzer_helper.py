@@ -11,6 +11,7 @@ from yaralyzer.yaralyzer import Yaralyzer
 from pdfalyzer.config import PDFALYZER
 
 YARA_RULES_DIR = files(PDFALYZER).joinpath('yara_rules')
+YARA_RULES_NOT_FOUND_MSG = f"A YARA rule that's supposed to ship with Pdfalyzer is missing. Please file a bug."
 
 YARA_RULES_FILES = [
     'didier_stevens.yara',
@@ -48,4 +49,4 @@ def _build_yaralyzer(scannable: bytes | str | Path, label: str | None = None) ->
                         try:
                             return Yaralyzer.for_rules_files(rules_paths, scannable, label)
                         except FileNotFoundError as e:
-                            print_fatal_error_and_exit(str(e))
+                            print_fatal_error_and_exit(f"{YARA_RULES_NOT_FOUND_MSG}: {e}")

@@ -15,9 +15,9 @@ from yaralyzer.util.logging import log as yaralyzer_log
 
 from pdfalyzer.helpers.filesystem_helper import create_dir_if_it_does_not_exist, insert_suffix_before_extension
 from pdfalyzer.helpers.image_helper import ocr_text
-from pdfalyzer.helpers.rich_text_helper import (attention_getting_panel, error_text, mild_warning,
-     print_error, stderr_console)
+from pdfalyzer.helpers.rich_text_helper import attention_getting_panel, error_text, mild_warning, print_error
 from pdfalyzer.helpers.string_helper import exception_str
+from pdfalyzer.util.logging import log_console
 from pdfalyzer.util.page_range import PageRange
 
 DEPENDENCY_ERROR_MSG = "Pdfalyzer is missing an optional dependency required to extract text. " + \
@@ -156,7 +156,7 @@ class PdfFile:
 
                     # Dump an error PDF and encourage user to report to pypdf team.
                     if 'JBIG2Decode' not in str(e):
-                        stderr_console.print_exception()
+                        log_console.print_exception()
 
                         if page_number not in self._page_numbers_of_errors:
                             self._handle_extraction_error(page_number, error_str)
@@ -173,7 +173,7 @@ class PdfFile:
         except EmptyFileError:
             log.warning("Skipping empty file!")
         except PdfStreamError as e:
-            stderr_console.print_exception()
+            log_console.print_exception()
             print_error(f"Error parsing PDF file '{self.file_path}': {e}")
 
         return "\n\n".join(extracted_pages).strip()
@@ -193,8 +193,8 @@ class PdfFile:
         try:
             extracted_file = self.extract_page_range(PageRange(str(page_number)), destination_dir, error_msg)
         except Exception:
-            stderr_console.print_exception()
-            stderr_console.print(error_text(f"Failed to extract a page for submission to PyPDF team."))
+            log_console.print_exception()
+            log_console.print(error_text(f"Failed to extract a page for submission to PyPDF team."))
             extracted_file = None
 
         blink_txt = Text('', style='bright_white')
@@ -210,11 +210,11 @@ class PdfFile:
         txt.append(str(extracted_file), style='file').append('.\n\n')
         txt.append(f"Please visit 'https://github.com/py-pdf/pypdf/issues' to report a bug. ", style='bold')
         txt.append(f"Providing the devs with the extracted page and the stack trace help improve pypdf.")
-        stderr_console.print(attention_getting_panel(blink_txt + txt, title='PyPDF Error'))
+        log_console.print(attention_getting_panel(blink_txt + txt, title='PyPDF Error'))
 
     def _log_to_stderr(self, msg: str, style: Optional[str] = None) -> None:
         """When parsing very large PDFs it can be useful to log progress and other messages to STDERR."""
         if self.file_size < MIN_PDF_SIZE_TO_LOG_PROGRESS_TO_STDERR:
             return
 
-        stderr_console.print(msg, style=style or "")
+        log_console.print(msg, style=style or "")

@@ -4,21 +4,17 @@ Functions for miscellaneous Rich text/string pretty printing operations.
 from sys import stderr
 from typing import List, Optional, Union
 
-from pypdf.generic import PdfObject
 from rich.console import Console
 from rich.panel import Panel
 from rich.padding import Padding
 from rich.text import Text
 from yaralyzer.output.rich_console import console
 
-from pdfalyzer.helpers.pdf_object_helper import pypdf_class_name
-from pdfalyzer.output.styles.node_colors import get_label_style, get_class_style_italic
-
 ARROW_BULLET = '➤ '
 
 # Usually we use the yaralyzer console but that has no highlighter
+# TODO: we have a highlighter now
 pdfalyzer_console = Console(color_system='256')
-stderr_console = Console(color_system='256', file=stderr)
 
 
 def attention_getting_panel(text: Text, title: str, style: str = 'white on red') -> Padding:
@@ -28,7 +24,7 @@ def attention_getting_panel(text: Text, title: str, style: str = 'white on red')
 
 def bullet_text(msg: Union[str, Text], style: Optional[str] = None) -> Text:
     if isinstance(msg, str):
-        msg = Text(msg, style=style)
+        msg = Text(msg, style=style or '')
 
     return Text(ARROW_BULLET).append(msg)
 
@@ -56,19 +52,6 @@ def indent_padding(indent: int) -> tuple[int, int, int, int]:
 
 def mild_warning(msg: str) -> None:
     console.print(indented_bullet(Text(msg, style='mild_warning')))
-
-
-def node_label(idnum: int, label: str, pdf_object: PdfObject, underline: bool = True) -> Text:
-    """Colored text representation of a PDF node. Example: <5:FontDescriptor(Dictionary)>."""
-    text = Text('<', style='white')
-    text.append(f'{idnum}', style='bright_white')
-    text.append(':', style='white')
-    text.append(label[1:], style=f"{get_label_style(label)} {'underline' if underline else ''} bold")
-    text.append('(', style='white')
-    text.append(pypdf_class_name(pdf_object), style=get_class_style_italic(pdf_object))
-    text.append(')', style='white')
-    text.append('>')
-    return text
 
 
 def number_and_pct(_number: int, total: int, digits: int = 1) -> Text:

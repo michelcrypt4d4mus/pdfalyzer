@@ -30,8 +30,9 @@ def create_dir_if_it_does_not_exist(dir: Path) -> None:
     dir.mkdir(parents=True, exist_ok=True)
 
 
-def file_sizes_in_dir(dir: Path) -> dict[Path, int]:
-    return {Path(f): getsize(f) for f in sorted(files_in_dir(dir))}
+def file_sizes_in_dir(dir: Path, with_extname: str | None = None) -> dict[Path, int]:
+    """Returns a dict keyed by file path, values are file sizes."""
+    return {Path(f): getsize(f) for f in sorted(files_in_dir(dir, with_extname))}
 
 
 def insert_suffix_before_extension(file_path: Path, suffix: str, separator: str = '__') -> Path:

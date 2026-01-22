@@ -4,21 +4,25 @@ as well as those set by environment variables and/or a .pdfalyzer file.
 """
 import importlib.resources
 from argparse import Namespace
-from os import environ, pardir, path
+from os import environ, path
+from pathlib import Path
 from typing import Callable
 
 from yaralyzer.config import YaralyzerConfig, is_env_var_set_and_not_false, is_invoked_by_pytest
+from yaralyzer.util.logging import log
 
 from pdfalyzer.util.output_section import ALL_STREAMS
 
 PDFALYZE = 'pdfalyze'
 PDFALYZER = f"{PDFALYZE}r"
-PYTEST_FLAG = 'INVOKED_BY_PYTEST'
-PROJECT_ROOT = path.join(str(importlib.resources.files(PDFALYZER)), pardir)
+PROJECT_ROOT = Path(str(importlib.resources.files(PDFALYZER))).parent
+SCRIPTS_DIR = PROJECT_ROOT.joinpath('scripts')
+TOOLS_DIR = PROJECT_ROOT.joinpath('tools')
 
-# 3rd part pdf-parser.py
+# 3rd party pdf-parser.py
+PDF_PARSER_PY = 'pdf-parser.py'
 PDF_PARSER_EXECUTABLE_ENV_VAR = 'PDFALYZER_PDF_PARSER_PY_PATH'
-DEFAULT_PDF_PARSER_EXECUTABLE = path.join(PROJECT_ROOT, 'tools', 'pdf-parser.py')
+DEFAULT_PDF_PARSER_EXECUTABLE = TOOLS_DIR.joinpath(PDF_PARSER_PY)
 
 
 class PdfalyzerConfig:
@@ -26,7 +30,14 @@ class PdfalyzerConfig:
 
     # Path to Didier Stevens's pdf-parser.py
     if is_env_var_set_and_not_false(PDF_PARSER_EXECUTABLE_ENV_VAR):
-        PDF_PARSER_EXECUTABLE = path.join(environ[PDF_PARSER_EXECUTABLE_ENV_VAR], 'pdf-parser.py')
+        PDF_PARSER_EXECUTABLE = Path(environ[PDF_PARSER_EXECUTABLE_ENV_VAR])
+
+        if PDF_PARSER_EXECUTABLE.is_dir():
+            PDF_PARSER_EXECUTABLE = PDF_PARSER_EXECUTABLE.joinpath(PDF_PARSER_PY)
+
+        if not PDF_PARSER_EXECUTABLE.exists():
+            log.warning(f"{PDF_PARSER_PY} not found at {PDF_PARSER_EXECUTABLE_ENV_VAR}={PDF_PARSER_EXECUTABLE}")
+            PDF_PARSER_EXECUTABLE = None
     elif is_invoked_by_pytest():
         PDF_PARSER_EXECUTABLE = DEFAULT_PDF_PARSER_EXECUTABLE
     else:

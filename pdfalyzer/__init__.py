@@ -8,11 +8,12 @@ from pypdf import PdfWriter
 from pypdf.errors import PdfReadError
 
 # Should be first local import before load_dotenv() (or at least I think it needs to come first)
-from pdfalyzer.config import PdfalyzerConfig
+# TODO: this can't be right?
+from pdfalyzer.config import PDFALYZER, PdfalyzerConfig
 
 # load_dotenv() should be called as soon as possible (before parsing local classes) but not for pytest
 if not environ.get('INVOKED_BY_PYTEST', False):
-    for dotenv_file in [path.join(dir, '.pdfalyzer') for dir in [getcwd(), path.expanduser('~')]]:
+    for dotenv_file in [path.join(dir, f".{PDFALYZER}") for dir in [getcwd(), path.expanduser('~')]]:
         if path.exists(dotenv_file):
             load_dotenv(dotenv_path=dotenv_file)
             break

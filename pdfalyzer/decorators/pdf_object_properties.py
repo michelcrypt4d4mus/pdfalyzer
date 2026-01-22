@@ -6,9 +6,9 @@ from pypdf.generic import DictionaryObject, IndirectObject, NullObject, NumberOb
 from rich.text import Text
 
 from pdfalyzer.helpers.pdf_object_helper import pypdf_class_name
-from pdfalyzer.helpers.rich_text_helper import comma_join_txt, node_label
+from pdfalyzer.helpers.rich_text_helper import comma_join_txt
 from pdfalyzer.helpers.string_helper import INDENTED_JOINER, coerce_address, is_array_idx, props_string, root_address
-from pdfalyzer.output.styles.node_colors import get_class_style, get_class_style_dim
+from pdfalyzer.output.styles.node_colors import get_label_style, get_class_style_italic, get_class_style, get_class_style_dim
 from pdfalyzer.util.adobe_strings import *
 from pdfalyzer.util.logging import log, log_console, log_highlighter, log_trace
 
@@ -109,6 +109,18 @@ class PdfObjectProperties:
         col3 = Text('' if empty_3rd_col else pypdf_class_name(row_obj), style=get_class_style_dim(row_obj))
         return (col1, col2, col3)
 
+    def node_label(self, underline: bool = True) -> Text:
+        """Colored text representation of a PDF node. Example: <5:FontDescriptor(Dictionary)>."""
+        text = Text('<', style='white')
+        text.append(f'{self.idnum}', style='bright_white')
+        text.append(':', style='white')
+        text.append(self.label[1:], style=f"{get_label_style(self.label)} {'underline' if underline else ''} bold")
+        text.append('(', style='white')
+        text.append(pypdf_class_name(self.obj), style=get_class_style_italic(self.obj))
+        text.append(')', style='white')
+        text.append('>')
+        return text
+
     def _resolve_references(self, reference_key: str | int, obj: PdfObject, pdfalyzer: 'Pdfalyzer') -> Any:
         """Recursively build the same data structure except IndirectObjects are resolved to nodes."""
         if isinstance(obj, NumberObject):
@@ -123,7 +135,7 @@ class PdfObjectProperties:
         else:
             return obj
 
-    # TODO: this doesn't recurse...
+    # TODO: this doesn't recurse?
     @classmethod
     def _obj_to_rich_text(cls, obj: Any) -> Text:
         """Recurse through `obj` and build a `Text` object."""
@@ -153,10 +165,10 @@ class PdfObjectProperties:
         return f"{type(self).__name__}(" + props_string(self, joiner=INDENTED_JOINER) + '\n)'
 
     def __rich_without_underline__(self) -> Text:
-        return node_label(self.idnum, self.label, self.obj, underline=False)
+        return self.node_label(underline=False)
 
     def __rich__(self) -> Text:
-        return node_label(self.idnum, self.label, self.obj)
+        return self.node_label()
 
     def __str__(self) -> str:
         return self.__rich__().plain
