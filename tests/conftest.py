@@ -44,9 +44,8 @@ def adobe_type1_fonts_pdf_path() -> Path:
 def analyzing_malicious_pdf_path() -> Path:
     return _pdf_in_doc_dir('analyzing-malicious-document-files.pdf')
 
-# Has unplaced nodes
 @pytest.fixture(scope='session')
-def SF424_page2_pdf_path() -> Path:
+def sf424_page2_pdf_path() -> Path:
     return FIXTURES_DIR.joinpath('SF424_page2.pdf')
 
 # Has mysterious unplaced nodes
