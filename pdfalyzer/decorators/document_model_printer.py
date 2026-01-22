@@ -1,6 +1,6 @@
 """
 Deprecated old, pre-tree, more rawformat reader. Only used for debugging these days.
-# TODO: rename this file
+# TODO: move methods to pdf_object_hlper.py
 """
 from io import StringIO
 
