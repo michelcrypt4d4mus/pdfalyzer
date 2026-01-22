@@ -4,6 +4,7 @@ import json
 import pickle
 import re
 from collections import defaultdict
+from contextlib import closing
 from pathlib import Path
 
 from rich.text import Text
@@ -55,16 +56,16 @@ for file in files:
     _print_header_panel(panel_txt, 'grey50', False, 100, internal_padding=(1,4))
 
     try:
-        pdfalyzer = Pdfalyzer(file, 'password')
-        presenter = PdfalyzerPresenter(pdfalyzer)
-        #presenter.print_document_info()
-        presenter.print_rich_table_tree()
-        file_fonts[file_key] = pdfalyzer.font_infos
-        font_names = [f"{fi.display_title}: {unique_font_string(fi.font_obj)}" for fi in pdfalyzer.font_infos]
-        console.print(f"    -> Found {len(font_names)} FontInfos", style='bright_green bold')
+        with closing(Pdfalyzer(file, 'password')) as pdfalyzer:
+            presenter = PdfalyzerPresenter(pdfalyzer)
+            #presenter.print_document_info()
+            presenter.print_rich_table_tree()
+            file_fonts[file_key] = pdfalyzer.font_infos
+            font_names = [f"{fi.display_title}: {unique_font_string(fi.font_obj)}" for fi in pdfalyzer.font_infos]
+            console.print(f"    -> Found {len(font_names)} FontInfos", style='bright_green bold')
 
-        for i, name in enumerate(font_names, 1):
-            console.print(f"        - {name}", style='cyan')
+            for i, name in enumerate(font_names, 1):
+                console.print(f"        - {name}", style='cyan')
     except Exception as e:
         console.print_exception()
         log.error(f"Error processing '{file}': {type(e).__name__} ({e})")
