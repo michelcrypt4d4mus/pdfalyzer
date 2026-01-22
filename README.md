@@ -285,7 +285,7 @@ One easy way of contributing is to run [the script to test against all the PDFs 
 Beyond that see [CONTRIBUTING.md](CONTRIBUTING.md).
 
 ### Code Glossary
-These are the naming conventions at play in The Pdfalyzer code base:
+These are the naming conventions at play in Pdfalyzer code base:
 
 | Term  | Meaning |
 | ----------------- | ---------------- |
