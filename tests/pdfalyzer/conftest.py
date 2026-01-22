@@ -1,3 +1,4 @@
+from argparse import Namespace
 from copy import copy
 
 import pytest
@@ -24,3 +25,11 @@ def pdfalyze_analyzing_malicious_args(analyzing_malicious_pdf_path, base_args):
 @pytest.fixture
 def export_analyzing_malicious_args(pdfalyze_analyzing_malicious_args, tmp_dir):
     return ['--output-dir', str(tmp_dir)] + pdfalyze_analyzing_malicious_args
+
+
+@pytest.fixture
+def pdf_parser_manager_args(analyzing_malicious_pdf_path, tmp_dir) -> Namespace:
+    return Namespace(
+        file_to_scan_path=str(analyzing_malicious_pdf_path),
+        output_dir=str(tmp_dir)
+    )
