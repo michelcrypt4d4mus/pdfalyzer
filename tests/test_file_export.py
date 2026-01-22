@@ -22,7 +22,7 @@ def test_file_export(fixture_mismatch_msg, pdfalyze_analyzing_malicious_args, re
 
     if rendered_fixtures_dir == rendered_output_dir:
         for fixture_path, size in file_sizes_in_dir(rendered_output_dir).items():
-            log.warning(f"    '{fixture_path.relative_to(Path.cwd())}': {size}")
+            log.warning(f"Updated fixtures:\n    '{fixture_path.relative_to(Path.cwd())}': {size}")
 
         return
 

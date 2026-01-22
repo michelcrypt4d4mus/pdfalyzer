@@ -57,8 +57,9 @@ def geobase_pdfalyzer():
     return Pdfalyzer(str(FIXTURES_DIR.joinpath('GeoBase_NHNC1_Data_Model_UML_EN.pdf')))
 
 # Has TONS of unplaced nodes
+# Has unplaced empty nodes and formerly unplaced nodes
 @pytest.fixture(scope='session')
-def SF424_page2_pdf_path() -> Path:
+def sf424_page2_pdf_path() -> Path:
     return FIXTURES_DIR.joinpath('SF424_page2.pdf')
 
 # Has mysterious unplaced nodes

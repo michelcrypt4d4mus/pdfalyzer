@@ -10,7 +10,7 @@ from pdfalyzer.helpers.rich_text_helper import comma_join_txt, node_label
 from pdfalyzer.helpers.string_helper import INDENTED_JOINER, coerce_address, is_array_idx, props_string, root_address
 from pdfalyzer.output.styles.node_colors import get_class_style, get_class_style_dim
 from pdfalyzer.util.adobe_strings import *
-from pdfalyzer.util.logging import log, log_console, log_trace
+from pdfalyzer.util.logging import log, log_console, log_highlighter, log_trace
 
 
 @dataclass
@@ -86,24 +86,28 @@ class PdfObjectProperties:
     ) -> tuple[Text, Text, Text]:
         """Extract property at `reference_key` and build a formatted 3-tuple for use in Rich tables."""
         if reference_key is None:
+            key_style = ''
             row_obj = self.obj
-        elif isinstance(self.obj, dict):
-            row_obj = self.obj.get(reference_key)  # NOTE: self.obj[k] turns IndirectObjects into PdfObjects!
-        elif isinstance(self.obj, list) and isinstance(reference_key, int):
-            row_obj = self.obj[reference_key]
         else:
-            raise Exception(f"Invalid ref key/obj combo! ref_key={reference_key}, obj={repr(self)}")
+            if isinstance(self.obj, dict):
+                row_obj = self.obj.get(reference_key)  # NOTE: self.obj[k] turns IndirectObjects into PdfObjects!
+            elif isinstance(self.obj, list) and isinstance(reference_key, int):
+                row_obj = self.obj[reference_key]
+            else:
+                raise Exception(f"Invalid ref key/obj combo! ref_key={reference_key}, obj={repr(self)}")
+
+            if isinstance(reference_key, int):
+                key_style = 'grey'
+            else:
+                key_style = log_highlighter.get_style(reference_key)
 
         with_resolved_refs = self._resolve_references(reference_key, row_obj, pdfalyzer)
-
-        return (
-            Text(f"{reference_key}", style='grey' if isinstance(reference_key, int) else ''),
-            # Prefix the Text() obj with an empty string to set unstyled chars to the class style of the object
-            # they are in.
-            Text('', style=get_class_style(row_obj)).append_text(self._obj_to_rich_text(with_resolved_refs)),
-            # 3rd col (AKA type(value)) is redundant if it's a TextString/Number/etc. node so we make it empty
-            Text('') if empty_3rd_col else Text(pypdf_class_name(row_obj), style=get_class_style_dim(row_obj))
-        )
+        value_style = key_style if isinstance(row_obj, str) else get_class_style(row_obj)
+        col1 = Text(f"{reference_key}", style=key_style)
+        # Prefix the Text() with empty string to set unstyled chars to style of the object they are in.
+        col2 = Text('', style=value_style).append_text(self._obj_to_rich_text(with_resolved_refs))
+        col3 = Text('' if empty_3rd_col else pypdf_class_name(row_obj), style=get_class_style_dim(row_obj))
+        return (col1, col2, col3)
 
     def _resolve_references(self, reference_key: str | int, obj: PdfObject, pdfalyzer: 'Pdfalyzer') -> Any:
         """Recursively build the same data structure except IndirectObjects are resolved to nodes."""
@@ -138,7 +142,10 @@ class PdfObjectProperties:
         if isinstance(obj, cls):
             return cls.__rich_without_underline__(obj)
         elif isinstance(obj, str):
-            return Text(obj)
+            if 'http' in obj or obj.startswith('/'):
+                return log_highlighter(obj)
+            else:
+                return Text(obj)
         else:
             return Text(str(obj), style=get_class_style(obj))
 
