@@ -12,6 +12,8 @@ Something like:
     stream = BytesIO(offset_stream_data)
     p = PdfReader(stream)
 """
+from dataclasses import dataclass, field
+
 from pypdf.generic import DictionaryObject, PdfObject, StreamObject
 
 from pdfalyzer.decorators.pdf_tree_node import PdfTreeNode
@@ -19,8 +21,8 @@ from pdfalyzer.util.adobe_strings import *
 
 
 class ObjStmNode(PdfTreeNode):
-    def __init__(self, obj: StreamObject, address: str, idnum: int):
-        super().__init__(obj, address, idnum)
+    def __post_init__(self):
+        super().__post_init__()
 
         if not isinstance(self.obj, DictionaryObject):
             raise ValueError(f"{OBJ_STM} should be a DictionaryObject")
