@@ -286,7 +286,7 @@ class PdfTreeNode(NodeMixin):
 
         if isinstance(self.obj, dict):
             for k in sorted(self.obj.keys(), key=lambda k: SORT_KEYS.get(k, k)):
-                v = self.obj[k]
+                v = self.obj.get(k)  # NOTE: self.obj[k] turns IndirectObjects into PdfObjects
                 row = self.pdf_object.to_table_row(k, v, pdfalyzer)
 
                 # Make dangerous stuff look dangerous
