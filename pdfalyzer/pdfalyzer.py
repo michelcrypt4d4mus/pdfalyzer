@@ -186,7 +186,7 @@ class Pdfalyzer:
         return [i for i in range(1, self.num_nodes) if self.find_node_by_idnum(i) is None]
 
     def node_iterator(self) -> Iterator[PdfTreeNode]:
-        """Iterate over nodes, grouping them by distance from the root."""
+        """Iterate over nodes walking the tree from the top, grouped by distance from the root."""
         return LevelOrderIter(self.pdf_tree)
 
     def nodes_without_parents(self) -> list[PdfTreeNode]:
