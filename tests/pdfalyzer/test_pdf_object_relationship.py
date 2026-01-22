@@ -64,3 +64,8 @@ def test_build_node_references(pdf_reader, page_obj, page_node, page_obj_direct_
 
 def test_relationship_equality(page_obj_direct_refs):
     assert page_obj_direct_refs[0] != page_obj_direct_refs[1]
+
+
+def _sort_pdf_object_refs(refs: list[PdfObjectRelationship]) -> list[PdfObjectRelationship]:
+    """Sort a list of PdfObjectRelationship objects by their to_obj's idnum. Only used by pytest."""
+    return sorted(refs, key=lambda ref: ref.to_obj.idnum)
