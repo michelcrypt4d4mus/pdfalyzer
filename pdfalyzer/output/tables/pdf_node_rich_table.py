@@ -1,10 +1,8 @@
 """
 Methods to create the rich table view for a PdfTreeNode.
 """
-from collections import namedtuple
 from typing import List
 
-from rich.markup import escape
 from rich.text import Text
 from yaralyzer.encoding_detection.character_encodings import NEWLINE_BYTE
 from yaralyzer.helpers.bytes_helper import clean_byte_string, hex_text
@@ -14,7 +12,6 @@ from yaralyzer.util.logging import log
 
 from pdfalyzer.util.adobe_strings import *
 
-# For printing SymlinkNodes
 HEX = 'Hex'
 STREAM = 'Stream'
 STREAM_PREVIEW_LENGTH_IN_TABLE = 500
