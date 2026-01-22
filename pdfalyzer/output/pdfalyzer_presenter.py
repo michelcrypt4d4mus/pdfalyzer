@@ -1,7 +1,7 @@
 """
 Handles formatting of console text output for Pdfalyzer class.
 """
-from collections import defaultdict
+from collections import defaultdict, namedtuple
 from dataclasses import dataclass, field
 from typing import Optional
 
@@ -25,13 +25,17 @@ from pdfalyzer.config import PdfalyzerConfig
 from pdfalyzer.decorators.pdf_tree_node import DECODE_FAILURE_LEN, PdfTreeNode
 from pdfalyzer.detection.yaralyzer_helper import get_bytes_yaralyzer, get_file_yaralyzer
 from pdfalyzer.helpers.rich_text_helper import print_error
+from pdfalyzer.helpers.string_helper import root_address
 from pdfalyzer.output.layout import (print_fatal_error_panel, print_section_header, print_section_subheader,
      print_section_sub_subheader)
+from pdfalyzer.output.styles.node_colors import get_label_style
 from pdfalyzer.output.tables.decoding_stats_table import build_decoding_stats_table
 from pdfalyzer.output.tables.metadata_table import metadata_table
-from pdfalyzer.output.tables.pdf_node_rich_table import get_symlink_representation
 from pdfalyzer.output.tables.stream_objects_table import stream_objects_table
 from pdfalyzer.pdfalyzer import Pdfalyzer
+from pdfalyzer.util.adobe_strings import DANGEROUS_PDF_KEYS
+
+SymlinkRepresentation = namedtuple('SymlinkRepresentation', ['text', 'style'])
 
 
 @dataclass
@@ -74,7 +78,7 @@ class PdfalyzerPresenter:
 
         for pre, _fill, node in RenderTree(self.pdfalyzer.pdf_tree, style=DoubleStyle):
             if isinstance(node, SymlinkNode):
-                symlink_rep = get_symlink_representation(node.parent, node)
+                symlink_rep = self._get_symlink_representation(node.parent, node)
                 console.print(pre + f"[{symlink_rep.style}]{symlink_rep.text}[/{symlink_rep.style}]")
             else:
                 console.print(Text(pre) + node.__rich__())
@@ -206,7 +210,7 @@ class PdfalyzerPresenter:
 
         for child in node.children:
             if isinstance(child, SymlinkNode):
-                symlink_rep = get_symlink_representation(node, child)
+                symlink_rep = self._get_symlink_representation(node, child)
                 tree.add(Panel(symlink_rep.text, style=symlink_rep.style, expand=False))
                 continue
 
@@ -214,6 +218,20 @@ class PdfalyzerPresenter:
             self._generate_rich_tree(child, child_branch)
 
         return tree
+
+    def _get_symlink_representation(self, from_node: PdfTreeNode, to_node: SymlinkNode) -> SymlinkRepresentation:
+        """Returns a tuple (symlink_text, style) that can be used for pretty printing, tree creation, etc"""
+        reference_key = str(to_node.address_of_this_node_in_other(from_node))
+        pdf_instruction = root_address(reference_key)  # In case we ended up with a [0] or similar
+
+        if pdf_instruction in DANGEROUS_PDF_KEYS:
+            symlink_style = 'red_alert'
+        else:
+            symlink_style = get_label_style(to_node.label) + ' dim'
+
+        symlink_str = f"{escape(reference_key)} [bright_white]=>[/bright_white]"
+        symlink_str += f" {escape(str(to_node.target))} [grey](Non Child Reference)[/grey]"
+        return SymlinkRepresentation(symlink_str, symlink_style)
 
     def _stream_objects_table(self) -> Table:
         return stream_objects_table(self.pdfalyzer.stream_nodes())

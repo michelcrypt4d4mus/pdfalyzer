@@ -1,10 +1,8 @@
 """
 Methods to create the rich table view for a PdfTreeNode.
 """
-from collections import namedtuple
 from typing import List
 
-from rich.markup import escape
 from rich.text import Text
 from yaralyzer.encoding_detection.character_encodings import NEWLINE_BYTE
 from yaralyzer.helpers.bytes_helper import clean_byte_string, hex_text
@@ -12,32 +10,12 @@ from yaralyzer.helpers.rich_text_helper import size_text
 from yaralyzer.output.rich_console import BYTES_NO_DIM
 from yaralyzer.util.logging import log
 
-from pdfalyzer.helpers.string_helper import root_address
-from pdfalyzer.output.styles.node_colors import get_label_style
 from pdfalyzer.util.adobe_strings import *
-
-# For printing SymlinkNodes
-SymlinkRepresentation = namedtuple('SymlinkRepresentation', ['text', 'style'])
 
 HEX = 'Hex'
 STREAM = 'Stream'
 STREAM_PREVIEW_LENGTH_IN_TABLE = 500
 PREVIEW_STYLES = {HEX: BYTES_NO_DIM, STREAM: 'bytes'}
-
-
-def get_symlink_representation(from_node: 'PdfTreeNode', to_node: 'PdfTreeNode') -> SymlinkRepresentation:
-    """Returns a tuple (symlink_text, style) that can be used for pretty printing, tree creation, etc"""
-    reference_key = str(to_node.address_of_this_node_in_other(from_node))
-    pdf_instruction = root_address(reference_key)  # In case we ended up with a [0] or similar
-
-    if pdf_instruction in DANGEROUS_PDF_KEYS:
-        symlink_style = 'red_alert'
-    else:
-        symlink_style = get_label_style(to_node.label) + ' dim'
-
-    symlink_str = f"{escape(reference_key)} [bright_white]=>[/bright_white]"
-    symlink_str += f" {escape(str(to_node.target))} [grey](Non Child Reference)[/grey]"
-    return SymlinkRepresentation(symlink_str, symlink_style)
 
 
 def get_stream_preview_rows(node: 'PdfTreeNode') -> List[List[Text]]:
