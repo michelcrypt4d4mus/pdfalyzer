@@ -23,7 +23,6 @@ from rich.text import Text
 from yaralyzer.helpers.rich_text_helper import prefix_with_style
 from yaralyzer.output.file_export import invoke_rich_export
 from yaralyzer.output.rich_console import console
-from yaralyzer.util.logging import log_and_print
 
 from pdfalyzer.decorators.pdf_file import PdfFile
 from pdfalyzer.helpers.filesystem_helper import file_size_in_mb, set_max_open_files
@@ -51,9 +50,7 @@ def pdfalyze():
 
     # Binary stream extraction is a special case
     if args.extract_binary_streams:
-        log_and_print(f"Extracting binary streams in '{args.file_to_scan_path}' to files in '{args.output_dir}'...")
-        PdfParserManager(args.file_to_scan_path).extract_all_streams(args.output_dir)
-        log_and_print(f"Binary stream extraction complete, files written to '{args.output_dir}'.\nExiting.\n")
+        PdfParserManager(args).extract_all_streams()
         sys.exit()
 
     # The method that gets called is related to the argument name. See 'possible_output_sections' list in

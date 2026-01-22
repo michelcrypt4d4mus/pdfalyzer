@@ -125,9 +125,8 @@ class PdfalyzerPresenter:
                 continue
 
             if not isinstance(node_stream_bytes, bytes):
-                msg = f"Stream in {node} is not bytes, it's {type(node.stream_data)}. Will reencode for YARA " + \
-                       "but they may not be the same bytes as the original stream!"
-                log.warning(msg)
+                log.warning(f"Stream in {node} is not bytes, it's {type(node.stream_data).__name__}. Will " \
+                             "reencode for YARA but they may not be the same bytes as the original stream!")
                 node_stream_bytes = node_stream_bytes.encode()
 
             console.line()
@@ -171,14 +170,13 @@ class PdfalyzerPresenter:
 
     def print_non_tree_relationships(self) -> None:
         """Print the inter-node, non-tree relationships for all nodes in the tree. Debugging method."""
-        console.line(2)
-        console.print(Panel(f"Other Relationships", expand=False), style='reverse')
+        print_section_header(f"Non-tree Relationships for '{self.pdfalyzer.pdf_basename}'")
 
         for node in LevelOrderIter(self.pdfalyzer.pdf_tree):
             if len(node.non_tree_relationships) == 0:
                 continue
 
-            console.print("\n")
+            console.line(2)
             console.print(Panel(f"Non tree relationships for {node}", expand=False))
             node.print_non_tree_relationships()
 
