@@ -9,6 +9,7 @@ from pypdf.generic import IndirectObject
 
 from yaralyzer.output.rich_console import console_width
 
+ARRAY_IDX_REGEX = re.compile(r"\[\d+\]")
 INDENT_DEPTH = 4
 INDENTED_JOINER = ',\n' + (INDENT_DEPTH * ' ')
 PRETTY_PRINT_WIDTH = 60
@@ -35,6 +36,10 @@ def bracketed(index: Union[int, str]) -> str:
 
 def class_name_regex(t: type) -> re.Pattern:
     return re.compile(t.__name__)
+
+
+def coerce_address(address: str | int) -> str:
+    return bracketed(address) if isinstance(address, int) else address
 
 
 def count_pattern_matches_in_text(pattern: str, text: str) -> int:
@@ -71,6 +76,11 @@ def indented(s: str, spaces: int = 4, prefix: str = '') -> str:
     indent = ' ' * spaces
     indent += prefix
     return indent + f"\n{indent}".join(s.split('\n'))
+
+
+def is_array_idx(address: str) -> bool:
+    """True if address looks like '[23]'."""
+    return bool(ARRAY_IDX_REGEX.match(address))
 
 
 def numbered_list(objs: list, indent: int = 4) -> str:
