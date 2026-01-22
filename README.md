@@ -85,7 +85,7 @@ If you provide none of the flags in the `ANALYSIS SELECTION` section of the `--h
 1. `pdfalyze lacan_buys_the_dip.pdf`
 1. `pdfalyze lacan_buys_the_dip.pdf -d -t -r -f -y -c`
 
-The `--streams` output is the one used to hunt for patterns in the embedded bytes and can be _extremely_ verbose depending on the `--quote-char` options chosen (or not chosen) and contents of the PDF. [The Yaralyzer](https://github.com/michelcrypt4d4mus/yaralyzer) handles this task; if you want to hunt for patterns in the bytes other than bytes surrounded by backticks/frontslashes/brackets/quotes/etc. you may want to use The Yaralyzer directly. As The Yaralyzer is a prequisite for The Pdfalyzer you may already have the `yaralyze` command installed and available.
+The `--streams` output is the one used to hunt for patterns in the embedded bytes and can be _extremely_ verbose depending on the `--quote-char` options chosen (or not chosen) and contents of the PDF. [The Yaralyzer](https://github.com/michelcrypt4d4mus/yaralyzer) handles this task; if you want to hunt for patterns in the bytes other than bytes surrounded by backticks/frontslashes/brackets/quotes/etc. you may want to use The Yaralyzer directly. Yaralyzer is a prequisite for Pdfalyzer so you may already have the `yaralyze` command installed and available.
 
 #### Setting Command Line Options Permanently With A `.pdfalyzer` File
 When you run `pdfalyze` on some PDF the tool will check for a file called `.pdfalyzer` in these places in this order:
