@@ -1,7 +1,8 @@
 """
 PDFalyzer: Analyze and explore the structure of PDF files.
 """
-from os.path import basename
+from dataclasses import dataclass, field
+from io import BufferedReader
 from pathlib import Path
 from typing import Dict, Iterator, List, Optional
 
@@ -14,7 +15,7 @@ from rich.prompt import Prompt
 from rich.text import Text
 from yaralyzer.helpers.file_helper import load_binary_data
 from yaralyzer.helpers.rich_text_helper import print_fatal_error_and_exit
-from yaralyzer.output.file_hashes_table import compute_file_hashes
+from yaralyzer.output.file_hashes_table import BytesInfo, compute_file_hashes
 from yaralyzer.output.rich_console import console
 
 from pdfalyzer.decorators.document_model_printer import highlighted_raw_pdf_obj_str
@@ -37,6 +38,7 @@ TRAILER_FALLBACK_ID = 10_000_000
 PYPDF_ERROR_MSG = "Failed to open file with PyPDF. Consider filing a PyPDF bug report: https://github.com/py-pdf/pypdf/issues"
 
 
+@dataclass
 class Pdfalyzer:
     """
     Walks a PDF's internals and builds the PDF logical structure tree.
@@ -58,59 +60,63 @@ class Pdfalyzer:
         pdf_size (int): Number of nodes as extracted from the PDF's Trailer node.
         pdf_tree (PdfTreeNode): The top node of the PDF data structure tree.
         verifier (PdfTreeVerifier): PdfTreeVerifier that can validate the PDF has been walked successfully.
+        _indeterminate_ids (set[int]): See INDETERMINATE_REF_KEYS comment
         _tree_nodes (Dict[int, PdfTreeNode): ID cache for nodes that are in the tree
     """
+    pdf_path: Path
+    password: str | None = None
+    font_infos: list[FontInfo] = field(default_factory=list)
+    font_info_extraction_error: Exception | None = None
+    max_generation: int = 0
+    nodes_encountered: dict[int, PdfTreeNode] = field(default_factory=dict)
+    num_nodes: int | None = None
+    pdf_basename: str = field(init=False)
+    pdf_bytes: bytes = field(init=False)
+    pdf_bytes_info: BytesInfo = field(init=False)
+    pdf_filehandle: BufferedReader = field(init=False)
+    pdf_reader: PdfReader = field(init=False)
+    pdf_tree: PdfTreeNode = field(init=False)
+    verifier: PdfTreeVerifier = field(init=False)
+    _indeterminate_ids: set[int] = field(default_factory=set)
+    _tree_nodes: dict[int, PdfTreeNode | None] = field(default_factory=dict)
 
-    def __init__(self, pdf_path: str | Path, password: str | None = None):
-        """
-        Args:
-            pdf_path (str | Path): Path to the PDF file to analyze
-            password (str): Required for encrypted PDFs
-        """
-        self.pdf_path = pdf_path
-        self.pdf_basename = basename(pdf_path)
+    def __post_init__(self):
+        self.pdf_path = Path(self.pdf_path)
+        self.pdf_basename = self.pdf_path.name
 
         try:
-            self.pdf_filehandle = open(pdf_path, 'rb')  # Filehandle must be left open for PyPDF to perform seeks
+            self.pdf_filehandle = open(self.pdf_path, 'rb')  # Filehandle must be left open for PyPDF to perform seeks
             self.pdf_reader = PdfReader(self.pdf_filehandle)
         except DependencyError as e:
             self._handle_fatal_error(f"Missing dependency required for this file.", e)
         except FileNotFoundError as e:
             self._handle_fatal_error(f"Invalid file", e)
         except PdfReadError as e:
-            self._handle_fatal_error(f'PdfReadError: "{pdf_path}" doesn\'t seem to be a valid PDF file.', e)
+            self._handle_fatal_error(f'PdfReadError: "{self.pdf_path}" doesn\'t seem to be a valid PDF file.', e)
         except Exception as e:
             console.print_exception()
             self._handle_fatal_error(f"{PYPDF_ERROR_MSG}", e)
 
         if self.pdf_reader.is_encrypted:
-            if not self.pdf_reader.decrypt(password or Prompt.ask(PASSWORD_PROMPT)):
+            if not self.pdf_reader.decrypt(self.password or Prompt.ask(PASSWORD_PROMPT)):
                 self._handle_fatal_error(f"Wrong password", FileNotDecryptedError("encrypted PDF"))
 
         # Load bytes etc
-        self.pdf_bytes = load_binary_data(pdf_path)
+        self.pdf_bytes = load_binary_data(self.pdf_path)
         self.pdf_bytes_info = compute_file_hashes(self.pdf_bytes)
-
-        # Initialize tracking variables
-        self.font_infos: List[FontInfo] = []  # Font summary objects
-        self.font_info_extraction_error: Optional[Exception] = None
-        self.max_generation = 0  # PDF revisions are "generations"; this is the max generation encountered
-        self.nodes_encountered: Dict[int, PdfTreeNode] = {}  # Nodes we've seen already
-        self._tree_nodes: Dict[int, PdfTreeNode | None] = {}  # Nodes in the tree we've looked up already
-        self._indeterminate_ids = set()  # See INDETERMINATE_REF_KEYS comment
 
         # Bootstrap the root of the tree with the trailer. PDFs are always read trailer first.
         # Technically the trailer has no PDF Object ID but we set it to the /Size of the PDF.
         trailer = self.pdf_reader.trailer
-        self.pdf_size = trailer.get(SIZE)
-        trailer_id = self.pdf_size if self.pdf_size is not None else TRAILER_FALLBACK_ID
+        self.num_nodes = trailer.get(SIZE)
+        trailer_id = self.num_nodes if self.num_nodes is not None else TRAILER_FALLBACK_ID
         self.pdf_tree = PdfTreeNode.from_obj(trailer, TRAILER, trailer_id)
         self.nodes_encountered[self.pdf_tree.idnum] = self.pdf_tree
 
-        if not self.pdf_size:
+        if not self.num_nodes:
             log.warning(f"Could not determine number of nodes in this PDF!")
-        elif self.pdf_size > NODE_COUNT_WARN_THRESHOLD:
-            log.warning(f"This PDF has {self.pdf_size:,} nodes; could take a while to parse...")
+        elif self.num_nodes > NODE_COUNT_WARN_THRESHOLD:
+            log.warning(f"This PDF has {self.num_nodes:,} nodes; could take a while to parse...")
 
         # Build tree by recursively following relationships between nodes
         self.walk_node(self.pdf_tree)
@@ -137,19 +143,6 @@ class Pdfalyzer:
         for attr in ['pdf_reader', 'pdf_filehandle']:
             if attr in vars(self):
                 getattr(self, attr).close()
-
-    def walk_node(self, node: PdfTreeNode) -> None:
-        """Recursively walk the PDF's tree structure starting at a given node."""
-        log.info(f'walk_node() called with {node}. Object dump:\n{highlighted_raw_pdf_obj_str(node.obj, node.label)}')
-        nodes_to_walk_next = [self._add_relationship_to_pdf_tree(r) for r in node.references_to_other_nodes()]
-        node.all_references_processed = True
-
-        for next_node in [n for n in nodes_to_walk_next if not (n is None or n.all_references_processed)]:
-            if not next_node.all_references_processed:
-                self.walk_node(next_node)
-
-            # Trigger update of self._tree_nodes cache if next_node was placed in the tree successfully
-            self.find_node_by_idnum(next_node.idnum)
 
     def find_node_by_idnum(self, idnum: int) -> Optional[PdfTreeNode]:
         """Find node with `idnum` in the tree. Return `None` if that node is not reachable from the root."""
@@ -185,11 +178,11 @@ class Pdfalyzer:
 
     def missing_node_ids(self) -> list[int]:
         """We expect to see all ordinals up to the number of nodes /Trailer claims exist as obj IDs."""
-        if self.pdf_size is None:
+        if self.num_nodes is None:
             log.error(f"{SIZE} not found in PDF trailer; cannot verify all nodes are in tree")
             return []
 
-        return [i for i in range(1, self.pdf_size) if self.find_node_by_idnum(i) is None]
+        return [i for i in range(1, self.num_nodes) if self.find_node_by_idnum(i) is None]
 
     def node_iterator(self) -> Iterator[PdfTreeNode]:
         """Iterate over nodes, grouping them by distance from the root."""
@@ -223,6 +216,19 @@ class Pdfalyzer:
     def unplaced_encountered_nodes(self) -> list[PdfTreeNode]:
         """Nodes that were encountered by walk_node() but didn't end up in the tree."""
         return [node for id, node in self.nodes_encountered.items() if self.find_node_by_idnum(id) is None]
+
+    def walk_node(self, node: PdfTreeNode) -> None:
+        """Recursively walk the PDF's tree structure starting at a given node."""
+        log.info(f'walk_node() called with {node}. Object dump:\n{highlighted_raw_pdf_obj_str(node.obj, node.label)}')
+        nodes_to_walk_next = [self._add_relationship_to_pdf_tree(r) for r in node.references_to_other_nodes()]
+        node.all_references_processed = True
+
+        for next_node in [n for n in nodes_to_walk_next if not (n is None or n.all_references_processed)]:
+            if not next_node.all_references_processed:
+                self.walk_node(next_node)
+
+            # Trigger update of self._tree_nodes cache if next_node was placed in the tree successfully
+            self.find_node_by_idnum(next_node.idnum)
 
     def _add_font_infos(self, node: PdfTreeNode) -> list[FontInfo]:
         """Add fonts to self.font_infos. Returns list of new fonts that were added."""
