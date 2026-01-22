@@ -56,11 +56,8 @@ Installation with [pipx](https://pypa.github.io/pipx/)[^4] is preferred though `
 pipx install pdfalyzer
 ```
 
-See [PyPDF installation notes](https://github.com/py-pdf/pypdf#installation) about `PyCryptodome` if you plan to `pdfalyze` any files that use AES encryption.
-
 #### macOS Homebrew
-If you are on macOS and use `homebrew` someone out there was kind enough to make [The Pdfalyzer available via homebrew](https://formulae.brew.sh/formula/pdfalyzer) so this should work:
-
+If you are on macOS and use `homebrew` someone out there was kind enough to make [Pdfalyzer available via homebrew](https://formulae.brew.sh/formula/pdfalyzer) so this should work:
 ```sh
 brew install pdfalyzer
 ```
@@ -69,14 +66,12 @@ brew install pdfalyzer
 1. If you used `pip3` instead of `pipx` and have an issue you should try to install with `pipx`.
 1. If you run into an issue about missing YARA try to install [yara-python](https://pypi.org/project/yara-python/).
 1. If you encounter an error building the python `cryptography` package check your `pip` version (`pip --version`). If it's less than 22.0, upgrade `pip` with `pip install --upgrade pip`.
-1. If you get a YARA internal error number you can look up what it actually means [here](https://github.com/VirusTotal/yara/blob/master/libyara/include/yara/error.h).
 1. If you can't get the `pdfalyze` command to work try `python -m pdfalyzer`. It's an equivalent but more portable version of the same command that does not rely on your python script paths being set up in a sane way.
-1. While The Pdfalyzer has been tested on quite a few large and very complicated PDFs there are no doubt a bunch of edge cases that will trip up the code. Sifting through the various interconnected internal PDF objects and building the correct tree representation is much, much harder than it should be and requires multiple scans and a little bit of educated guessing. If a PDF fails to parse and you hit an error please open [a GitHub issue](https://github.com/michelcrypt4d4mus/pdfalyzer/issues) with the compressed (`.zip`, `.gz`, whatever) PDF that is causing the problem attached (if possible) and I'll take a look when I can. I will _not_ take a look at any uncompressed PDFs due to the security risks so make sure you zip it before you ship it.
+1. While Pdfalyzer has been tested on quite a few large and very complicated PDFs there are no doubt a bunch of edge cases that will trip up the code. Sifting through the various interconnected internal PDF objects and building the correct tree representation is much, much harder than it should be and requires multiple scans and a little bit of educated guessing. If a PDF fails to parse and you hit an error please open [a GitHub issue](https://github.com/michelcrypt4d4mus/pdfalyzer/issues) with the compressed (`.zip`, `.gz`, whatever) PDF that is causing the problem attached (if possible) and I'll take a look when I can. I will _not_ take a look at any uncompressed PDFs due to the security risks so make sure you zip it before you ship it.
 1. On Linux if you encounter an error building `wheel` or `cffi` you may need to install some packages:
    ```bash
    sudo apt-get install build-essential libssl-dev libffi-dev rustc
    ```
-
 
 # Usage
 
