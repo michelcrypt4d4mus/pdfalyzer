@@ -281,13 +281,12 @@ class PdfTreeNode(NodeMixin):
         table.columns[1].overflow = 'fold'
         table.columns[2].header_style = get_class_style_italic(self.obj)
 
-        if self.label != self.known_to_parent_as and self.type != TRAILER:
-            table.add_row(Text('AddressInParent', style='italic'), Text(str(self.known_to_parent_as)), '', style='gray58')
+        if self.label != self.known_to_parent_as and self.type != TRAILER and self.known_to_parent_as:
+            table.add_row(Text('AddressInParent', style='italic'), Text(self.known_to_parent_as), '', style='gray58')
 
         if isinstance(self.obj, dict):
             for k in sorted(self.obj.keys(), key=lambda k: SORT_KEYS.get(k, k)):
-                v = self.obj.get(k)  # NOTE: self.obj[k] turns IndirectObjects into PdfObjects
-                row = self.pdf_object.to_table_row(k, v, pdfalyzer)
+                row = self.pdf_object.get_table_row(k, pdfalyzer)
 
                 # Make dangerous stuff look dangerous
                 if (k in DANGEROUS_PDF_KEYS) or (self.label == FONT and k == SUBTYPE and v == TYPE1_FONT):
@@ -295,11 +294,11 @@ class PdfTreeNode(NodeMixin):
                 else:
                     table.add_row(*row)
         elif isinstance(self.obj, list):
-            for i, item in enumerate(self.obj):
-                table.add_row(*self.pdf_object.to_table_row(i, item, pdfalyzer))
-        elif not isinstance(self.obj, StreamObject):
+            for i in range(len(self.obj)):
+                table.add_row(*self.pdf_object.get_table_row(i, pdfalyzer))
+        else:
             # Then it's a single element node like a URI, TextString, etc.
-            table.add_row(*self.pdf_object.to_table_row('', self.obj, pdfalyzer, empty_3rd_col=True))
+            table.add_row(*self.pdf_object.get_table_row(None, pdfalyzer, empty_3rd_col=True))
 
         for row in get_stream_preview_rows(self):
             table.add_row(*(row + [Text('')]))
