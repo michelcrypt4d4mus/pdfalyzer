@@ -43,7 +43,8 @@ def fixture_mismatch_msg() -> Callable[[Path, Path], str]:
         fixture_path = fixture_path.relative_to(Path.cwd())
         output_path = output_path.relative_to(Path.cwd())
         error_msg = f"Contents of '{output_path}'\n  does not match fixture: '{fixture_path}'\n\n"
-        error_msg += f"Fixtures can be updated by running '{REBUILD_FIXTURES_ENV_VAR}=True pytest'\n"
+        error_msg += f"Fixtures can be updated by running '{REBUILD_FIXTURES_ENV_VAR}=True pytest'\n\n"
+        error_msg += f"pytest diffs can be slow, here's the manual diff cmd:\n\n   diff '{fixture_path}' '{output_path}'\n\n"
         return error_msg
 
     return msg
