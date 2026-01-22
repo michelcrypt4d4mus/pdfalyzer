@@ -67,6 +67,7 @@ STRUCT_TREE_ROOT = '/StructTreeRoot'
 SUBMIT_FORM     = '/SubmitForm'
 SUBTYPE         = ImageAttributes.SUBTYPE
 THREAD          = '/Thread'
+TITLE           = '/Title'
 TO_UNICODE      = '/ToUnicode'
 TRUE            = '/True'
 TYPE            = PageAttributes.TYPE
