@@ -125,9 +125,8 @@ class PdfalyzerPresenter:
                 continue
 
             if not isinstance(node_stream_bytes, bytes):
-                msg = f"Stream in {node} is not bytes, it's {type(node.stream_data)}. Will reencode for YARA " + \
-                       "but they may not be the same bytes as the original stream!"
-                log.warning(msg)
+                log.warning(f"Stream in {node} is not bytes, it's {type(node.stream_data).__name__}. Will " \
+                             "reencode for YARA but they may not be the same bytes as the original stream!")
                 node_stream_bytes = node_stream_bytes.encode()
 
             console.line()
