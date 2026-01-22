@@ -2,7 +2,6 @@ import pytest
 from pypdf import PdfReader
 from pypdf.generic import IndirectObject
 
-from pdfalyzer.helpers.pdf_object_helper import _sort_pdf_object_refs
 from pdfalyzer.pdf_object_relationship import PdfObjectRelationship
 from pdfalyzer.util.adobe_strings import *
 

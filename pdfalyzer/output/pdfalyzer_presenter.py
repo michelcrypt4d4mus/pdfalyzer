@@ -22,7 +22,6 @@ from pdfalyzer.config import PdfalyzerConfig
 from pdfalyzer.decorators.pdf_tree_node import DECODE_FAILURE_LEN
 from pdfalyzer.detection.yaralyzer_helper import get_bytes_yaralyzer, get_file_yaralyzer
 from pdfalyzer.helpers.rich_text_helper import print_error
-from pdfalyzer.helpers.string_helper import pp
 from pdfalyzer.output.layout import (print_fatal_error_panel, print_section_header, print_section_subheader,
      print_section_sub_subheader)
 from pdfalyzer.output.tables.decoding_stats_table import build_decoding_stats_table
