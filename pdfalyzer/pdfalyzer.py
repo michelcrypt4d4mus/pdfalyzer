@@ -44,7 +44,7 @@ class Pdfalyzer:
     """
     Walks a PDF's internals and builds the PDF logical structure tree.
 
-    Each of the PDF's internal objects isw rapped in a `PdfTreeNode` object. The tree is managed
+    Each of the PDF's internal objects is wrapped in a `PdfTreeNode` object. The tree is managed
     by the `anytree` library. Information about the tree as a whole is stored in this class.
     Once the PDF is parsed this class provides access to info about or from the underlying PDF tree.
 
