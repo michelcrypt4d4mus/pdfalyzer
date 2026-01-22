@@ -52,7 +52,7 @@ class PdfObjectProperties:
         elif self.sub_type is not None:
             self.label = f"{self.type}:{self.sub_type[1:]}"
         else:
-            self.label = self.type
+            self.label = self._type
 
     def __post_init__(self,):
         self.address = coerce_address(self.address)
