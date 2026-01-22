@@ -119,7 +119,6 @@ Running `extract_pdf_text` requires that you install The Pdfalyzer's optional de
 pipx install pdfalyzer[extract]
 ```
 
-
 ## As A Python Library
 For info about setting up a dev environment see [Contributing](#contributing) below.
 
