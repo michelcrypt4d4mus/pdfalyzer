@@ -36,27 +36,34 @@ class PdfObjectProperties:
     first_address: str = field(init=False)
     label: str = ''
     sub_type: str | None = None
-    type: str | None = None
+    _type: str | None = None
 
-    def __post_init__(self,):
-        self.address = coerce_address(self.address)
-        self.first_address = self.address
+    @property
+    def type(self) -> str | None:
+        return self._type
 
-        if isinstance(self.obj, DictionaryObject):
-            self.type = self.obj.get(TYPE)
-            self.sub_type = self.obj.get(SUBTYPE) or self.obj.get(S)
-
-        # Use address as type if no explicit /Type, e.g. obj referenced as '/Font' is considered a /Font type.
-        self.type = self.type or (root_address(self.address) if not is_array_idx(self.address) else None)
+    @type.setter
+    def type(self, _type: str | None):
+        self._type = _type
 
         if self.type is None:
-            log.warning(f"Unable to determine obj type for {self.idnum} from {self.obj}, address={self.address}!")
+            log.warning(f"Unable to determine obj type for {self.idnum}, address={self.address}, obj={self.obj}!")
             self.label = f"{UNLABELED}{self.address}"
         elif self.sub_type is not None:
             self.label = f"{self.type}:{self.sub_type[1:]}"
         else:
             self.label = self.type
 
+    def __post_init__(self,):
+        self.address = coerce_address(self.address)
+        self.first_address = self.address
+
+        if isinstance(self.obj, DictionaryObject):
+            self._type = self.obj.get(TYPE)
+            self.sub_type = self.obj.get(SUBTYPE) or self.obj.get(S)
+
+        # Use address as type if no explicit /Type, e.g. obj referenced as '/Font' is considered a /Font type.
+        self.type = self._type or (root_address(self.address) if not is_array_idx(self.address) else None)
         log_trace(f"Built {repr(self)}")
 
     @classmethod

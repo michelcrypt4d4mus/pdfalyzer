@@ -239,14 +239,7 @@ class Pdfalyzer:
             if relationship.is_parent:
                 from_node.set_parent(to_node)
             elif to_node.parent is not None:
-                log_msg = f"{relationship} fail: {to_node} parent is already {to_node.parent}"
-
-                # Some StructElem nodes I have seen use /P or /K despire not being the real parent/child
-                if relationship.from_node.type.startswith(STRUCT_ELEM) \
-                        or isinstance(relationship.from_node.obj, ArrayObject):
-                    log.info(log_msg)
-                else:
-                    log.info(log_msg)
+                log.info(f"{relationship} fail: {to_node} parent is already {to_node.parent}")
             else:
                 from_node.add_child(to_node)
 
@@ -276,6 +269,10 @@ class Pdfalyzer:
         else:
             # If no other conditions are met make from_node the parent of to_node
             from_node.add_child(to_node)
+
+        # /StructElems in a /StructTreeRoot hierarchy sometimes have no /Type so we set it manually
+        if to_node.type == K and STRUCT_TREE_ROOT in to_node.tree_address():
+            to_node.pdf_object.type = STRUCT_ELEM
 
         return to_node
 
