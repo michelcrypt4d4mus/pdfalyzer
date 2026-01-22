@@ -78,40 +78,46 @@ class PdfObjectProperties:
             log.error(f"Failed to build node because, integrity not guaranteed. Error: {e}")
             return cls(ref, address, ref.idnum)
 
-    @classmethod
-    def resolve_references(cls, reference_key: str | int, obj: PdfObject, pdfalyzer: 'Pdfalyzer') -> Any:
-        """Recursively build the same data structure except IndirectObjects are resolved to nodes."""
-        if isinstance(obj, NumberObject):
-            return obj.as_numeric()
-        elif isinstance(obj, IndirectObject):
-            node = pdfalyzer.find_node_by_idnum(obj.idnum)
-            return node.pdf_object if node else cls.from_reference(obj, reference_key)
-        elif isinstance(obj, list):
-            return [cls.resolve_references(reference_key, item, pdfalyzer) for item in obj]
-        elif isinstance(obj, dict):
-            return {k: cls.resolve_references(k, v, pdfalyzer) for k, v in obj.items()}
-        else:
-            return obj
-
-    @classmethod
-    def to_table_row(
-        cls,
-        reference_key: str | int,
-        obj: PdfObject,
+    def get_table_row(
+        self,
+        reference_key: str | int | None,
         pdfalyzer: 'Pdfalyzer',
         empty_3rd_col: bool = False
     ) -> tuple[Text, Text, Text]:
         """PDF object property at `reference_key` becomes a formatted 3-tuple for use in Rich tables."""
-        with_resolved_refs = cls.resolve_references(reference_key, obj, pdfalyzer)
+        if reference_key is None:
+            row_obj = self.obj
+        elif isinstance(self.obj, dict):
+            row_obj = self.obj.get(reference_key)  # NOTE: self.obj[k] turns IndirectObjects into PdfObjects!
+        elif isinstance(self.obj, list) and isinstance(reference_key, int):
+            row_obj = self.obj[reference_key]
+        else:
+            raise Exception(f"Invalid ref key/obj combo! ref_key={reference_key}, obj={repr(self)}")
+
+        with_resolved_refs = self._resolve_references(reference_key, row_obj, pdfalyzer)
 
         return (
             Text(f"{reference_key}", style='grey' if isinstance(reference_key, int) else ''),
             # Prefix the Text() obj with an empty string to set unstyled chars to the class style of the object
             # they are in.
-            Text('', style=get_class_style(obj)).append_text(cls._obj_to_rich_text(with_resolved_refs)),
+            Text('', style=get_class_style(row_obj)).append_text(self._obj_to_rich_text(with_resolved_refs)),
             # 3rd col (AKA type(value)) is redundant if it's a TextString/Number/etc. node so we make it empty
-            Text('') if empty_3rd_col else Text(pypdf_class_name(obj), style=get_class_style_dim(obj))
+            Text('') if empty_3rd_col else Text(pypdf_class_name(row_obj), style=get_class_style_dim(row_obj))
         )
+
+    def _resolve_references(self, reference_key: str | int, obj: PdfObject, pdfalyzer: 'Pdfalyzer') -> Any:
+        """Recursively build the same data structure except IndirectObjects are resolved to nodes."""
+        if isinstance(obj, NumberObject):
+            return obj.as_numeric()
+        elif isinstance(obj, IndirectObject):
+            node = pdfalyzer.find_node_by_idnum(obj.idnum)
+            return node.pdf_object if node else self.from_reference(obj, reference_key)
+        elif isinstance(obj, dict):
+            return {k: self._resolve_references(k, v, pdfalyzer) for k, v in obj.items()}
+        elif isinstance(obj, list):
+            return [self._resolve_references(reference_key, item, pdfalyzer) for item in obj]
+        else:
+            return obj
 
     # TODO: this doesn't recurse...
     @classmethod

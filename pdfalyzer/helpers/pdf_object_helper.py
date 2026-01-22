@@ -2,9 +2,10 @@
 Some methods to help with the direct manipulation/processing of PyPDF's PdfObjects
 """
 from dataclasses import dataclass
-from typing import List, Optional
+from typing import Optional
 
 from pypdf.generic import ArrayObject, DictionaryObject, IndirectObject, PdfObject
+from rich.text import Text
 
 from pdfalyzer.util.adobe_strings import TYPE
 from pdfalyzer.util.logging import log

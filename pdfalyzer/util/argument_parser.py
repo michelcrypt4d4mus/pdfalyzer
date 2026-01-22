@@ -28,6 +28,9 @@ DESCRIPTION = "Explore PDF's inner data structure with absurdly large and in dep
 DEFAULT_SECTIONS = [DOCINFO, TREE, RICH, FONTS, COUNTS, YARA]
 ALL_SECTIONS = DEFAULT_SECTIONS + [STREAMS]
 
+# Add one more top level argument
+parser.add_argument('--password', help='only required for encrypted PDFs', type=str)
+
 # Add one more option to yaralyzer's export options
 export.add_argument('-bin', '--extract-binary-streams',
                     action='store_const',
@@ -43,8 +46,6 @@ source.add_argument('--no-default-yara-rules',
 debug.add_argument('--allow-missed-nodes',
                    action='store_true',
                    help='force pdfalyze to return 0 to shell even if missing nodes encountered')
-
-parser.add_argument('--password', help='only required for encrypted PDFs', type=str)
 
 # Note that we extend the yaralyzer's parser and export
 parser = ArgumentParser(
