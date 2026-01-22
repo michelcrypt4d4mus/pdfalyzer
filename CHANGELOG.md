@@ -1,4 +1,5 @@
 # NEXT RELEASE
+* Display the number of revisions (max `generation` value) in metadata table
 * Display obj types/labels determined when walking the tree instead of newly constructed `PdfObjectProperties` which may lack nuance in their labeling
 * Better labeling of `/StructElem` objects in a `StructTreeRoot` hierarchy
 * Coerce `/Nums` number trees into `dict` like objects for the purposes of assigning addresses
