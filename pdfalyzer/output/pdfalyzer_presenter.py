@@ -177,7 +177,7 @@ class PdfalyzerPresenter:
             if len(node.non_tree_relationships) == 0:
                 continue
 
-            console.print("\n")
+            console.line(2)
             console.print(Panel(f"Non tree relationships for {node}", expand=False))
             node.print_non_tree_relationships()
 
