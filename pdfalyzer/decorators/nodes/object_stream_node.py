@@ -20,7 +20,8 @@ from pdfalyzer.decorators.pdf_tree_node import PdfTreeNode
 from pdfalyzer.util.adobe_strings import *
 
 
-class ObjStmNode(PdfTreeNode):
+@dataclass
+class StreamNode(PdfTreeNode):
     def __post_init__(self):
         super().__post_init__()
 
