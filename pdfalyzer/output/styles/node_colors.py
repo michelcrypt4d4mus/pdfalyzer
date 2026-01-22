@@ -42,7 +42,7 @@ NODE_TYPE_STYLES = PDF_TYPE_STYLES + [
 
 LABEL_STYLES = [
     [re.compile(fr"^({adobe_strings.OBJ_STM}|{adobe_strings.NUMS})"), 'grey23 on gray58'],
-    [re.compile(r'^(JavaScript|JS|OpenAction)', re.I | re.M), 'blink bold red'],
+    [re.compile(r'^(AA|JavaScript|JS|OpenAction)', re.I | re.M), 'blink bold red'],
     [re.compile(f'^{adobe_strings.FONT_DESCRIPTOR}'),     'cornflower_blue'],
     [re.compile(f'^{adobe_strings.FONT_FILE}\d?'),        'steel_blue1'],
     [re.compile(f'^/(Font(Name)?|BaseFont)'),             FONT_OBJ_BLUE],
