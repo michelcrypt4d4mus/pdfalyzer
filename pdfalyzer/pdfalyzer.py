@@ -1,6 +1,7 @@
 """
 PDFalyzer: Analyze and explore the structure of PDF files.
 """
+import time
 from dataclasses import dataclass, field
 from io import BufferedReader
 from pathlib import Path
@@ -85,6 +86,7 @@ class Pdfalyzer:
 
     def __post_init__(self):
         self.pdf_path = Path(self.pdf_path)
+        started_at = time.perf_counter()
 
         try:
             self.pdf_filehandle = open(self.pdf_path, 'rb')  # Filehandle must be left open for PyPDF to perform seeks
@@ -136,7 +138,7 @@ class Pdfalyzer:
             if not isinstance(node, SymlinkNode):
                 node.symlink_non_tree_relationships()
 
-        log.info(f"Walk complete.")
+        log.info(f"PDF walk completed in {time.perf_counter() - started_at:.2} seconds.")
 
     def close(self) -> None:
         for attr in ['pdf_reader', 'pdf_filehandle']:
