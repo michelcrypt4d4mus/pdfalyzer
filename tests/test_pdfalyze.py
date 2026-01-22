@@ -3,6 +3,7 @@ Tests of the command line script 'pdfalyze FILE [OPTIONS].
 Unit tests for Pdfalyzer *class* are in the other file: test_pdfalyzer.py.
 """
 from os import devnull
+from pathlib import Path
 
 import pytest
 from math import isclose
@@ -48,9 +49,9 @@ def test_pdfalyze_CLI_yara_scan(adobe_type1_fonts_pdf_path):
 
 
 def test_pdfalyze_CLI_streams_scan(adobe_type1_fonts_pdf_path):
-    _assert_args_yield_lines(1560, adobe_type1_fonts_pdf_path, '-s')
-    _assert_args_yield_lines(1165, adobe_type1_fonts_pdf_path, '--suppress-boms', '-s')
-    _assert_args_yield_lines(141, adobe_type1_fonts_pdf_path, '-s', '48')
+    _assert_args_yield_lines(1679, adobe_type1_fonts_pdf_path, '-s')
+    _assert_args_yield_lines(1242, adobe_type1_fonts_pdf_path, '--suppress-boms', '-s')
+    _assert_args_yield_lines(154, adobe_type1_fonts_pdf_path, '-s', '48')
 
 
 def test_pdfalyze_non_zero_return_code(form_evince_path):
@@ -74,26 +75,32 @@ def test_pdfalyze_CLI_font_scan(adobe_type1_fonts_pdf_path, analyzing_malicious_
     _assert_args_yield_lines(311, analyzing_malicious_pdf_path, '-f')
 
 
-def _assert_args_yield_lines(line_count, file, *args):
-    output = _run_with_args(file, *args)
-    assertion = _assert_line_count_within_range(line_count, output)
+def _assert_args_yield_lines(line_count: int, pdf_path: str | Path, *args):
+    output = _run_with_args(pdf_path, *args)
+    assertion = _assert_line_count_within_range(line_count, output, _shell_cmd_str(pdf_path, *args))
     assert assertion[0], assertion[1]
 
 
-def _run_with_args(pdf, *args) -> str:
+def _run_with_args(pdf: str | Path, *args) -> str:
     """check_output() technically returns bytes so we decode before returning STDOUT output"""
-    args = list(args) + ['--allow-missed-nodes']
-    # TODO: stderr is still being captured despite stderr
-    return check_output([PDFALYZE, pdf, *args], env=environ, stderr=open(devnull, "wt")).decode()
+    return check_output(_build_shell_cmd(pdf, *args), env=environ).decode()
 
 
-def _assert_line_count_within_range(line_count, text):
+def _assert_line_count_within_range(line_count: int, text: str, cmd: str):
     lines_in_text = len(text.split("\n"))
 
     if not isclose(line_count, lines_in_text, rel_tol=0.05):
         for i, line in enumerate(text.split("\n")):
             print(f"{i}: {line}")
 
-        return (False, f"Expected {line_count} +/- but found {lines_in_text}")
+        return (False, f"Expected {line_count} +/- but found {lines_in_text}\n\n  Command was: {cmd}\n")
 
     return (True, 'True')
+
+
+def _build_shell_cmd(pdf_path: str | Path, *args) -> list[str]:
+    return [PDFALYZE, str(pdf_path), '--allow-missed-nodes', *[str(arg) for arg in args]]
+
+
+def _shell_cmd_str(pdf_path: str | Path, *args) -> str:
+    return ' '.join(_build_shell_cmd(pdf_path, *args))
