@@ -86,21 +86,22 @@ class PdfObjectProperties:
     ) -> tuple[Text, Text, Text]:
         """Extract property at `reference_key` and build a formatted 3-tuple for use in Rich tables."""
         if reference_key is None:
+            key_style = ''
             row_obj = self.obj
-        elif isinstance(self.obj, dict):
-            row_obj = self.obj.get(reference_key)  # NOTE: self.obj[k] turns IndirectObjects into PdfObjects!
-        elif isinstance(self.obj, list) and isinstance(reference_key, int):
-            row_obj = self.obj[reference_key]
         else:
-            raise Exception(f"Invalid ref key/obj combo! ref_key={reference_key}, obj={repr(self)}")
+            if isinstance(self.obj, dict):
+                row_obj = self.obj.get(reference_key)  # NOTE: self.obj[k] turns IndirectObjects into PdfObjects!
+            elif isinstance(self.obj, list) and isinstance(reference_key, int):
+                row_obj = self.obj[reference_key]
+            else:
+                raise Exception(f"Invalid ref key/obj combo! ref_key={reference_key}, obj={repr(self)}")
+
+            if isinstance(reference_key, int):
+                key_style = 'grey'
+            else:
+                key_style = log_highlighter.get_style(reference_key)
 
         with_resolved_refs = self._resolve_references(reference_key, row_obj, pdfalyzer)
-
-        if isinstance(reference_key, int):
-            key_style = 'grey'
-        else:
-            key_style = log_highlighter.get_style(reference_key)
-
         value_style = key_style if isinstance(row_obj, str) else get_class_style(row_obj)
         col1 = Text(f"{reference_key}", style=key_style)
         # Prefix the Text() with empty string to set unstyled chars to style of the object they are in.
