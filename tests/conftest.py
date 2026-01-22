@@ -117,7 +117,7 @@ def rendered_fixtures_dir() -> Path:
 
 @pytest.fixture
 def tmp_dir(pytests_dir) -> Path:
-    """Clear the tmp dir when fixture is loaded"""
+    """Clear the tmp dir when fixture is loaded."""
     tmpdir = pytests_dir.joinpath('tmp')
 
     for file in files_in_dir(tmpdir):

@@ -5,6 +5,7 @@ import sys
 from argparse import ArgumentParser, Namespace
 from importlib.metadata import version
 from os import getcwd, path
+from pathlib import Path
 from typing import Optional
 
 from rich_argparse_plus import RichHelpFormatterPlus
@@ -134,7 +135,7 @@ def parse_arguments(_argv: list[str] | None = None) -> Namespace:
 
     # File export options
     if args.export_svg or args.export_txt or args.export_html or args.extract_binary_streams:
-        args.output_dir = args.output_dir or getcwd()
+        args.output_dir = Path(args.output_dir or Path.cwd())
         file_prefix = (args.file_prefix + '__') if args.file_prefix else ''
         args.file_suffix = ('_' + args.file_suffix) if args.file_suffix else ''
         args.output_basename = f"{file_prefix}{path.basename(args.file_to_scan_path)}"

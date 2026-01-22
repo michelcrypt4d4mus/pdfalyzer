@@ -14,6 +14,13 @@
 # https://github.com/michelcrypt4d4mus/yaralyzer
 
 
+# Path to directory containing Didier Stevens's pdf-parser.py. Only required for extracting binary streams to files.
+# There's a script to download it in this repo in scripts/install_didier_stevens_pdf_tools.sh.
+#     PDFALYZER_PDF_PARSER_PY_PATH=path/to/pdfparserdotpy/
+
+# Directory to write rendered output to, equivalent of permanently setting the --output-dir option.
+#     PDFALYZER_OUTPUT_DIR=path/to/write/files/to
+
 
 # Expand the width of the output to the fit the display window (same as the --maximize-width options)
 #    YARALYZER_MAXIMIZE_WIDTH=True
@@ -61,6 +68,3 @@
 
 # Log level
 #     YARALYZER_LOG_LEVEL='INFO'
-
-# Path to directory containing Didier Stevens's pdf-parser.py. Only required for extracting binary streams to files.
-#     PDFALYZER_PDF_PARSER_PY_PATH=/path/to/pdfparserdotpy/

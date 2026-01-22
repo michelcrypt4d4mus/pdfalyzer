@@ -13,8 +13,8 @@ from yaralyzer.output.rich_console import console
 ARROW_BULLET = '➤ '
 
 # Usually we use the yaralyzer console but that has no highlighter
+# TODO: we have a highlighter now
 pdfalyzer_console = Console(color_system='256')
-stderr_console = Console(color_system='256', file=stderr)
 
 
 def attention_getting_panel(text: Text, title: str, style: str = 'white on red') -> Padding:
@@ -24,7 +24,7 @@ def attention_getting_panel(text: Text, title: str, style: str = 'white on red')
 
 def bullet_text(msg: Union[str, Text], style: Optional[str] = None) -> Text:
     if isinstance(msg, str):
-        msg = Text(msg, style=style)
+        msg = Text(msg, style=style or '')
 
     return Text(ARROW_BULLET).append(msg)
 
