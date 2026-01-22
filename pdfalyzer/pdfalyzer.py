@@ -4,13 +4,13 @@ PDFalyzer: Analyze and explore the structure of PDF files.
 from dataclasses import dataclass, field
 from io import BufferedReader
 from pathlib import Path
-from typing import Dict, Iterator, List, Optional
+from typing import Iterator, Optional
 
 from anytree import LevelOrderIter, SymlinkNode
 from anytree.search import findall, findall_by_attr
 from pypdf import PdfReader
 from pypdf.errors import DependencyError, FileNotDecryptedError, PdfReadError
-from pypdf.generic import ArrayObject, DictionaryObject, IndirectObject, PdfObject
+from pypdf.generic import DictionaryObject, IndirectObject
 from rich.prompt import Prompt
 from rich.text import Text
 from yaralyzer.helpers.file_helper import load_binary_data
@@ -48,7 +48,7 @@ class Pdfalyzer:
     Once the PDF is parsed this class provides access to info about or from the underlying PDF tree.
 
     Attributes:
-        font_infos (List[FontInfo]): Font summary objects
+        font_infos (list[FontInfo]): Font summary objects
         font_info_extraction_error (Optional[Exception]): Error encountered extracting FontInfo (if any)
         max_generation (int): Max revision number ("generation") encounted in this PDF.
         nodes_encountered (Dict[int, PdfTreeNode]): Nodes we've traversed already even if not in tree yet.
@@ -204,7 +204,7 @@ class Pdfalyzer:
 
         return RefAndObj(ref, obj)
 
-    def stream_nodes(self) -> List[PdfTreeNode]:
+    def stream_nodes(self) -> list[PdfTreeNode]:
         """List of actual nodes (not SymlinkNodes) containing streams sorted by PDF object ID"""
         stream_filter = lambda node: node.contains_stream() and not isinstance(node, SymlinkNode)  # noqa: E731
         return sorted(findall(self.pdf_tree, stream_filter), key=lambda r: r.idnum)
