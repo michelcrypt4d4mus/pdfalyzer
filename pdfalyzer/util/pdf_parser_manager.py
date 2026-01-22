@@ -1,9 +1,10 @@
 import re
+from argparse import Namespace
 from os import path, system
 from pathlib import Path
 from subprocess import check_output
 
-from yaralyzer.util.logging import log
+from yaralyzer.util.logging import log, log_and_print
 
 from pdfalyzer.config import PDF_PARSER_EXECUTABLE_ENV_VAR, PdfalyzerConfig
 
@@ -20,7 +21,7 @@ PDF_PARSER_INSTALL_MSG = f"If you need to install pdf-parser.py, it's a single .
 
 class PdfParserManager:
     """Instances of this class manage external calls to Didier Stevens's pdf-parser.py for a given PDF."""
-    def __init__(self, path_to_pdf: str | Path):
+    def __init__(self, args: Namespace):
         if PdfalyzerConfig.PDF_PARSER_EXECUTABLE is None:
             raise RuntimeError(f"{PDF_PARSER_EXECUTABLE_ENV_VAR} not configured.\n\n{PDF_PARSER_INSTALL_MSG}")
 
@@ -29,8 +30,9 @@ class PdfParserManager:
             msg += PDF_PARSER_INSTALL_MSG
             raise RuntimeError(msg)
 
-        self.path_to_pdf = path_to_pdf
-        self.base_shell_cmd = f'{PdfalyzerConfig.PDF_PARSER_EXECUTABLE} -O "{path_to_pdf}"'
+        self.path_to_pdf = args.file_to_scan_path
+        self.base_shell_cmd = f'{PdfalyzerConfig.PDF_PARSER_EXECUTABLE} -O "{self.path_to_pdf}"'
+        self.output_dir = args.output_dir
         self.object_ids = []
         self.object_ids_containing_stream_data = []
         self.extract_object_ids()
@@ -58,10 +60,14 @@ class PdfParserManager:
         log.info(f"{self.path_to_pdf} Object IDs: {self.object_ids}")
         log.info(f"{self.path_to_pdf} Objs IDs w/streams: {self.object_ids_containing_stream_data}")
 
-    def extract_all_streams(self, output_dir: str | Path) -> None:
+    def extract_all_streams(self) -> None:
         """Use pdf-parser.py to find binary data streams in the PDF and dump each of them to a separate file"""
+        log_and_print(f"Extracting binary streams in '{self.path_to_pdf}' to files in '{self.output_dir}'...")
+
         for object_id in self.object_ids_containing_stream_data:
-            stream_dump_file = path.join(output_dir, f'{path.basename(self.path_to_pdf)}.object_{object_id}.bin')
+            stream_dump_file = path.join(self.output_dir, f'{path.basename(self.path_to_pdf)}.object_{object_id}.bin')
             shell_cmd = self.base_shell_cmd + f' -f -o {object_id} -d "{stream_dump_file}"'
             log.debug(f'Dumping stream from object {object_id}: {shell_cmd}')
             system(shell_cmd)
+
+        log_and_print(f"Binary stream extraction complete, files written to '{self.output_dir}'.\nExiting.\n")

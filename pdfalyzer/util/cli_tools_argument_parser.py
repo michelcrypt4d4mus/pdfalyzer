@@ -1,9 +1,11 @@
 """
 Argument parsers for the command line tools other than `pdfalyze` that are included with The Pdfalyzer.
 
-1. combine_pdfs
-2. extract_pdf_pages
-3. extract_pdf_text
+    1. combine_pdfs
+
+    2. extract_pdf_pages
+
+    3. extract_pdf_text
 """
 import logging
 import sys
