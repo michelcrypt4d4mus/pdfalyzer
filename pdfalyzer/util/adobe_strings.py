@@ -62,6 +62,7 @@ RESOURCES       = PageAttributes.RESOURCES
 S               = '/S'  # Equivalent of /Subtype for /StructElem
 SIZE            = '/Size'
 STRUCT_ELEM     = '/StructElem'
+STRUCT_TREE_ROOT = '/StructTreeRoot'
 SUBMIT_FORM     = '/SubmitForm'
 SUBTYPE         = ImageAttributes.SUBTYPE
 THREAD          = '/Thread'
