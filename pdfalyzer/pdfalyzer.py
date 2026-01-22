@@ -47,6 +47,10 @@ class Pdfalyzer:
     by the `anytree` library. Information about the tree as a whole is stored in this class.
     Once the PDF is parsed this class provides access to info about or from the underlying PDF tree.
 
+    Args:
+        pdf_path (str): Path to the PDF file
+        password (str | None): Password used to decrypt the PDF (if it's encrypted)
+
     Attributes:
         font_infos (list[FontInfo]): Font summary objects
         font_info_extraction_error (Optional[Exception]): Error encountered extracting FontInfo (if any)
@@ -56,7 +60,6 @@ class Pdfalyzer:
         pdf_bytes (bytes): PDF binary data.
         pdf_bytes_info (BytesInfo): File size, hashes, and other data points about the PDF's raw bytes.
         pdf_filehandle (BufferedReader): File handle that reads the PDF.
-        pdf_path (str): The path to the PDF file.
         pdf_size (int): Number of nodes as extracted from the PDF's Trailer node.
         pdf_tree (PdfTreeNode): The top node of the PDF data structure tree.
         verifier (PdfTreeVerifier): PdfTreeVerifier that can validate the PDF has been walked successfully.
