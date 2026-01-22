@@ -52,7 +52,7 @@ class PdfObjectProperties:
         elif self.sub_type is not None:
             self.label = f"{self.type}:{self.sub_type[1:]}"
         else:
-            self.label = self.type
+            self.label = self._type
 
     def __post_init__(self,):
         self.address = coerce_address(self.address)
@@ -84,7 +84,7 @@ class PdfObjectProperties:
         pdfalyzer: 'Pdfalyzer',
         empty_3rd_col: bool = False
     ) -> tuple[Text, Text, Text]:
-        """PDF object property at `reference_key` becomes a formatted 3-tuple for use in Rich tables."""
+        """Extract property at `reference_key` and build a formatted 3-tuple for use in Rich tables."""
         if reference_key is None:
             row_obj = self.obj
         elif isinstance(self.obj, dict):

@@ -133,6 +133,11 @@ class Pdfalyzer:
 
         log.info(f"Walk complete.")
 
+    def close(self) -> None:
+        for attr in ['pdf_reader', 'pdf_filehandle']:
+            if attr in vars(self):
+                getattr(self, attr).close()
+
     def walk_node(self, node: PdfTreeNode) -> None:
         """Recursively walk the PDF's tree structure starting at a given node."""
         log.info(f'walk_node() called with {node}. Object dump:\n{highlighted_raw_pdf_obj_str(node.obj, node.label)}')
@@ -298,12 +303,8 @@ class Pdfalyzer:
         return self.find_node_with_attr('type', '/Catalog')
 
     def _handle_fatal_error(self, msg: str, e: Exception) -> None:
+        self.close()
         msg = f"{msg} ({e})"
-
-        if 'pdf_reader' in vars(self):
-            self.pdf_reader.close()
-        if 'pdf_filehandle' in vars(self):
-            self.pdf_filehandle.close()
 
         # Only exit if running in a 'pdfalyze some_file.pdf context', otherwise raise Exception.
         if is_pdfalyze_script:

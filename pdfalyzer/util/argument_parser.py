@@ -29,7 +29,8 @@ DEFAULT_SECTIONS = [DOCINFO, TREE, RICH, FONTS, COUNTS, YARA]
 ALL_SECTIONS = DEFAULT_SECTIONS + [STREAMS]
 
 # Add one more top level argument
-parser.add_argument('--password', help='only required for encrypted PDFs', type=str)
+parser.add_argument('--password',
+                    help='only required for encrypted PDFs')
 
 # Add one more option to yaralyzer's export options
 export.add_argument('-bin', '--extract-binary-streams',
