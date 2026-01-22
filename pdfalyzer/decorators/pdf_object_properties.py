@@ -135,7 +135,7 @@ class PdfObjectProperties:
         else:
             return obj
 
-    # TODO: this doesn't recurse...
+    # TODO: this doesn't recurse?
     @classmethod
     def _obj_to_rich_text(cls, obj: Any) -> Text:
         """Recurse through `obj` and build a `Text` object."""
