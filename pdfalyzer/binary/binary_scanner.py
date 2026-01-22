@@ -44,10 +44,10 @@ class BinaryScanner:
     _bytes: bytes
     owner: 'FontInfo | PdfTreeNode'  # noqa: F821
     label: Text | None = None
-    regex_extraction_stats: dict[str, RegexMatchMetrics] = \
-        field(default_factory=lambda: defaultdict(lambda: RegexMatchMetrics()))
     stream_length: int = field(init=False)
     suppression_notice_queue: list[Text] = field(default_factory=list)
+    regex_extraction_stats: dict[str, RegexMatchMetrics] = \
+        field(default_factory=lambda: defaultdict(lambda: RegexMatchMetrics()))
 
     @property
     def bytes(self) -> bytes:
