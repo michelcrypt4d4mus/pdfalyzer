@@ -194,6 +194,7 @@ class Pdfalyzer:
         return [n for n in self.unplaced_encountered_nodes() if n.parent is None]
 
     def ref_and_obj_for_id(self, idnum: int) -> RefAndObj:
+        """Build a new IndirectObject and PdfObject based on what's in the PDF."""
         ref = IndirectObject(idnum, self.max_generation, self.pdf_reader)
 
         try:
