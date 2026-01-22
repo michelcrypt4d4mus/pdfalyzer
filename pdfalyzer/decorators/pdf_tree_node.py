@@ -198,9 +198,7 @@ class PdfTreeNode(NodeMixin):
             #     NON_STANDARD_ADDRESS_NODES string to refer here,
             # then print a warning about multiple refs.
             if not (is_prefixed_by_any(from_node.label, NON_STANDARD_ADDRESS_NODES)
-                    or
-                    all(ref.address in NON_STANDARD_ADDRESS_NODES for ref in refs_to_this_node)):
-                # import pdb;pdb.set_trace()
+                    or all(ref.address in NON_STANDARD_ADDRESS_NODES for ref in refs_to_this_node)):
                 ref_addresses = [r.address for r in refs_to_this_node]
                 common_key = next((k for k in MULT_REF_RESOURCE_KEYS if all(k in a for a in ref_addresses)), None)
                 msg = f"Found {len(refs_to_this_node)} refs from {from_node} to {self}"
@@ -218,7 +216,7 @@ class PdfTreeNode(NodeMixin):
         """Returns parents and children."""
         return list(self.children) + ([self.parent] if self.parent is not None else [])
 
-    def symlink_non_tree_relationships(self):
+    def symlink_non_tree_relationships(self) -> None:
         """Create SymlinkNodes for this node's non parent/child (non-tree) relationships."""
         log.info(f"Symlinking {self}'s {self.non_tree_relationship_count()} other relationships...")
 
@@ -259,11 +257,11 @@ class PdfTreeNode(NodeMixin):
         text = Text('@', style='bright_white')
         return text.append(self.tree_address(max_length), style='address')
 
+    def __repr__(self) -> str:
+        return self.__str__()
+
     def __rich__(self) -> Text:
         return self.pdf_object.__rich__()[:-1] + self._colored_address() + Text('>')
 
     def __str__(self) -> str:
         return self.pdf_object.__rich__().plain
-
-    def __repr__(self) -> str:
-        return self.__str__()

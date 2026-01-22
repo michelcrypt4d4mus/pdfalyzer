@@ -5,9 +5,12 @@ import re
 from pprint import PrettyPrinter
 from typing import List, Optional, Pattern, Union
 
+from pypdf.generic import IndirectObject
+
 from yaralyzer.output.rich_console import console_width
 
 INDENT_DEPTH = 4
+INDENTED_JOINER = ',\n' + (INDENT_DEPTH * ' ')
 PRETTY_PRINT_WIDTH = 60
 DIGIT_REGEX = re.compile("\\d+")
 NON_WORD_REGEX = re.compile(r"[^\w]")
@@ -84,6 +87,24 @@ def is_substring_of_longer_strings_in_list(_string: str, strings: List[str]) -> 
     """Return True if '_string' is a substring of all the 'strings' longer than '_string'."""
     longer_strings = [s for s in strings if len(s) > len(_string)]
     return all([_string in longer_string for longer_string in longer_strings])
+
+
+def props_string(obj: object, keys: list[str] | None = None, joiner: str = ', ') -> str:
+    prefix = joiner if '\n' in joiner else ''
+    return prefix + joiner.join(props_strings(obj, keys))
+
+
+def props_strings(obj: object, keys: list[str] | None = None) -> list[str]:
+    """Get props of 'obj' in the format ["prop1=5", "prop2='string'"] etc."""
+    props = []
+
+    for k in (keys or [k for k in vars(obj).keys()]):
+        value = getattr(obj, k)
+        value = f"'{value}'" if isinstance(value, str) else value
+        value = repr(value) if isinstance(value, IndirectObject) else value
+        props.append(f"{k}={value}")
+
+    return props
 
 
 def regex_to_capture_group_label(regex: re.Pattern) -> str:

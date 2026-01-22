@@ -7,7 +7,7 @@ from rich.text import Text
 
 from pdfalyzer.helpers.pdf_object_helper import pypdf_class_name
 from pdfalyzer.helpers.rich_text_helper import comma_join_txt, node_label
-from pdfalyzer.helpers.string_helper import root_address
+from pdfalyzer.helpers.string_helper import INDENTED_JOINER, props_string, root_address
 from pdfalyzer.output.styles.node_colors import get_class_style, get_class_style_dim
 from pdfalyzer.util.adobe_strings import *
 from pdfalyzer.util.logging import log, log_console, log_trace
@@ -33,6 +33,7 @@ class PdfObjectProperties:
     indirect_object: IndirectObject | None = None
 
     # Computed fields
+    first_address: str = field(init=False)
     label: str = field(init=False)
     sub_type: str | None = None
     type: str | None = None
@@ -45,8 +46,9 @@ class PdfObjectProperties:
             if TYPE in self.obj and self.sub_type is not None:
                 self.label = f"{self.type}:{self.sub_type[1:]}"
             elif self.type is None:
-                log.warning(f"Unable to determine obj type from {self.obj}, address={self.address}!")
                 self.label = "???"
+                # import pdb;pdb.set_trace()
+                log.warning(f"Unable to determine obj type for {self.idnum} from {self.obj}, address={self.address}!")
             else:
                 self.label = self.type
 
@@ -136,6 +138,9 @@ class PdfObjectProperties:
             return Text(obj)
         else:
             return Text(str(obj), style=get_class_style(obj))
+
+    def __repr__(self) -> str:
+        return f"{type(self).__name__}(" + props_string(self, joiner=INDENTED_JOINER) + '\n)'
 
     def __rich_without_underline__(self) -> Text:
         return node_label(self.idnum, self.label, self.obj, underline=False)

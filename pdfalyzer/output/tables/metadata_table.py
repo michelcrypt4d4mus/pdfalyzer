@@ -17,8 +17,9 @@ HIGHLIGHT_IF = ['http', FALSE, TRUE]
 
 def metadata_table(reader: PdfReader) -> Table:
     """Build a table of metadata extracted from/computed about the PDF."""
-    table = Table('Property', 'Value', header_style='bold', title=' Metadata', title_style='grey', title_justify='left')
-    table.columns[0].justify = 'right'
+    table = Table(header_style='bold', title=' Metadata', title_style='grey', title_justify='left')
+    table.add_column('Property', justify='right')
+    table.add_column('Value', min_width=40)
 
     if len(reader.metadata or {}):
         for k, v in (reader.metadata or {}).items():
