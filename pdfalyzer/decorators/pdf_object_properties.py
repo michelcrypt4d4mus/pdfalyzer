@@ -10,7 +10,7 @@ from pdfalyzer.helpers.rich_text_helper import comma_join_txt, node_label
 from pdfalyzer.helpers.string_helper import INDENTED_JOINER, coerce_address, is_array_idx, props_string, root_address
 from pdfalyzer.output.styles.node_colors import get_class_style, get_class_style_dim
 from pdfalyzer.util.adobe_strings import *
-from pdfalyzer.util.logging import log, log_console, log_trace
+from pdfalyzer.util.logging import log, log_console, log_highlighter, log_trace
 
 
 @dataclass
@@ -138,7 +138,10 @@ class PdfObjectProperties:
         if isinstance(obj, cls):
             return cls.__rich_without_underline__(obj)
         elif isinstance(obj, str):
-            return Text(obj)
+            if 'http' in obj:
+                return log_highlighter(obj)
+            else:
+                return Text(obj)
         else:
             return Text(str(obj), style=get_class_style(obj))
 
