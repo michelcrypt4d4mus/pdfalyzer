@@ -2,6 +2,7 @@
 Handles formatting of console text output for Pdfalyzer class.
 """
 from collections import defaultdict
+from dataclasses import dataclass, field
 from typing import Optional
 
 import yara
@@ -11,6 +12,7 @@ from rich.markup import escape
 from rich.panel import Panel
 from rich.table import Table
 from rich.text import Text
+from yaralyzer.yaralyzer import Yaralyzer
 from yaralyzer.config import YaralyzerConfig
 from yaralyzer.output.rich_console import BYTES_HIGHLIGHT, console
 from yaralyzer.output.file_hashes_table import bytes_hashes_table
@@ -31,6 +33,7 @@ from pdfalyzer.output.tables.stream_objects_table import stream_objects_table
 from pdfalyzer.pdfalyzer import Pdfalyzer
 
 
+@dataclass
 class PdfalyzerPresenter:
     """
     Handles formatting of console text output for Pdfalyzer class.
@@ -39,9 +42,10 @@ class PdfalyzerPresenter:
         pdfalyzer (Pdfalyzer): Pdfalyzer for a given PDF file
         yaralyzer (Yaralyzer): Yaralyzer for a given PDF file
     """
+    pdfalyzer: Pdfalyzer
+    yaralyzer: Yaralyzer = field(init=False)
 
-    def __init__(self, pdfalyzer: Pdfalyzer):
-        self.pdfalyzer = pdfalyzer
+    def __post_init__(self):
         self.yaralyzer = get_file_yaralyzer(self.pdfalyzer.pdf_path)
 
     def print_everything(self) -> None:
