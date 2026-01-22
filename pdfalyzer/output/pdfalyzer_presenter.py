@@ -13,12 +13,13 @@ from rich.panel import Panel
 from rich.table import Table
 from rich.text import Text
 from rich.tree import Tree
-from yaralyzer.yaralyzer import Yaralyzer
 from yaralyzer.config import YaralyzerConfig
-from yaralyzer.output.rich_console import BYTES_HIGHLIGHT, console
+from yaralyzer.helpers.rich_text_helper import size_in_bytes_text
 from yaralyzer.output.file_hashes_table import bytes_hashes_table
-from yaralyzer.yara.error import yara_error_msg
+from yaralyzer.output.rich_console import BYTES_HIGHLIGHT, console
 from yaralyzer.util.logging import log
+from yaralyzer.yara.error import yara_error_msg
+from yaralyzer.yaralyzer import Yaralyzer
 
 from pdfalyzer.binary.binary_scanner import BinaryScanner
 from pdfalyzer.config import PdfalyzerConfig
@@ -31,7 +32,6 @@ from pdfalyzer.output.layout import (print_fatal_error_panel, print_section_head
 from pdfalyzer.output.styles.node_colors import get_label_style
 from pdfalyzer.output.tables.decoding_stats_table import build_decoding_stats_table
 from pdfalyzer.output.tables.metadata_table import metadata_table
-from pdfalyzer.output.tables.stream_objects_table import stream_objects_table
 from pdfalyzer.pdfalyzer import Pdfalyzer
 from pdfalyzer.util.adobe_strings import DANGEROUS_PDF_KEYS
 
@@ -60,6 +60,7 @@ class PdfalyzerPresenter:
         self.print_tree()
         self.print_rich_table_tree()
         self.print_font_info()
+        self.print_yara_results()
         self.print_non_tree_relationships()
 
     def print_document_info(self) -> None:
@@ -145,7 +146,7 @@ class PdfalyzerPresenter:
                 console.print(build_decoding_stats_table(binary_scanner), justify='center')
 
     def print_yara_results(self) -> None:
-        """Scan the main PDF and each individual binary stream in it with yara_rules/*.yara files"""
+        """Scan the main PDF and each individual binary stream in it with yara_rules/*.yara files."""
         print_section_header(f"YARA Scan of PDF rules for '{self.pdfalyzer.pdf_basename}'")
         YaralyzerConfig.args.standalone_mode = True  # TODO: using 'standalone mode' like this kind of sucks
 
@@ -169,7 +170,7 @@ class PdfalyzerPresenter:
                 console.line(2)
 
     def print_non_tree_relationships(self) -> None:
-        """Print the inter-node, non-tree relationships for all nodes in the tree"""
+        """Print the inter-node, non-tree relationships for all nodes in the tree. Debugging method."""
         console.line(2)
         console.print(Panel(f"Other Relationships", expand=False), style='reverse')
 
@@ -205,7 +206,7 @@ class PdfalyzerPresenter:
         }
 
     def _generate_rich_tree(self, node: PdfTreeNode, tree: Optional[Tree] = None) -> Tree:
-        """Recursively generates a rich.tree.Tree object from this node."""
+        """Recursively generates a rich.tree.Tree object from 'node' and its children."""
         tree = tree or Tree(node.as_tree_node_table(self.pdfalyzer))
 
         for child in node.children:
@@ -234,4 +235,11 @@ class PdfalyzerPresenter:
         return SymlinkRepresentation(symlink_str, symlink_style)
 
     def _stream_objects_table(self) -> Table:
-        return stream_objects_table(self.pdfalyzer.stream_nodes())
+        """Build a table of stream objects and their lengths."""
+        table = Table('Stream Length', 'Node', title=' Embedded Streams', title_style='grey', title_justify='left')
+        table.columns[0].justify = 'right'
+
+        for node in self.pdfalyzer.stream_nodes():
+            table.add_row(size_in_bytes_text(node.stream_length), node.__rich__())
+
+        return table
