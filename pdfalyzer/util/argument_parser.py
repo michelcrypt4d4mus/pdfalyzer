@@ -44,6 +44,7 @@ debug.add_argument('--allow-missed-nodes',
                    action='store_true',
                    help='force pdfalyze to return 0 to shell even if missing nodes encountered')
 
+parser.add_argument('--password', help='only required for encrypted PDFs', type=str)
 
 # Note that we extend the yaralyzer's parser and export
 parser = ArgumentParser(
@@ -101,8 +102,6 @@ select.add_argument('--preview-stream-length',
                     help='number of bytes at the beginning and end of stream data to show as a preview',
                     metavar='BYTES',
                     type=int)
-
-select.add_argument('--password', help='only required for encrypted PDFs', type=str)
 
 # Make sure the selection section is at the top
 parser._action_groups = parser._action_groups[:2] + [parser._action_groups[-1]] + parser._action_groups[2:-1]
