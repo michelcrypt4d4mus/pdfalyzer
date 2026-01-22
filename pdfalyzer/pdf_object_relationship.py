@@ -58,7 +58,7 @@ class PdfObjectRelationship:
     @classmethod
     def build_node_references(
         cls,
-        from_node: 'PdfTreeObject',
+        from_node: 'PdfTreeNode',
         from_obj: PdfObject | dict | None = None,
         ref_key: str | int | None = None,
         address: str | int | None = None
@@ -68,7 +68,7 @@ class PdfObjectRelationship:
         Initially called with single arg from_node. Other args are use when recursable objs are scanned.
 
         Args:
-            from_node (PdfTreeObject): PDF node that may contain references to other PDF objects
+            from_node (PdfTreeNode): PDF node that may contain references to other PDF objects
             from_obj (PdfObject | None): Raw PdfObject that may contain references to other PDF objects
             ref_key (str): The /Color, /Page etc. style string or int for ArrayObjects
             address (str): Base address for other refs, used for internal recursion into dicst and arrays
@@ -82,6 +82,8 @@ class PdfObjectRelationship:
             for i, item in enumerate(from_obj):
                 references += cls.build_node_references(from_node, item, ref_key or i, _build_address(i, address))
         elif isinstance(from_obj, dict):
+            if '/Name' in from_obj:
+
             for key, val in from_obj.items():
                 if key == NUMS and isinstance(val, list) and len(val) % 2 == 0:
                     val = coerce_nums_array_to_dict(val)
