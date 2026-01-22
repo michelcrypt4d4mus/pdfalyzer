@@ -170,8 +170,7 @@ class PdfalyzerPresenter:
 
     def print_non_tree_relationships(self) -> None:
         """Print the inter-node, non-tree relationships for all nodes in the tree. Debugging method."""
-        console.line(2)
-        console.print(Panel(f"Other Relationships", expand=False), style='reverse')
+        print_section_header(f"Non-tree Relationships for '{self.pdfalyzer.pdf_basename}'")
 
         for node in LevelOrderIter(self.pdfalyzer.pdf_tree):
             if len(node.non_tree_relationships) == 0:
