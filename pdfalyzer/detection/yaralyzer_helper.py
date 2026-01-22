@@ -3,7 +3,6 @@ Functions to help with the pre-configured YARA rules in the /yara directory.
 """
 from importlib.resources import as_file, files
 from pathlib import Path
-from typing import Optional, Union
 
 from yaralyzer.config import YaralyzerConfig
 from yaralyzer.helpers.rich_text_helper import print_fatal_error_and_exit
@@ -32,7 +31,7 @@ def get_bytes_yaralyzer(scannable: bytes, label: str) -> Yaralyzer:
     return _build_yaralyzer(scannable, label)
 
 
-def _build_yaralyzer(scannable: bytes | str | Path, label: Optional[str] = None) -> Yaralyzer:
+def _build_yaralyzer(scannable: bytes | str | Path, label: str | None = None) -> Yaralyzer:
     """Build a yaralyzer for .yara rules files stored in the yara_rules/ dir in this package."""
     # TODO: ugh this sucks (handling to extract .yara files from a python pkg zip)
     with as_file(YARA_RULES_DIR.joinpath(YARA_RULES_FILES[0])) as yara0:

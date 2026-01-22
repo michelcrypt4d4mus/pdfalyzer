@@ -1,8 +1,8 @@
 from dataclasses import dataclass, field
-from typing import Any, List, Optional, Self, Union
+from typing import Any, Self
 
 from pypdf.errors import PdfReadError
-from pypdf.generic import ArrayObject, DictionaryObject, IndirectObject, NullObject, NumberObject, PdfObject
+from pypdf.generic import DictionaryObject, IndirectObject, NullObject, NumberObject, PdfObject
 from rich.text import Text
 
 from pdfalyzer.helpers.pdf_object_helper import pypdf_class_name

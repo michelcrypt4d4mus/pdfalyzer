@@ -5,9 +5,8 @@ from pypdf import PdfReader
 from rich.table import Table
 from rich.text import Text
 
-from pdfalyzer.output.layout import generate_subtable, half_width, pad_header
 from pdfalyzer.util.logging import log, log_highlighter
-from pdfalyzer.util.adobe_strings import *
+from pdfalyzer.util.adobe_strings import FALSE, TRUE
 
 COUNT_LABEL_STYLE = 'navajo_white3'
 PAGE_COUNT = Text('page count', style=COUNT_LABEL_STYLE)

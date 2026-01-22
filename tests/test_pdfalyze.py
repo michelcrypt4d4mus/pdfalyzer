@@ -2,7 +2,6 @@
 Tests of the command line script 'pdfalyze FILE [OPTIONS].
 Unit tests for Pdfalyzer *class* are in the other file: test_pdfalyzer.py.
 """
-from os import devnull
 from pathlib import Path
 
 import pytest

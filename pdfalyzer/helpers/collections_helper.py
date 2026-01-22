@@ -1,15 +1,11 @@
 """
-Fun with dicts.
-# TODO: rename collection_helper
+Helper methods for dealing with lists and dicts.
 """
 import itertools
 from typing import Any
 
-from pypdf.generic import ArrayObject, DictionaryObject
+from pypdf.generic import DictionaryObject
 from yaralyzer.util.logging import log
-
-
-without_falsey = lambda _list: [e for e in _list if e]
 
 
 def flatten(_list: list[list[Any]]) -> list:
@@ -39,3 +35,7 @@ def compare_dicts(d1: DictionaryObject, d2: DictionaryObject, already_compared_k
     # call with reversed args
     if should_call_again:
         compare_dicts(d2, d1, already_compared_keys)
+
+
+def without_falsey(_list: list) -> list:
+    return [e for e in _list if e]

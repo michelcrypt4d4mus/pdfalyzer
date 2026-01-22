@@ -17,7 +17,7 @@ from pdfalyzer.helpers.string_helper import regex_to_highlight_pattern, regex_to
 from pdfalyzer.output.styles.node_colors import LABEL_STYLES, PDF_TYPE_STYLES, ClassStyle
 from pdfalyzer.output.styles.rich_theme import PDF_ARRAY_STYLE, PDF_DICTIONARY_STYLE
 
-LONG_ENOUGH_LABEL_STYLES = [l for l in LABEL_STYLES if len(l[0].pattern) > 4]
+LONG_ENOUGH_LABEL_STYLES = [ls for ls in LABEL_STYLES if len(ls[0].pattern) > 4]
 
 LOG_THEME_DICT = {
     "array_obj": f"{PDF_ARRAY_STYLE} italic",

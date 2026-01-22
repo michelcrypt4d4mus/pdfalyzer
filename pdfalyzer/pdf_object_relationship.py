@@ -2,7 +2,7 @@
 Simple container class for information about a link between two PDF objects.
 """
 from dataclasses import dataclass, field
-from typing import Any, List, Optional, Self, Union
+from typing import Any, Self
 
 from pypdf.generic import BooleanObject, IndirectObject, NullObject, PdfObject
 from yaralyzer.util.logging import log
