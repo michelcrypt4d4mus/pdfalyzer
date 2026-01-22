@@ -1,4 +1,5 @@
 # NEXT RELEASE
+* `/Annots` and other indeterminate nodes now have `/Subtype` integrated into their labeling (e.g. `/Annots:Link` instead of just `/Annots`)
 * Fancier table for PDF metadata that also contains the number of pages and images (if possible)
 
 ### 1.18.1

@@ -16,13 +16,12 @@ from .conftest import REBUILD_FIXTURES_ENV_VAR
 
 def test_file_export(fixture_mismatch_msg, pdfalyze_analyzing_malicious_args, rendered_fixtures_dir, rendered_output_dir):
     args = ['--output-dir', str(rendered_output_dir)] + pdfalyze_analyzing_malicious_args
+    log.debug(f"Running {' '.join([PDFALYZE, *args])}")
     check_output([PDFALYZE, *args], env=environ)
     rendered_files = sorted(files_in_dir(rendered_output_dir))
     assert len(rendered_files) == 6
 
     if rendered_fixtures_dir == rendered_output_dir:
-        log.warning(f"Rebuilt pytest fixtures, file_sizes:")
-
         for fixture_path, size in file_sizes_in_dir(rendered_output_dir).items():
             log.warning(f"    '{fixture_path.relative_to(Path.cwd())}': {size}")
 
@@ -34,7 +33,10 @@ def test_file_export(fixture_mismatch_msg, pdfalyze_analyzing_malicious_args, re
         assert fixture_path.exists()
         fixture_contents = load_file(fixture_path)
         test_output = load_file(tmp_path)
-        assert fixture_contents == test_output, fixture_mismatch_msg(fixture_path, tmp_path)
+        # If you assert directly pytest's diff text is very slow, so e.g. this is slow:
+        # assert fixture_contents == test_output #, fixture_mismatch_msg(fixture_path, tmp_path)
+        is_output_same_as_fixture = fixture_contents == test_output
+        assert is_output_same_as_fixture, fixture_mismatch_msg(fixture_path, tmp_path)
 
 
 @pytest.fixture

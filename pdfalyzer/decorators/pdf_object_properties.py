@@ -7,7 +7,7 @@ from rich.text import Text
 
 from pdfalyzer.helpers.pdf_object_helper import pypdf_class_name
 from pdfalyzer.helpers.rich_text_helper import comma_join_txt, node_label
-from pdfalyzer.helpers.string_helper import INDENTED_JOINER, props_string, root_address
+from pdfalyzer.helpers.string_helper import INDENTED_JOINER, coerce_address, is_array_idx, props_string, root_address
 from pdfalyzer.output.styles.node_colors import get_class_style, get_class_style_dim
 from pdfalyzer.util.adobe_strings import *
 from pdfalyzer.util.logging import log, log_console, log_trace
@@ -20,7 +20,7 @@ class PdfObjectProperties:
 
     Attributes:
         obj (PdfObject): The underyling PDF object
-        address (str | int): The location of the PDF object in the tree, e.g '/Root/Pages/Kids[0]'
+        address (str | int): The location of the PDF object in its parent object, e.g 'Kids[0]'
         idnum (int): ID of the PDF object
         indirect_object (IndirectObject | None): IndirectObject that points to this one
         label (str): A string that meaningfully describes this object
@@ -28,50 +28,36 @@ class PdfObjectProperties:
         type (str | None): The value found in the /Type, defaulting to the address
     """
     obj: PdfObject
-    address: str | int
+    address: str
     idnum: int
     indirect_object: IndirectObject | None = None
 
     # Computed fields
     first_address: str = field(init=False)
-    label: str = field(init=False)
+    label: str = ''
     sub_type: str | None = None
     type: str | None = None
 
     def __post_init__(self,):
+        self.address = coerce_address(self.address)
+        self.first_address = self.address
+
         if isinstance(self.obj, DictionaryObject):
-            self.type = self.obj.get(TYPE, self.address if isinstance(self.address, str) else None)
+            self.type = self.obj.get(TYPE)
             self.sub_type = self.obj.get(SUBTYPE) or self.obj.get(S)
 
-            if TYPE in self.obj and self.sub_type is not None:
-                self.label = f"{self.type}:{self.sub_type[1:]}"
-            elif self.type is None:
-                self.label = "???"
-                # import pdb;pdb.set_trace()
-                log.warning(f"Unable to determine obj type for {self.idnum} from {self.obj}, address={self.address}!")
-            else:
-                self.label = self.type
+        # Use address as type if no explicit /Type, e.g. obj referenced as '/Font' is considered a /Font type.
+        self.type = self.type or (root_address(self.address) if not is_array_idx(self.address) else None)
 
-            if isinstance(self.type, str):
-                self.type = root_address(self.type)
-                self.label = root_address(self.label)
+        if self.type is None:
+            log.warning(f"Unable to determine obj type for {self.idnum} from {self.obj}, address={self.address}!")
+            self.label = f"{UNLABELED}{self.address}"
+        elif self.sub_type is not None:
+            self.label = f"{self.type}:{self.sub_type[1:]}"
         else:
-            # If it's not a DictionaryObject all we have as far as naming is the address passed in.
-            self.label = self.address
-            self.type = root_address(self.address) if isinstance(self.address, str) else None  # TODO: addresses are not types
+            self.label = self.type
 
-        # Force self.label to be a string. TODO this sucks.
-        if isinstance(self.label, int):
-            self.label = f"{UNLABELED}[{self.label}]"
-
-        # TODO: this is hacky/temporarily incorrect bc we often don't know the parent when node is being constructed
-        if isinstance(self.address, int):
-            self.first_address = f"[{self.address}]"
-        else:
-            self.first_address = self.address
-
-        log_trace(f"Node ID: {self.idnum}, type: {self.type}, subtype: {self.sub_type}, " +
-                  f"label: {self.label}, first_address: {self.first_address}")
+        log_trace(f"Built {repr(self)}")
 
     @classmethod
     def from_reference(cls, ref: IndirectObject, address: str) -> Self:

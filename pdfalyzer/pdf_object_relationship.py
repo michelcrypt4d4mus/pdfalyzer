@@ -7,7 +7,7 @@ from typing import Any, List, Optional, Self, Union
 from pypdf.generic import IndirectObject, PdfObject
 from yaralyzer.util.logging import log
 
-from pdfalyzer.helpers.string_helper import bracketed, is_prefixed_by_any
+from pdfalyzer.helpers.string_helper import bracketed, coerce_address, is_prefixed_by_any
 from pdfalyzer.util.adobe_strings import *
 from pdfalyzer.util.exceptions import PdfWalkError
 
@@ -33,6 +33,8 @@ class PdfObjectRelationship:
         e.g. a reference_key for a /Font labeled /F1 could be '/Resources' but the address
         might be '/Resources[/Font][/F1] if the /Font is a directly embedded reference instead of a remote one.
         """
+        self.address = coerce_address(self.address)
+
         # Compute tree placement logic booleans
         if (has_indeterminate_prefix(self.from_node.type) and not isinstance(self.from_node.obj, (dict, list))) \
                 or self.reference_key in INDETERMINATE_REF_KEYS:
@@ -56,23 +58,25 @@ class PdfObjectRelationship:
     def build_node_references(
         cls,
         from_node: 'PdfTreeObject',
-        from_obj: Optional[PdfObject] = None,
-        ref_key: Optional[Union[str, int]] = None,
-        address: Optional[str] = None
-    ) -> List[Self]:
+        from_obj: PdfObject | None = None,
+        ref_key: str | int | None = None,
+        address: str | int | None = None
+    ) -> list[Self]:
         """
-        Builds list of relationships 'from_node.obj' contains referencing other PDF objects.
-        Initially called with single arg from_node. Other args are employed when recursable
-        types (i.e. list, dict) are recursively scanned.
-        """
-        if from_node is None and from_obj is None:
-            raise ValueError("Either :from_node or :from_obj must be provided to get references")
+        Recursively build list of relationships 'from_node.obj' contains referencing other PDF objects.
+        Initially called with single arg from_node. Other args are use when recursable objs are scanned.
 
+        Args:
+            from_node (PdfTreeObject): PDF node that may contain references to other PDF objects
+            from_obj (PdfObject | None): Raw PdfObject that may contain references to other PDF objects
+            ref_key (str): The /Color, /Page etc. style string or int for ArrayObjects
+            address (str): Base address for other refs, used for internal recursion into dicst and arrays
+        """
         from_obj = from_node.obj if from_obj is None else from_obj
         references: list[Self] = []
 
         if isinstance(from_obj, IndirectObject):
-            references.append(cls(from_node, from_obj, str(ref_key), str(address)))
+            references.append(cls(from_node, from_obj, str(ref_key), address))
         elif isinstance(from_obj, list):
             for i, item in enumerate(from_obj):
                 references += cls.build_node_references(from_node, item, ref_key or i, _build_address(i, address))
@@ -88,7 +92,7 @@ class PdfObjectRelationship:
 
         return references
 
-    def __eq__(self, other: 'PdfObjectRelationship') -> bool:
+    def __eq__(self, other: Self) -> bool:
         """Note that equality does not check self.from_obj equality because we don't have the idnum"""
         for key in [k for k in vars(self).keys() if k not in INCOMPARABLE_PROPS]:
             if getattr(self, key) != getattr(other, key):
@@ -105,7 +109,7 @@ class PdfObjectRelationship:
         return s
 
 
-def _build_address(ref_key: Union[str, int], base_address: Optional[str] = None) -> str | int:
+def _build_address(ref_key: str | int, base_address: str | int | None = None) -> str | int:
     """
     Append either array index indicators e.g. [5] or reference_keys. reference_keys that appear in a
     PDF object are left as is. Any dict keys or array indices that refere to inner objects and not
@@ -113,9 +117,7 @@ def _build_address(ref_key: Union[str, int], base_address: Optional[str] = None)
     '/Width' is the address of the font widths. But if the /Font links to the widths through a
     /Resources dict the address will be '/Resources[/Width]'
     """
-    bracketed_ref_key = bracketed(ref_key)
-
-    if isinstance(ref_key, int):
-        return bracketed_ref_key if base_address is None else f"{base_address}{bracketed_ref_key}"
-    else:    # Don't bracket the reference keys that appear in the PDF objects themselves
-        return ref_key if base_address is None else f"{base_address}{bracketed_ref_key}"
+    if base_address is None:
+        return ref_key
+    else:
+        return f"{coerce_address(base_address)}{bracketed(ref_key)}"
