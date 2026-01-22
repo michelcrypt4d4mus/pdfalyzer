@@ -26,6 +26,12 @@ DEFAULT_MAX_ADDRESS_LENGTH = 90
 DECODE_FAILURE_LEN = -1
 MAX_REFS_TO_WARN = 10
 
+SORT_KEYS = {
+    TYPE: '/A',
+    SUBTYPE: '/AA',
+    NAME: '/AAA',
+}
+
 
 @dataclass
 class PdfTreeNode(NodeMixin):
@@ -278,7 +284,8 @@ class PdfTreeNode(NodeMixin):
             table.add_row(Text('AddressInParent', style='italic'), Text(str(self.known_to_parent_as)), '', style='gray58')
 
         if isinstance(self.obj, dict):
-            for k, v in self.obj.items():
+            for k in sorted(self.obj.keys(), key=lambda k: SORT_KEYS.get(k, k)):
+                v = self.obj[k]
                 row = self.pdf_object.to_table_row(k, v, pdfalyzer)
 
                 # Make dangerous stuff look dangerous

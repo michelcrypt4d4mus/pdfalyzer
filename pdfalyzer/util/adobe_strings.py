@@ -41,6 +41,7 @@ K               = '/K'  # Equivalent of /Kids for /StructElem
 KIDS            = PagesAttributes.KIDS
 LAST            = '/Last'
 LAUNCH          = '/Launch'
+NAME            = '/Name'
 NAMED           = '/Named'
 NAMES           = '/Names'
 NEXT            = '/Next'
