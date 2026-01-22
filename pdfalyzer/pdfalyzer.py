@@ -85,7 +85,6 @@ class Pdfalyzer:
 
     def __post_init__(self):
         self.pdf_path = Path(self.pdf_path)
-        self.pdf_basename = self.pdf_path.name
 
         try:
             self.pdf_filehandle = open(self.pdf_path, 'rb')  # Filehandle must be left open for PyPDF to perform seeks
@@ -105,6 +104,7 @@ class Pdfalyzer:
                 self._handle_fatal_error(f"Wrong password", FileNotDecryptedError("encrypted PDF"))
 
         # Load bytes etc
+        self.pdf_basename = self.pdf_path.name
         self.pdf_bytes = load_binary_data(self.pdf_path)
         self.pdf_bytes_info = compute_file_hashes(self.pdf_bytes)
 
