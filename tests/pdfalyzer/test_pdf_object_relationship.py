@@ -12,9 +12,8 @@ EXT_G_STATE_IDS = [7, 8]
 
 @pytest.fixture(scope="session")
 def pdf_reader(analyzing_malicious_pdf_path):
-    pdf_file = open(analyzing_malicious_pdf_path, 'rb')
-    yield PdfReader(pdf_file)
-    pdf_file.close()
+    with open(analyzing_malicious_pdf_path, 'rb') as pdf_file:
+        yield PdfReader(pdf_file)
 
 
 @pytest.fixture(scope="session")
