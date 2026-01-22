@@ -64,6 +64,16 @@ class LogHighlighter(ReprHighlighter):
         *[regex_to_highlight_pattern(re.compile(cs[0].__name__)) for cs in PDF_TYPE_STYLES],
     ]
 
+    def get_style(self, for_str: str) -> str:
+        """Return the first style that matches the 'for_str'."""
+        for highlight in self.highlights:
+            match = highlight.search(for_str)
+
+            if match:
+                return self.base_style + next(k for k in match.groupdict().keys())
+
+        return ''
+
 
 log_handler_kwargs = {
     'console': log_console,
