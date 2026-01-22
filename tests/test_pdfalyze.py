@@ -38,9 +38,10 @@ def test_pdfalyze_CLI_basic_tree(adobe_type1_fonts_pdf_path, analyzing_malicious
     _assert_args_yield_lines(1022, analyzing_malicious_pdf_path, '-t')
 
 
-def test_pdfalyze_CLI_rich_tree(adobe_type1_fonts_pdf_path, analyzing_malicious_pdf_path):
+def test_pdfalyze_CLI_rich_tree(adobe_type1_fonts_pdf_path, analyzing_malicious_pdf_path, sf424_page2_pdf_path):
     _assert_args_yield_lines(952, adobe_type1_fonts_pdf_path, '-r')
     _assert_args_yield_lines(6970, analyzing_malicious_pdf_path, '-r')
+    _assert_args_yield_lines(6580, sf424_page2_pdf_path, '-r')
 
 
 def test_pdfalyze_CLI_yara_scan(adobe_type1_fonts_pdf_path):
