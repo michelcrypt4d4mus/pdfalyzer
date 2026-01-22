@@ -2,7 +2,7 @@ from dataclasses import dataclass, field
 from typing import Any, List, Optional, Self, Union
 
 from pypdf.errors import PdfReadError
-from pypdf.generic import ArrayObject, DictionaryObject, IndirectObject, NumberObject, PdfObject
+from pypdf.generic import ArrayObject, DictionaryObject, IndirectObject, NullObject, NumberObject, PdfObject
 from rich.text import Text
 
 from pdfalyzer.helpers.pdf_object_helper import pypdf_class_name
@@ -46,7 +46,7 @@ class PdfObjectProperties:
     def type(self, _type: str | None):
         self._type = _type
 
-        if self.type is None:
+        if self._type is None:
             log.warning(f"Unable to determine obj type for {self.idnum}, address={self.address}, obj={self.obj}!")
             self.label = f"{UNLABELED}{self.address}"
         elif self.sub_type is not None:
@@ -61,6 +61,8 @@ class PdfObjectProperties:
         if isinstance(self.obj, DictionaryObject):
             self._type = self.obj.get(TYPE)
             self.sub_type = self.obj.get(SUBTYPE) or self.obj.get(S)
+        elif isinstance(self.obj, NullObject):
+            self._type = NullObject.__name__
 
         # Use address as type if no explicit /Type, e.g. obj referenced as '/Font' is considered a /Font type.
         self.type = self._type or (root_address(self.address) if not is_array_idx(self.address) else None)
