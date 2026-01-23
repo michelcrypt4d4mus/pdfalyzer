@@ -14,6 +14,9 @@ COUNTS = 'counts'
 YARA = 'yara'
 STREAMS = 'streams'
 
+DEFAULT_SECTIONS = [DOCINFO, TREE, RICH, FONTS, COUNTS, YARA]
+ALL_SECTIONS = DEFAULT_SECTIONS + [STREAMS]
+
 ALL_STREAMS = -1
 
 
@@ -62,3 +65,8 @@ class OutputSection:
             return [section for section in possible_output_sections if section.argument != STREAMS]
         else:
             return output_sections
+
+    @staticmethod
+    def all_sections_chosen(args: Namespace) -> bool:
+        """Returns True if all flags are set or no flags are set."""
+        return len([s for s in ALL_SECTIONS if vars(args)[s]]) == len(ALL_SECTIONS)

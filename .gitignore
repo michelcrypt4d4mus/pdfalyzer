@@ -18,6 +18,9 @@ output/export/
 tests/tmp/
 pdf_errors/
 
+# environment
+.pdfalyzer
+
 # Other
 .DS_Store
 LICENSE

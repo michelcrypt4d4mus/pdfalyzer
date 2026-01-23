@@ -3,6 +3,7 @@
 
 from rich.console import Console
 from rich.text import Text
+from yaralyzer.helpers.env_helper import DEFAULT_CONSOLE_KWARGS
 
 STYLES_TO_OUTPUT = ['', 'bold', 'dim', 'reverse']
 BACKGROUNDS = [1, 2, 3, 4, 5, 6, 7]
@@ -11,7 +12,7 @@ BG_STATEMENT = 'on bg'
 SPACER = ' ' * 3
 
 
-console = Console(color_system='256', highlight=False)
+console = Console(highlight=False, **DEFAULT_CONSOLE_KWARGS)
 
 for i in range(256):
     texts = [

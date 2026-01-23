@@ -24,10 +24,10 @@ from rich.text import Text
 from yaralyzer.helpers.rich_text_helper import prefix_with_style
 from yaralyzer.output.file_export import invoke_rich_export
 from yaralyzer.output.rich_console import console
+from yaralyzer.util.logging import log_console
 
 from pdfalyzer.decorators.pdf_file import PdfFile
 from pdfalyzer.helpers.filesystem_helper import file_size_in_mb, set_max_open_files
-from pdfalyzer.helpers.rich_text_helper import print_highlighted
 from pdfalyzer.output.pdfalyzer_presenter import PdfalyzerPresenter
 from pdfalyzer.output.styles.rich_theme import PDFALYZER_THEME_DICT
 from pdfalyzer.pdfalyzer import Pdfalyzer
@@ -59,7 +59,7 @@ def pdfalyze():
     for section in OutputSection.selected_sections(args, presenter):
         if args.output_dir:
             output_basepath = PdfalyzerConfig.get_output_basepath(section.method)
-            print(f'Exporting {section.argument} data to {output_basepath}...')
+            log.debug(f"Exporting {section.argument} data to basepath '{output_basepath}'...")
             console.record = True
 
         section.method()
@@ -110,10 +110,10 @@ def combine_pdfs():
 
     for pdf in args.pdfs:
         try:
-            print_highlighted(f"  -> Merging '{pdf}'...", style='dim')
+            log_console.print(f"  -> Merging '{pdf}'...", style='dim')
             merger.append(pdf)
         except PdfReadError as e:
-            print_highlighted(f"      -> Failed to merge '{pdf}'! {e}", style='red')
+            log_console.print(f"      -> Failed to merge '{pdf}'! {e}", style='red')
             ask_to_proceed()
 
     # Iterate through pages and compress, lowering image quality if requested
@@ -121,23 +121,23 @@ def combine_pdfs():
     for i, page in enumerate(merger.pages):
         if args.image_quality < MAX_QUALITY:
             for j, img in enumerate(page.images):
-                print_highlighted(
+                log_console.print(
                     f"  -> Reducing image #{j + 1} quality on page {i + 1} to {args.image_quality}...",
                     style='dim'
                 )
 
                 img.replace(img.image, quality=args.image_quality)
 
-        print_highlighted(f"  -> Compressing page {i + 1}...", style='dim')
+        log_console.print(f"  -> Compressing page {i + 1}...", style='dim')
         page.compress_content_streams()  # This is CPU intensive!
 
-    print_highlighted(f"\nWriting '{args.output_file}'...", style='cyan')
+    log_console.print(f"\nWriting '{args.output_file}'...")
     merger.compress_identical_objects(remove_identicals=True, remove_orphans=True)
     merger.write(args.output_file)
     merger.close()
     txt = Text('').append(f"  -> Wrote ")
     txt.append(str(file_size_in_mb(args.output_file)), style='cyan').append(" megabytes\n")
-    print_highlighted(txt)
+    log_console.print(txt)
 
 
 def extract_pdf_pages() -> None:

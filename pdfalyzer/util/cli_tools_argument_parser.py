@@ -13,15 +13,14 @@ from argparse import ArgumentParser, Namespace
 from pathlib import Path
 
 from rich_argparse_plus import RichHelpFormatterPlus
-from rich.prompt import Confirm
 from rich.text import Text
+from yaralyzer.helpers.rich_text_helper import print_fatal_error_and_exit
 from yaralyzer.helpers.file_helper import files_in_dir
-from yaralyzer.util.logging import log
+from yaralyzer.util.logging import log, log_console
 
-from pdfalyzer.util.argument_parser import ask_to_proceed, exit_with_error
+from pdfalyzer.util.argument_parser import ask_to_proceed
 from pdfalyzer.helpers.filesystem_helper import (do_all_files_exist, extract_page_number, file_exists, is_pdf,
      with_pdf_extension)
-from pdfalyzer.helpers.rich_text_helper import print_highlighted
 from pdfalyzer.util.page_range import PageRangeArgumentValidator
 
 MAX_QUALITY = 10
@@ -60,23 +59,23 @@ def parse_combine_pdfs_args() -> Namespace:
     args.number_of_pdfs = len(args.pdfs)
 
     if args.number_of_pdfs < 2:
-        exit_with_error(f"Need at least 2 PDFs to merge.")
+        print_fatal_error_and_exit(f"Need at least 2 PDFs to merge.")
     elif not do_all_files_exist(args.pdfs):
-        exit_with_error()
-    elif file_exists(args.output_file) and not Confirm.ask(confirm_overwrite_txt):
-        exit_with_error()
+        print_fatal_error_and_exit(f"Not all of those files exit")
+    elif file_exists(args.output_file):
+        ask_to_proceed(confirm_overwrite_txt)
 
     if all(is_pdf(pdf) for pdf in args.pdfs):
         if all(extract_page_number(pdf) for pdf in args.pdfs):
-            print_highlighted("PDFs appear to have page number suffixes so sorting numerically...")
+            log_console.print("PDFs appear to have page number suffixes so sorting numerically...")
             args.pdfs.sort(key=lambda pdf: extract_page_number(pdf))
         else:
-            print_highlighted("PDFs don't seem to end in page numbers so using provided order...", style='yellow')
+            log.warning("PDFs don't seem to end in page numbers so using provided order...")
     else:
-        print_highlighted("WARNING: At least one of the PDF args doesn't end in '.pdf'", style='bright_yellow')
+        log.warning("At least one of the PDF args doesn't end in '.pdf'", style='bright_yellow')
         ask_to_proceed()
 
-    print_highlighted(f"\nMerging {args.number_of_pdfs} individual PDFs into '{args.output_file}'...")
+    log_console.print(f"\nMerging {args.number_of_pdfs} individual PDFs into '{args.output_file}'...")
     return args
 
 
