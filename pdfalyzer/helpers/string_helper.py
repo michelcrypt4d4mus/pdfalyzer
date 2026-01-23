@@ -3,7 +3,7 @@ Various text formatting/styling/manipulating methods.
 """
 import re
 from pprint import PrettyPrinter
-from typing import List, Optional, Pattern, Union
+from typing import Pattern
 
 from pypdf.generic import IndirectObject
 
@@ -24,12 +24,12 @@ pp = PrettyPrinter(
 )
 
 
-def all_strings_are_same_ignoring_numbers(strings: List[str]) -> bool:
+def all_strings_are_same_ignoring_numbers(strings: list[str]) -> bool:
     """Returns true if string addresses are same except for digits."""
     return len(set([replace_digits(s) for s in strings])) == 1
 
 
-def bracketed(index: Union[int, str]) -> str:
+def bracketed(index: int | str) -> str:
     """Surround index with [ and ]."""
     return f"[{index}]"
 
@@ -56,7 +56,7 @@ def exception_str(e: Exception) -> str:
     return f"{type(e).__name__}: {e}"
 
 
-def generate_hyphen_line(width: Optional[int] = None, title: Optional[str] = None):
+def generate_hyphen_line(width: int | None = None, title: str | None = None):
     """e.g. '-----------------BEGIN-----------------'"""
     width = width or console_width()
 
@@ -68,7 +68,7 @@ def generate_hyphen_line(width: Optional[int] = None, title: Optional[str] = Non
     return line if len(line) == width else line + '-'
 
 
-def has_a_common_substring(strings: List[str]) -> bool:
+def has_a_common_substring(strings: list[str]) -> bool:
     return all([is_substring_of_longer_strings_in_list(s, strings) for s in strings])
 
 
@@ -88,12 +88,12 @@ def numbered_list(objs: list, indent: int = 4) -> str:
     return indented(list_str, spaces=indent)
 
 
-def is_prefixed_by_any(_string: str, prefixes: List[str]) -> bool:
+def is_prefixed_by_any(_string: str, prefixes: list[str]) -> bool:
     """Returns True if _string starts with anything in 'prefixes'."""
     return any([_string.startswith(prefix) for prefix in prefixes])
 
 
-def is_substring_of_longer_strings_in_list(_string: str, strings: List[str]) -> bool:
+def is_substring_of_longer_strings_in_list(_string: str, strings: list[str]) -> bool:
     """Return True if '_string' is a substring of all the 'strings' longer than '_string'."""
     longer_strings = [s for s in strings if len(s) > len(_string)]
     return all([_string in longer_string for longer_string in longer_strings])
