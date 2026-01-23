@@ -80,9 +80,11 @@ class PdfParserManager:
         log_and_print(f"Extracting binary streams in '{self.path_to_pdf}' to files in '{self.args.output_dir}'...")
 
         for object_id in self.object_ids_containing_stream_data:
-            stream_dump_file = path.join(self.args.output_dir, f'{path.basename(self.path_to_pdf)}.object_{object_id}.bin')
+            stream_dump_file = self.args.output_dir.joinpath(f'{self.path_to_pdf.name}.object_{object_id}.bin')
             shell_cmd = self.base_shell_cmd + f' -f -o {object_id} -d "{stream_dump_file}"'
             log.info(f'Dumping stream from object {object_id}: {shell_cmd}')
             system(shell_cmd)
 
-        log_and_print(f"Binary stream extraction complete, files written to '{self.args.output_dir}'.\nExiting.\n")
+        output_dir_str = str(self.args.output_dir) + ('/' if str(self.args.output_dir).endswith('/') else '')
+        log_and_print(f"Binary stream extraction complete, {len(self.object_ids_containing_stream_data)} "
+                      f"files written to '{output_dir_str}'.\n")
