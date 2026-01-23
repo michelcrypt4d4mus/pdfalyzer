@@ -38,13 +38,15 @@ export.add_argument('-bin', '--extract-binary-streams',
                     help='extract all binary streams in the PDF to separate files (requires pdf-parser.py)')
 
 # Make sure --no-timestamps is last
+num_args_before_reorder = len(parser._actions)
 no_timestamps_idx = [i for i, arg in enumerate(parser._actions) if '--no-timestamps' in arg.option_strings][0]
-parser._actions = parser._actions[:no_timestamps_idx - 1] + [parser._actions[-1]] + parser._actions[no_timestamps_idx:-1]
+parser._actions = parser._actions[:no_timestamps_idx] + [parser._actions[-1]] + parser._actions[no_timestamps_idx:-1]
+import pdb;pdb.set_trace()
+assert len(parser._actions) == num_args_before_reorder
 
 for a in parser._actions:
     print(f"action: {a}\n")
 # parser.print_help()
-print(f"\nno_timestamps_idx={no_timestamps_idx}, binary_streams_ix={binary_streams_idx}\n")
 # import pdb;pdb.set_trace()
 
 # Add one more option to the YARA rules section
