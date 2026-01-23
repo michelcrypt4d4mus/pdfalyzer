@@ -40,23 +40,19 @@ def insert_suffix_before_extension(file_path: Path, suffix: str, separator: str 
     return Path(f"{file_path_without_extension}{separator}{suffix}{file_path.suffix}")
 
 
-def is_pdf(file_path: Union[str, Path]) -> bool:
+def is_pdf(file_path: str | Path) -> bool:
     """Return True if 'file_path' ends with '.pdf'."""
     return str(file_path).endswith(PDF_EXT)
 
 
-def file_exists(file_path: Union[str, Path]) -> bool:
-    """Return True if 'file_path' exists."""
-    return Path(file_path).exists()
-
-
-def do_all_files_exist(file_paths: list[Union[str, Path]]) -> bool:
+def do_all_files_exist(_file_paths: list[Union[str, Path]]) -> bool:
     """Print an error for each element of 'file_paths' that's not a file. Return True if all 'file_paths' exist."""
+    file_paths = [Path(f) for f in _file_paths]
     all_files_exist = True
 
     for file_path in file_paths:
-        if not file_exists(file_path):
-            console.print(f"File not found: '{file_path}'", style='error')
+        if not file_path.exists():
+            log.error(f"File not found: '{file_path}'")
             all_files_exist = False
 
     return all_files_exist
@@ -126,6 +122,6 @@ def strip_bad_chars(text: str) -> str:
     return re.sub('[^-0-9a-zA-Z@.,?_:=#\'\\$" ()]+', '_', text).replace('  ', ' ')
 
 
-def with_pdf_extension(file_path: Union[str, Path]) -> str:
+def with_pdf_extension(file_path: str | Path) -> Path:
     """Append `".pdf"` to `file_path` if it doesn't already end with `".pdf"`."""
-    return str(file_path) + ('' if is_pdf(file_path) else PDF_EXT)
+    return Path(str(file_path) + ('' if is_pdf(file_path) else PDF_EXT))

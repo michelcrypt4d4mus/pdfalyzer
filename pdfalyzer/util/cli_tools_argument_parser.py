@@ -19,7 +19,7 @@ from yaralyzer.helpers.file_helper import files_in_dir
 from yaralyzer.util.logging import log, log_console
 
 from pdfalyzer.util.argument_parser import ask_to_proceed
-from pdfalyzer.helpers.filesystem_helper import (do_all_files_exist, extract_page_number, file_exists, is_pdf,
+from pdfalyzer.helpers.filesystem_helper import (do_all_files_exist, extract_page_number, is_pdf,
      with_pdf_extension)
 from pdfalyzer.util.page_range import PageRangeArgumentValidator
 
@@ -55,14 +55,14 @@ def parse_combine_pdfs_args() -> Namespace:
     """Parse command line args for combine_pdfs script."""
     args = combine_pdfs_parser.parse_args()
     args.output_file = with_pdf_extension(args.output_file)
-    confirm_overwrite_txt = Text("Overwrite '").append(args.output_file, style='cyan').append("'?")
+    confirm_overwrite_txt = Text("Overwrite '").append(str(args.output_file), style='cyan').append("'?")
     args.number_of_pdfs = len(args.pdfs)
 
     if args.number_of_pdfs < 2:
         print_fatal_error_and_exit(f"Need at least 2 PDFs to merge.")
     elif not do_all_files_exist(args.pdfs):
         print_fatal_error_and_exit(f"Not all of those files exit")
-    elif file_exists(args.output_file):
+    elif args.output_file.exists():
         ask_to_proceed(confirm_overwrite_txt)
 
     if all(is_pdf(pdf) for pdf in args.pdfs):
@@ -72,7 +72,7 @@ def parse_combine_pdfs_args() -> Namespace:
         else:
             log.warning("PDFs don't seem to end in page numbers so using provided order...")
     else:
-        log.warning("At least one of the PDF args doesn't end in '.pdf'", style='bright_yellow')
+        log.warning("At least one of the PDF args doesn't end in '.pdf'")
         ask_to_proceed()
 
     log_console.print(f"\nMerging {args.number_of_pdfs} individual PDFs into '{args.output_file}'...")
