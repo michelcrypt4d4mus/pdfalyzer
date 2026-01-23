@@ -3,7 +3,7 @@ from dataclasses import dataclass
 from functools import partial, update_wrapper
 from typing import Callable, Self
 
-from yaralyzer.util.logging import log_and_print
+from yaralyzer.util.logging import log
 
 # Analysis selection sections
 DOCINFO = 'docinfo'
@@ -61,7 +61,7 @@ class OutputSection:
         output_sections = [section for section in possible_output_sections if vars(args)[section.argument]]
 
         if len(output_sections) == 0:
-            log_and_print("No output section specified so outputting all sections except --streams...")
+            log.warning("No output section specified so outputting all sections except --streams...")
             return [section for section in possible_output_sections if section.argument != STREAMS]
         else:
             return output_sections
