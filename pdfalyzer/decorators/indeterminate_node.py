@@ -1,5 +1,5 @@
 from dataclasses import dataclass
-from typing import Callable, List, Optional
+from typing import Callable
 
 from rich.markup import escape
 from yaralyzer.helpers.string_helper import comma_join
@@ -56,7 +56,7 @@ class IndeterminateNode:
 
         self.node.set_parent(parent)
 
-    def find_node_with_most_descendants(self, list_of_nodes: Optional[List[PdfTreeNode]] = None) -> PdfTreeNode:
+    def find_node_with_most_descendants(self, list_of_nodes: list[PdfTreeNode] | None = None) -> PdfTreeNode:
         """Find node with a reference to this one that has the most descendants"""
         list_of_nodes = list_of_nodes or [r.from_node for r in self.node.non_tree_relationships]
         max_descendants = max([node.descendants_count() for node in list_of_nodes])
@@ -89,7 +89,7 @@ class IndeterminateNode:
             return False
 
     # TODO could be static method
-    def _find_common_ancestor_among_nodes(self, nodes: List[PdfTreeNode]) -> Optional[PdfTreeNode]:
+    def _find_common_ancestor_among_nodes(self, nodes: list[PdfTreeNode]) -> PdfTreeNode | None:
         """If any of 'nodes' is a common ancestor of the rest of the 'nodes', return it."""
         for possible_ancestor in nodes:
             log.debug(f"  Checking possible common ancestor: {possible_ancestor}")
@@ -124,7 +124,7 @@ class IndeterminateNode:
             return False
 
 
-def find_node_with_lowest_id(list_of_nodes: List[PdfTreeNode]) -> PdfTreeNode:
+def find_node_with_lowest_id(list_of_nodes: list[PdfTreeNode]) -> PdfTreeNode:
     """Return node in `list_of_nodes` with lowest ID."""
     lowest_idnum = min([n.idnum for n in list_of_nodes])
     return next(n for n in list_of_nodes if n.idnum == lowest_idnum)

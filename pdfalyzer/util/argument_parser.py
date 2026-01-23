@@ -5,7 +5,6 @@ import sys
 from argparse import ArgumentParser, Namespace
 from importlib.metadata import version
 from pathlib import Path
-from typing import Optional
 
 from rich_argparse_plus import RichHelpFormatterPlus
 from rich.prompt import Confirm

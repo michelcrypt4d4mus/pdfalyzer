@@ -1,10 +1,8 @@
-from typing import Optional
-
 from yaralyzer.output.rich_console import console
 from yaralyzer.util.logging import log
 
 
-def ocr_text(image: "Image.Image", image_name: str) -> Optional[str]:  # noqa F821
+def ocr_text(image: "Image.Image", image_name: str) -> str | None:  # noqa F821
     """Use pytesseract to OCR the text in the image and return it as a string."""
     import pytesseract
     from PIL import Image  # noqa: F401
