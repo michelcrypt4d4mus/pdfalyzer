@@ -36,16 +36,16 @@ class PdfParserManager:
     path_to_pdf: Path = field(init=False)
 
     def __post_init__(self):
-        if PdfalyzerConfig.PDF_PARSER_PATH is None:
+        if PdfalyzerConfig.pdf_parser_path is None:
             raise PdfParserError(f"{PDF_PARSER_PATH_ENV_VAR} not configured.\n\n{PDF_PARSER_INSTALL_MSG}")
 
-        pdf_parser_relative_path = relative_path(PdfalyzerConfig.PDF_PARSER_PATH)
+        pdf_parser_relative_path = relative_path(PdfalyzerConfig.pdf_parser_path)
 
-        if not is_executable(PdfalyzerConfig.PDF_PARSER_PATH):
+        if not is_executable(PdfalyzerConfig.pdf_parser_path):
             raise PdfParserError(f"{pdf_parser_relative_path} is not executable!")
 
         self.path_to_pdf = Path(self.args.file_to_scan_path)
-        self.base_shell_cmd = f'{PdfalyzerConfig.PDF_PARSER_PATH} -O "{self.path_to_pdf}"'
+        self.base_shell_cmd = f'{PdfalyzerConfig.pdf_parser_path} -O "{self.path_to_pdf}"'
         self.extract_object_ids()
 
     def extract_object_ids(self) -> None:
