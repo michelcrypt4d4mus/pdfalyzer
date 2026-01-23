@@ -1,20 +1,30 @@
 """
 Some helpers for stuff with the local filesystem.
 """
+import importlib.resources
 import re
+import os
 from os.path import getsize
 from pathlib import Path
 
+from yaralyzer.helpers.env_helper import is_env_var_set_and_not_false, is_invoked_by_pytest
 from yaralyzer.helpers.file_helper import files_in_dir
 from yaralyzer.util.logging import log, log_console
+
+from pdfalyzer.util.constants import PDFALYZER
 
 NUMBERED_PAGE_REGEX = re.compile(r'.*_(\d+)\.\w{3,4}$')
 DEFAULT_MAX_OPEN_FILES = 256  # macOS default
 OPEN_FILES_BUFFER = 30        # we might have some files open already so we need to go beyond DEFAULT_MAX_OPEN_FILES
 PDF_EXT = '.pdf'
 
-# TODO: this kind of type alias is not supported until Python 3.12
-# type StrOrPath = Union[str, Path]
+# 3rd party pdf-parser.py
+PDF_PARSER_PY = 'pdf-parser.py'
+PDF_PARSER_EXECUTABLE_ENV_VAR = 'PDFALYZER_PDF_PARSER_PY_PATH'
+PROJECT_ROOT = Path(str(importlib.resources.files(PDFALYZER))).parent
+SCRIPTS_DIR = PROJECT_ROOT.joinpath('scripts')
+TOOLS_DIR = PROJECT_ROOT.joinpath('tools')
+DEFAULT_PDF_PARSER_EXECUTABLE = TOOLS_DIR.joinpath(PDF_PARSER_PY)
 
 
 def create_dir_if_it_does_not_exist(dir: Path) -> None:
@@ -65,6 +75,31 @@ def extract_page_number(file_path: str | Path) -> int | None:
 def file_size_in_mb(file_path: str | Path, decimal_places: int = 2) -> float:
     """Return the size of 'file_path' in MB rounded to 2 decimal places,"""
     return round(Path(file_path).stat().st_size / 1024.0 / 1024.0, decimal_places)
+
+
+def find_pdf_parser() -> Path | None:
+    """Find the location of Didier Stevens's pdf-parser.py on the current system."""
+    if is_env_var_set_and_not_false(PDF_PARSER_EXECUTABLE_ENV_VAR):
+        pdf_parser_path = Path(os.environ[PDF_PARSER_EXECUTABLE_ENV_VAR])
+
+        if pdf_parser_path.is_dir():
+            pdf_parser_path = pdf_parser_path.joinpath(PDF_PARSER_PY)
+
+        if not pdf_parser_path.exists():
+            log.warning(f"{PDF_PARSER_PY} not found at {PDF_PARSER_EXECUTABLE_ENV_VAR}={pdf_parser_path}")
+            pdf_parser_path = None
+    elif is_invoked_by_pytest():
+        pdf_parser_path = DEFAULT_PDF_PARSER_EXECUTABLE
+    else:
+        if DEFAULT_PDF_PARSER_EXECUTABLE.exists():
+            pdf_parser_path = DEFAULT_PDF_PARSER_EXECUTABLE
+        else:
+            pdf_parser_path = None
+
+    if pdf_parser_path and not os.access(pdf_parser_path, os.X_OK):
+        log.warning(f"{PDF_PARSER_PY} found but it's not executable...")
+
+    return pdf_parser_path
 
 
 def set_max_open_files(num_filehandles: int = DEFAULT_MAX_OPEN_FILES) -> tuple[int | None, int | None]:

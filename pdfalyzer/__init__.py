@@ -4,12 +4,11 @@ from argparse import Namespace
 from os import environ, getcwd, path
 
 from dotenv import load_dotenv
-from pypdf import PdfWriter
-from pypdf.errors import PdfReadError
 
 # Should be first local import before load_dotenv() (or at least I think it needs to come first)
 # TODO: this can't be right?
-from pdfalyzer.config import PDFALYZER, PdfalyzerConfig
+from pdfalyzer.config import PdfalyzerConfig
+from pdfalyzer.util.constants import PDFALYZER
 
 # load_dotenv() should be called as soon as possible (before parsing local classes) but not for pytest
 if not environ.get('INVOKED_BY_PYTEST', False):
@@ -18,6 +17,8 @@ if not environ.get('INVOKED_BY_PYTEST', False):
             load_dotenv(dotenv_path=dotenv_file)
             break
 
+from pypdf import PdfWriter
+from pypdf.errors import PdfReadError
 from rich.columns import Columns
 from rich.panel import Panel
 from rich.text import Text

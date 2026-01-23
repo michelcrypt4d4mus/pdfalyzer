@@ -13,9 +13,10 @@ from yaralyzer.helpers.rich_text_helper import print_fatal_error_and_exit
 from yaralyzer.util.argument_parser import debug, epilog, export, parser, parse_arguments as parse_yaralyzer_args, source
 from yaralyzer.util.logging import log, log_argparse_result, log_console, log_current_config, log_invocation
 
-from pdfalyzer.config import PDFALYZE, PDFALYZER, PdfalyzerConfig
+from pdfalyzer.config import PdfalyzerConfig
 from pdfalyzer.detection.constants.binary_regexes import QUOTE_PATTERNS
-from pdfalyzer.util.output_section import ALL_STREAMS, DEFAULT_SECTIONS
+from pdfalyzer.util.constants import PDFALYZE, PDFALYZER
+from pdfalyzer.util.output_section import ALL_STREAMS
 
 RichHelpFormatterPlus.choose_theme('prince')
 

@@ -9,7 +9,7 @@ from math import isclose
 from os import environ
 from subprocess import CalledProcessError, check_output
 
-from pdfalyzer.config import PDFALYZE
+from pdfalyzer.util.constants import PDFALYZE
 
 
 # Asking for help screen is a good canary test... proves code compiles, at least.

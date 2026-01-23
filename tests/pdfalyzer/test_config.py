@@ -2,9 +2,10 @@ from contextlib import contextmanager
 from os import environ
 from pathlib import Path
 
-from pdfalyzer.config import PDFALYZER_UPPER, PdfalyzerConfig
+from pdfalyzer.config import PdfalyzerConfig
 from pdfalyzer.output.pdfalyzer_presenter import PdfalyzerPresenter
 from pdfalyzer.util.argument_parser import parse_arguments
+from pdfalyzer.util.constants import PDFALYZER_UPPER
 
 
 @contextmanager

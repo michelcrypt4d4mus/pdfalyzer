@@ -1,14 +1,15 @@
 import re
 from argparse import Namespace
 from dataclasses import dataclass, field
-from os import environ, path, system
+from os import environ, system
 from pathlib import Path
 from subprocess import check_output
 
 from yaralyzer.util.logging import log, log_and_print
 
-from pdfalyzer.config import (DEFAULT_PDF_PARSER_EXECUTABLE, PDF_PARSER_EXECUTABLE_ENV_VAR, PROJECT_ROOT,
-     SCRIPTS_DIR, PdfalyzerConfig)
+from pdfalyzer.config import PdfalyzerConfig
+from pdfalyzer.helpers.filesystem_helper import (DEFAULT_PDF_PARSER_EXECUTABLE, PDF_PARSER_EXECUTABLE_ENV_VAR,
+     PROJECT_ROOT, SCRIPTS_DIR)
 from pdfalyzer.util.exceptions import PdfParserError
 
 # PDF Internal Data Regexes
@@ -40,8 +41,7 @@ class PdfParserManager:
 
         if not PdfalyzerConfig.PDF_PARSER_EXECUTABLE.exists():
             msg = f"pdf-parser.py not found at configured location '{PdfalyzerConfig.PDF_PARSER_EXECUTABLE}'\n\n"
-            msg += PDF_PARSER_INSTALL_MSG
-            raise PdfParserError(msg)
+            raise PdfParserError(msg + PDF_PARSER_INSTALL_MSG)
 
         self.path_to_pdf = Path(self.args.file_to_scan_path)
         self.base_shell_cmd = f'{PdfalyzerConfig.PDF_PARSER_EXECUTABLE} -O "{self.path_to_pdf}"'
