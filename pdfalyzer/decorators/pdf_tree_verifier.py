@@ -57,10 +57,7 @@ class PdfTreeVerifier:
             obj = self.pdfalyzer.ref_and_obj_for_id(idnum).obj
             log.warning(f"Missing node ID {idnum} ({type(obj).__name__})")
 
-        nodes_without_parents = self.pdfalyzer.nodes_without_parents()
-        node_ids_without_parents = [n.idnum for n in nodes_without_parents]
-
-        if node_ids_without_parents:
+        if (nodes_without_parents := self.pdfalyzer.nodes_without_parents()):
             node_id_to_child_count = {n.idnum: f"has {len(n.children)} children" for n in nodes_without_parents}
             log.warning(f"These node IDs were parsed but have no parent:\n{node_id_to_child_count}\n")
 
