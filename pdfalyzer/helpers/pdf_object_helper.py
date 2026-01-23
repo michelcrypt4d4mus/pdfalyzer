@@ -2,7 +2,6 @@
 Some methods to help with the direct manipulation/processing of PyPDF's PdfObjects
 """
 from dataclasses import dataclass
-from typing import Optional
 
 from pypdf.generic import ArrayObject, DictionaryObject, IndirectObject, PdfObject
 from rich.text import Text
@@ -52,16 +51,6 @@ def describe_obj(_obj: PdfObject | RefAndObj | None) -> str:
         obj_str += f"{len(obj)} elements"
 
     return obj_str.strip()
-
-
-def does_list_have_any_references(_list) -> bool:
-    """Return true if any element of _list is an IndirectObject."""
-    return any(isinstance(item, IndirectObject) for item in _list)
-
-
-def pdf_object_id(pdf_object) -> Optional[int]:
-    """Return the ID of an IndirectObject and None for everything else"""
-    return pdf_object.idnum if isinstance(pdf_object, IndirectObject) else None
 
 
 def pypdf_class_name(obj: PdfObject) -> str:
