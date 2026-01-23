@@ -45,6 +45,7 @@ LABEL_STYLES = [
     [re.compile(fr'^{adobe_strings.FONT_DESCRIPTOR}'),    'cornflower_blue'],
     [re.compile(fr'^{adobe_strings.FONT_FILE}\d?'),       'steel_blue1'],
     [re.compile(f'^/(Font(Name)?|BaseFont)'),             FONT_OBJ_BLUE],
+    [re.compile(f'^/DescendantFonts'),                    f"{FONT_OBJ_BLUE} dim"],
     [re.compile(f'/CharProc'),                            'dark_cyan'],
     [re.compile(fr'^{adobe_strings.TO_UNICODE}'),         'grey30'],
     [re.compile(fr'^{adobe_strings.ENCODING}'),            YARALYZER_THEME_DICT['encoding.header']],
