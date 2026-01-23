@@ -2,9 +2,8 @@
 Some helpers for stuff with the local filesystem.
 """
 import importlib.resources
-import re
 import os
-from os.path import getsize
+import re
 from pathlib import Path
 
 from yaralyzer.helpers.file_helper import files_in_dir
@@ -37,7 +36,7 @@ def create_dir_if_it_does_not_exist(dir: Path) -> None:
 
 def file_sizes_in_dir(dir: Path, with_extname: str | None = None) -> dict[Path, int]:
     """Returns a dict keyed by file path, values are file sizes."""
-    return {Path(f): getsize(f) for f in sorted(files_in_dir(dir, with_extname))}
+    return {Path(f): os.path.getsize(f) for f in sorted(files_in_dir(dir, with_extname))}
 
 
 def dir_str(dir: Path) -> str:
