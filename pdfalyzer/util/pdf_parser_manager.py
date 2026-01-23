@@ -49,7 +49,6 @@ class PdfParserManager:
 
         self.path_to_pdf = Path(self.args.file_to_scan_path)
         self.base_shell_cmd = f'{PdfalyzerConfig.PDF_PARSER_EXECUTABLE} -O "{self.path_to_pdf}"'
-        self.object_ids_containing_stream_data = []
         self.extract_object_ids()
 
     def extract_object_ids(self) -> None:
