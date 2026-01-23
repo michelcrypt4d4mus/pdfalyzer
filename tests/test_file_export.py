@@ -6,8 +6,8 @@ from typing import Callable
 import pytest
 from yaralyzer.helpers.file_helper import files_in_dir, load_file
 
-from pdfalyzer.config import PDFALYZE
 from pdfalyzer.helpers.filesystem_helper import file_sizes_in_dir
+from pdfalyzer.util.constants import PDFALYZE
 from pdfalyzer.util.logging import log
 
 from .conftest import REBUILD_FIXTURES_ENV_VAR

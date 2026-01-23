@@ -1,14 +1,15 @@
 import re
 from argparse import Namespace
 from dataclasses import dataclass, field
-from os import environ, path, system
+from os import environ
 from pathlib import Path
 from subprocess import check_output
 
 from yaralyzer.util.logging import log, log_and_print
 
-from pdfalyzer.config import (DEFAULT_PDF_PARSER_EXECUTABLE, PDF_PARSER_EXECUTABLE_ENV_VAR, PROJECT_ROOT,
-     SCRIPTS_DIR, PdfalyzerConfig)
+from pdfalyzer.config import PdfalyzerConfig
+from pdfalyzer.helpers.filesystem_helper import (DEFAULT_PDF_PARSER_EXECUTABLE, PDF_PARSER_EXECUTABLE_ENV_VAR,
+     PDF_PARSER_PY, PROJECT_ROOT, SCRIPTS_DIR, is_executable, relative_path)
 from pdfalyzer.util.exceptions import PdfParserError
 
 # PDF Internal Data Regexes
@@ -30,6 +31,7 @@ class PdfParserManager:
     """Instances of this class manage external calls to Didier Stevens's pdf-parser.py for a given PDF."""
     args: Namespace
     base_shell_cmd: str = field(init=False)
+    output_dir: Path = field(init=False)
     path_to_pdf: Path = field(init=False)
     object_ids: list[int] = field(default_factory=list)
     object_ids_containing_stream_data: list[int] = field(default_factory=list)
@@ -38,11 +40,15 @@ class PdfParserManager:
         if PdfalyzerConfig.PDF_PARSER_EXECUTABLE is None:
             raise PdfParserError(f"{PDF_PARSER_EXECUTABLE_ENV_VAR} not configured.\n\n{PDF_PARSER_INSTALL_MSG}")
 
-        if not PdfalyzerConfig.PDF_PARSER_EXECUTABLE.exists():
-            msg = f"pdf-parser.py not found at configured location '{PdfalyzerConfig.PDF_PARSER_EXECUTABLE}'\n\n"
-            msg += PDF_PARSER_INSTALL_MSG
-            raise PdfParserError(msg)
+        pdf_parser_relative_path = relative_path(PdfalyzerConfig.PDF_PARSER_EXECUTABLE)
 
+        if not PdfalyzerConfig.PDF_PARSER_EXECUTABLE.exists():
+            msg = f"{PDF_PARSER_PY} not found at configured location '{pdf_parser_relative_path}'\n\n"
+            raise PdfParserError(msg + PDF_PARSER_INSTALL_MSG)
+        elif not is_executable(PdfalyzerConfig.PDF_PARSER_EXECUTABLE):
+            raise PdfParserError(f"{pdf_parser_relative_path} is not executable!")
+
+        self.output_dir = Path(self.args.output_dir)
         self.path_to_pdf = Path(self.args.file_to_scan_path)
         self.base_shell_cmd = f'{PdfalyzerConfig.PDF_PARSER_EXECUTABLE} -O "{self.path_to_pdf}"'
         self.object_ids_containing_stream_data = []
@@ -52,13 +58,12 @@ class PdfParserManager:
         """Examine output of pdf-parser.py to find all object IDs as well as those object IDs that have streams"""
         try:
             pdf_parser_output = check_output(self.base_shell_cmd, env=environ, shell=True, text=True)
-        except:
-            raise PdfParserError(f"Failed to execute '{self.base_shell_cmd}'")
+        except Exception as e:
+            raise PdfParserError(f"Failed to execute '{self.base_shell_cmd}' ({e})")
 
-        pdf_parser_output_lines = pdf_parser_output.split("\n")
         current_object_id = None
 
-        for line in pdf_parser_output_lines:
+        for line in pdf_parser_output.split("\n"):
             match = PDF_OBJECT_START_REGEX.match(line)
 
             if match:
@@ -77,12 +82,18 @@ class PdfParserManager:
 
     def extract_all_streams(self) -> None:
         """Use pdf-parser.py to find binary data streams in the PDF and dump each of them to a separate file"""
-        log_and_print(f"Extracting binary streams in '{self.path_to_pdf}' to files in '{self.args.output_dir}'...")
+        log_and_print(f"Extracting binary streams in '{self.path_to_pdf}' to files in '{self.output_dir}'...")
 
         for object_id in self.object_ids_containing_stream_data:
-            stream_dump_file = path.join(self.args.output_dir, f'{path.basename(self.path_to_pdf)}.object_{object_id}.bin')
+            stream_dump_file = self.output_dir.joinpath(f'{self.path_to_pdf.name}.object_{object_id}.bin')
             shell_cmd = self.base_shell_cmd + f' -f -o {object_id} -d "{stream_dump_file}"'
-            log.info(f'Dumping stream from object {object_id}: {shell_cmd}')
-            system(shell_cmd)
+            log.info(f'Dumping stream from object {object_id} with cmd:\n\n{shell_cmd}\n')
 
-        log_and_print(f"Binary stream extraction complete, files written to '{self.args.output_dir}'.\nExiting.\n")
+            try:
+                check_output(shell_cmd, env=environ, shell=True, text=True)
+            except Exception as e:
+                log.error(f"Failed to extract object ID {object_id}!")
+
+        output_dir_str = str(self.output_dir) + ('/' if str(self.output_dir).endswith('/') else '')
+        log_and_print(f"Binary stream extraction complete, {len(self.object_ids_containing_stream_data)} "
+                      f"files written to '{output_dir_str}'.\n")

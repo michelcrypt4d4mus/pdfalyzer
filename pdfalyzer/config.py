@@ -2,53 +2,26 @@
 PdfalyzerConfig object holds the unification of configuration options parsed from the command line
 as well as those set by environment variables and/or a .pdfalyzer file.
 """
-import importlib.resources
 from argparse import Namespace
 from os import environ, path
 from pathlib import Path
-from typing import Callable, Type, TypeVar
+from typing import Callable, TypeVar
 
 from yaralyzer.config import YaralyzerConfig
-from yaralyzer.helpers.env_helper import is_env_var_set_and_not_false, is_invoked_by_pytest
 from yaralyzer.helpers.rich_text_helper import print_fatal_error_and_exit
 from yaralyzer.util.logging import log
 
+from pdfalyzer.helpers.filesystem_helper import find_pdf_parser
+from pdfalyzer.util.constants import PDFALYZER_UPPER
 from pdfalyzer.util.output_section import ALL_STREAMS
 
-PDFALYZE = 'pdfalyze'
-PDFALYZER = f"{PDFALYZE}r"
-PDFALYZER_UPPER = PDFALYZER.upper()
-PROJECT_ROOT = Path(str(importlib.resources.files(PDFALYZER))).parent
-SCRIPTS_DIR = PROJECT_ROOT.joinpath('scripts')
-TOOLS_DIR = PROJECT_ROOT.joinpath('tools')
 T = TypeVar('T')
-
-# 3rd party pdf-parser.py
-PDF_PARSER_PY = 'pdf-parser.py'
-PDF_PARSER_EXECUTABLE_ENV_VAR = 'PDFALYZER_PDF_PARSER_PY_PATH'
-DEFAULT_PDF_PARSER_EXECUTABLE = TOOLS_DIR.joinpath(PDF_PARSER_PY)
 
 
 class PdfalyzerConfig:
     _args: Namespace = Namespace()
 
-    # Path to Didier Stevens's pdf-parser.py
-    if is_env_var_set_and_not_false(PDF_PARSER_EXECUTABLE_ENV_VAR):
-        PDF_PARSER_EXECUTABLE = Path(environ[PDF_PARSER_EXECUTABLE_ENV_VAR])
-
-        if PDF_PARSER_EXECUTABLE.is_dir():
-            PDF_PARSER_EXECUTABLE = PDF_PARSER_EXECUTABLE.joinpath(PDF_PARSER_PY)
-
-        if not PDF_PARSER_EXECUTABLE.exists():
-            log.warning(f"{PDF_PARSER_PY} not found at {PDF_PARSER_EXECUTABLE_ENV_VAR}={PDF_PARSER_EXECUTABLE}")
-            PDF_PARSER_EXECUTABLE = None
-    elif is_invoked_by_pytest():
-        PDF_PARSER_EXECUTABLE = DEFAULT_PDF_PARSER_EXECUTABLE
-    else:
-        if path.exists(DEFAULT_PDF_PARSER_EXECUTABLE):
-            PDF_PARSER_EXECUTABLE = DEFAULT_PDF_PARSER_EXECUTABLE
-        else:
-            PDF_PARSER_EXECUTABLE = None
+    PDF_PARSER_EXECUTABLE = find_pdf_parser()
 
     @classmethod
     def get_env_value(cls, env_var_name: str, var_type: Callable[[str], T] = str) -> T | None:
@@ -80,5 +53,8 @@ class PdfalyzerConfig:
                 output_basename += f"_extractquoteds-{','.join(cls._args.extract_quoteds)}"
 
         output_basename += cls._args.file_suffix
-        output_basename += '' if is_invoked_by_pytest() else f"___pdfalyzed_{cls._args.invoked_at_str}"
+
+        if not cls._args.no_timestamps:
+            output_basename += f"___pdfalyzed_{cls._args.invoked_at_str}"
+
         return path.join(cls._args.output_dir, output_basename)

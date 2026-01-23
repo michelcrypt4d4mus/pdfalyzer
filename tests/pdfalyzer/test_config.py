@@ -2,9 +2,10 @@ from contextlib import contextmanager
 from os import environ
 from pathlib import Path
 
-from pdfalyzer.config import PDFALYZER_UPPER, PdfalyzerConfig
+from pdfalyzer.config import PdfalyzerConfig
 from pdfalyzer.output.pdfalyzer_presenter import PdfalyzerPresenter
 from pdfalyzer.util.argument_parser import parse_arguments
+from pdfalyzer.util.constants import PDFALYZER_UPPER
 
 
 @contextmanager
@@ -17,7 +18,7 @@ def setup_and_tear_down_env_vars(env_vars: dict[str, str]):
 
 
 def test_get_output_basepath(export_analyzing_malicious_args, analyzing_malicious_pdfalyzer, tmp_dir):
-    parse_arguments(export_analyzing_malicious_args)
+    parse_arguments(export_analyzing_malicious_args + ['--no-timestamps'])
     presenter = PdfalyzerPresenter(analyzing_malicious_pdfalyzer)
     output_path = PdfalyzerConfig.get_output_basepath(presenter.print_document_info)
     assert output_path == (f'{tmp_dir}/analyzing-malicious-document-files.pdf.document_info')

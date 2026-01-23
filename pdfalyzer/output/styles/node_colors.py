@@ -53,7 +53,7 @@ LABEL_STYLES = [
     [re.compile(fr'^{adobe_strings.W}'),                  'color(67)'],
     [re.compile(fr'^{adobe_strings.RESOURCES}'),          'magenta'],
     [re.compile(r'/(Trailer|Root|Info|Outlines)'),        'bright_green'],
-    [re.compile('/Catalog'),                              'color(47)'],
+    [re.compile(r'/Catalog'),                             'color(47)'],
     [re.compile('/(Metadata|ViewerPreferences)'),         'color(35)'],
     [re.compile(fr"^{adobe_strings.OBJ_STM}"),            YARALYZER_THEME_DICT['bytes']],
     [re.compile(fr"^{adobe_strings.NUMS}"),               'grey23'],

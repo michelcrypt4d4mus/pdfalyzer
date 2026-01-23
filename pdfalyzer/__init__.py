@@ -4,12 +4,11 @@ from argparse import Namespace
 from os import environ, getcwd, path
 
 from dotenv import load_dotenv
-from pypdf import PdfWriter
-from pypdf.errors import PdfReadError
 
 # Should be first local import before load_dotenv() (or at least I think it needs to come first)
 # TODO: this can't be right?
-from pdfalyzer.config import PDFALYZER, PdfalyzerConfig
+from pdfalyzer.config import PdfalyzerConfig
+from pdfalyzer.util.constants import PDFALYZER
 
 # load_dotenv() should be called as soon as possible (before parsing local classes) but not for pytest
 if not environ.get('INVOKED_BY_PYTEST', False):
@@ -18,10 +17,12 @@ if not environ.get('INVOKED_BY_PYTEST', False):
             load_dotenv(dotenv_path=dotenv_file)
             break
 
+from pypdf import PdfWriter
+from pypdf.errors import PdfReadError
 from rich.columns import Columns
 from rich.panel import Panel
 from rich.text import Text
-from yaralyzer.helpers.rich_text_helper import prefix_with_style
+from yaralyzer.helpers.rich_text_helper import prefix_with_style, print_fatal_error
 from yaralyzer.output.file_export import invoke_rich_export
 from yaralyzer.output.rich_console import console
 from yaralyzer.util.logging import log_console
@@ -34,6 +35,7 @@ from pdfalyzer.pdfalyzer import Pdfalyzer
 from pdfalyzer.util.argument_parser import ask_to_proceed, parse_arguments
 from pdfalyzer.util.cli_tools_argument_parser import (MAX_QUALITY, parse_combine_pdfs_args,
      parse_pdf_page_extraction_args, parse_text_extraction_args)
+from pdfalyzer.util.exceptions import PdfParserError
 from pdfalyzer.util.logging import log  # noqa: F401  # Trigger log setup
 from pdfalyzer.util.output_section import OutputSection
 from pdfalyzer.util.pdf_parser_manager import PdfParserManager
@@ -51,7 +53,11 @@ def pdfalyze():
 
     # Binary stream extraction is a special case
     if args.extract_binary_streams:
-        PdfParserManager(args).extract_all_streams()
+        try:
+            PdfParserManager(args).extract_all_streams()
+        except PdfParserError as e:
+            print_fatal_error('Failed to extract binary streams!', e)
+
         sys.exit()
 
     # The method that gets called is related to the argument name. See 'possible_output_sections' list in

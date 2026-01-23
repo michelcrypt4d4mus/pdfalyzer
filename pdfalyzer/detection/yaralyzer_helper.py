@@ -8,7 +8,7 @@ from yaralyzer.config import YaralyzerConfig
 from yaralyzer.helpers.rich_text_helper import print_fatal_error_and_exit
 from yaralyzer.yaralyzer import Yaralyzer
 
-from pdfalyzer.config import PDFALYZER
+from pdfalyzer.util.constants import PDFALYZER
 
 YARA_RULES_DIR = files(PDFALYZER).joinpath('yara_rules')
 YARA_RULES_NOT_FOUND_MSG = f"A YARA rule that's supposed to ship with Pdfalyzer is missing. Please file a bug."
