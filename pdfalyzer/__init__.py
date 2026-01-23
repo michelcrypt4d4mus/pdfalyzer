@@ -49,7 +49,7 @@ def pdfalyze():
     args = parse_arguments()
     pdfalyzer = Pdfalyzer(args.file_to_scan_path, args.password)
     presenter = PdfalyzerPresenter(pdfalyzer)
-    output_basepath = ''
+    export_basepath = ''
 
     # Binary stream extraction is a special case
     if args.extract_binary_streams:
@@ -64,18 +64,18 @@ def pdfalyze():
     # argument_parser.py. Analysis exports wrap themselves around the methods that actually generate the analyses.
     for section in OutputSection.selected_sections(args, presenter):
         if args.output_dir:
-            output_basepath = PdfalyzerConfig.get_output_basepath(section.method)
-            log.debug(f"Exporting {section.argument} data to basepath '{output_basepath}'...")
+            export_basepath = PdfalyzerConfig.get_export_basepath(section.method)
+            log.debug(f"Exporting {section.argument} data to basepath '{export_basepath}'...")
             console.record = True
 
         section.method()
 
         if args.export_txt:
-            invoke_rich_export(console.save_text, output_basepath)
+            invoke_rich_export(console.save_text, export_basepath)
         if args.export_html:
-            invoke_rich_export(console.save_html, output_basepath)
+            invoke_rich_export(console.save_html, export_basepath)
         if args.export_svg:
-            invoke_rich_export(console.save_svg, output_basepath)
+            invoke_rich_export(console.save_svg, export_basepath)
 
         # Clear the buffer if we have one
         if args.output_dir:

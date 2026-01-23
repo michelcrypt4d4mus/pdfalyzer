@@ -19,7 +19,7 @@ SVG_DIR = DOCUMENTATION_DIR.joinpath('svgs')
 RENDERED_IMAGES_DIR = SVG_DIR.joinpath('rendered_images')
 FIXTURES_DIR = PYTESTS_DIR.joinpath('fixtures')
 RENDERED_FIXTURES_DIR = FIXTURES_DIR.joinpath('rendered')
-REBUILD_FIXTURES_ENV_VAR = 'PYTEST_REBUILD_FIXTURES'
+PYTEST_REBUILD_FIXTURES_ENV_VAR = 'PYTEST_REBUILD_FIXTURES'
 
 BASE_ARGS = [
     '--min-decode-length', '50',
@@ -100,7 +100,7 @@ def multipage_pdf_path():
 
 @pytest.fixture
 def should_rebuild_fixtures() -> bool:
-    return is_env_var_set_and_not_false(REBUILD_FIXTURES_ENV_VAR)
+    return is_env_var_set_and_not_false(PYTEST_REBUILD_FIXTURES_ENV_VAR)
 
 
 @pytest.fixture

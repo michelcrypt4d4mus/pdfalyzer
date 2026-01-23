@@ -38,26 +38,26 @@ class PdfalyzerConfig:
         return env_value
 
     @classmethod
-    def get_output_basepath(cls, export_method: Callable) -> str:
+    def get_export_basepath(cls, export_method: Callable) -> str:
         """Build the path to an output file - everything but the extension"""
         export_type = export_method.__name__.removeprefix('print_')
-        output_basename = f"{cls._args.output_basename}.{export_type}"
+        export_basename = f"{cls._args.export_basename}.{export_type}"
 
         if export_type == 'streams_analysis':
             if cls._args.streams != ALL_STREAMS:
-                output_basename += f"_streamid{cls._args.streams}"
+                export_basename += f"_streamid{cls._args.streams}"
 
-            output_basename += f"_maxdecode{YaralyzerConfig.args.max_decode_length}"
+            export_basename += f"_maxdecode{YaralyzerConfig.args.max_decode_length}"
 
             if cls._args.extract_quoteds:
-                output_basename += f"_extractquoteds-{','.join(cls._args.extract_quoteds)}"
+                export_basename += f"_extractquoteds-{','.join(cls._args.extract_quoteds)}"
 
-        output_basename += cls._args.file_suffix
+        export_basename += cls._args.file_suffix
 
         if not cls._args.no_timestamps:
-            output_basename += f"___{PDFALYZE}d_{cls._args.invoked_at_str}"
+            export_basename += f"___{PDFALYZE}d_{cls._args.invoked_at_str}"
 
-        return path.join(cls._args.output_dir, output_basename)
+        return path.join(cls._args.output_dir, export_basename)
 
     @classmethod
     def find_pdf_parser(cls) -> None:

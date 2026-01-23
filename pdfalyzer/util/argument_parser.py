@@ -141,7 +141,7 @@ def parse_arguments(_argv: list[str] | None = None) -> Namespace:
 
     # File export options
     args.extract_quoteds = args.extract_quoteds or []
-    args.output_basename = f"{args.file_prefix}{args.file_to_scan_path.name}"
+    args.export_basename = f"{args.file_prefix}{args.file_to_scan_path.name}"
     env_output_dir = PdfalyzerConfig.get_env_value('OUTPUT_DIR', Path)
 
     if env_output_dir and (not args.output_dir or args.output_dir == Path.cwd()):

@@ -117,15 +117,15 @@ class BinaryScanner:
     # These extraction iterators will iterate over all matches for a specific pattern.
     # YARA rules are written on the fly and then YARA does the matching.
     # -------------------------------------------------------------------------------
-    def extract_guillemet_quoted_bytes(self) -> Iterator[Tuple[BytesMatch, BytesDecoder]]:
+    def extract_guillemet_quoted_bytes(self) -> Iterator[tuple[BytesMatch, BytesDecoder]]:
         """Iterate on all strings surrounded by Guillemet quotes, e.g. «string»."""
         return self._quote_yaralyzer(QUOTE_PATTERNS[GUILLEMET], GUILLEMET).match_iterator()
 
-    def extract_backtick_quoted_bytes(self) -> Iterator[Tuple[BytesMatch, BytesDecoder]]:
+    def extract_backtick_quoted_bytes(self) -> Iterator[tuple[BytesMatch, BytesDecoder]]:
         """Returns an interator over all strings surrounded by backticks."""
         return self._quote_yaralyzer(QUOTE_PATTERNS[BACKTICK], BACKTICK).match_iterator()
 
-    def extract_front_slash_quoted_bytes(self) -> Iterator[Tuple[BytesMatch, BytesDecoder]]:
+    def extract_front_slash_quoted_bytes(self) -> Iterator[tuple[BytesMatch, BytesDecoder]]:
         """Returns an interator over all strings surrounded by front_slashes (hint: regular expressions)."""
         return self._quote_yaralyzer(QUOTE_PATTERNS[FRONTSLASH], FRONTSLASH).match_iterator()
 

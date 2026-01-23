@@ -10,7 +10,7 @@ from pdfalyzer.helpers.filesystem_helper import file_sizes_in_dir
 from pdfalyzer.util.constants import PDFALYZE
 from pdfalyzer.util.logging import log
 
-from .conftest import REBUILD_FIXTURES_ENV_VAR
+from .conftest import PYTEST_REBUILD_FIXTURES_ENV_VAR
 
 
 def test_file_export(fixture_mismatch_msg, pdfalyze_analyzing_malicious_args, rendered_fixtures_dir, rendered_output_dir):
@@ -44,7 +44,7 @@ def fixture_mismatch_msg() -> Callable[[Path, Path], str]:
         fixture_path = fixture_path.relative_to(Path.cwd())
         output_path = output_path.relative_to(Path.cwd())
         error_msg = f"Contents of '{output_path}'\n  does not match fixture: '{fixture_path}'\n\n"
-        error_msg += f"Fixtures can be updated by running '{REBUILD_FIXTURES_ENV_VAR}=True pytest tests/test_file_export.py'\n\n"  # noqa: E501
+        error_msg += f"Fixtures can be updated by running '{PYTEST_REBUILD_FIXTURES_ENV_VAR}=True pytest tests/test_file_export.py'\n\n"  # noqa: E501
         error_msg += f"pytest diffs can be slow, here's the manual diff cmd:\n\n   diff '{fixture_path}' '{output_path}'\n\n"  # noqa: E501
         return error_msg
 
