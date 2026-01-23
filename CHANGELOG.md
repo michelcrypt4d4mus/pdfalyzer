@@ -1,5 +1,5 @@
 # NEXT RELEASE
-* `--no-timestamps` option for file export
+* `--no-timestamps` option for exported filenames
 * Enable permanently setting `--output-dir` via the `.pdfalyzer` file
 * Highlight some of the interesting object reference keys in the rich tree view
 * In rich tree view sort `DictionaryObject` key/value pairs by key alphabetically, except `/Type` and `/Subtype` are at the top
@@ -8,7 +8,7 @@
 * Better labeling of `/StructElem` objects in a `StructTreeRoot` hierarchy
 * Coerce `/Nums` number trees into `dict` like objects for the purposes of assigning addresses
 * `/Annots` and other indeterminate nodes now have `/Subtype` integrated into their labeling (e.g. `/Annots:Link` instead of just `/Annots`)
-* Fancier table for PDF metadata that also contains the number of pages and images (if possible)
+* Fancier table for PDF metadata that also contains the number of pages, images, and revisions (if possible)
 
 ### 1.18.1
 * Ensure `cryptography` package is installable as an extra
