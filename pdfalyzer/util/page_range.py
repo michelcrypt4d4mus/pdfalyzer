@@ -4,7 +4,6 @@ A range of page numbers. Copied from clown_sort repo.
 import re
 from argparse import ArgumentTypeError
 from dataclasses import dataclass
-from typing import Tuple
 
 PAGE_RANGE_REGEX = re.compile(r'[1-9](\d+)?(-\d+)?')
 
@@ -37,7 +36,7 @@ class PageRange:
         else:
             return f"pages_{self.first_page}-{self.last_page - 1}"
 
-    def to_tuple(self) -> Tuple[int, int]:
+    def to_tuple(self) -> tuple[int, int]:
         return (self.first_page - 1, self.last_page - 1)
 
     def __repr__(self) -> str:
