@@ -58,9 +58,7 @@ class PdfParserManager:
         current_object_id = None
 
         for line in pdf_parser_output.split("\n"):
-            match = PDF_OBJECT_START_REGEX.match(line)
-
-            if match:
+            if (match := PDF_OBJECT_START_REGEX.match(line)):
                 current_object_id = int(match[1])
                 self.object_ids.append(current_object_id)
 

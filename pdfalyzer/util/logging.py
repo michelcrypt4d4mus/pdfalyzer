@@ -93,9 +93,7 @@ class LogHighlighter(ReprHighlighter):
     def get_style(self, for_str: str) -> str:
         """Return the first style that matches the 'for_str'."""
         for highlight in self.highlights:
-            match = highlight.search(for_str)
-
-            if match:
+            if (match := highlight.search(for_str)):
                 return self.base_style + next(k for k in match.groupdict().keys())
 
         return ''

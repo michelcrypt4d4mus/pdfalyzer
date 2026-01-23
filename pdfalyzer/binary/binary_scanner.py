@@ -14,9 +14,9 @@ from yaralyzer.helpers.bytes_helper import hex_string, print_bytes
 from yaralyzer.helpers.string_helper import escape_yara_pattern
 from yaralyzer.output.regex_match_metrics import RegexMatchMetrics
 from yaralyzer.output.rich_console import BYTES_NO_DIM, console, console_width
+from yaralyzer.util.logging import log
 from yaralyzer.yara.yara_rule_builder import HEX, REGEX, safe_label
 from yaralyzer.yaralyzer import Yaralyzer
-from yaralyzer.util.logging import log
 
 from pdfalyzer.config import PdfalyzerConfig
 from pdfalyzer.decorators.pdf_tree_node import PdfTreeNode
