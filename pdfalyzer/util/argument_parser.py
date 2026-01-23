@@ -4,8 +4,6 @@ Parse command line arguments for `pdfalyze` and construct the `PdfalyzerConfig` 
 import sys
 from argparse import ArgumentParser, Namespace
 from importlib.metadata import version
-from os import getcwd, path
-from pathlib import Path
 from typing import Optional
 
 from rich_argparse_plus import RichHelpFormatterPlus
@@ -134,15 +132,8 @@ def parse_arguments(_argv: list[str] | None = None) -> Namespace:
         exit_with_error("--no-default-yara-rules requires at least one --yara-file argument")
 
     # File export options
-    if args.export_svg or args.export_txt or args.export_html or args.extract_binary_streams:
-        args.output_dir = Path(args.output_dir or Path.cwd())
-        file_prefix = (args.file_prefix + '__') if args.file_prefix else ''
-        args.file_suffix = ('_' + args.file_suffix) if args.file_suffix else ''
-        args.output_basename = f"{file_prefix}{path.basename(args.file_to_scan_path)}"
-    elif args.output_dir:
-        log.warning('--output-dir provided but no export option was chosen')
-
     args.extract_quoteds = args.extract_quoteds or []
+    args.output_basename = f"{args.file_prefix}{args.file_to_scan_path.name}"
     PdfalyzerConfig._args = args
     log_argparse_result(args, 'parsed')
     log_current_config()
