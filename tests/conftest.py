@@ -27,6 +27,7 @@ BASE_ARGS = [
     '--suppress-decodes',
     '--allow-missed-nodes',
     '--export-txt',
+    '--no-timestamps',
 ]
 
 

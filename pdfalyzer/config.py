@@ -8,32 +8,34 @@ from pathlib import Path
 from typing import Callable, TypeVar
 
 from yaralyzer.config import YaralyzerConfig
+from yaralyzer.helpers.env_helper import is_invoked_by_pytest
 from yaralyzer.helpers.rich_text_helper import print_fatal_error_and_exit
 from yaralyzer.util.logging import log
 
-from pdfalyzer.helpers.filesystem_helper import find_pdf_parser
-from pdfalyzer.util.constants import PDFALYZER_UPPER
+from pdfalyzer.helpers.filesystem_helper import (DEFAULT_PDF_PARSER_PATH, PDF_PARSER_PATH_ENV_VAR,
+     PDF_PARSER_PY, is_executable)
+from pdfalyzer.util.constants import PDFALYZE, PDFALYZER_UPPER
 from pdfalyzer.util.output_section import ALL_STREAMS
 
 T = TypeVar('T')
 
 
 class PdfalyzerConfig:
+    PDF_PARSER_PATH: Path | None = None
+
     _args: Namespace = Namespace()
 
-    PDF_PARSER_EXECUTABLE = find_pdf_parser()
-
     @classmethod
-    def get_env_value(cls, env_var_name: str, var_type: Callable[[str], T] = str) -> T | None:
+    def get_env_value(cls, env_var: str, var_type: Callable[[str], T] = str) -> T | None:
         """If called with 'output_dir' it will check env value of 'PDFALYZER_OUTPUT_DIR'."""
-        env_var = f"{PDFALYZER_UPPER}_{env_var_name}".upper()
+        env_var = f"{PDFALYZER_UPPER}_{env_var}".upper() if not env_var.startswith(PDFALYZER_UPPER) else env_var
         env_value = environ.get(env_var)
         log.debug(f"Checked env for '{env_var}', found '{env_value}'")
         env_value = var_type(env_value) if env_value else None
 
         if isinstance(env_value, Path):
             if not env_value.exists():
-                print_fatal_error_and_exit(f"{env_var}='{env_value}' but that path doesn't exist")
+                print_fatal_error_and_exit(f"{env_var} is '{env_value}' but that path doesn't exist!")
 
         return env_value
 
@@ -55,6 +57,23 @@ class PdfalyzerConfig:
         output_basename += cls._args.file_suffix
 
         if not cls._args.no_timestamps:
-            output_basename += f"___pdfalyzed_{cls._args.invoked_at_str}"
+            output_basename += f"___{PDFALYZE}d_{cls._args.invoked_at_str}"
 
         return path.join(cls._args.output_dir, output_basename)
+
+    @classmethod
+    def find_pdf_parser(cls) -> None:
+        """Find the location of Didier Stevens's pdf-parser.py on the current system."""
+        if not is_invoked_by_pytest():
+            cls.PDF_PARSER_PATH = cls.get_env_value(PDF_PARSER_PATH_ENV_VAR, Path)
+
+        cls.PDF_PARSER_PATH = cls.PDF_PARSER_PATH or DEFAULT_PDF_PARSER_PATH
+
+        if cls.PDF_PARSER_PATH.exists():
+            if not is_executable(cls.PDF_PARSER_PATH):
+                log.warning(f"{PDF_PARSER_PY} found at {cls.PDF_PARSER_PATH} but it's not executable...")
+        else:
+            cls.PDF_PARSER_PATH = None
+
+
+PdfalyzerConfig.find_pdf_parser()

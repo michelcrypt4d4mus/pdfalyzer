@@ -144,6 +144,7 @@ class Pdfalyzer:
         log.info(f"PDF walk completed in {time.perf_counter() - started_at:.2} seconds.")
 
     def close(self) -> None:
+        """Close any open filehandles."""
         for attr in ['pdf_reader', 'pdf_filehandle']:
             if attr in vars(self):
                 getattr(self, attr).close()
@@ -154,7 +155,7 @@ class Pdfalyzer:
         return self._tree_nodes[idnum]
 
     def find_node_with_attr(self, attr: str, value: str | int, raise_if_multiple: bool = False) -> PdfTreeNode | None:
-        """Find node with a property where you only expect one of those nodes to exist"""
+        """Find node with a property where you only expect one of those nodes to exist."""
         nodes = self.find_nodes_with_attr(attr, value)
 
         if len(nodes) == 0:
@@ -178,7 +179,7 @@ class Pdfalyzer:
 
     def is_in_tree(self, search_for_node: PdfTreeNode) -> bool:
         """Returns true if `search_for_node` is in the tree already."""
-        return any([node == search_for_node for node in self.node_iterator()])
+        return bool(self.find_node_by_idnum(search_for_node.idnum))
 
     def missing_node_ids(self) -> list[int]:
         """We expect to see all ordinals up to the number of nodes /Trailer claims exist as obj IDs."""
