@@ -37,6 +37,16 @@ export.add_argument('-bin', '--extract-binary-streams',
                     const='bin',
                     help='extract all binary streams in the PDF to separate files (requires pdf-parser.py)')
 
+# Make sure --no-timestamps is last
+no_timestamps_idx = [i for i, arg in enumerate(parser._actions) if '--no-timestamps' in arg.option_strings][0]
+parser._actions = parser._actions[:no_timestamps_idx - 1] + [parser._actions[-1]] + parser._actions[no_timestamps_idx:-1]
+
+for a in parser._actions:
+    print(f"action: {a}\n")
+# parser.print_help()
+print(f"\nno_timestamps_idx={no_timestamps_idx}, binary_streams_ix={binary_streams_idx}\n")
+# import pdb;pdb.set_trace()
+
 # Add one more option to the YARA rules section
 source.add_argument('--no-default-yara-rules',
                     action='store_true',
@@ -107,23 +117,8 @@ select.add_argument('--preview-stream-length',
 # Make sure the selection section is at the top
 parser._action_groups = parser._action_groups[:2] + [parser._action_groups[-1]] + parser._action_groups[2:-1]
 is_pdfalyze_script = (parser.prog == PDFALYZE)
-
-for ag in parser._action_groups:
-    print(f"group title: {ag.title}")
-    if 'EXPORT' in (ag.title or ''):
-        ag._group_actions = ag._group_actions[:-2] + [ag._group_actions[-1]] + [ag._group_actions[-2]]
-        for a in ag._group_actions:
-            print(f"Action: {a}\n")
-
-        import pdb;pdb.set_trace()
-    # print(f"group: {repr(ag)}\n")
-
-# print('\n\n')
-# for a in parser._actions:
-#     print(f"Action: {a}\n")
-# print('\n\n')
-
-
+parser.print_help()
+import pdb;pdb.set_trace()
 
 ################################
 # Main argument parsing begins #
