@@ -4,8 +4,6 @@ Parse command line arguments for `pdfalyze` and construct the `PdfalyzerConfig` 
 import sys
 from argparse import ArgumentParser, Namespace
 from importlib.metadata import version
-from os import getcwd, path
-from pathlib import Path
 from typing import Optional
 
 from rich_argparse_plus import RichHelpFormatterPlus
@@ -38,6 +36,10 @@ export.add_argument('-bin', '--extract-binary-streams',
                     action='store_const',
                     const='bin',
                     help='extract all binary streams in the PDF to separate files (requires pdf-parser.py)')
+
+# Make sure --no-timestamps is last in FILE EXPORT group, after newly added --extract-binary-streams
+no_timestamps_idx = [i for i, arg in enumerate(parser._actions) if '--no-timestamps' in arg.option_strings][0]
+parser._actions = parser._actions[:no_timestamps_idx] + [parser._actions[-1]] + parser._actions[no_timestamps_idx:-1]
 
 # Add one more option to the YARA rules section
 source.add_argument('--no-default-yara-rules',
@@ -108,12 +110,13 @@ select.add_argument('--preview-stream-length',
 
 # Make sure the selection section is at the top
 parser._action_groups = parser._action_groups[:2] + [parser._action_groups[-1]] + parser._action_groups[2:-1]
-is_pdfalyze_script = (parser.prog == PDFALYZE)
 
 
 ################################
 # Main argument parsing begins #
 ################################
+is_pdfalyze_script = (parser.prog == PDFALYZE)
+
 def parse_arguments(_argv: list[str] | None = None) -> Namespace:
     """Parse command line args. Most args can also be communicated to the app by setting env vars."""
     if '--version' in sys.argv:
@@ -134,15 +137,8 @@ def parse_arguments(_argv: list[str] | None = None) -> Namespace:
         exit_with_error("--no-default-yara-rules requires at least one --yara-file argument")
 
     # File export options
-    if args.export_svg or args.export_txt or args.export_html or args.extract_binary_streams:
-        args.output_dir = Path(args.output_dir or Path.cwd())
-        file_prefix = (args.file_prefix + '__') if args.file_prefix else ''
-        args.file_suffix = ('_' + args.file_suffix) if args.file_suffix else ''
-        args.output_basename = f"{file_prefix}{path.basename(args.file_to_scan_path)}"
-    elif args.output_dir:
-        log.warning('--output-dir provided but no export option was chosen')
-
     args.extract_quoteds = args.extract_quoteds or []
+    args.output_basename = f"{args.file_prefix}{args.file_to_scan_path.name}"
     PdfalyzerConfig._args = args
     log_argparse_result(args, 'parsed')
     log_current_config()

@@ -279,13 +279,13 @@ files = [
 
 [[package]]
 name = "packaging"
-version = "25.0"
+version = "26.0"
 description = "Core utilities for Python packages"
 optional = false
 python-versions = ">=3.8"
 files = [
-    {file = "packaging-25.0-py3-none-any.whl", hash = "sha256:29572ef2b1f17581046b3a2227d5c611fb25ec70ca1ba8554b24b0e69331a484"},
-    {file = "packaging-25.0.tar.gz", hash = "sha256:d443872c98d677bf60f6a1f2f8c1cb748e8fe762d2bf9d3148b5599295b0fc4f"},
+    {file = "packaging-26.0-py3-none-any.whl", hash = "sha256:b36f1fef9334a5588b4166f8bcd26a14e521f2b55e6b9de3aaa80d3ff7a37529"},
+    {file = "packaging-26.0.tar.gz", hash = "sha256:00243ae351a257117b6a241061796684b084ed1c516a08c48a3f7e147a9d80b4"},
 ]
 
 [[package]]
@@ -438,13 +438,13 @@ files = [
 
 [[package]]
 name = "pycparser"
-version = "2.23"
+version = "3.0"
 description = "C parser in Python"
 optional = true
-python-versions = ">=3.8"
+python-versions = ">=3.10"
 files = [
-    {file = "pycparser-2.23-py3-none-any.whl", hash = "sha256:e5c6e8d3fbad53479cab09ac03729e0a9faf2bee3db8208a550daf5af81a5934"},
-    {file = "pycparser-2.23.tar.gz", hash = "sha256:78816d4f24add8f10a06d6f05b4d424ad9e96cfebf68a4ddc99c65c0720d00c2"},
+    {file = "pycparser-3.0-py3-none-any.whl", hash = "sha256:b727414169a36b7d524c1c3e31839a521725078d7b2ff038656844266160a992"},
+    {file = "pycparser-3.0.tar.gz", hash = "sha256:600f49d217304a5902ac3c37e1281c9fe94e4d0489de643a9504c5cdfdfc6b29"},
 ]
 
 [[package]]
@@ -684,13 +684,13 @@ files = [
 
 [[package]]
 name = "yaralyzer"
-version = "1.0.14"
+version = "1.1.0"
 description = "Visualize and force decode YARA and regex matches found in a file or byte stream with colors. Lots of colors."
 optional = false
 python-versions = "<4.0,>=3.10"
 files = [
-    {file = "yaralyzer-1.0.14-py3-none-any.whl", hash = "sha256:2ed3ea1d983802834b402704eb929d56e65ff7bd431c7aa1b827c3dc5ef26ecd"},
-    {file = "yaralyzer-1.0.14.tar.gz", hash = "sha256:b3a9d18bb25c55de06afe1e0b974137a4fef8f9a41bb4f664d371ccd32e78ee7"},
+    {file = "yaralyzer-1.1.0-py3-none-any.whl", hash = "sha256:89cd5db7cc3b1e652b7c8827116822122af64632e6a0051758f99f677d377541"},
+    {file = "yaralyzer-1.1.0.tar.gz", hash = "sha256:8c3d7f1b986247cba3e9c5855f40570d4c9b115011c813d8a4cc07e625cfa51c"},
 ]
 
 [package.dependencies]
@@ -706,4 +706,4 @@ extract = ["PyMuPDF", "cryptography", "pytesseract"]
 [metadata]
 lock-version = "2.0"
 python-versions = "^3.11.14"
-content-hash = "dbdc0e29f61741d0ef584a84fde08bc9f63a0ae9348928898617f6b61f8b7314"
+content-hash = "2ce00730acc492a9156d2c6411a2edbb446c33f027400882f32f510547b2e7f0"
