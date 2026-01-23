@@ -5,7 +5,7 @@ import time
 from dataclasses import dataclass, field
 from io import BufferedReader
 from pathlib import Path
-from typing import Iterator, Optional
+from typing import Iterator
 
 from anytree import LevelOrderIter, SymlinkNode
 from anytree.search import findall, findall_by_attr
@@ -53,9 +53,9 @@ class Pdfalyzer:
 
     Attributes:
         font_infos (list[FontInfo]): Font summary objects
-        font_info_extraction_error (Optional[Exception]): Error encountered extracting FontInfo (if any)
+        font_info_extraction_error (Exception | None): Error encountered extracting FontInfo (if any)
         max_generation (int): Max revision number ("generation") encounted in this PDF.
-        nodes_encountered (Dict[int, PdfTreeNode]): Nodes we've traversed already even if not in tree yet.
+        nodes_encountered (dict[int, PdfTreeNode]): Nodes we've traversed already even if not in tree yet.
         pdf_basename (str): The base name of the PDF file (with extension).
         pdf_bytes (bytes): PDF binary data.
         pdf_bytes_info (BytesInfo): File size, hashes, and other data points about the PDF's raw bytes.
@@ -64,7 +64,7 @@ class Pdfalyzer:
         pdf_tree (PdfTreeNode): The top node of the PDF data structure tree.
         verifier (PdfTreeVerifier): PdfTreeVerifier that can validate the PDF has been walked successfully.
         _indeterminate_ids (set[int]): See INDETERMINATE_REF_KEYS comment
-        _tree_nodes (Dict[int, PdfTreeNode): ID cache for nodes that are in the tree
+        _tree_nodes (dict[int, PdfTreeNode): ID cache for nodes that are in the tree
     """
     pdf_path: Path
     password: str | None = None
@@ -148,7 +148,7 @@ class Pdfalyzer:
             if attr in vars(self):
                 getattr(self, attr).close()
 
-    def find_node_by_idnum(self, idnum: int) -> Optional[PdfTreeNode]:
+    def find_node_by_idnum(self, idnum: int) -> PdfTreeNode | None:
         """Find node with `idnum` in the tree. Return `None` if that node is not reachable from the root."""
         self._tree_nodes[idnum] = self._tree_nodes.get(idnum) or self.find_node_with_attr('idnum', idnum, True)
         return self._tree_nodes[idnum]
@@ -248,7 +248,7 @@ class Pdfalyzer:
         self.font_infos += new_font_infos
         return new_font_infos
 
-    def _add_relationship_to_pdf_tree(self, relationship: PdfObjectRelationship) -> Optional[PdfTreeNode]:
+    def _add_relationship_to_pdf_tree(self, relationship: PdfObjectRelationship) -> PdfTreeNode | None:
         """
         Place the `relationship` node in the tree. Returns an optional node that should be
         placed in the PDF node processing queue.

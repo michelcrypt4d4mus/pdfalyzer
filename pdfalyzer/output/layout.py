@@ -1,8 +1,6 @@
 """
 Methods to help with the formatting of the output tables, headers, panels, etc.
 """
-from typing import List
-
 from rich import box
 from rich.padding import Padding
 from rich.panel import Panel
@@ -15,7 +13,7 @@ DEFAULT_SUBTABLE_COL_STYLES = ['white', 'bright_white']
 HEADER_PADDING = (1, 1)
 
 
-def generate_subtable(cols: List[str], header_style: str = 'subtable') -> Table:
+def generate_subtable(cols: list[str], header_style: str = 'subtable') -> Table:
     """Suited for placement in larger tables."""
     table = Table(
         box=box.SIMPLE,

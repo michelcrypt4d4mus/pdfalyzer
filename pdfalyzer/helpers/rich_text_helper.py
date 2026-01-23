@@ -1,8 +1,6 @@
 """
 Functions for miscellaneous Rich text/string pretty printing operations.
 """
-from typing import List, Optional, Union
-
 from rich.panel import Panel
 from rich.padding import Padding
 from rich.text import Text
@@ -16,18 +14,18 @@ def attention_getting_panel(text: Text, title: str, style: str = 'white on red')
     return Padding(p, pad=(1, 10, 2, 10))
 
 
-def bullet_text(msg: Union[str, Text], style: Optional[str] = None) -> Text:
+def bullet_text(msg: str | Text, style: str = '') -> Text:
     if isinstance(msg, str):
-        msg = Text(msg, style=style or '')
+        msg = Text(msg, style=style)
 
     return Text(ARROW_BULLET).append(msg)
 
 
-def comma_join_txt(text_objs: List[Text]) -> Text:
+def comma_join_txt(text_objs: list[Text]) -> Text:
     return Text(", ").join(text_objs)
 
 
-def error_text(text: Union[str, Text]) -> Text:
+def error_text(text: str | Text) -> Text:
     msg = Text('').append(f"ERROR", style='bright_red').append(": ")
 
     if isinstance(text, Text):
@@ -36,7 +34,7 @@ def error_text(text: Union[str, Text]) -> Text:
         return msg.append(text)
 
 
-def indented_bullet(msg: Union[str, Text], style: Optional[str] = None) -> Text:
+def indented_bullet(msg: str | Text, style: str = '') -> Text:
     return Text('  ') + bullet_text(msg, style)
 
 
@@ -59,7 +57,7 @@ def pct_txt(_number: int, total: int, digits: int = 1) -> Text:
     return Text(f"({pct}%)", style='blue')
 
 
-def print_error(text: Union[str, Text]) -> None:
+def print_error(text: str | Text) -> None:
     console.line()
     console.print(error_text(text))
 

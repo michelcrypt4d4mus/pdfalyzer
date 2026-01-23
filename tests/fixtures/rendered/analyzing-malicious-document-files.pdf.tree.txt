@@ -77,7 +77,7 @@
 ║   ╠══ [37m<[0m[97m64[0m[37m:[0m[1;4;33mStructTreeRoot[0m[37m([0m[3;38;5;64mDictionary[0m[37m)[0m[97m@[0m[38;5;238m/Root/StructTreeRoot[0m[37m>[0m
 ║   ║   ╠══ [37m<[0m[97m65[0m[37m:[0m[1;4;33mRoleMap[0m[37m([0m[3;38;5;64mDictionary[0m[37m)[0m[97m@[0m[38;5;238m/Root/StructTreeRoot/RoleMap[0m[37m>[0m
 ║   ║   ╠══ [37m<[0m[97m66[0m[37m:[0m[1;4;38;5;177mParentTree[0m[37m([0m[3;38;5;64mDictionary[0m[37m)[0m[97m@[0m[38;5;238m/Root/StructTreeRoot/ParentTree[0m[37m>[0m
-║   ║   ║   ╠══ [37m<[0m[97m70[0m[37m:[0m[1;4;38;5;237;48;5;246mNums[0m[37m([0m[3;38;5;143mArray[0m[37m)[0m[97m@[0m[38;5;238m/Root/StructTreeRoot/ParentTree/Nums[0][0m[37m>[0m
+║   ║   ║   ╠══ [37m<[0m[97m70[0m[37m:[0m[1;4;38;5;237mNums[0m[37m([0m[3;38;5;143mArray[0m[37m)[0m[97m@[0m[38;5;238m/Root/StructTreeRoot/ParentTree/Nums[0][0m[37m>[0m
 ║   ║   ║   ║   ╠══ [2;33m[0] [0m[2;97m=>[0m[2;33m <69:StructElem:H1(Dictionary)> [0m[2;38;5;241m(Non Child Reference)[0m
 ║   ║   ║   ║   ╠══ [2;33m[1] [0m[2;97m=>[0m[2;33m <88:StructElem:P(Dictionary)> [0m[2;38;5;241m(Non Child Reference)[0m
 ║   ║   ║   ║   ╠══ [2;33m[2] [0m[2;97m=>[0m[2;33m <89:StructElem:H2(Dictionary)> [0m[2;38;5;241m(Non Child Reference)[0m
@@ -1009,7 +1009,7 @@
 ║   ╠══ [37m<[0m[97m424[0m[37m:[0m[1;4;38;5;35mMetadata:XML[0m[37m([0m[3;38;5;214mDecodedStream[0m[37m)[0m[97m@[0m[38;5;238m/Root/Metadata[0m[37m>[0m
 ║   ╚══ [37m<[0m[97m425[0m[37m:[0m[1;4;38;5;35mViewerPreferences[0m[37m([0m[3;38;5;64mDictionary[0m[37m)[0m[97m@[0m[38;5;238m/Root/ViewerPreferences[0m[37m>[0m
 ╠══ [37m<[0m[97m54[0m[37m:[0m[1;4;92mInfo[0m[37m([0m[3;38;5;64mDictionary[0m[37m)[0m[97m@[0m[38;5;238m/Info[0m[37m>[0m
-╠══ [37m<[0m[97m71[0m[37m:[0m[1;4;38;5;237;48;5;246mObjStm[0m[37m([0m[2;3;38;5;100mEncodedStream[0m[37m)[0m[97m@[0m[38;5;238m/ObjStm[0m[37m>[0m
+╠══ [37m<[0m[97m71[0m[37m:[0m[1;2;4;38;5;100mObjStm[0m[37m([0m[2;3;38;5;100mEncodedStream[0m[37m)[0m[97m@[0m[38;5;238m/ObjStm[0m[37m>[0m
 ╚══ [37m<[0m[97m426[0m[37m:[0m[1;4;38;5;148mXRef[0m[37m([0m[2;3;38;5;100mEncodedStream[0m[37m)[0m[97m@[0m[38;5;238m/XRefStm[0m[37m>[0m
 
 

@@ -2,7 +2,7 @@
 `PdfTreeNode` decorates a `PdfObject` with tree structure information.
 """
 from dataclasses import dataclass, field
-from typing import Callable, List, Optional, Self
+from typing import Callable, Self
 
 from anytree import NodeMixin, SymlinkNode
 from pypdf.errors import PdfReadError
@@ -49,7 +49,7 @@ class PdfTreeNode(NodeMixin):
     # Computed fields
     all_references_processed: bool = False
     known_to_parent_as: str | None = None
-    non_tree_relationships: List[PdfObjectRelationship] = field(default_factory=list)
+    non_tree_relationships: list[PdfObjectRelationship] = field(default_factory=list)
     stream_data: bytes | None = None
     stream_length: int = 0
 
@@ -143,7 +143,7 @@ class PdfTreeNode(NodeMixin):
             log.debug(f"Removing relationship {relationship} from {self}")
             self.non_tree_relationships.remove(relationship)
 
-    def nodes_with_here_references(self) -> List[Self]:
+    def nodes_with_here_references(self) -> list[Self]:
         """Return a list of nodes that contain this node's PDF object as an IndirectObject reference."""
         return [r.from_node for r in self.non_tree_relationships if r.from_node]
 
@@ -151,7 +151,7 @@ class PdfTreeNode(NodeMixin):
         """Number of non parent/child relationships containing this node."""
         return len(self.non_tree_relationships)
 
-    def unique_addresses(self) -> List[str]:
+    def unique_addresses(self) -> list[str]:
         """All the addresses in other nodes that refer to this object."""
         addresses = set([r.address for r in self.non_tree_relationships])
 
@@ -160,7 +160,7 @@ class PdfTreeNode(NodeMixin):
 
         return list(addresses)
 
-    def references_to_other_nodes(self) -> List[PdfObjectRelationship]:
+    def references_to_other_nodes(self) -> list[PdfObjectRelationship]:
         """Returns all nodes referenced from node.obj (see PdfObjectRelationship definition)."""
         return PdfObjectRelationship.build_node_references(from_node=self)
 
@@ -168,7 +168,7 @@ class PdfTreeNode(NodeMixin):
         """Returns True for ContentStream, DecodedStream, and EncodedStream objects."""
         return isinstance(self.obj, StreamObject)
 
-    def tree_address(self, max_length: Optional[int] = DEFAULT_MAX_ADDRESS_LENGTH) -> str:
+    def tree_address(self, max_length: int = DEFAULT_MAX_ADDRESS_LENGTH) -> str:
         """Creates a string like '/Catalog/Pages/Resources[2]/Font' truncated to max_length (if given)."""
         if self.label == TRAILER:
             return '/'
@@ -184,7 +184,7 @@ class PdfTreeNode(NodeMixin):
 
         return '...' + address[-max_length:][3:]
 
-    def address_of_this_node_in_other(self, from_node: Self) -> Optional[str]:
+    def address_of_this_node_in_other(self, from_node: Self) -> str | None:
         """Find the local address used in 'from_node' to refer to this node."""
         refs_to_this_node = [
             ref for ref in from_node.references_to_other_nodes()
@@ -223,7 +223,7 @@ class PdfTreeNode(NodeMixin):
 
             return address
 
-    def tree_relationships(self) -> List[Self]:
+    def tree_relationships(self) -> list[Self]:
         """Returns parents and children."""
         return list(self.children) + ([self.parent] if self.parent is not None else [])
 
@@ -244,7 +244,7 @@ class PdfTreeNode(NodeMixin):
         """Count nodes in the tree that are children/grandchildren/great grandchildren/etc of this one."""
         return len(self.children) + sum([child.descendants_count() for child in self.children])
 
-    def unique_labels_of_referring_nodes(self) -> List[str]:
+    def unique_labels_of_referring_nodes(self) -> list[str]:
         """Unique label strings of nodes referring here outside the parent/child hierarchy."""
         return list(set([r.from_node.label for r in self.non_tree_relationships]))
 
@@ -312,7 +312,7 @@ class PdfTreeNode(NodeMixin):
         for i, r in enumerate(self.non_tree_relationships):
             write_method(f"  {i + 1}. {escape(str(r))}, Descendant Count: {r.from_node.descendants_count()}")
 
-    def _colored_address(self, max_length: Optional[int] = None) -> Text:
+    def _colored_address(self, max_length: int | None = None) -> Text:
         """Rich text version of tree_address()."""
         text = Text('@', style='bright_white')
         return text.append(self.tree_address(max_length), style='address')

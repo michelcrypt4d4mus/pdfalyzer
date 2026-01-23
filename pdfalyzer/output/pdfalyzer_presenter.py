@@ -3,7 +3,7 @@ Handles formatting of console text output for Pdfalyzer class.
 """
 from collections import defaultdict, namedtuple
 from dataclasses import dataclass, field
-from typing import Callable, Optional
+from typing import Callable
 
 import yara
 from anytree import LevelOrderIter, RenderTree, SymlinkNode
@@ -112,7 +112,7 @@ class PdfalyzerPresenter:
         for font_info in [fi for fi in self.pdfalyzer.font_infos if font_idnum is None or font_idnum == fi.idnum]:
             font_info.print_summary()
 
-    def print_streams_analysis(self, idnum: Optional[int] = None) -> None:
+    def print_streams_analysis(self, idnum: int | None = None) -> None:
         """
         For each binary stream,
           1. Scan decompressed binary with YARA rules we applied to whole PDF (the ones in pdfalyzer/yara_rules/)
@@ -209,7 +209,7 @@ class PdfalyzerPresenter:
             'pdf_object_types': pdf_object_types,
         }
 
-    def _generate_rich_tree(self, node: PdfTreeNode, tree: Optional[Tree] = None) -> Tree:
+    def _generate_rich_tree(self, node: PdfTreeNode, tree: Tree | None = None) -> Tree:
         """Recursively generates a rich.tree.Tree object from 'node' and its children."""
         tree = tree or Tree(node.as_tree_node_table(self.pdfalyzer))
 

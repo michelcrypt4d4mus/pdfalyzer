@@ -2,7 +2,6 @@ import io
 from logging import Logger
 from os import path
 from pathlib import Path
-from typing import List, Optional, Union
 
 from pypdf import PdfReader, PdfWriter
 from pypdf.errors import DependencyError, EmptyFileError, PdfStreamError
@@ -39,10 +38,10 @@ class PdfFile:
         file_size (int): The size of the file in bytes.
     """
 
-    def __init__(self, file_path: Union[str, Path]) -> None:
+    def __init__(self, file_path: str | Path) -> None:
         """
         Args:
-            file_path (Union[str, Path]): Path to the PDF file.
+            file_path (str | Path): Path to the PDF file.
         """
         self.file_path: Path = Path(file_path)
 
@@ -58,17 +57,17 @@ class PdfFile:
     def extract_page_range(
         self,
         page_range: PageRange,
-        destination_dir: Optional[Path] = None,
-        extra_file_suffix: Optional[str] = None
+        destination_dir: Path | None = None,
+        extra_file_suffix: str | None = None
     ) -> Path:
         """
         Extract a range of pages to a new PDF file.
 
         Args:
             page_range (PageRange): Range of pages to extract.
-            destination_dir (Optional[Path]): Directory to save the new PDF file. Defaults to the same
+            destination_dir (Path | None): Directory to save the new PDF file. Defaults to the same
                 directory as the source PDF.
-            extra_file_suffix (Optional[str]): An optional suffix to append to the new PDF's filename.
+            extra_file_suffix (Path | None): An optional suffix to append to the new PDF's filename.
                 Defaults to the page range suffix.
 
         Returns:
@@ -102,26 +101,26 @@ class PdfFile:
 
     def extract_text(
         self,
-        page_range: Optional[PageRange] = None,
-        logger: Optional[Logger] = None,
+        page_range: PageRange | None = None,
+        logger: Logger | None = None,
         print_as_parsed: bool = False
-    ) -> Optional[str]:
+    ) -> str | None:
         """
         Use PyPDF to extract text page by page and use Tesseract to OCR any embedded images.
 
         Args:
-            page_range (Optional[PageRange]): If provided, only extract text from pages in this range.
+            page_range (PageRange | None, optional): If provided, only extract text from pages in this range.
                 Page numbers are 1-indexed. If not provided, extract text from all pages.
-            log (Optional[Logger]): If provided, log progress to this logger. Otherwise use default logger.
+            log (Logger | None, optional): If provided, log progress to this logger. Otherwise use default logger.
             print_as_parsed (bool): If True, print each page's text to STDOUT as it is parsed.
 
         Returns:
-            Optional[str]: The extracted text, or None if extraction failed.
+            str | None: The extracted text, or None if extraction failed.
         """
         from PIL import Image  # Imported here to avoid hard dependency if not using this method
         log = logger or yaralyzer_log
         log.debug(f"Extracting text from '{self.file_path}'...")
-        self._page_numbers_of_errors: List[int] = []
+        self._page_numbers_of_errors: list[int] = []
         extracted_pages = []
 
         try:
@@ -178,7 +177,7 @@ class PdfFile:
 
         return "\n\n".join(extracted_pages).strip()
 
-    def print_extracted_text(self, page_range: Optional[PageRange] = None, print_as_parsed: bool = False) -> None:
+    def print_extracted_text(self, page_range: PageRange | None = None, print_as_parsed: bool = False) -> None:
         """Fancy wrapper for printing the extracted text to the screen."""
         console.print(Panel(str(self.file_path), expand=False, style='bright_white reverse'))
         txt = self.extract_text(page_range=page_range, print_as_parsed=print_as_parsed)
@@ -212,9 +211,9 @@ class PdfFile:
         txt.append(f"Providing the devs with the extracted page and the stack trace help improve pypdf.")
         log_console.print(attention_getting_panel(blink_txt + txt, title='PyPDF Error'))
 
-    def _log_to_stderr(self, msg: str, style: Optional[str] = None) -> None:
+    def _log_to_stderr(self, msg: str, style: str = '') -> None:
         """When parsing very large PDFs it can be useful to log progress and other messages to STDERR."""
         if self.file_size < MIN_PDF_SIZE_TO_LOG_PROGRESS_TO_STDERR:
             return
 
-        log_console.print(msg, style=style or "")
+        log_console.print(msg, style=style)

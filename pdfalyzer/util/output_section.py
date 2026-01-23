@@ -37,7 +37,7 @@ class OutputSection:
             pdfalyzer: the `pdfalyzer` instance whose methods will be called to produce output
 
         Returns:
-            List[OutputSection]: List of `OutputSection` namedtuples with 'argument' and 'method' fields
+            list[OutputSection]: List of `OutputSection` namedtuples with 'argument' and 'method' fields
         """
         # Create a partial for print_font_info() because it's the only one that can take an argument
         # partials have no __name__ so update_wrapper() propagates the 'print_font_info' as this partial's name
