@@ -19,7 +19,7 @@ PDF_EXT = '.pdf'
 
 # 3rd party pdf-parser.py
 PDF_PARSER_PY = 'pdf-parser.py'
-PDF_PARSER_PATH_ENV_VAR = 'PDFALYZER_PDF_PARSER_PY_PATH'
+PDF_PARSER_PATH_ENV_VAR = 'PDFALYZER_PDF_PARSER_PY_PATH'  # Github workflow depends on this value!
 PROJECT_ROOT = Path(str(importlib.resources.files(PDFALYZER))).parent
 SCRIPTS_DIR = PROJECT_ROOT.joinpath('scripts')
 TOOLS_DIR = PROJECT_ROOT.joinpath('tools')

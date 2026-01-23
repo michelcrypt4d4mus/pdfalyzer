@@ -33,7 +33,7 @@ jobs:
           chmod +x ./tools/pdf-parser.py
       - name: Test with pytest
         run: |
-          PDFALYZER_PDF_PARSER_PY_PATH=./tools/ pytest -v --slow
+          PDFALYZER_PDF_PARSER_PY_PATH=./tools/pdf-parser.py pytest -v --slow
       - name: Lint with flake8
         run: |
           # stop the build if there are Python syntax errors or undefined names
