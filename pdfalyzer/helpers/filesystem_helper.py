@@ -7,7 +7,6 @@ import os
 from os.path import getsize
 from pathlib import Path
 
-from yaralyzer.helpers.env_helper import is_env_var_set_and_not_false, is_invoked_by_pytest
 from yaralyzer.helpers.file_helper import files_in_dir
 from yaralyzer.util.logging import log, log_console
 
@@ -20,11 +19,11 @@ PDF_EXT = '.pdf'
 
 # 3rd party pdf-parser.py
 PDF_PARSER_PY = 'pdf-parser.py'
-PDF_PARSER_EXECUTABLE_ENV_VAR = 'PDFALYZER_PDF_PARSER_PY_PATH'
+PDF_PARSER_PATH_ENV_VAR = 'PDFALYZER_PDF_PARSER_PY_PATH'
 PROJECT_ROOT = Path(str(importlib.resources.files(PDFALYZER))).parent
 SCRIPTS_DIR = PROJECT_ROOT.joinpath('scripts')
 TOOLS_DIR = PROJECT_ROOT.joinpath('tools')
-DEFAULT_PDF_PARSER_EXECUTABLE = TOOLS_DIR.joinpath(PDF_PARSER_PY)
+DEFAULT_PDF_PARSER_PATH = TOOLS_DIR.joinpath(PDF_PARSER_PY)
 
 
 def create_dir_if_it_does_not_exist(dir: Path) -> None:
@@ -69,31 +68,6 @@ def extract_page_number(file_path: str | Path) -> int | None:
 def file_size_in_mb(file_path: str | Path, decimal_places: int = 2) -> float:
     """Return the size of 'file_path' in MB rounded to 2 decimal places,"""
     return round(Path(file_path).stat().st_size / 1024.0 / 1024.0, decimal_places)
-
-
-def find_pdf_parser() -> Path | None:
-    """Find the location of Didier Stevens's pdf-parser.py on the current system."""
-    if is_env_var_set_and_not_false(PDF_PARSER_EXECUTABLE_ENV_VAR):
-        pdf_parser_path = Path(os.environ[PDF_PARSER_EXECUTABLE_ENV_VAR])
-
-        if pdf_parser_path.is_dir():
-            pdf_parser_path = pdf_parser_path.joinpath(PDF_PARSER_PY)
-
-        if not pdf_parser_path.exists():
-            log.warning(f"{PDF_PARSER_PY} not found at {PDF_PARSER_EXECUTABLE_ENV_VAR}={pdf_parser_path}")
-            pdf_parser_path = None
-    elif is_invoked_by_pytest():
-        pdf_parser_path = DEFAULT_PDF_PARSER_EXECUTABLE
-    else:
-        if DEFAULT_PDF_PARSER_EXECUTABLE.exists():
-            pdf_parser_path = DEFAULT_PDF_PARSER_EXECUTABLE
-        else:
-            pdf_parser_path = None
-
-    if pdf_parser_path and not is_executable(pdf_parser_path):
-        log.warning(f"{PDF_PARSER_PY} found but it's not executable...")
-
-    return pdf_parser_path
 
 
 def insert_suffix_before_extension(file_path: Path, suffix: str, separator: str = '__') -> Path:

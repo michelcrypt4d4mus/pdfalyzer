@@ -16,7 +16,7 @@
 
 # Path to directory containing Didier Stevens's pdf-parser.py. Only required for extracting binary streams to files.
 # There's a script to download it in this repo in scripts/install_didier_stevens_pdf_tools.sh.
-#     PDFALYZER_PDF_PARSER_PY_PATH=path/to/pdfparserdotpy/
+#     PDFALYZER_PDF_PARSER_PY_PATH=path/to/pdf-parser.py
 
 # Directory to write rendered output to, equivalent of permanently setting the --output-dir option.
 #     PDFALYZER_OUTPUT_DIR=path/to/write/files/to

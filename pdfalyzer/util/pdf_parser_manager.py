@@ -8,7 +8,7 @@ from subprocess import check_output
 from yaralyzer.util.logging import log, log_and_print, log_console
 
 from pdfalyzer.config import PdfalyzerConfig
-from pdfalyzer.helpers.filesystem_helper import (DEFAULT_PDF_PARSER_EXECUTABLE, PDF_PARSER_EXECUTABLE_ENV_VAR,
+from pdfalyzer.helpers.filesystem_helper import (DEFAULT_PDF_PARSER_PATH, PDF_PARSER_PATH_ENV_VAR,
      PDF_PARSER_PY, PROJECT_ROOT, SCRIPTS_DIR, dir_str, is_executable, relative_path)
 from pdfalyzer.util.exceptions import PdfParserError
 
@@ -19,7 +19,7 @@ CONTAINS_STREAM_REGEX = re.compile('\\s+Contains stream$')
 # Install info
 DIDIER_STEVENS_RAW_GITHUB_URL = 'https://raw.githubusercontent.com/DidierStevens/DidierStevensSuite/master/'
 INSTALL_SCRIPT_PATH = SCRIPTS_DIR.joinpath('install_didier_stevens_pdf_tools.sh').relative_to(PROJECT_ROOT)
-PDF_PARSER_TOOL_PATH = DEFAULT_PDF_PARSER_EXECUTABLE.relative_to(PROJECT_ROOT)
+PDF_PARSER_TOOL_PATH = DEFAULT_PDF_PARSER_PATH.relative_to(PROJECT_ROOT)
 PDF_PARSER_GITHUB_URL = DIDIER_STEVENS_RAW_GITHUB_URL + 'pdf-parser.py'
 PDF_PARSER_INSTALL_MSG = f"If you need to install pdf-parser.py it's a single .py file that can be " \
                          f"found at {PDF_PARSER_GITHUB_URL}. There's a script in the Pdfalyzer repo that " \
@@ -36,19 +36,16 @@ class PdfParserManager:
     path_to_pdf: Path = field(init=False)
 
     def __post_init__(self):
-        if PdfalyzerConfig.PDF_PARSER_EXECUTABLE is None:
-            raise PdfParserError(f"{PDF_PARSER_EXECUTABLE_ENV_VAR} not configured.\n\n{PDF_PARSER_INSTALL_MSG}")
+        if PdfalyzerConfig.PDF_PARSER_PATH is None:
+            raise PdfParserError(f"{PDF_PARSER_PATH_ENV_VAR} not configured.\n\n{PDF_PARSER_INSTALL_MSG}")
 
-        pdf_parser_relative_path = relative_path(PdfalyzerConfig.PDF_PARSER_EXECUTABLE)
+        pdf_parser_relative_path = relative_path(PdfalyzerConfig.PDF_PARSER_PATH)
 
-        if not PdfalyzerConfig.PDF_PARSER_EXECUTABLE.exists():
-            msg = f"{PDF_PARSER_PY} not found at configured location '{pdf_parser_relative_path}'\n\n"
-            raise PdfParserError(msg + PDF_PARSER_INSTALL_MSG)
-        elif not is_executable(PdfalyzerConfig.PDF_PARSER_EXECUTABLE):
+        if not is_executable(PdfalyzerConfig.PDF_PARSER_PATH):
             raise PdfParserError(f"{pdf_parser_relative_path} is not executable!")
 
         self.path_to_pdf = Path(self.args.file_to_scan_path)
-        self.base_shell_cmd = f'{PdfalyzerConfig.PDF_PARSER_EXECUTABLE} -O "{self.path_to_pdf}"'
+        self.base_shell_cmd = f'{PdfalyzerConfig.PDF_PARSER_PATH} -O "{self.path_to_pdf}"'
         self.extract_object_ids()
 
     def extract_object_ids(self) -> None:
