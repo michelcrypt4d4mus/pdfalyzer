@@ -1,0 +1,3 @@
+PDFALYZE = 'pdfalyze'
+PDFALYZER = f"{PDFALYZE}r"
+PDFALYZER_UPPER = PDFALYZER.upper()
