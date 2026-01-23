@@ -64,10 +64,7 @@ class PdfalyzerConfig:
     @classmethod
     def find_pdf_parser(cls) -> None:
         """Find the location of Didier Stevens's pdf-parser.py on the current system."""
-        if not is_invoked_by_pytest():
-            cls.PDF_PARSER_PATH = cls.get_env_value(PDF_PARSER_PATH_ENV_VAR, Path)
-
-        cls.PDF_PARSER_PATH = cls.PDF_PARSER_PATH or DEFAULT_PDF_PARSER_PATH
+        cls.PDF_PARSER_PATH = cls.get_env_value(PDF_PARSER_PATH_ENV_VAR, Path) or DEFAULT_PDF_PARSER_PATH
         log.warning(f"invoked_by_pytest={is_invoked_by_pytest()}, PDF_PARSER_PATH='{cls.PDF_PARSER_PATH}'")
         print(f"invoked_by_pytest={is_invoked_by_pytest()}, PDF_PARSER_PATH='{cls.PDF_PARSER_PATH}'")
 
