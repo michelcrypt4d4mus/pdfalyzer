@@ -297,7 +297,6 @@ class Pdfalyzer:
 
     def _handle_fatal_error(self, msg: str, e: Exception) -> None:
         self.close()
-        msg = f"{msg} ({e})"
 
         # Only exit if running in a 'pdfalyze some_file.pdf context', otherwise raise Exception.
         if is_pdfalyze_script:
