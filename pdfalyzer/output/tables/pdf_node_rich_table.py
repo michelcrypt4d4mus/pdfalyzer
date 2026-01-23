@@ -20,17 +20,15 @@ PREVIEW_STYLES = {HEX: BYTES_NO_DIM, STREAM: 'bytes'}
 # branch: pypdf_6.6.0__local_pypdf_changes__objstm
 def get_stream_preview_rows(node: 'PdfTreeNode') -> list[list[Text]]:
     """Get rows that preview the stream data"""
-    return_rows: list[list[Text]] = []
-
     if node.stream_length == 0:
-        return return_rows
-
-    if node.stream_data is None or len(node.stream_data) == 0:
+        return []
+    elif node.stream_data is None or len(node.stream_data) == 0:
         log.warning(node.__rich__().append(' is a stream object but had no stream data'))
-        return return_rows
+        return []
 
     stream_preview = node.stream_data[:STREAM_PREVIEW_LENGTH_IN_TABLE]
     stream_preview_length = len(stream_preview)
+    return_rows: list[list[Text]] = []
 
     if isinstance(node.stream_data, bytes):
         stream_preview_hex = hex_text(stream_preview).plain

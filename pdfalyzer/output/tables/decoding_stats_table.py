@@ -45,7 +45,8 @@ def build_decoding_stats_table(scanner: BinaryScanner) -> Table:
                 str(encoding_stats.forced_decode_count),
                 pct_txt(encoding_stats.forced_decode_count, stats.match_count),
                 str(encoding_stats.undecodable_count),
-                pct_txt(encoding_stats.undecodable_count, stats.match_count))
+                pct_txt(encoding_stats.undecodable_count, stats.match_count)
+            )
 
         # Add the outer table row - the one with the encoding name and two subtables
         stats_table.add_row(str(pattern), regex_subtable, decodes_subtable)

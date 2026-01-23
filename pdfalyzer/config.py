@@ -8,7 +8,6 @@ from pathlib import Path
 from typing import Callable, TypeVar
 
 from yaralyzer.config import YaralyzerConfig
-from yaralyzer.helpers.env_helper import is_invoked_by_pytest
 from yaralyzer.helpers.rich_text_helper import print_fatal_error_and_exit
 from yaralyzer.util.logging import log
 
@@ -21,8 +20,7 @@ T = TypeVar('T')
 
 
 class PdfalyzerConfig:
-    PDF_PARSER_PATH: Path | None = None
-
+    pdf_parser_path: Path | None = None
     _args: Namespace = Namespace()
 
     @classmethod
@@ -64,16 +62,14 @@ class PdfalyzerConfig:
     @classmethod
     def find_pdf_parser(cls) -> None:
         """Find the location of Didier Stevens's pdf-parser.py on the current system."""
-        if not is_invoked_by_pytest():
-            cls.PDF_PARSER_PATH = cls.get_env_value(PDF_PARSER_PATH_ENV_VAR, Path)
+        cls.pdf_parser_path = cls.get_env_value(PDF_PARSER_PATH_ENV_VAR, Path) or DEFAULT_PDF_PARSER_PATH
 
-        cls.PDF_PARSER_PATH = cls.PDF_PARSER_PATH or DEFAULT_PDF_PARSER_PATH
-
-        if cls.PDF_PARSER_PATH.exists():
-            if not is_executable(cls.PDF_PARSER_PATH):
-                log.warning(f"{PDF_PARSER_PY} found at {cls.PDF_PARSER_PATH} but it's not executable...")
+        if cls.pdf_parser_path.exists():
+            if not is_executable(cls.pdf_parser_path):
+                log.warning(f"{PDF_PARSER_PY} found at {cls.pdf_parser_path} but it's not executable...")
         else:
-            cls.PDF_PARSER_PATH = None
+            log.warning(f"Configured PDF_PARSER_PATH is '{cls.pdf_parser_path}' but that file doesn't exist!")
+            cls.pdf_parser_path = None
 
 
 PdfalyzerConfig.find_pdf_parser()

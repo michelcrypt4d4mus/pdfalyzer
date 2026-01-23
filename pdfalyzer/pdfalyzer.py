@@ -315,7 +315,6 @@ class Pdfalyzer:
 
     def _handle_fatal_error(self, msg: str, e: Exception) -> None:
         self.close()
-        msg = f"{msg} ({e})"
 
         # Only exit if running in a 'pdfalyze some_file.pdf context', otherwise raise Exception.
         if is_pdfalyze_script:
@@ -395,9 +394,7 @@ class Pdfalyzer:
                             # log.warning(f"Calling emergency walk_node({annot_node})")
                             # self.walk_node(annot_node)
             elif obj.get(TYPE) == XOBJECT and obj.get(SUBTYPE) == '/Form':
-                form = self.find_node_with_attr('type', ACRO_FORM)
-
-                if form:
+                if (form := self.find_node_with_attr('type', ACRO_FORM)):
                     log.warning(f"Forcing homeless {describe_obj(ref_and_obj)} to be child of {ACRO_FORM}")
                     form.add_child(self._build_or_find_node(ref, XOBJECT))
             elif obj.get(TYPE) == XREF:
@@ -444,12 +441,9 @@ class Pdfalyzer:
 
         # Force /Pages to be children of /Catalog
         for node in self.nodes_without_parents():
-            if node.type == PAGES:
-                catalog_node = self._catalog_node()
-
-                if catalog_node:
-                    log.warning(f"Forcing orphaned {PAGES} node {node} to be child of {catalog_node}")
-                    node.set_parent(catalog_node)
+            if node.type == PAGES and (catalog_node := self._catalog_node()):
+                log.warning(f"Forcing orphaned {PAGES} node {node} to be child of {catalog_node}")
+                node.set_parent(catalog_node)
 
     def _extract_font_infos(self) -> None:
         """Extract information about fonts in the tree and place it in `self.font_infos`."""

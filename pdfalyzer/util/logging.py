@@ -11,7 +11,7 @@ from rich.logging import RichHandler
 from rich.theme import Theme
 # Other files import log from here to trigger log setup
 from yaralyzer.output.rich_console import YARALYZER_THEME_DICT, console
-from yaralyzer.util.logging import log, log_console, log_trace  # noqa: F401  # Trigger log setup
+from yaralyzer.util.logging import DEFAULT_LOG_HANDLER_KWARGS, log, log_console, log_trace
 
 from pdfalyzer.helpers.string_helper import regex_to_highlight_pattern, regex_to_capture_group_label
 from pdfalyzer.output.styles.node_colors import LABEL_STYLES, PARENT_STYLE, PDF_TYPE_STYLES, ClassStyle
@@ -23,7 +23,6 @@ LOG_THEME_DICT = {
     "array_obj": f"{PDF_ARRAY_STYLE} italic",
     "child": "orange3 bold",
     "dictionary_obj": f"{PDF_DICTIONARY_STYLE} italic",
-    # "failed": "bright_red",
     "indeterminate": 'bright_black',
     "indirect_object": 'light_coral',
     "node_type": 'honeydew2',
@@ -32,14 +31,12 @@ LOG_THEME_DICT = {
     "pypdf_prefix": "light_slate_gray",
     "relationship": 'light_pink4',
     "stream_object": 'light_slate_blue bold',
-    **{regex_to_capture_group_label(label_style[0]): label_style[1] for label_style in LONG_ENOUGH_LABEL_STYLES},
-    **{regex_to_capture_group_label(re.compile(cs[0].__name__)): cs[1] for cs in PDF_TYPE_STYLES},
     # Overload default theme
     'call': 'magenta',
-    # "filename": 'medium_purple',
-    # "path": 'medium_purple',
     'ipv4': 'cyan',
     'ipv6': 'cyan',
+    **{regex_to_capture_group_label(label_style[0]): label_style[1] for label_style in LONG_ENOUGH_LABEL_STYLES},
+    **{regex_to_capture_group_label(re.compile(cs[0].__name__)): cs[1] for cs in PDF_TYPE_STYLES},
 }
 
 PYPDF_LOG_PFX_PATTERN = r"\(pypdf\)"
@@ -73,14 +70,14 @@ HIGHLIGHT_PATTERNS = DEFAULT_REPR_HIGHLIGHTER_PATTERNS + [
     r"(?P<array_obj>Array(Object)?)",
     r"(?P<child>[cC]hild(ren)?|/?Kids)",
     r"(?P<dictionary_obj>Dictionary(Object)?)",
-    # r"(?P<failed>failed)",
     r"(?P<indeterminate>[Ii]ndeterminate( ?[nN]odes?)?)",
     r"(?P<indirect_object>IndirectObject)",
     r"(?P<node_type>/(Subt|T)ype\b)",
     r"(?P<parent>/?(Struct)?[pP]arents?)",
     fr"(?P<pypdf_line>{PYPDF_LOG_PFX_PATTERN} .*)",
     fr"(?P<pypdf_prefix>{PYPDF_LOG_PFX_PATTERN})",
-    r"(?P<relationship>Relationship)",
+    r"(?P<relationship>Relationship( of)?)",
+    r"(?P<relationship>via symlink|parent/child|child/parent)",
     r"(?P<stream_object>((De|En)coded)?Stream(Object)?)",
     *[regex_to_highlight_pattern(label_style[0]) for label_style in LONG_ENOUGH_LABEL_STYLES],
     *[regex_to_highlight_pattern(re.compile(cs[0].__name__)) for cs in PDF_TYPE_STYLES],
@@ -96,47 +93,28 @@ class LogHighlighter(ReprHighlighter):
     def get_style(self, for_str: str) -> str:
         """Return the first style that matches the 'for_str'."""
         for highlight in self.highlights:
-            match = highlight.search(for_str)
-
-            if match:
-                return self.base_style + next(k for k in match.groupdict().keys())
-
-        return ''
-
-    def get_style(self, for_str: str) -> str:
-        """Return the first style that matches the 'for_str'."""
-        for highlight in self.highlights:
-            match = highlight.search(for_str)
-
-            if match:
+            if (match := highlight.search(for_str)):
                 return self.base_style + next(k for k in match.groupdict().keys())
 
         return ''
 
 
-log_handler_kwargs = {
-    'console': log_console,
-    'highlighter': LogHighlighter(),
-    'omit_repeated_times': False,
-    'rich_tracebacks': True,
-}
+log_highlighter = LogHighlighter()
+log_handler_kwargs = {'highlighter': log_highlighter, **DEFAULT_LOG_HANDLER_KWARGS}
 
 # Redirect pypdf logs
 pypdf_log_handler = RichHandler(**log_handler_kwargs)
-log_console.push_theme(LOG_THEME)
 pypdf_log_handler.setLevel(logging.WARNING)
 pypdf_log_handler.formatter = logging.Formatter(PYPDF_LOG_PFX + ' %(message)s')
-pypdf_logger = logging.getLogger("pypdf")
-pypdf_logger.addHandler(pypdf_log_handler)
+logging.getLogger("pypdf").addHandler(pypdf_log_handler)
 
 # pdfalyzer log highlighting
 pdfalyzer_log_handler = RichHandler(**log_handler_kwargs)
 log.handlers = [pdfalyzer_log_handler]
-log_highlighter = log_handler_kwargs['highlighter']
 
 # pdfalyzer output highlighting
 console.push_theme(Theme({**YARALYZER_THEME_DICT, **LOG_THEME_DICT}))
-
+log_console.push_theme(LOG_THEME)
 
 # print("\n\n *** PATTERNS ***\n")
 

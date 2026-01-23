@@ -105,8 +105,8 @@ class PdfObjectRelationship:
         return self.from_node.idnum == other.from_node.idnum
 
     def __str__(self) -> str:
-        s = f"Relationship of {self.from_node} (ref_key={self.reference_key}, address='{self.address}')"
-        s += f" to {self.to_obj.idnum}"
+        s = f"Relationship of {self.from_node} to {self.to_obj.idnum}"
+        s += f" (ref_key={self.reference_key}, address='{self.address}')"
         s += f" is parent/child" if self.is_parent else ''
         s += f" is child/parent" if self.is_child else ''
         s += f" via symlink" if self.is_link else ''

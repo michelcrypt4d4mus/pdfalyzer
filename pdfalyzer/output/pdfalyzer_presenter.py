@@ -151,10 +151,9 @@ class PdfalyzerPresenter:
 
     def print_yara_results(self) -> None:
         """Scan the main PDF and each individual binary stream in it with yara_rules/*.yara files."""
-        print_section_header(f"YARA Scan of PDF rules for '{self.pdfalyzer.pdf_basename}'")
-        YaralyzerConfig.args.standalone_mode = True  # TODO: using 'standalone mode' like this kind of sucks
-
         try:
+            print_section_header(f"YARA Scan of PDF rules for '{self.pdfalyzer.pdf_basename}'")
+            YaralyzerConfig.args.standalone_mode = True  # TODO: using 'standalone mode' like this kind of sucks
             self.yaralyzer.yaralyze()
         except yara.Error as e:
             console.print_exception()
@@ -252,9 +251,8 @@ class PdfalyzerPresenter:
         table = Table(header_style='bold', title=' Metadata', title_style='grey', title_justify='left')
         table.add_column('Property', justify='right')
         table.add_column('Value', min_width=40)
-        metadata = self.pdfalyzer.pdf_reader.metadata or {}
 
-        if metadata:
+        if (metadata := self.pdfalyzer.pdf_reader.metadata or {}):
             for k, v in metadata.items():
                 v = log_highlighter(str(v)) if isinstance(v, str) and any(hif in v for hif in HIGHLIGHT_IF) else str(v)
                 table.add_row(Text(k, style='wheat4'), v)

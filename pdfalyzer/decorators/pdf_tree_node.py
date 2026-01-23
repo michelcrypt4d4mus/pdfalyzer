@@ -93,20 +93,16 @@ class PdfTreeNode(NodeMixin):
 
     def set_parent(self, parent: Self | None, force: bool = False) -> None:
         """Set the parent of this node."""
-
         if parent is None:
             return
-
-        if self.parent is not None and self.parent != parent and not force:
-            log_msg = f"Cannot set {parent} as parent of {self}, parent is already {self.parent}"
-
+        elif self.parent is not None and self.parent != parent and not force:
             # Some objs in Arrays have the array's parent in /Parent so we link through
             if isinstance(self.parent.obj, ArrayObject):
                 log.warning(f"Parent of {self} is already {self.parent} but it's an array; inserting {parent} as grandparent")
                 parent.set_parent(self.parent)
                 self.parent = parent
             else:
-                log.warning(log_msg)
+                log.warning(f"Cannot set {parent} as parent of {self}, parent is already {self.parent}")
 
             return
 
