@@ -17,7 +17,7 @@ PROJECT_DIR = PYTESTS_DIR.parent
 DOCUMENTATION_DIR = PROJECT_DIR.joinpath('doc')
 SVG_DIR = DOCUMENTATION_DIR.joinpath('svgs')
 RENDERED_IMAGES_DIR = SVG_DIR.joinpath('rendered_images')
-FIXTURES_DIR = PROJECT_DIR.joinpath('tests', 'fixtures')
+FIXTURES_DIR = PYTESTS_DIR.joinpath('fixtures')
 RENDERED_FIXTURES_DIR = FIXTURES_DIR.joinpath('rendered')
 REBUILD_FIXTURES_ENV_VAR = 'PYTEST_REBUILD_FIXTURES'
 
