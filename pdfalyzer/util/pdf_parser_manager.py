@@ -9,7 +9,7 @@ from yaralyzer.util.logging import log, log_and_print
 
 from pdfalyzer.config import PdfalyzerConfig
 from pdfalyzer.helpers.filesystem_helper import (DEFAULT_PDF_PARSER_EXECUTABLE, PDF_PARSER_EXECUTABLE_ENV_VAR,
-     PROJECT_ROOT, SCRIPTS_DIR)
+     PDF_PARSER_PY, PROJECT_ROOT, SCRIPTS_DIR, is_executable, relative_path)
 from pdfalyzer.util.exceptions import PdfParserError
 
 # PDF Internal Data Regexes
@@ -40,9 +40,13 @@ class PdfParserManager:
         if PdfalyzerConfig.PDF_PARSER_EXECUTABLE is None:
             raise PdfParserError(f"{PDF_PARSER_EXECUTABLE_ENV_VAR} not configured.\n\n{PDF_PARSER_INSTALL_MSG}")
 
+        pdf_parser_relative_path = relative_path(PdfalyzerConfig.PDF_PARSER_EXECUTABLE)
+
         if not PdfalyzerConfig.PDF_PARSER_EXECUTABLE.exists():
-            msg = f"pdf-parser.py not found at configured location '{PdfalyzerConfig.PDF_PARSER_EXECUTABLE}'\n\n"
+            msg = f"{PDF_PARSER_PY} not found at configured location '{pdf_parser_relative_path}'\n\n"
             raise PdfParserError(msg + PDF_PARSER_INSTALL_MSG)
+        elif not is_executable(PdfalyzerConfig.PDF_PARSER_EXECUTABLE):
+            raise PdfParserError(f"{pdf_parser_relative_path} is not executable!")
 
         self.output_dir = Path(self.args.output_dir)
         self.path_to_pdf = Path(self.args.file_to_scan_path)

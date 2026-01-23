@@ -96,10 +96,23 @@ def find_pdf_parser() -> Path | None:
         else:
             pdf_parser_path = None
 
-    if pdf_parser_path and not os.access(pdf_parser_path, os.X_OK):
+    if pdf_parser_path and not is_executable(pdf_parser_path):
         log.warning(f"{PDF_PARSER_PY} found but it's not executable...")
 
     return pdf_parser_path
+
+
+def is_executable(file_path: Path) -> bool:
+    return os.access(file_path, os.X_OK)
+
+
+# TODO: import from yaralyzer
+def relative_path(path: Path) -> Path:
+    """Get path relative to current working directory."""
+    try:
+        return path.relative_to(Path.cwd())
+    except ValueError:
+        return path
 
 
 def set_max_open_files(num_filehandles: int = DEFAULT_MAX_OPEN_FILES) -> tuple[int | None, int | None]:
