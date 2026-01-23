@@ -1,21 +1,14 @@
 """
 Functions for miscellaneous Rich text/string pretty printing operations.
 """
-from sys import stderr
 from typing import List, Optional, Union
 
-from rich.console import Console
 from rich.panel import Panel
 from rich.padding import Padding
 from rich.text import Text
-from yaralyzer.helpers.env_helper import DEFAULT_CONSOLE_KWARGS
 from yaralyzer.output.rich_console import console
 
 ARROW_BULLET = '➤ '
-
-# Usually we use the yaralyzer console but that has no highlighter
-# TODO: we have a highlighter now
-pdfalyzer_console = Console(**DEFAULT_CONSOLE_KWARGS)
 
 
 def attention_getting_panel(text: Text, title: str, style: str = 'white on red') -> Padding:
