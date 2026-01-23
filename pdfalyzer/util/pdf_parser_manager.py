@@ -58,13 +58,12 @@ class PdfParserManager:
         """Examine output of pdf-parser.py to find all object IDs as well as those object IDs that have streams"""
         try:
             pdf_parser_output = check_output(self.base_shell_cmd, env=environ, shell=True, text=True)
-        except:
-            raise PdfParserError(f"Failed to execute '{self.base_shell_cmd}'")
+        except Exception as e:
+            raise PdfParserError(f"Failed to execute '{self.base_shell_cmd}' ({e})")
 
-        pdf_parser_output_lines = pdf_parser_output.split("\n")
         current_object_id = None
 
-        for line in pdf_parser_output_lines:
+        for line in pdf_parser_output.split("\n"):
             match = PDF_OBJECT_START_REGEX.match(line)
 
             if match:
@@ -88,8 +87,12 @@ class PdfParserManager:
         for object_id in self.object_ids_containing_stream_data:
             stream_dump_file = self.output_dir.joinpath(f'{self.path_to_pdf.name}.object_{object_id}.bin')
             shell_cmd = self.base_shell_cmd + f' -f -o {object_id} -d "{stream_dump_file}"'
-            log.info(f'Dumping stream from object {object_id}: {shell_cmd}')
-            system(shell_cmd)
+            log.info(f'Dumping stream from object {object_id} with cmd:\n\n{shell_cmd}\n')
+
+            try:
+                check_output(shell_cmd, env=environ, shell=True, text=True)
+            except Exception as e:
+                log.error(f"Failed to extract object ID {object_id}!")
 
         output_dir_str = str(self.output_dir) + ('/' if str(self.output_dir).endswith('/') else '')
         log_and_print(f"Binary stream extraction complete, {len(self.object_ids_containing_stream_data)} "
