@@ -59,7 +59,7 @@ def pdfalyze():
     for section in OutputSection.selected_sections(args, presenter):
         if args.output_dir:
             output_basepath = PdfalyzerConfig.get_output_basepath(section.method)
-            print(f'Exporting {section.argument} data to {output_basepath}...')
+            log.debug(f"Exporting {section.argument} data to basepath '{output_basepath}'...")
             console.record = True
 
         section.method()

@@ -4,6 +4,7 @@ Parse command line arguments for `pdfalyze` and construct the `PdfalyzerConfig` 
 import sys
 from argparse import ArgumentParser, Namespace
 from importlib.metadata import version
+from pathlib import Path
 from typing import Optional
 
 from rich_argparse_plus import RichHelpFormatterPlus
@@ -14,7 +15,6 @@ from yaralyzer.util.logging import log, log_argparse_result, log_current_config,
 
 from pdfalyzer.config import PDFALYZE, PDFALYZER, PdfalyzerConfig
 from pdfalyzer.detection.constants.binary_regexes import QUOTE_PATTERNS
-from pdfalyzer.helpers.rich_text_helper import print_highlighted
 from pdfalyzer.util.output_section import ALL_STREAMS, DOCINFO, TREE, RICH, FONTS, COUNTS, STREAMS, YARA
 
 RichHelpFormatterPlus.choose_theme('prince')
@@ -38,8 +38,13 @@ export.add_argument('-bin', '--extract-binary-streams',
                     help='extract all binary streams in the PDF to separate files (requires pdf-parser.py)')
 
 # Make sure --no-timestamps is last in FILE EXPORT group, after newly added --extract-binary-streams
+# TODO: this really sucks.
 no_timestamps_idx = [i for i, arg in enumerate(parser._actions) if '--no-timestamps' in arg.option_strings][0]
 parser._actions = parser._actions[:no_timestamps_idx] + [parser._actions[-1]] + parser._actions[no_timestamps_idx:-1]
+
+for action_group in parser._action_groups:
+    action_group._actions = parser._actions
+
 
 # Add one more option to the YARA rules section
 source.add_argument('--no-default-yara-rules',
@@ -139,6 +144,14 @@ def parse_arguments(_argv: list[str] | None = None) -> Namespace:
     # File export options
     args.extract_quoteds = args.extract_quoteds or []
     args.output_basename = f"{args.file_prefix}{args.file_to_scan_path.name}"
+
+    if PdfalyzerConfig.get_env_value('OUTPUT_DIR'):
+        env_output_dir = PdfalyzerConfig.get_env_value('OUTPUT_DIR', Path)
+
+        if not args.output_dir or args.output_dir == Path.cwd():
+            log.info(f"Using --output-dir '{env_output_dir}' from env PDFALYZER_OUTPUT_DIR...")
+            args.output_dir = env_output_dir
+
     PdfalyzerConfig._args = args
     log_argparse_result(args, 'parsed')
     log_current_config()
