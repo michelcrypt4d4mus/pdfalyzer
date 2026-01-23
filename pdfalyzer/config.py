@@ -69,6 +69,7 @@ class PdfalyzerConfig:
 
         cls.PDF_PARSER_PATH = cls.PDF_PARSER_PATH or DEFAULT_PDF_PARSER_PATH
         log.warning(f"invoked_by_pytest={is_invoked_by_pytest()}, PDF_PARSER_PATH='{cls.PDF_PARSER_PATH}'")
+        print(f"invoked_by_pytest={is_invoked_by_pytest()}, PDF_PARSER_PATH='{cls.PDF_PARSER_PATH}'")
 
         if cls.PDF_PARSER_PATH.exists():
             if not is_executable(cls.PDF_PARSER_PATH):
@@ -79,3 +80,4 @@ class PdfalyzerConfig:
 
 PdfalyzerConfig.find_pdf_parser()
 log.warning(f"After call config.PDF_PARSER_PATH={PdfalyzerConfig.PDF_PARSER_PATH}")
+print(f"After call config.PDF_PARSER_PATH={PdfalyzerConfig.PDF_PARSER_PATH}")
