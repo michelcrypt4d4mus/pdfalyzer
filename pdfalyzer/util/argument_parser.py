@@ -108,6 +108,22 @@ select.add_argument('--preview-stream-length',
 parser._action_groups = parser._action_groups[:2] + [parser._action_groups[-1]] + parser._action_groups[2:-1]
 is_pdfalyze_script = (parser.prog == PDFALYZE)
 
+for ag in parser._action_groups:
+    print(f"group title: {ag.title}")
+    if 'EXPORT' in (ag.title or ''):
+        ag._group_actions = ag._group_actions[:-2] + [ag._group_actions[-1]] + [ag._group_actions[-2]]
+        for a in ag._group_actions:
+            print(f"Action: {a}\n")
+
+        import pdb;pdb.set_trace()
+    # print(f"group: {repr(ag)}\n")
+
+# print('\n\n')
+# for a in parser._actions:
+#     print(f"Action: {a}\n")
+# print('\n\n')
+
+
 
 ################################
 # Main argument parsing begins #
