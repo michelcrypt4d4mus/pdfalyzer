@@ -23,7 +23,6 @@ LOG_THEME_DICT = {
     "array_obj": f"{PDF_ARRAY_STYLE} italic",
     "child": "orange3 bold",
     "dictionary_obj": f"{PDF_DICTIONARY_STYLE} italic",
-    # "failed": "bright_red",
     "indeterminate": 'bright_black',
     "indirect_object": 'light_coral',
     "node_type": 'honeydew2',
@@ -32,14 +31,12 @@ LOG_THEME_DICT = {
     "pypdf_prefix": "light_slate_gray",
     "relationship": 'light_pink4',
     "stream_object": 'light_slate_blue bold',
-    **{regex_to_capture_group_label(label_style[0]): label_style[1] for label_style in LONG_ENOUGH_LABEL_STYLES},
-    **{regex_to_capture_group_label(re.compile(cs[0].__name__)): cs[1] for cs in PDF_TYPE_STYLES},
     # Overload default theme
     'call': 'magenta',
-    # "filename": 'medium_purple',
-    # "path": 'medium_purple',
     'ipv4': 'cyan',
     'ipv6': 'cyan',
+    **{regex_to_capture_group_label(label_style[0]): label_style[1] for label_style in LONG_ENOUGH_LABEL_STYLES},
+    **{regex_to_capture_group_label(re.compile(cs[0].__name__)): cs[1] for cs in PDF_TYPE_STYLES},
 }
 
 PYPDF_LOG_PFX_PATTERN = r"\(pypdf\)"
@@ -73,7 +70,6 @@ HIGHLIGHT_PATTERNS = DEFAULT_REPR_HIGHLIGHTER_PATTERNS + [
     r"(?P<array_obj>Array(Object)?)",
     r"(?P<child>[cC]hild(ren)?|/?Kids)",
     r"(?P<dictionary_obj>Dictionary(Object)?)",
-    # r"(?P<failed>failed)",
     r"(?P<indeterminate>[Ii]ndeterminate( ?[nN]odes?)?)",
     r"(?P<indirect_object>IndirectObject)",
     r"(?P<node_type>/(Subt|T)ype\b)",
