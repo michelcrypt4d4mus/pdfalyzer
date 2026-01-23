@@ -17,6 +17,7 @@ from pdfalyzer.util.output_section import ALL_STREAMS
 
 PDFALYZE = 'pdfalyze'
 PDFALYZER = f"{PDFALYZE}r"
+PDFALYZER_UPPER = PDFALYZER.upper()
 PROJECT_ROOT = Path(str(importlib.resources.files(PDFALYZER))).parent
 SCRIPTS_DIR = PROJECT_ROOT.joinpath('scripts')
 TOOLS_DIR = PROJECT_ROOT.joinpath('tools')
@@ -52,7 +53,7 @@ class PdfalyzerConfig:
     @classmethod
     def get_env_value(cls, env_var_name: str, var_type: Callable[[str], T] = str) -> T | None:
         """If called with 'output_dir' it will check env value of 'PDFALYZER_OUTPUT_DIR'."""
-        env_var = f"{PDFALYZER}_{env_var_name}".upper()
+        env_var = f"{PDFALYZER_UPPER}_{env_var_name}".upper()
         env_value = environ.get(env_var)
         log.debug(f"Checked env for '{env_var}', found '{env_value}'")
         env_value = var_type(env_value) if env_value else None

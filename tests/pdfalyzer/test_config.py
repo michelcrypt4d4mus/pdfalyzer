@@ -2,7 +2,7 @@ from contextlib import contextmanager
 from os import environ
 from pathlib import Path
 
-from pdfalyzer.config import PDFALYZER, PdfalyzerConfig
+from pdfalyzer.config import PDFALYZER_UPPER, PdfalyzerConfig
 from pdfalyzer.output.pdfalyzer_presenter import PdfalyzerPresenter
 from pdfalyzer.util.argument_parser import parse_arguments
 
@@ -26,7 +26,7 @@ def test_get_output_basepath(export_analyzing_malicious_args, analyzing_maliciou
 def test_get_env_value(tmp_dir):
     tmp_dir_str = str(tmp_dir)
 
-    with setup_and_tear_down_env_vars({f"{PDFALYZER}_OUTPUT_DIR": tmp_dir_str}):
+    with setup_and_tear_down_env_vars({f"{PDFALYZER_UPPER}_OUTPUT_DIR": tmp_dir_str}):
         assert PdfalyzerConfig.get_env_value('OUTPUT_DIR') == tmp_dir_str
         assert PdfalyzerConfig.get_env_value('output_dir') == tmp_dir_str
         assert PdfalyzerConfig.get_env_value('OUTPUT_DIR', Path) == tmp_dir
