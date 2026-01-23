@@ -31,10 +31,9 @@ class PdfParserManager:
     """Instances of this class manage external calls to Didier Stevens's pdf-parser.py for a given PDF."""
     args: Namespace
     base_shell_cmd: str = field(init=False)
-    output_dir: Path = field(init=False)
-    path_to_pdf: Path = field(init=False)
     object_ids: list[int] = field(default_factory=list)
     object_ids_containing_stream_data: list[int] = field(default_factory=list)
+    path_to_pdf: Path = field(init=False)
 
     def __post_init__(self):
         if PdfalyzerConfig.PDF_PARSER_EXECUTABLE is None:
@@ -48,7 +47,6 @@ class PdfParserManager:
         elif not is_executable(PdfalyzerConfig.PDF_PARSER_EXECUTABLE):
             raise PdfParserError(f"{pdf_parser_relative_path} is not executable!")
 
-        self.output_dir = Path(self.args.output_dir)
         self.path_to_pdf = Path(self.args.file_to_scan_path)
         self.base_shell_cmd = f'{PdfalyzerConfig.PDF_PARSER_EXECUTABLE} -O "{self.path_to_pdf}"'
         self.object_ids_containing_stream_data = []
@@ -82,10 +80,10 @@ class PdfParserManager:
 
     def extract_all_streams(self) -> None:
         """Use pdf-parser.py to find binary data streams in the PDF and dump each of them to a separate file"""
-        log_and_print(f"Extracting binary streams in '{self.path_to_pdf}' to files in '{self.output_dir}'...")
+        log_and_print(f"Extracting binary streams in '{self.path_to_pdf}' to files in '{self.args.output_dir}'...")
 
         for object_id in self.object_ids_containing_stream_data:
-            stream_dump_file = self.output_dir.joinpath(f'{self.path_to_pdf.name}.object_{object_id}.bin')
+            stream_dump_file = self.args.output_dir.joinpath(f'{self.path_to_pdf.name}.object_{object_id}.bin')
             shell_cmd = self.base_shell_cmd + f' -f -o {object_id} -d "{stream_dump_file}"'
             log.info(f'Dumping stream from object {object_id} with cmd:\n\n{shell_cmd}\n')
 
@@ -94,6 +92,6 @@ class PdfParserManager:
             except Exception as e:
                 log.error(f"Failed to extract object ID {object_id}!")
 
-        output_dir_str = str(self.output_dir) + ('/' if str(self.output_dir).endswith('/') else '')
+        output_dir_str = str(self.args.output_dir) + ('/' if str(self.args.output_dir).endswith('/') else '')
         log_and_print(f"Binary stream extraction complete, {len(self.object_ids_containing_stream_data)} "
                       f"files written to '{output_dir_str}'.\n")
