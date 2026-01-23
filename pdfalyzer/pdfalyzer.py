@@ -15,7 +15,7 @@ from pypdf.generic import DictionaryObject, IndirectObject
 from rich.prompt import Prompt
 from rich.text import Text
 from yaralyzer.helpers.file_helper import load_binary_data
-from yaralyzer.helpers.rich_text_helper import print_fatal_error_and_exit
+from yaralyzer.helpers.rich_text_helper import print_fatal_error, print_fatal_error_and_exit
 from yaralyzer.output.file_hashes_table import BytesInfo, compute_file_hashes
 from yaralyzer.output.rich_console import console
 
@@ -25,7 +25,6 @@ from pdfalyzer.decorators.pdf_tree_node import PdfTreeNode
 from pdfalyzer.decorators.pdf_tree_verifier import PdfTreeVerifier
 from pdfalyzer.font_info import FontInfo
 from pdfalyzer.helpers.pdf_object_helper import RefAndObj, describe_obj
-from pdfalyzer.helpers.rich_text_helper import print_error
 from pdfalyzer.pdf_object_relationship import PdfObjectRelationship
 from pdfalyzer.util.adobe_strings import *
 from pdfalyzer.util.argument_parser import is_pdfalyze_script
@@ -301,9 +300,9 @@ class Pdfalyzer:
 
         # Only exit if running in a 'pdfalyze some_file.pdf context', otherwise raise Exception.
         if is_pdfalyze_script:
-            print_fatal_error_and_exit(msg)
+            print_fatal_error_and_exit(msg, e)
         else:
-            print_error(msg)
+            print_fatal_error(msg, e)
             raise e
 
     def _info_node(self) -> PdfTreeNode | None:

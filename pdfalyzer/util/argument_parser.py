@@ -10,12 +10,13 @@ from typing import Optional
 from rich_argparse_plus import RichHelpFormatterPlus
 from rich.prompt import Confirm
 from rich.text import Text
+from yaralyzer.helpers.rich_text_helper import print_fatal_error_and_exit
 from yaralyzer.util.argument_parser import debug, epilog, export, parser, parse_arguments as parse_yaralyzer_args, source
-from yaralyzer.util.logging import log, log_argparse_result, log_current_config, log_invocation
+from yaralyzer.util.logging import log, log_argparse_result, log_console, log_current_config, log_invocation
 
 from pdfalyzer.config import PDFALYZE, PDFALYZER, PdfalyzerConfig
 from pdfalyzer.detection.constants.binary_regexes import QUOTE_PATTERNS
-from pdfalyzer.util.output_section import ALL_STREAMS, DOCINFO, TREE, RICH, FONTS, COUNTS, STREAMS, YARA
+from pdfalyzer.util.output_section import ALL_STREAMS, DEFAULT_SECTIONS
 
 RichHelpFormatterPlus.choose_theme('prince')
 
@@ -23,9 +24,6 @@ DESCRIPTION = "Explore PDF's inner data structure with absurdly large and in dep
               "Track the control flow of her darker impulses, scan rivers of her binary data for signs " + \
               "of evil sorcery, and generally peer deep into the dark heart of the Portable Document Format. " + \
               "Just make sure you also forgive her - she knows not what she does."
-
-DEFAULT_SECTIONS = [DOCINFO, TREE, RICH, FONTS, COUNTS, YARA]
-ALL_SECTIONS = DEFAULT_SECTIONS + [STREAMS]
 
 # Add one more top level argument
 parser.add_argument('--password',
@@ -134,12 +132,12 @@ def parse_arguments(_argv: list[str] | None = None) -> Namespace:
 
     if not args.streams:
         if args.extract_quoteds:
-            exit_with_error("--extract-quoted does nothing if --streams is not selected")
+            log.warning("--extract-quoted does nothing if --streams is not selected")
         if args.suppress_boms:
             log.warning("--suppress-boms has nothing to suppress if --streams is not selected")
 
     if args.no_default_yara_rules and not args.yara_rules_files:
-        exit_with_error("--no-default-yara-rules requires at least one --yara-file argument")
+        print_fatal_error_and_exit("--no-default-yara-rules requires at least one --yara-file argument")
 
     # File export options
     args.extract_quoteds = args.extract_quoteds or []
@@ -158,25 +156,14 @@ def parse_arguments(_argv: list[str] | None = None) -> Namespace:
     return args
 
 
-def all_sections_chosen(args: Namespace) -> bool:
-    """Returns True if all flags are set or no flags are set."""
-    return len([s for s in ALL_SECTIONS if vars(args)[s]]) == len(ALL_SECTIONS)
-
-
 #############
 #  Helpers  #
 #############
 
-def ask_to_proceed() -> None:
+def ask_to_proceed(msg: str | Text | None = None) -> None:
     """Exit if user doesn't confirm they want to proceed."""
-    if not Confirm.ask(Text("Proceed anyway?")):
-        exit_with_error()
+    msg = msg if isinstance(msg, Text) else Text(msg or "Proceed anyway?")
 
-
-def exit_with_error(error_message: Optional[str] = None) -> None:
-    """Print 'error_message' and exit with status code 1."""
-    if error_message:
-        print_highlighted(Text('').append('ERROR', style='bold red').append(f': {error_message}'))
-
-    print_highlighted('Exiting...', style='dim red')
-    sys.exit(1)
+    if not Confirm.ask(msg):
+        log_console.print('Exiting...', style='dim')
+        sys.exit()

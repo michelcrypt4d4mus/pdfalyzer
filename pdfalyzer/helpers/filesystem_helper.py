@@ -8,9 +8,7 @@ from typing import Optional, Union
 
 from yaralyzer.helpers.file_helper import files_in_dir
 from yaralyzer.output.rich_console import console
-from yaralyzer.util.logging import log
-
-from pdfalyzer.helpers.rich_text_helper import print_highlighted
+from yaralyzer.util.logging import log, log_console
 
 NUMBERED_PAGE_REGEX = re.compile(r'.*_(\d+)\.\w{3,4}$')
 DEFAULT_MAX_OPEN_FILES = 256  # macOS default
@@ -91,7 +89,7 @@ def set_max_open_files(num_filehandles: int = DEFAULT_MAX_OPEN_FILES) -> tuple[O
         resource = None
 
     if resource is None:
-        print_highlighted(f"No resource module; cannot set max open files on this platform...", style='yellow')
+        log.warning(f"No resource module; cannot set max open files on this platform...")
         return (None, None)
     elif num_filehandles <= DEFAULT_MAX_OPEN_FILES:
         # Then the OS max open files value is already sufficient.
@@ -105,17 +103,17 @@ def set_max_open_files(num_filehandles: int = DEFAULT_MAX_OPEN_FILES) -> tuple[O
     if soft < num_filehandles:
         soft = num_filehandles
         hard = max(soft, hard)
-        print_highlighted(f"Increasing max open files soft & hard 'ulimit -n {soft} {hard}'...")
+        log_console.print(f"Increasing max open files soft & hard 'ulimit -n {soft} {hard}'...")
 
         try:
             resource.setrlimit(resource.RLIMIT_NOFILE, (soft, hard))
         except (ValueError, resource.error):
             try:
                 hard = soft
-                print_highlighted(f"Retrying setting max open files (soft, hard)=({soft}, {hard})", style='yellow')
+                log.warning(f"Retrying setting max open files (soft, hard)=({soft}, {hard})")
                 resource.setrlimit(resource.RLIMIT_NOFILE, (soft, hard))
             except Exception:
-                print_highlighted('Failed to set max open files / ulimit, giving up!', style='error')
+                log.error('Failed to set max open files / ulimit, giving up!')
                 soft, hard = resource.getrlimit(resource.RLIMIT_NOFILE)
 
     return (soft, hard)

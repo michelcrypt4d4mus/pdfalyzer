@@ -16,6 +16,7 @@ from pdfalyzer.config import PDFALYZE
 def test_help_option():
     help_text = _run_with_args('-h')
     assert 'maximize-width' in help_text
+    assert 'http' not in help_text
     assert len(help_text) > 2000
     assert len(help_text.split('\n')) > 50
 
@@ -24,9 +25,9 @@ def test_help_option():
 # TODO: this test could be more accurate if we could both get the CalledProcessError AND the STDERR output?
 def test_bad_args(additional_yara_rules_path, analyzing_malicious_pdf_path):
     with pytest.raises(CalledProcessError):
-        _run_with_args(analyzing_malicious_pdf_path, '--extract-quoted', 'noquotes')
+        _run_with_args('bad_file.pdf')
     with pytest.raises(CalledProcessError):
-        _run_with_args(analyzing_malicious_pdf_path, '--extract-quoted', 'backtick', '--tree')
+        _run_with_args(analyzing_malicious_pdf_path, '--output-dir', 'bad_dir')
     with pytest.raises(CalledProcessError):
         _run_with_args(analyzing_malicious_pdf_path, '--force-decode-threshold', '105')
     with pytest.raises(CalledProcessError):

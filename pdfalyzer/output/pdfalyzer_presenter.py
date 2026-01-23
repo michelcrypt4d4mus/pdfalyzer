@@ -14,7 +14,7 @@ from rich.table import Table
 from rich.text import Text
 from rich.tree import Tree
 from yaralyzer.config import YaralyzerConfig
-from yaralyzer.helpers.rich_text_helper import size_in_bytes_text
+from yaralyzer.helpers.rich_text_helper import print_fatal_error, size_in_bytes_text
 from yaralyzer.output.file_hashes_table import bytes_hashes_table
 from yaralyzer.output.rich_console import BYTES_HIGHLIGHT, console
 from yaralyzer.yara.error import yara_error_msg
@@ -107,7 +107,7 @@ class PdfalyzerPresenter:
         print_section_header(f'{len(self.pdfalyzer.font_infos)} fonts found in {self.pdfalyzer.pdf_basename}')
 
         if self.pdfalyzer.font_info_extraction_error:
-            print_error(f"Failed to extract font information (error: {self.pdfalyzer.font_info_extraction_error})")
+            print_fatal_error(f"Failed to extract font information (error: {self.pdfalyzer.font_info_extraction_error})")
 
         for font_info in [fi for fi in self.pdfalyzer.font_infos if font_idnum is None or font_idnum == fi.idnum]:
             font_info.print_summary()

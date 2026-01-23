@@ -8,13 +8,14 @@ from rich.console import Console
 from rich.panel import Panel
 from rich.padding import Padding
 from rich.text import Text
+from yaralyzer.helpers.env_helper import DEFAULT_CONSOLE_KWARGS
 from yaralyzer.output.rich_console import console
 
 ARROW_BULLET = '➤ '
 
 # Usually we use the yaralyzer console but that has no highlighter
 # TODO: we have a highlighter now
-pdfalyzer_console = Console(color_system='256')
+pdfalyzer_console = Console(**DEFAULT_CONSOLE_KWARGS)
 
 
 def attention_getting_panel(text: Text, title: str, style: str = 'white on red') -> Padding:
@@ -70,15 +71,6 @@ def print_error(text: Union[str, Text]) -> None:
     console.print(error_text(text))
 
 
-def print_highlighted(msg: Union[str, Text], **kwargs) -> None:
-    """Print 'msg' with Rich highlighting."""
-    pdfalyzer_console.print(msg, highlight=True, **kwargs)
-
-
-def print_warning(text: Union[str, Text]) -> None:
-    console.print(_warning_text(text))
-
-
 def quoted_text(
     _string: str,
     style: str = '',
@@ -90,12 +82,3 @@ def quoted_text(
     txt = quote_char_txt + Text(_string, style=style) + quote_char_txt
     txt.justify = 'center'
     return txt
-
-
-def _warning_text(text: Union[str, Text]) -> Text:
-    msg = Text('').append(f"WARNING", style='bright_yellow').append(": ")
-
-    if isinstance(text, Text):
-        return msg + text
-    else:
-        return msg.append(text)
