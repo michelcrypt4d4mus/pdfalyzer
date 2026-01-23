@@ -41,16 +41,10 @@ def file_sizes_in_dir(dir: Path, with_extname: str | None = None) -> dict[Path, 
     return {Path(f): getsize(f) for f in sorted(files_in_dir(dir, with_extname))}
 
 
-def insert_suffix_before_extension(file_path: Path, suffix: str, separator: str = '__') -> Path:
-    """Inserting 'page 1' suffix in 'path/to/file.jpg' -> '/path/to/file__page_1.jpg'."""
-    suffix = strip_bad_chars(suffix).replace(' ', '_')
-    file_path_without_extension = file_path.with_suffix('')
-    return Path(f"{file_path_without_extension}{separator}{suffix}{file_path.suffix}")
-
-
-def is_pdf(file_path: str | Path) -> bool:
-    """Return True if 'file_path' ends with '.pdf'."""
-    return str(file_path).endswith(PDF_EXT)
+def dir_str(dir: Path) -> str:
+    """Turns 'log' into 'log/' etc."""
+    relative_dir = relative_path(dir)
+    return str(relative_dir) + ('/' if not str(relative_dir).endswith('/') else '')
 
 
 def do_all_files_exist(_file_paths: list[str | Path]) -> bool:
@@ -102,8 +96,20 @@ def find_pdf_parser() -> Path | None:
     return pdf_parser_path
 
 
+def insert_suffix_before_extension(file_path: Path, suffix: str, separator: str = '__') -> Path:
+    """Inserting 'page 1' suffix in 'path/to/file.jpg' -> '/path/to/file__page_1.jpg'."""
+    suffix = strip_bad_chars(suffix).replace(' ', '_')
+    file_path_without_extension = file_path.with_suffix('')
+    return Path(f"{file_path_without_extension}{separator}{suffix}{file_path.suffix}")
+
+
 def is_executable(file_path: Path) -> bool:
     return os.access(file_path, os.X_OK)
+
+
+def is_pdf(file_path: str | Path) -> bool:
+    """Return True if 'file_path' ends with '.pdf'."""
+    return str(file_path).endswith(PDF_EXT)
 
 
 # TODO: import from yaralyzer

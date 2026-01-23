@@ -5,11 +5,11 @@ from os import environ
 from pathlib import Path
 from subprocess import check_output
 
-from yaralyzer.util.logging import log, log_and_print
+from yaralyzer.util.logging import log, log_and_print, log_console
 
 from pdfalyzer.config import PdfalyzerConfig
 from pdfalyzer.helpers.filesystem_helper import (DEFAULT_PDF_PARSER_EXECUTABLE, PDF_PARSER_EXECUTABLE_ENV_VAR,
-     PDF_PARSER_PY, PROJECT_ROOT, SCRIPTS_DIR, is_executable, relative_path)
+     PDF_PARSER_PY, PROJECT_ROOT, SCRIPTS_DIR, dir_str, is_executable, relative_path)
 from pdfalyzer.util.exceptions import PdfParserError
 
 # PDF Internal Data Regexes
@@ -79,7 +79,9 @@ class PdfParserManager:
 
     def extract_all_streams(self) -> None:
         """Use pdf-parser.py to find binary data streams in the PDF and dump each of them to a separate file"""
-        log_and_print(f"Extracting binary streams in '{self.path_to_pdf}' to files in '{self.args.output_dir}'...")
+        output_dir_str = dir_str(self.args.output_dir)
+        log_and_print(f"\nExtracting binary streams in '{self.path_to_pdf}' to files in '{output_dir_str}'...")
+        files_written = []
 
         for object_id in self.object_ids_containing_stream_data:
             stream_dump_file = self.args.output_dir.joinpath(f'{self.path_to_pdf.name}.object_{object_id}.bin')
@@ -88,9 +90,12 @@ class PdfParserManager:
 
             try:
                 check_output(shell_cmd, env=environ, shell=True, text=True)
+                files_written.append(stream_dump_file)
             except Exception as e:
                 log.error(f"Failed to extract object ID {object_id}!")
 
-        output_dir_str = str(self.args.output_dir) + ('/' if str(self.args.output_dir).endswith('/') else '')
-        log_and_print(f"Binary stream extraction complete, {len(self.object_ids_containing_stream_data)} "
-                      f"files written to '{output_dir_str}'.\n")
+        log_and_print(f"{len(files_written)} binary streams extracted written to {output_dir_str}.")
+        num_failures = len(self.object_ids_containing_stream_data) - len(files_written)
+
+        if num_failures > 0:
+            log_console.print(f"{num_failures} streams could not be extracted!", style='bright_red')

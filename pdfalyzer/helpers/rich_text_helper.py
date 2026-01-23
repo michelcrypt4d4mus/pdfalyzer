@@ -57,11 +57,6 @@ def pct_txt(_number: int, total: int, digits: int = 1) -> Text:
     return Text(f"({pct}%)", style='blue')
 
 
-def print_error(text: str | Text) -> None:
-    console.line()
-    console.print(error_text(text))
-
-
 def quoted_text(
     _string: str,
     style: str = '',
