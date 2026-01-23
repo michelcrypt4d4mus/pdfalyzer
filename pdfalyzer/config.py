@@ -8,7 +8,6 @@ from pathlib import Path
 from typing import Callable, TypeVar
 
 from yaralyzer.config import YaralyzerConfig
-from yaralyzer.helpers.env_helper import is_invoked_by_pytest
 from yaralyzer.helpers.rich_text_helper import print_fatal_error_and_exit
 from yaralyzer.util.logging import log
 
@@ -54,5 +53,8 @@ class PdfalyzerConfig:
                 output_basename += f"_extractquoteds-{','.join(cls._args.extract_quoteds)}"
 
         output_basename += cls._args.file_suffix
-        output_basename += '' if is_invoked_by_pytest() else f"___pdfalyzed_{cls._args.invoked_at_str}"
+
+        if not cls._args.no_timestamps:
+            output_basename += f"___pdfalyzed_{cls._args.invoked_at_str}"
+
         return path.join(cls._args.output_dir, output_basename)

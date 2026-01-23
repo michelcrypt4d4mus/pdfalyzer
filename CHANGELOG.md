@@ -1,4 +1,5 @@
 # NEXT RELEASE
+* `--no-timestamps` option for file export
 * Enable permanently setting `--output-dir` via the `.pdfalyzer` file
 * Highlight some of the interesting object reference keys in the rich tree view
 * In rich tree view sort `DictionaryObject` key/value pairs by key alphabetically, except `/Type` and `/Subtype` are at the top
