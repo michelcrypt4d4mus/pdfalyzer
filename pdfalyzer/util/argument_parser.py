@@ -110,12 +110,13 @@ select.add_argument('--preview-stream-length',
 
 # Make sure the selection section is at the top
 parser._action_groups = parser._action_groups[:2] + [parser._action_groups[-1]] + parser._action_groups[2:-1]
-is_pdfalyze_script = (parser.prog == PDFALYZE)
 
 
 ################################
 # Main argument parsing begins #
 ################################
+is_pdfalyze_script = (parser.prog == PDFALYZE)
+
 def parse_arguments(_argv: list[str] | None = None) -> Namespace:
     """Parse command line args. Most args can also be communicated to the app by setting env vars."""
     if '--version' in sys.argv:
