@@ -22,10 +22,10 @@ from pypdf.errors import PdfReadError
 from rich.columns import Columns
 from rich.panel import Panel
 from rich.text import Text
-from yaralyzer.helpers.rich_text_helper import prefix_with_style, print_fatal_error
+from yaralyzer.util.helpers.rich_helper import prefix_with_style, print_fatal_error
 from yaralyzer.output.file_export import invoke_rich_export
-from yaralyzer.output.rich_console import console
-from yaralyzer.util.logging import log_console
+from yaralyzer.output.console import console
+from yaralyzer.util.logging import invocation_txt, log_console
 
 from pdfalyzer.decorators.pdf_file import PdfFile
 from pdfalyzer.helpers.filesystem_helper import file_size_in_mb, set_max_open_files
@@ -67,6 +67,9 @@ def pdfalyze():
             export_basepath = PdfalyzerConfig.get_export_basepath(section.method)
             log.debug(f"Exporting {section.argument} data to basepath '{export_basepath}'...")
             console.record = True
+
+        if args.echo_command:
+            console.print(invocation_txt())
 
         section.method()
 

@@ -4,8 +4,8 @@ from pathlib import Path
 environ['INVOKED_BY_PYTEST'] = 'True'  # Must be set before importing yaralyzer (?)
 
 import pytest                                              # noqa: E402
-from yaralyzer.helpers.env_helper import is_env_var_set_and_not_false  # noqa: E402
-from yaralyzer.helpers.file_helper import files_in_dir     # noqa: E402
+from yaralyzer.util.helpers.env_helper import is_env_var_set_and_not_false  # noqa: E402
+from yaralyzer.util.helpers.file_helper import files_in_dir     # noqa: E402
 
 from pdfalyzer.pdfalyzer import Pdfalyzer                  # noqa: E402
 

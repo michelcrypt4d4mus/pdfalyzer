@@ -562,13 +562,13 @@ cli = ["click (>=5.0)"]
 
 [[package]]
 name = "rich"
-version = "14.2.0"
+version = "14.1.0"
 description = "Render rich text, tables, progress bars, syntax highlighting, markdown and more to the terminal"
 optional = false
 python-versions = ">=3.8.0"
 files = [
-    {file = "rich-14.2.0-py3-none-any.whl", hash = "sha256:76bc51fe2e57d2b1be1f96c524b890b816e334ab4c1e45888799bfaab0021edd"},
-    {file = "rich-14.2.0.tar.gz", hash = "sha256:73ff50c7c0c1c77c8243079283f4edb376f0f6442433aecb8ce7e6d0b92d1fe4"},
+    {file = "rich-14.1.0-py3-none-any.whl", hash = "sha256:536f5f1785986d6dbdea3c75205c473f970777b4a0d6c6dd1b696aa05a3fa04f"},
+    {file = "rich-14.1.0.tar.gz", hash = "sha256:e497a48b844b0320d45007cdebfeaeed8db2a4f4bcf49f15e455cfc4af11eaa8"},
 ]
 
 [package.dependencies]
@@ -668,19 +668,19 @@ files = [
 
 [[package]]
 name = "yaralyzer"
-version = "1.1.0"
+version = "1.2.0"
 description = "Visualize and force decode YARA and regex matches found in a file or byte stream with colors. Lots of colors."
 optional = false
 python-versions = "<4.0,>=3.10"
 files = [
-    {file = "yaralyzer-1.1.0-py3-none-any.whl", hash = "sha256:89cd5db7cc3b1e652b7c8827116822122af64632e6a0051758f99f677d377541"},
-    {file = "yaralyzer-1.1.0.tar.gz", hash = "sha256:8c3d7f1b986247cba3e9c5855f40570d4c9b115011c813d8a4cc07e625cfa51c"},
+    {file = "yaralyzer-1.2.0-py3-none-any.whl", hash = "sha256:c1058a3d55353c169c57b487cbf5234b27ab203b25dd67b8c4120dbfd76f0f31"},
+    {file = "yaralyzer-1.2.0.tar.gz", hash = "sha256:7f4cd555c4936ba41a5847875d9e0404a1844218177c2008721969fa7dddebc4"},
 ]
 
 [package.dependencies]
 chardet = ">=5.0.0,<6.0.0"
 python-dotenv = ">=1.1.1,<2.0.0"
-rich = ">=14.1.0,<15.0.0"
+rich = "14.1.0"
 rich-argparse-plus = ">=0.3.1,<0.4.0"
 yara-python = ">=4.5.4,<5.0.0"
 
@@ -690,4 +690,4 @@ extract = ["PyMuPDF", "cryptography", "pytesseract"]
 [metadata]
 lock-version = "2.0"
 python-versions = "^3.11.14"
-content-hash = "93c40ae224a4e3da2f13992ce6f659bbf5c4f6b982b10256360c0f0d269560bb"
+content-hash = "77ba0ec98f0cb6b36b77cce4cb7c92733b6c66cb0ab4cd249dca0e9f5e6b9217"

@@ -5,7 +5,7 @@ from rich import box
 from rich.padding import Padding
 from rich.panel import Panel
 from rich.table import Table
-from yaralyzer.output.rich_console import console, console_width
+from yaralyzer.output.console import console, console_width
 
 from pdfalyzer.helpers.rich_text_helper import indent_padding
 

@@ -2,19 +2,12 @@ from contextlib import contextmanager
 from os import environ
 from pathlib import Path
 
+from yaralyzer.util.helpers.env_helper import temporary_env
+
 from pdfalyzer.config import PdfalyzerConfig
 from pdfalyzer.output.pdfalyzer_presenter import PdfalyzerPresenter
 from pdfalyzer.util.argument_parser import parse_arguments
 from pdfalyzer.util.constants import PDFALYZER_UPPER
-
-
-@contextmanager
-def setup_and_tear_down_env_vars(env_vars: dict[str, str]):
-    old_environ = dict(environ)
-    environ.update(env_vars)
-    yield
-    environ.clear()
-    environ.update(old_environ)
 
 
 def test_get_export_basepath(export_analyzing_malicious_args, analyzing_malicious_pdfalyzer, tmp_dir):
@@ -24,10 +17,7 @@ def test_get_export_basepath(export_analyzing_malicious_args, analyzing_maliciou
     assert output_path == (f'{tmp_dir}/analyzing-malicious-document-files.pdf.document_info')
 
 
-def test_get_env_value(tmp_dir):
-    tmp_dir_str = str(tmp_dir)
-
-    with setup_and_tear_down_env_vars({f"{PDFALYZER_UPPER}_OUTPUT_DIR": tmp_dir_str}):
-        assert PdfalyzerConfig.get_env_value('OUTPUT_DIR') == tmp_dir_str
-        assert PdfalyzerConfig.get_env_value('output_dir') == tmp_dir_str
-        assert PdfalyzerConfig.get_env_value('OUTPUT_DIR', Path) == tmp_dir
+def test_env_var_for_command_line_option():
+    assert PdfalyzerConfig.env_var_for_command_line_option('min_decode_length') == 'YARALYZER_MIN_DECODE_LENGTH'
+    assert PdfalyzerConfig.env_var_for_command_line_option('maximize_width') == f"{PDFALYZER_UPPER}_MAXIMIZE_WIDTH"
+    assert PdfalyzerConfig.env_var_for_command_line_option('suppress_boms') == f"{PDFALYZER_UPPER}_SUPPRESS_BOMS"

@@ -7,7 +7,7 @@ from typing import Pattern
 
 from pypdf.generic import IndirectObject
 
-from yaralyzer.output.rich_console import console_width
+from yaralyzer.output.console import console_width
 
 ARRAY_IDX_REGEX = re.compile(r"\[\d+\]")
 INDENT_DEPTH = 4

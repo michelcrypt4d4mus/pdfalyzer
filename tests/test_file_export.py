@@ -4,7 +4,7 @@ from subprocess import check_output
 from typing import Callable
 
 import pytest
-from yaralyzer.helpers.file_helper import files_in_dir, load_file
+from yaralyzer.util.helpers.file_helper import files_in_dir, load_file
 
 from pdfalyzer.helpers.filesystem_helper import file_sizes_in_dir
 from pdfalyzer.util.constants import PDFALYZE

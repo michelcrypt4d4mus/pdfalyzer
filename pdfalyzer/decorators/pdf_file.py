@@ -9,7 +9,7 @@ from rich.console import Console
 from rich.markup import escape
 from rich.panel import Panel
 from rich.text import Text
-from yaralyzer.output.rich_console import console
+from yaralyzer.output.console import console
 from yaralyzer.util.logging import log as yaralyzer_log
 
 from pdfalyzer.helpers.filesystem_helper import create_dir_if_it_does_not_exist, insert_suffix_before_extension

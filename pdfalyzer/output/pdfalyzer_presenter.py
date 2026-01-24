@@ -14,9 +14,9 @@ from rich.table import Table
 from rich.text import Text
 from rich.tree import Tree
 from yaralyzer.config import YaralyzerConfig
-from yaralyzer.helpers.rich_text_helper import print_fatal_error, size_in_bytes_text
+from yaralyzer.util.helpers.rich_helper import print_fatal_error, size_in_bytes_text
 from yaralyzer.output.file_hashes_table import bytes_hashes_table
-from yaralyzer.output.rich_console import BYTES_HIGHLIGHT, console
+from yaralyzer.output.console import BYTES_HIGHLIGHT, console
 from yaralyzer.yara.error import yara_error_msg
 from yaralyzer.yaralyzer import Yaralyzer
 
@@ -141,7 +141,7 @@ class PdfalyzerPresenter:
             binary_scanner.print_stream_preview()
             binary_scanner.check_for_dangerous_instructions()
 
-            if not PdfalyzerConfig._args.suppress_boms:
+            if not PdfalyzerConfig.args.suppress_boms:
                 binary_scanner.check_for_boms()
 
             if not YaralyzerConfig.args.suppress_decodes_table:

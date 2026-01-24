@@ -1,4 +1,4 @@
-from yaralyzer.output.rich_console import console
+from yaralyzer.output.console import console
 from yaralyzer.util.logging import log
 
 

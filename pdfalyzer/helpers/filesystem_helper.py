@@ -6,7 +6,7 @@ import os
 import re
 from pathlib import Path
 
-from yaralyzer.helpers.file_helper import files_in_dir
+from yaralyzer.util.helpers.file_helper import files_in_dir
 from yaralyzer.util.logging import log, log_console
 
 from pdfalyzer.util.constants import PDFALYZER

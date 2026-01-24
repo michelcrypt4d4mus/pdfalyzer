@@ -1,70 +1,37 @@
-# If you place a filed called '.pdfalyzer' in your home dir or the current dir environment variables specified
-# in that .pdfalyzer file will be added to the environment each time pdfalyzer is invoked. (See the `dotenv`
-# package for more details.) This file contains environment variables you can place in .pdfalyzer to configure
-# the application above and beyond providing command line options.  Useful if you want to permanently
-# configure options you tend to reuse (e.g. '--maximize-width') so you can stop remembering to type them.
+# If you place a filed called '.pdfalyzer' in your home dir or the current dir environment variables
+# specified in that .pdfalyzer file will be added to the environment each time pdfalyzer is invoked.
 #
-# Almost all of the yaralyzer (yes, you read that right - The Pdfalyzer uses The Yaralyzer for all
-# kinds of backend functionality) command line options can be configured in this file by capitalizing them and
-# prefixing 'YARALYZER'. e.g. to configure the --maximize-width option for every invocation, you would set:
-# YARALYZER_MAXIMIZE_WIDTH=True
+# This can be used to specify a path to Didier Stevens's pdf-parser.py on your local system, which is
+# required for extracting binary streams from PDFs to individual files via the --extract-binary-streams
+# option (there's a script to download pdf-parser.py in this repo in scripts/install_didier_stevens_pdf_tools.sh).
 #
-# Note that many of these options are actually configuring the yaralyzer, which is a separate tool leveraged
-# by the Pdfalyzer to actually do the work of finding patterns. More info can be found at
-# https://github.com/michelcrypt4d4mus/yaralyzer
-
-
-# Path to directory containing Didier Stevens's pdf-parser.py. Only required for extracting binary streams to files.
-# There's a script to download it in this repo in scripts/install_didier_stevens_pdf_tools.sh.
-#     PDFALYZER_PDF_PARSER_PY_PATH=path/to/pdf-parser.py
-
-# Directory to write rendered output to, equivalent of permanently setting the --output-dir option.
-#     PDFALYZER_OUTPUT_DIR=path/to/write/files/to
-
-
-# Expand the width of the output to the fit the display window (same as the --maximize-width options)
-#    YARALYZER_MAXIMIZE_WIDTH=True
-
-# yara-python internal options passed through to yara.set_config() as the stack_size and max_match_data arguments
-#    YARALYZER_STACK_SIZE=10485760
-#    YARALYZER_MAX_MATCH_LENGTH=10737418240
-
-# Suppress all PDF binary regex matching/scanning/etc
-#    YARALYZER_SUPPRESS_DECODES_TABLE=False
-
-# Suppress the display of the table showing the the encoding assessments given by `chardet.detect()`
-# about a particular chunk of binary data. (The most important data in the chardet confidence table is
-# redunandant anyways. Only the low likelihood encodings are hidden from the usef)
-#    YARALYZER_SUPPRESS_CHARDET_TABLE=False
-# Minimum confidence to display an encoding in the chardet results table
-#    YARALYZER_MIN_CHARDET_CONFIDENCE=2.0
-
-# Configure how many bytes before and after any binary data should be included in scans and visualizations
-#    YARALYZER_SURROUNDING_BYTES=64
-
-# Size thresholds (in bytes) under/over which pdfalyzer will NOT make attempts to decode a match.
-# Longer byte sequences are for obvious reasons slower to decode by force.
-# It may feel counterintuitive but larger chunks of random binary are also harder to examine and
-# (in my experience) less likely to be maningful. Consider it - two frontslash characters 20,000 lines apart
-# are more likely to be random than those same frontslashes when placed nearer to each other and
-# in the vicinity of lot of computerized sigils of internet power like `.', `+bacd*?`,. and other regexes.*
-# Keeping the max value number low will do more to affect the speed of the app than ay anything else you
-# can easily configure..
+#    PDFALYZER_PDF_PARSER_PY_PATH=path/to/pdf-parser.py
 #
-#    YARALYZER_MIN_DECODE_LENGTH=1
-#    YARALYZER_MAX_DECODE_LENGTH=256
+# Almost all of pdfalyzer's command line options can be permanently set by setting them as environment
+# variables in a .pdfalyzer file, meaning capitalizing them and prefixing them with 'PDFALYZER_' or
+# (if they are yaralyzer specific) with 'YARALYZER_'. Useful if you want to permanently configure options
+# you tend to reuse (e.g. '--maximize-width')
+#
+# To see the list of environment variables that can be configured this way run: pdfalyze --env-vars
 
-# Directory to write application logs to. Must be an absolute path, not a relative one.
-# These logs are not normally written to a file and the default log level means that the standard behavior
-# is to more or less discard them. Be aware that if you configure this variable a few things will change:
+
+# For example, to set --output-dir permanently you would create a .pdfalyzer file and put this in it:
+#    PDFALYZER_OUTPUT_DIR=/dir/to/export/files/to
+#
+# Or to permanently set the --yara-stack-size option, you would add this to your .pdfalyzer file:
+#    YARALYZER_YARA_STACK_SIZE=250000
+
+
+# Pdfalyzer can also write logs of what it's doing if you set the PDFALYZER_LOG_DIR env var, either in a
+# .pdfalyzer file or anywhere in normal environment. Pdfalyzer logs are not normally written to a file;
+# the standard behavior is to more or less discard them.
+#
+# Be aware that if you configure PDFALYZER_LOG_DIR a few things will change:
 #
 #   1. Logs WILL NOT be written to STDOUT. They will stream ONLY to files in the configured directory.
-#      This is true even with the -D option.
+#      This is true even with the --debug option.
 #   2. The default log_level will be decreased from WARN (extremely spartan) to INFO (fairly verbose).
-#      The -D option, which sets the log level to DEBUG, will be respected whether or not
+#      The --debug option, which sets the log level to DEBUG, will be respected whether or not
 #      YARALYZER_LOG_DIR is configured.
 #
-#     YARALYZER_LOG_DIR=/path/to/pdfalyzer/log_dir/
-
-# Log level
-#     YARALYZER_LOG_LEVEL='INFO'
+#    PDFALYZER_LOG_DIR=/path/to/log_dir/

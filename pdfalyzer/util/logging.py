@@ -10,7 +10,7 @@ from rich.highlighter import ReprHighlighter
 from rich.logging import RichHandler
 from rich.theme import Theme
 # Other files import log from here to trigger log setup
-from yaralyzer.output.rich_console import YARALYZER_THEME_DICT, console
+from yaralyzer.output.console import YARALYZER_THEME_DICT, console
 from yaralyzer.util.logging import DEFAULT_LOG_HANDLER_KWARGS, log, log_console, log_trace
 
 from pdfalyzer.helpers.string_helper import regex_to_highlight_pattern, regex_to_capture_group_label

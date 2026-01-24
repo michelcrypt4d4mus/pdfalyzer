@@ -14,10 +14,10 @@ from pypdf.errors import DependencyError, FileNotDecryptedError, PdfReadError
 from pypdf.generic import DictionaryObject, IndirectObject
 from rich.prompt import Prompt
 from rich.text import Text
-from yaralyzer.helpers.file_helper import load_binary_data
-from yaralyzer.helpers.rich_text_helper import print_fatal_error, print_fatal_error_and_exit
+from yaralyzer.util.helpers.file_helper import load_binary_data
+from yaralyzer.util.helpers.rich_helper import print_fatal_error, print_fatal_error_and_exit
 from yaralyzer.output.file_hashes_table import BytesInfo, compute_file_hashes
-from yaralyzer.output.rich_console import console
+from yaralyzer.output.console import console
 
 from pdfalyzer.decorators.document_model_printer import highlighted_raw_pdf_obj_str
 from pdfalyzer.decorators.indeterminate_node import IndeterminateNode

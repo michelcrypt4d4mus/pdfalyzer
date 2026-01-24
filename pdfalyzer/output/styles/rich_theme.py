@@ -3,7 +3,7 @@ Rich colors: https://rich.readthedocs.io/en/stable/appendix/colors.html
 TODO: interesting colors # row_styles[0] = 'reverse bold on color(144)' <-
 """
 from rich.theme import Theme
-from yaralyzer.output.rich_console import GREY_ADDRESS, YARALYZER_THEME_DICT, console
+from yaralyzer.output.console import GREY_ADDRESS, YARALYZER_THEME_DICT, console
 
 # Colors / PDF object styles
 DANGER_HEADER = 'color(88) on white'  # Red

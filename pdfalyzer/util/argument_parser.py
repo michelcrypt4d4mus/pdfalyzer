@@ -9,7 +9,7 @@ from pathlib import Path
 from rich_argparse_plus import RichHelpFormatterPlus
 from rich.prompt import Confirm
 from rich.text import Text
-from yaralyzer.helpers.rich_text_helper import print_fatal_error_and_exit
+from yaralyzer.util.helpers.rich_helper import print_fatal_error_and_exit
 from yaralyzer.util.argument_parser import debug, epilog, export, parser, parse_arguments as parse_yaralyzer_args, source
 from yaralyzer.util.logging import log, log_argparse_result, log_console, log_current_config, log_invocation
 
@@ -58,7 +58,7 @@ debug.add_argument('--allow-missed-nodes',
 parser = ArgumentParser(
     formatter_class=RichHelpFormatterPlus,
     description=DESCRIPTION,
-    epilog=epilog(PDFALYZER).rstrip(),
+    epilog=epilog(PdfalyzerConfig).rstrip(),
     parents=[parser],  # Extend yaralyzer args
     add_help=False)
 
@@ -113,6 +113,7 @@ select.add_argument('--preview-stream-length',
 
 # Make sure the selection section is at the top
 parser._action_groups = parser._action_groups[:2] + [parser._action_groups[-1]] + parser._action_groups[2:-1]
+PdfalyzerConfig.set_argument_parser(parser)
 
 
 ################################
@@ -123,7 +124,10 @@ is_pdfalyze_script = (parser.prog == PDFALYZE)
 def parse_arguments(_argv: list[str] | None = None) -> Namespace:
     """Parse command line args. Most args can also be communicated to the app by setting env vars."""
     if '--version' in sys.argv:
-        print(f"pdfalyzer {version(PDFALYZER)}")
+        print(f"{PDFALYZER} {version(PDFALYZER)}")
+        sys.exit()
+    elif '--env-vars' in sys.argv:
+        PdfalyzerConfig.show_configurable_env_vars()
         sys.exit()
 
     args = parser.parse_args(_argv)
@@ -148,7 +152,7 @@ def parse_arguments(_argv: list[str] | None = None) -> Namespace:
         log.info(f"Using --output-dir '{env_output_dir}' from env PDFALYZER_OUTPUT_DIR...")
         args.output_dir = env_output_dir
 
-    PdfalyzerConfig._args = args
+    PdfalyzerConfig.set_args(args)
     log_argparse_result(args, 'parsed')
     log_current_config()
     return args
