@@ -1,4 +1,5 @@
 # NEXT RELEASE
+* Accomodate lower python 3.11 minor versions
 
 # 1.19.0
 * Add `--export-png` option to render .png images of output
