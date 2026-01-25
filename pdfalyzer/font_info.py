@@ -76,7 +76,8 @@ class FontInfo:
             self._extract_font_descriptor_props()
             self._extract_font_file_props()
         except Exception as e:
-            log.warning(f"Failed to extract data from /FontDescriptor or /FontFile\n{self.font_descriptor_dict}")
+            log.warning(f"Failed to extract data from /FontDescriptor or /FontFile\n{self.font_descriptor_dict}, Error: {e}")
+            self.font_descriptor_dict = None # TODO: should be a default maybe?
 
         if isinstance(self.raw_widths, IndirectObject):
             self.raw_widths = self.raw_widths.get_object()
