@@ -42,6 +42,7 @@ class FontInfo:
     label: NameObject | str
     font_indirect: IndirectObject
     # Constructed properties
+    binary_scanner: BinaryScanner | None = None
     descendant_fonts_subtype: str | None = None
     display_title: str = field(init=False)
     font_descriptor_dict: DictionaryObject = field(init=False)
@@ -49,7 +50,6 @@ class FontInfo:
     font_obj: Font = field(init=False)
     idnum: int = field(init=False)
     lengths: list[int] | None = None
-    binary_scanner: BinaryScanner | None = None
     prepared_char_map: bytes | None = None
     raw_widths: list[int] | None = None
     # TODO: make methods?
