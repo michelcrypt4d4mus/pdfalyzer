@@ -44,7 +44,7 @@ class PageRange:
         return f"PageRange({self.first_page}, {self.last_page})"
 
 
-class PageRangeArgumentValidator(object):
+class PageRangeArgumentValidator:
     HELP_MSG = "a single digit ('11') or a range ('11-15') (WILL NOT extract the last page)"
 
     def __call__(self, value):

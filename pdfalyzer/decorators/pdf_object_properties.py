@@ -33,7 +33,6 @@ class PdfObjectProperties:
     indirect_object: IndirectObject | None = None
 
     # Computed fields
-    first_address: str = field(init=False)
     label: str = ''
     sub_type: str | None = None
     _type: str | None = None
@@ -56,7 +55,6 @@ class PdfObjectProperties:
 
     def __post_init__(self,):
         self.address = coerce_address(self.address)
-        self.first_address = self.address
 
         if isinstance(self.obj, DictionaryObject):
             self._type = self.obj.get(TYPE)
