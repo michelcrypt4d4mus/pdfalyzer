@@ -3,7 +3,7 @@ from typing import Self, cast
 
 from pypdf._cmap import prepare_cm
 from pypdf._font import Font
-from pypdf.generic import ArrayObject, DictionaryObject, IndirectObject, NameObject, PdfObject, StreamObject, is_null_or_none
+from pypdf.generic import ArrayObject, DictionaryObject, IndirectObject, NameObject, PdfObject, is_null_or_none
 from rich.table import Table
 from rich.text import Text
 from yaralyzer.output.console import console
@@ -15,7 +15,8 @@ from pdfalyzer.helpers.collections_helper import without_falsey
 from pdfalyzer.output.character_mapping import print_character_mapping, print_prepared_charmap
 from pdfalyzer.output.layout import print_section_subheader, subheading_width
 from pdfalyzer.output.styles.node_colors import get_class_style, get_label_style
-from pdfalyzer.util.adobe_strings import DESCENDANT_FONTS, FONT, FONT_DESCRIPTOR, FONT_FILE, FONT_FILE_KEYS, FONT_LENGTHS, RESOURCES, SUBTYPE, TO_UNICODE, W, WIDTHS
+from pdfalyzer.util.adobe_strings import (DESCENDANT_FONTS, FONT, FONT_DESCRIPTOR, FONT_FILE, FONT_LENGTHS,
+     RESOURCES, SUBTYPE, TO_UNICODE, W, WIDTHS)
 
 FONT_SECTION_PREVIEW_LEN = 30
 MAX_REPR_STR_LEN = 20
