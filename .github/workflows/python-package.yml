@@ -18,9 +18,9 @@ jobs:
         python-version: ["3.11", "3.12", "3.13", "3.14"]
 
     steps:
-      - uses: actions/checkout@v4
+      - uses: actions/checkout@v6
       - name: Set up Python ${{ matrix.python-version }}
-        uses: actions/setup-python@v3
+        uses: actions/setup-python@v6
         with:
           python-version: ${{ matrix.python-version }}
       - name: Install dependencies
@@ -33,7 +33,7 @@ jobs:
           chmod +x ./tools/pdf-parser.py
       - name: Test with pytest
         run: |
-          PDFALYZER_PDF_PARSER_PY_PATH=./tools/pdf-parser.py pytest -vv -s --slow
+          PDFALYZER_PDF_PARSER_PY_PATH=./tools/pdf-parser.py pytest -vv --slow
       - name: Lint with flake8
         run: |
           # stop the build if there are Python syntax errors or undefined names
