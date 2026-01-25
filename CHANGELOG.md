@@ -4,7 +4,7 @@
 * Add `--echo-command` option to save the exact command used along with the output
 * Add `--no-timestamps` option for exported filenames
 * Add `--suppress-output` option
-* Enable permanently setting `--output-dir` via the `.pdfalyzer` file
+* Enable permanently setting almost all command line options via environment variables or a custom `.pdfalyzer` file
 * Highlight some of the interesting object reference keys in the rich tree view
 * In rich tree view sort `DictionaryObject` key/value pairs by key alphabetically, except `/Type` and `/Subtype` are at the top
 * Display the number of revisions (max `generation` value) in metadata table
