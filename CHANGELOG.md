@@ -1,4 +1,6 @@
 # NEXT RELEASE
+
+# 1.19.0
 * Add `--export-png` option to render .png images of output
 * Add `--env-vars` option to display exactly which command line options can be set by which variables
 * Add `--echo-command` option to save the exact command used along with the output
