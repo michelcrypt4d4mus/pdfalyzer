@@ -15,6 +15,8 @@
 * Coerce `/Nums` number trees into `dict` like objects for the purposes of assigning addresses
 * `/Annots` and other indeterminate nodes now have `/Subtype` integrated into their labeling (e.g. `/Annots:Link` instead of just `/Annots`)
 * Fancier table for PDF metadata that also contains the number of pages, images, and revisions (if possible)
+* Test suite now checks results against pre-recorded fixture output
+* Python 3.10 no longer officially supported even if it probably still works
 
 ### 1.18.1
 * Ensure `cryptography` package is installable as an extra
