@@ -44,8 +44,8 @@ class FontInfo:
     # Constructed properties
     descendant_fonts_subtype: str | None = None
     display_title: str = field(init=False)
-    font_dict: DictionaryObject = field(init=False)
     font_descriptor_dict: DictionaryObject = field(init=False)
+    font_dict: DictionaryObject = field(init=False)
     font_obj: Font = field(init=False)
     idnum: int = field(init=False)
     lengths: list[int] | None = None
