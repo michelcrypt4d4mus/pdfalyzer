@@ -1,39 +1,57 @@
 from copy import copy
 from os import environ, path, remove
 from pathlib import Path
+from typing import Callable
 environ['INVOKED_BY_PYTEST'] = 'True'  # Must be set before importing yaralyzer (?)
 
-import pytest                                              # noqa: E402
-from yaralyzer.util.helpers.env_helper import is_env_var_set_and_not_false  # noqa: E402
-from yaralyzer.util.helpers.file_helper import files_in_dir     # noqa: E402
+import pytest  # noqa: E402
+from yaralyzer.util.constants import ECHO_COMMAND_OPTION, NO_TIMESTAMPS_OPTION
+from yaralyzer.util.helpers.file_helper import files_in_dir, relative_path     # noqa: E402
+from yaralyzer.util.helpers.shell_helper import safe_args
 
 from pdfalyzer.pdfalyzer import Pdfalyzer                  # noqa: E402
+from pdfalyzer.util.constants import PDFALYZE
+from pdfalyzer.util.logging import log
 
 # TODO: importlib doesn't play nice with running tests via GitHub actions
 # import importlib.resources
 # PROJECT_DIR = path.join(str(importlib.resources.files('pdfalyzer')), pardir)
 PYTESTS_DIR = Path(path.dirname(__file__))
+TMP_DIR = PYTESTS_DIR.joinpath('tmp')
 PROJECT_DIR = PYTESTS_DIR.parent
 DOCUMENTATION_DIR = PROJECT_DIR.joinpath('doc')
 SVG_DIR = DOCUMENTATION_DIR.joinpath('svgs')
 RENDERED_IMAGES_DIR = SVG_DIR.joinpath('rendered_images')
 FIXTURES_DIR = PYTESTS_DIR.joinpath('fixtures')
 RENDERED_FIXTURES_DIR = FIXTURES_DIR.joinpath('rendered')
-PYTEST_REBUILD_FIXTURES_ENV_VAR = 'PYTEST_REBUILD_FIXTURES'
 
-BASE_ARGS = [
+# TODO: --output path should be in here but then it won't trigger the directory cleanup of tmp_dir
+COMMON_ARGS = [
+    '--allow-missed-nodes',
+    ECHO_COMMAND_OPTION,
+    NO_TIMESTAMPS_OPTION,
+]
+
+OUTPUT_DIR_ARGS = safe_args([
+    '--output-dir',
+    TMP_DIR,
+])
+
+ARGPARSE_ARGS = COMMON_ARGS + [
     '--min-decode-length', '50',
     '--max-decode-length', '51',
     '--suppress-decodes',
-    '--allow-missed-nodes',
     '--export-txt',
-    '--no-timestamps',
 ]
 
+@pytest.fixture(scope='session', autouse=True)
+def clean_tmp_dir():
+    for file in files_in_dir(TMP_DIR):
+        if '/tmp/' not in str(file):
+            raise ValueError(f"Can't unlink a file '{file}' in a non-tmp dir!")
 
-@pytest.fixture
-def pytests_dir():
-    return PYTESTS_DIR
+        log.warning(f"Deleting temp file '{relative_path(file)}'")
+        remove(file)
 
 
 # Full paths to PDF test fixtures
@@ -98,17 +116,13 @@ def multipage_pdf_path():
     return FIXTURES_DIR.joinpath('The Consul General at Berlin to FDR underecretary of State June 1933.pdf')
 
 
-@pytest.fixture
-def should_rebuild_fixtures() -> bool:
-    return is_env_var_set_and_not_false(PYTEST_REBUILD_FIXTURES_ENV_VAR)
-
-
-@pytest.fixture
-def rendered_output_dir(should_rebuild_fixtures, tmp_dir) -> Path:
-    if should_rebuild_fixtures:
-        return RENDERED_FIXTURES_DIR
-    else:
-        return tmp_dir
+# This might have been too clever
+# @pytest.fixture
+# def rendered_output_dir(tmp_dir) -> Path:
+#     if should_rebuild_fixtures():
+#         return RENDERED_FIXTURES_DIR
+#     else:
+#         return tmp_dir
 
 
 @pytest.fixture
@@ -117,14 +131,9 @@ def rendered_fixtures_dir() -> Path:
 
 
 @pytest.fixture
-def tmp_dir(pytests_dir) -> Path:
+def tmp_dir() -> Path:
     """Clear the tmp dir when fixture is loaded."""
-    tmpdir = pytests_dir.joinpath('tmp')
-
-    for file in files_in_dir(tmpdir):
-        remove(file)
-
-    return tmpdir
+    return TMP_DIR
 
 
 def _pdf_in_doc_dir(filename: str) -> Path:
@@ -134,15 +143,40 @@ def _pdf_in_doc_dir(filename: str) -> Path:
 
 # Argument fixtures
 @pytest.fixture
-def base_args():
-    return copy(BASE_ARGS)
+def common_args(tmp_dir) -> list[str]:
+    """These args are always used by tests."""
+    return safe_args(['--output-dir', tmp_dir] + ARGPARSE_ARGS)
+
+
+# Argument fixtures
+@pytest.fixture
+def common_shell_cmd(common_args):
+    """These args are always used by tests."""
+    return [PDFALYZE] + common_args
 
 
 @pytest.fixture
-def pdfalyze_analyzing_malicious_args(analyzing_malicious_pdf_path, base_args):
-    return base_args + [str(analyzing_malicious_pdf_path)]
+def pdfalyze_analyzing_malicious_args(pdfalyze_analyzing_malicious_shell_cmd) -> list[str]:
+    """Remove the 'pdfalyze' in front so we get just the args."""
+    return pdfalyze_analyzing_malicious_shell_cmd[1:]
 
 
 @pytest.fixture
-def export_analyzing_malicious_args(pdfalyze_analyzing_malicious_args, tmp_dir):
-    return ['--output-dir', str(tmp_dir)] + pdfalyze_analyzing_malicious_args
+def pdfalyze_analyzing_malicious_shell_cmd(analyzing_malicious_pdf_path, common_args) -> list[str]:
+    return [PDFALYZE] + safe_args(common_args + [analyzing_malicious_pdf_path])
+
+
+# @pytest.fixture
+# def pdfalyze_export_txt_cmd(tmp_dir) -> Callable[[str | Path, list[object]], list[str]]:
+#     def _export_txt_cmd(pdf_path: str | Path, *args) -> list[str]:
+#         return pdfalyze_cmd(pdf_path, '--output-dir', tmp_dir,  '-txt', *args)
+
+#     return _export_txt_cmd
+
+
+def pdfalyze_cmd(pdf_path: str | Path, *args) -> list[str]:
+    return safe_args([PDFALYZE, pdf_path, *COMMON_ARGS, *args])
+
+
+def export_txt_cmd(pdf_path: str | Path, *args) -> list[str]:
+    return pdfalyze_cmd(pdf_path, '--output-dir', TMP_DIR,  '-txt', *args)

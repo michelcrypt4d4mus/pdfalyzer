@@ -19,12 +19,11 @@ if not environ.get('INVOKED_BY_PYTEST', False):
 
 from pypdf import PdfWriter
 from pypdf.errors import PdfReadError
-from rich.columns import Columns
-from rich.panel import Panel
 from rich.text import Text
-from yaralyzer.util.helpers.rich_helper import prefix_with_style, print_fatal_error
-from yaralyzer.output.file_export import invoke_rich_export
 from yaralyzer.output.console import console
+from yaralyzer.output.file_export import invoke_rich_export
+from yaralyzer.output.theme import color_theme_grid
+from yaralyzer.util.exceptions import print_fatal_error
 from yaralyzer.util.logging import invocation_txt, log_console
 
 from pdfalyzer.decorators.pdf_file import PdfFile
@@ -49,7 +48,6 @@ def pdfalyze():
     args = parse_arguments()
     pdfalyzer = Pdfalyzer(args.file_to_scan_path, args.password)
     presenter = PdfalyzerPresenter(pdfalyzer)
-    export_basepath = ''
 
     # Binary stream extraction is a special case
     if args.extract_binary_streams:
@@ -63,9 +61,10 @@ def pdfalyze():
     # The method that gets called is related to the argument name. See 'possible_output_sections' list in
     # argument_parser.py. Analysis exports wrap themselves around the methods that actually generate the analyses.
     for section in OutputSection.selected_sections(args, presenter):
-        if args.output_dir:
-            export_basepath = PdfalyzerConfig.get_export_basepath(section.method)
-            log.debug(f"Exporting {section.argument} data to basepath '{export_basepath}'...")
+        args._export_basepath = PdfalyzerConfig.get_export_basepath(section.method)
+
+        if args._any_export_selected:
+            log.debug(f"Exporting {section.argument} data to basepath '{args._export_basepath}'...")
             console.record = True
 
         if args.echo_command:
@@ -74,14 +73,14 @@ def pdfalyze():
         section.method()
 
         if args.export_txt:
-            invoke_rich_export(console.save_text, export_basepath)
+            invoke_rich_export(console.save_text, args)
         if args.export_html:
-            invoke_rich_export(console.save_html, export_basepath)
+            invoke_rich_export(console.save_html, args)
         if args.export_svg:
-            invoke_rich_export(console.save_svg, export_basepath)
+            invoke_rich_export(console.save_svg, args)
 
         # Clear the buffer if we have one
-        if args.output_dir:
+        if args._any_export_selected:
             del console._record_buffer[:]
 
     # Drop into interactive shell if requested
@@ -97,15 +96,7 @@ def pdfalyze():
 
 def pdfalyzer_show_color_theme() -> None:
     """Utility method to show pdfalyzer's color theme. Invocable with 'pdfalyzer_show_color_theme'."""
-    console.print(Panel('The Pdfalyzer Color Theme', style='reverse'))
-
-    colors = [
-        prefix_with_style(name[:MAX_THEME_COL_SIZE], style=str(style)).append(' ')
-        for name, style in PDFALYZER_THEME_DICT.items()
-        if name not in ['reset', 'repr_url']
-    ]
-
-    console.print(Columns(colors, column_first=True, padding=(0, 3)))
+    console.print(color_theme_grid(PDFALYZER_THEME_DICT, PDFALYZER))
 
 
 def combine_pdfs():

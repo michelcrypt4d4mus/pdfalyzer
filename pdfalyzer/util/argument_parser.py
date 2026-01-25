@@ -9,12 +9,14 @@ from pathlib import Path
 from rich_argparse_plus import RichHelpFormatterPlus
 from rich.prompt import Confirm
 from rich.text import Text
-from yaralyzer.util.helpers.rich_helper import print_fatal_error_and_exit
-from yaralyzer.util.argument_parser import debug, epilog, export, parser, parse_arguments as parse_yaralyzer_args, source
+from yaralyzer.util.argument_parser import debug, epilog, export, parser, parse_arguments as parse_yaralyzer_args, rules, tuning
+from yaralyzer.util.constants import ENV_VARS_OPTION, YARALYZER_UPPER
+from yaralyzer.util.exceptions import print_fatal_error_and_exit
 from yaralyzer.util.logging import log, log_argparse_result, log_console, log_current_config, log_invocation
 
 from pdfalyzer.config import PdfalyzerConfig
 from pdfalyzer.detection.constants.binary_regexes import QUOTE_PATTERNS
+from pdfalyzer.helpers.string_helper import props_string_indented
 from pdfalyzer.util.constants import PDFALYZE, PDFALYZER
 from pdfalyzer.util.output_section import ALL_STREAMS
 
@@ -24,6 +26,8 @@ DESCRIPTION = "Explore PDF's inner data structure with absurdly large and in dep
               "Track the control flow of her darker impulses, scan rivers of her binary data for signs " + \
               "of evil sorcery, and generally peer deep into the dark heart of the Portable Document Format. " + \
               "Just make sure you also forgive her - she knows not what she does."
+
+YARALYZER_HELP_SUFFIX = "\nThese options are only relevant when you use the --yara or --streams option."
 
 # Add one more top level argument
 parser.add_argument('--password',
@@ -35,17 +39,17 @@ export.add_argument('-bin', '--extract-binary-streams',
                     const='bin',
                     help='extract all binary streams in the PDF to separate files (requires pdf-parser.py)')
 
-# Make sure --no-timestamps is last in FILE EXPORT group, after newly added --extract-binary-streams
-# TODO: this really sucks.
-no_timestamps_idx = [i for i, arg in enumerate(parser._actions) if '--no-timestamps' in arg.option_strings][0]
-parser._actions = parser._actions[:no_timestamps_idx] + [parser._actions[-1]] + parser._actions[no_timestamps_idx:-1]
+# Make sure --extract-binary-streams is grouped with other export options  # TODO: this really sucks.
+num_args = len(parser._actions)
+output_dir_idx = [i for i, arg in enumerate(parser._actions) if '--output-dir' in arg.option_strings][0]
+parser._actions = parser._actions[:output_dir_idx] + [parser._actions[-1]] + parser._actions[output_dir_idx:-1]
+assert len(parser._actions) == num_args, "Number of args changed after reorder!"
 
 for action_group in parser._action_groups:
     action_group._actions = parser._actions
 
-
 # Add one more option to the YARA rules section
-source.add_argument('--no-default-yara-rules',
+rules.add_argument('--no-default-yara-rules',
                     action='store_true',
                     help='if --yara is selected use only custom rules from --yara-file arg and not the default included YARA rules')
 
@@ -53,6 +57,11 @@ source.add_argument('--no-default-yara-rules',
 debug.add_argument('--allow-missed-nodes',
                    action='store_true',
                    help='force pdfalyze to return 0 to shell even if missing nodes encountered')
+
+# Rename the tuning section
+tuning.title = f"{YARALYZER_UPPER} FINE TUNING"
+tuning.description += YARALYZER_HELP_SUFFIX
+rules.description += YARALYZER_HELP_SUFFIX
 
 # Note that we extend the yaralyzer's parser and export
 parser = ArgumentParser(
@@ -126,10 +135,11 @@ def parse_arguments(_argv: list[str] | None = None) -> Namespace:
     if '--version' in sys.argv:
         print(f"{PDFALYZER} {version(PDFALYZER)}")
         sys.exit()
-    elif '--env-vars' in sys.argv:
+    elif ENV_VARS_OPTION in sys.argv:
         PdfalyzerConfig.show_configurable_env_vars()
         sys.exit()
 
+    log.debug(f"pdfalyzer parse_arguments() _argv or argv: {_argv or sys.argv}")
     args = parser.parse_args(_argv)
     args = parse_yaralyzer_args(args)
     log_invocation()
@@ -145,7 +155,7 @@ def parse_arguments(_argv: list[str] | None = None) -> Namespace:
 
     # File export options
     args.extract_quoteds = args.extract_quoteds or []
-    args.export_basename = f"{args.file_prefix}{args.file_to_scan_path.name}"
+    args._export_basename = f"{args.file_prefix}{args.file_to_scan_path.name}"
     env_output_dir = PdfalyzerConfig.get_env_value('OUTPUT_DIR', Path)
 
     if env_output_dir and (not args.output_dir or args.output_dir == Path.cwd()):
@@ -169,3 +179,14 @@ def ask_to_proceed(msg: str | Text | None = None) -> None:
     if not Confirm.ask(msg):
         log_console.print('Exiting...', style='dim')
         sys.exit()
+
+
+def _debug_parser_args(_parser: ArgumentParser | None = None):
+    """Debug method to look at argparse internals."""
+    for i, action in  enumerate((_parser or parser)._actions):
+        if not action.option_strings:
+            continue
+
+        keys = [k for k, v in vars(action).items() if k not in ['deprecated', 'help', 'option_strings'] and v is not None]
+        log_console.print(f"\n{i}: {action.option_strings}", style='cyan', highlight=False)
+        log_console.print(props_string_indented(action, keys))

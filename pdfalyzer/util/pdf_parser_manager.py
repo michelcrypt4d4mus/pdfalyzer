@@ -1,10 +1,9 @@
 import re
 from argparse import Namespace
 from dataclasses import dataclass, field
-from os import environ
 from pathlib import Path
-from subprocess import check_output
 
+from yaralyzer.util.helpers.shell_helper import ShellResult
 from yaralyzer.util.logging import log, log_and_print, log_console
 
 from pdfalyzer.config import PdfalyzerConfig
@@ -30,34 +29,34 @@ PDF_PARSER_INSTALL_MSG = f"If you need to install pdf-parser.py it's a single .p
 class PdfParserManager:
     """Instances of this class manage external calls to Didier Stevens's pdf-parser.py for a given PDF."""
     args: Namespace
-    base_shell_cmd: str = field(init=False)
+    base_shell_cmd: list[str | Path] = field(init=False)
     object_ids: list[int] = field(default_factory=list)
     object_ids_containing_stream_data: list[int] = field(default_factory=list)
-    path_to_pdf: Path = field(init=False)
+
+    @property
+    def path_to_pdf(self):
+        return Path(self.args.file_to_scan_path)
 
     def __post_init__(self):
         if PdfalyzerConfig.pdf_parser_path is None:
             raise PdfParserError(f"{PDF_PARSER_PATH_ENV_VAR} not configured.\n\n{PDF_PARSER_INSTALL_MSG}")
+        elif not is_executable(PdfalyzerConfig.pdf_parser_path):
+            raise PdfParserError(f"{relative_path(PdfalyzerConfig.pdf_parser_path)} is not executable!")
 
-        pdf_parser_relative_path = relative_path(PdfalyzerConfig.pdf_parser_path)
-
-        if not is_executable(PdfalyzerConfig.pdf_parser_path):
-            raise PdfParserError(f"{pdf_parser_relative_path} is not executable!")
-
-        self.path_to_pdf = Path(self.args.file_to_scan_path)
-        self.base_shell_cmd = f'{PdfalyzerConfig.pdf_parser_path} -O "{self.path_to_pdf}"'
+        self.base_shell_cmd = [PdfalyzerConfig.pdf_parser_path, '-O', self.path_to_pdf]
         self.extract_object_ids()
 
     def extract_object_ids(self) -> None:
         """Examine output of pdf-parser.py to find all object IDs as well as those object IDs that have streams"""
         try:
-            pdf_parser_output = check_output(self.base_shell_cmd, env=environ, shell=True, text=True)
+            result = ShellResult.from_cmd(self.base_shell_cmd, verify_success=True)
+            print(result.output_logs(True))
         except Exception as e:
             raise PdfParserError(f"Failed to execute '{self.base_shell_cmd}' ({e})")
 
         current_object_id = None
 
-        for line in pdf_parser_output.split("\n"):
+        for line in result.stdout.split("\n"):
             if (match := PDF_OBJECT_START_REGEX.match(line)):
                 current_object_id = int(match[1])
                 self.object_ids.append(current_object_id)
@@ -80,11 +79,11 @@ class PdfParserManager:
 
         for object_id in self.object_ids_containing_stream_data:
             stream_dump_file = self.args.output_dir.joinpath(f'{self.path_to_pdf.name}.object_{object_id}.bin')
-            shell_cmd = self.base_shell_cmd + f' -f -o {object_id} -d "{stream_dump_file}"'
+            shell_cmd = self.base_shell_cmd + ['-f', '-o', object_id, '-d', stream_dump_file]
             log.info(f'Dumping stream from object {object_id} with cmd:\n\n{shell_cmd}\n')
 
             try:
-                check_output(shell_cmd, env=environ, shell=True, text=True)
+                ShellResult.from_cmd(shell_cmd, verify_success=True)
                 files_written.append(stream_dump_file)
             except Exception as e:
                 log.error(f"Failed to extract object ID {object_id}!")

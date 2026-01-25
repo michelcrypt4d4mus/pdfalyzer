@@ -9,7 +9,15 @@ from math import isclose
 from os import environ
 from subprocess import CalledProcessError, check_output
 
+from yaralyzer.util.constants import NO_TIMESTAMPS_OPTION
+from yaralyzer.util.helpers.file_helper import relative_path
+from yaralyzer.util.helpers.shell_helper import ShellResult, safe_args
+
 from pdfalyzer.util.constants import PDFALYZE
+
+from .conftest import COMMON_ARGS, OUTPUT_DIR_ARGS, RENDERED_FIXTURES_DIR, export_txt_cmd
+
+NO_LOG_ARGS = safe_args(COMMON_ARGS + OUTPUT_DIR_ARGS)
 
 
 # Asking for help screen is a good canary test... proves code compiles, at least.
@@ -25,6 +33,7 @@ def test_help_option():
 # TODO: this test could be more accurate if we could both get the CalledProcessError AND the STDERR output?
 def test_bad_args(additional_yara_rules_path, analyzing_malicious_pdf_path):
     with pytest.raises(CalledProcessError):
+        # ShellResult.from_cmd(pdf)
         _run_with_args('bad_file.pdf')
     with pytest.raises(CalledProcessError):
         _run_with_args(analyzing_malicious_pdf_path, '--output-dir', 'bad_dir')
@@ -34,25 +43,29 @@ def test_bad_args(additional_yara_rules_path, analyzing_malicious_pdf_path):
         _run_with_args(analyzing_malicious_pdf_path, '--no-default-yara-rules')
 
 
-def test_pdfalyze_CLI_basic_tree(adobe_type1_fonts_pdf_path, analyzing_malicious_pdf_path):
-    _assert_args_yield_lines(91, adobe_type1_fonts_pdf_path, '-t')
-    _assert_args_yield_lines(1022, analyzing_malicious_pdf_path, '-t')
+def test_multi_export(analyzing_malicious_pdf_path, tmp_dir):
+    result = _check_same_as_fixture(analyzing_malicious_pdf_path)
+    exported_files = result.exported_file_paths()
+    assert len(exported_files) == 6
 
 
-def test_pdfalyze_CLI_rich_tree(adobe_type1_fonts_pdf_path, analyzing_malicious_pdf_path, sf424_page2_pdf_path):
-    _assert_args_yield_lines(952, adobe_type1_fonts_pdf_path, '-r')
-    _assert_args_yield_lines(6970, analyzing_malicious_pdf_path, '-r')
-    _assert_args_yield_lines(6580, sf424_page2_pdf_path, '-r')
+def test_pdfalyze_CLI_basic_tree(adobe_type1_fonts_pdf_path):
+    _check_same_as_fixture(adobe_type1_fonts_pdf_path, '-t')
+
+
+def test_pdfalyze_CLI_rich_tree(adobe_type1_fonts_pdf_path, sf424_page2_pdf_path):
+    _check_same_as_fixture(adobe_type1_fonts_pdf_path, '-r')
+    _check_same_as_fixture(sf424_page2_pdf_path, '-r')
 
 
 def test_pdfalyze_CLI_yara_scan(adobe_type1_fonts_pdf_path):
-    _assert_args_yield_lines(840, adobe_type1_fonts_pdf_path, '-y')
+    _check_same_as_fixture(adobe_type1_fonts_pdf_path, '-y')
 
 
 def test_pdfalyze_CLI_streams_scan(adobe_type1_fonts_pdf_path):
-    _assert_args_yield_lines(1679, adobe_type1_fonts_pdf_path, '-s')
-    _assert_args_yield_lines(1242, adobe_type1_fonts_pdf_path, '--suppress-boms', '-s')
-    _assert_args_yield_lines(154, adobe_type1_fonts_pdf_path, '-s', '48')
+    _check_same_as_fixture(adobe_type1_fonts_pdf_path, '-s')
+    _check_same_as_fixture(adobe_type1_fonts_pdf_path, '--suppress-boms', '-s')
+    _check_same_as_fixture(adobe_type1_fonts_pdf_path, '-s', '48')
 
 
 def test_pdfalyze_non_zero_return_code(form_evince_path):
@@ -61,47 +74,29 @@ def test_pdfalyze_non_zero_return_code(form_evince_path):
 
 
 def test_yara_rules_option(adobe_type1_fonts_pdf_path, additional_yara_rules_path):
-    _assert_args_yield_lines(2593, adobe_type1_fonts_pdf_path, '-Y', additional_yara_rules_path)
-    _assert_args_yield_lines(1797, adobe_type1_fonts_pdf_path, '--no-default-yara-rules', '-Y', additional_yara_rules_path)  # noqa: E501
+    _check_same_as_fixture(adobe_type1_fonts_pdf_path, '-Y', additional_yara_rules_path)
+    _check_same_as_fixture(adobe_type1_fonts_pdf_path, '--no-default-yara-rules', '-Y', additional_yara_rules_path)  # noqa: E501
 
 
 # @pytest.mark.slow
 def test_quote_extraction(adobe_type1_fonts_pdf_path):
-    _assert_args_yield_lines(2914, adobe_type1_fonts_pdf_path, '--extract-quoted', 'backtick', '-s')
-    _assert_args_yield_lines(5736, adobe_type1_fonts_pdf_path, '--extract-quoted', 'backtick', '--extract-quoted', 'frontslash', '-s')  # noqa: E501
+    _check_same_as_fixture(adobe_type1_fonts_pdf_path, '--extract-quoted', 'backtick', '-s')
+    _check_same_as_fixture(adobe_type1_fonts_pdf_path, '--extract-quoted', 'backtick', '--extract-quoted', 'frontslash', '-s')  # noqa: E501
 
 
-def test_pdfalyze_CLI_font_scan(adobe_type1_fonts_pdf_path, analyzing_malicious_pdf_path):
-    _assert_args_yield_lines(192, adobe_type1_fonts_pdf_path, '-f')
-    _assert_args_yield_lines(311, analyzing_malicious_pdf_path, '-f')
+def test_pdfalyze_CLI_font_scan(adobe_type1_fonts_pdf_path):
+    _check_same_as_fixture(adobe_type1_fonts_pdf_path, '-f')
 
 
-def _assert_args_yield_lines(line_count: int, pdf_path: str | Path, *args):
-    output = _run_with_args(pdf_path, *args)
-    assertion = _assert_line_count_within_range(line_count, output, _shell_cmd_str(pdf_path, *args))
-    assert assertion[0], assertion[1]
+def _check_same_as_fixture(pdf_path: str | Path, *args):
+    cmd = export_txt_cmd(pdf_path, *args)
+    return ShellResult.run_and_compare_exported_files_to_existing(cmd, RENDERED_FIXTURES_DIR, no_log_args=NO_LOG_ARGS)
 
 
 def _run_with_args(pdf: str | Path, *args) -> str:
     """check_output() technically returns bytes so we decode before returning STDOUT output"""
-    return check_output(_build_shell_cmd(pdf, *args), env=environ).decode()
+    return check_output(_pdfalyze_cmd(pdf, *args), env=environ).decode()
 
 
-def _assert_line_count_within_range(line_count: int, text: str, cmd: str):
-    lines_in_text = len(text.split("\n"))
-
-    if not isclose(line_count, lines_in_text, rel_tol=0.05):
-        for i, line in enumerate(text.split("\n")):
-            print(f"{i}: {line}")
-
-        return (False, f"Expected {line_count} +/- but found {lines_in_text}\n\n  Command was: {cmd}\n")
-
-    return (True, 'True')
-
-
-def _build_shell_cmd(pdf_path: str | Path, *args) -> list[str]:
-    return [PDFALYZE, str(pdf_path), '--allow-missed-nodes', *[str(arg) for arg in args]]
-
-
-def _shell_cmd_str(pdf_path: str | Path, *args) -> str:
-    return ' '.join(_build_shell_cmd(pdf_path, *args))
+def _pdfalyze_cmd(pdf_path: str | Path, *args) -> list[str]:
+    return safe_args([PDFALYZE, pdf_path, '--allow-missed-nodes', *args])

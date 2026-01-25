@@ -10,11 +10,11 @@ from pdfalyzer.util.argument_parser import parse_arguments
 from pdfalyzer.util.constants import PDFALYZER_UPPER
 
 
-def test_get_export_basepath(export_analyzing_malicious_args, analyzing_malicious_pdfalyzer, tmp_dir):
-    parse_arguments(export_analyzing_malicious_args + ['--no-timestamps'])
+def test_get_export_basepath(pdfalyze_analyzing_malicious_args, analyzing_malicious_pdfalyzer, tmp_dir):
+    parse_arguments(pdfalyze_analyzing_malicious_args)
     presenter = PdfalyzerPresenter(analyzing_malicious_pdfalyzer)
-    output_path = PdfalyzerConfig.get_export_basepath(presenter.print_document_info)
-    assert output_path == (f'{tmp_dir}/analyzing-malicious-document-files.pdf.document_info')
+    export_basepath = PdfalyzerConfig.get_export_basepath(presenter.print_document_info)
+    assert export_basepath == f'{tmp_dir}/analyzing-malicious-document-files.pdf.document_info'
 
 
 def test_env_var_for_command_line_option():

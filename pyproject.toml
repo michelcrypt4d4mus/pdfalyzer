@@ -67,7 +67,7 @@ packages = [
 python = "^3.11.14"
 anytree = "~=2.13"
 pypdf = "6.6.0"
-yaralyzer = "1.2.0"
+yaralyzer = {path = "../yaralyzer", develop = true}
 
 # The OCR lib pytesseract + others are kinda heavyweight and not required for basic pdfalyzing.
 # It's only needed if you want to use The Pdfalyzer's extra tools like extract_pdf_text().

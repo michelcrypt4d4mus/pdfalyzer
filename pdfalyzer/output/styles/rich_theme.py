@@ -3,7 +3,8 @@ Rich colors: https://rich.readthedocs.io/en/stable/appendix/colors.html
 TODO: interesting colors # row_styles[0] = 'reverse bold on color(144)' <-
 """
 from rich.theme import Theme
-from yaralyzer.output.console import GREY_ADDRESS, YARALYZER_THEME_DICT, console
+from yaralyzer.output.console import console
+from yaralyzer.output.theme import GREY_ADDRESS, YARALYZER_THEME_DICT
 
 # Colors / PDF object styles
 DANGER_HEADER = 'color(88) on white'  # Red
@@ -55,6 +56,7 @@ PDFALYZER_THEME_DICT.update({
     'mild_warning': 'color(228) dim',
     'red_alert': 'blink bold red reverse on white',
 })
+
 
 # Override whatever theme The Yaralyzer has configured.
 console.push_theme(Theme(PDFALYZER_THEME_DICT))

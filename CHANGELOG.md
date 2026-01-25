@@ -1,7 +1,9 @@
 # NEXT RELEASE
+* Add `--export-png` option to render .png images of output
 * Add `--env-vars` option to display exactly which command line options can be set by which variables
 * Add `--echo-command` option to save the exact command used along with the output
 * Add `--no-timestamps` option for exported filenames
+* Add `--suppress-output` option
 * Enable permanently setting `--output-dir` via the `.pdfalyzer` file
 * Highlight some of the interesting object reference keys in the rich tree view
 * In rich tree view sort `DictionaryObject` key/value pairs by key alphabetically, except `/Type` and `/Subtype` are at the top

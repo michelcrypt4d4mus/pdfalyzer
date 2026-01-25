@@ -14,8 +14,8 @@ from pathlib import Path
 
 from rich_argparse_plus import RichHelpFormatterPlus
 from rich.text import Text
+from yaralyzer.util.exceptions import print_fatal_error_and_exit
 from yaralyzer.util.helpers.file_helper import files_in_dir
-from yaralyzer.util.helpers.rich_helper import print_fatal_error_and_exit
 from yaralyzer.util.logging import log, log_console
 
 from pdfalyzer.helpers.filesystem_helper import (do_all_files_exist, extract_page_number, is_pdf,

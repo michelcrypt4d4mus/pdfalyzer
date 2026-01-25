@@ -13,7 +13,8 @@ from yaralyzer.encoding_detection.character_encodings import BOMS
 from yaralyzer.util.helpers.bytes_helper import hex_string, print_bytes
 from yaralyzer.util.helpers.string_helper import escape_yara_pattern
 from yaralyzer.output.regex_match_metrics import RegexMatchMetrics
-from yaralyzer.output.console import BYTES_NO_DIM, console, console_width
+from yaralyzer.output.console import console, console_width
+from yaralyzer.output.theme import BYTES_NO_DIM
 from yaralyzer.util.logging import log
 from yaralyzer.yara.yara_rule_builder import HEX, REGEX, safe_label
 from yaralyzer.yaralyzer import Yaralyzer

@@ -14,9 +14,11 @@ from rich.table import Table
 from rich.text import Text
 from rich.tree import Tree
 from yaralyzer.config import YaralyzerConfig
-from yaralyzer.util.helpers.rich_helper import print_fatal_error, size_in_bytes_text
+from yaralyzer.output.console import console
 from yaralyzer.output.file_hashes_table import bytes_hashes_table
-from yaralyzer.output.console import BYTES_HIGHLIGHT, console
+from yaralyzer.output.theme import BYTES_HIGHLIGHT
+from yaralyzer.util.exceptions import print_fatal_error
+from yaralyzer.util.helpers.rich_helper import size_in_bytes_text
 from yaralyzer.yara.error import yara_error_msg
 from yaralyzer.yaralyzer import Yaralyzer
 
@@ -153,14 +155,14 @@ class PdfalyzerPresenter:
         """Scan the main PDF and each individual binary stream in it with yara_rules/*.yara files."""
         try:
             print_section_header(f"YARA Scan of PDF rules for '{self.pdfalyzer.pdf_basename}'")
-            YaralyzerConfig.args.standalone_mode = True  # TODO: using 'standalone mode' like this kind of sucks
+            YaralyzerConfig.args._standalone_mode = True  # TODO: using 'standalone mode' like this kind of sucks
             self.yaralyzer.yaralyze()
         except yara.Error as e:
             console.print_exception()
             print_fatal_error_panel(yara_error_msg(e))
             return
 
-        YaralyzerConfig.args.standalone_mode = False
+        YaralyzerConfig.args._standalone_mode = False
         console.line(2)
 
         for node in self.pdfalyzer.stream_nodes():
