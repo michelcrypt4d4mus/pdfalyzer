@@ -1,20 +1,8 @@
 """
 Helper methods for dealing with lists and dicts.
 """
-import itertools
-from typing import Any
-
 from pypdf.generic import DictionaryObject
 from yaralyzer.util.logging import log
-
-
-def flatten(_list: list[list[Any]]) -> list:
-    return list(itertools.chain.from_iterable(_list))
-
-
-def get_dict_key_by_value(_dict: dict, value):
-    """Inverse of the usual dict operation"""
-    return list(_dict.keys())[list(_dict.values()).index(value)]
 
 
 def compare_dicts(d1: DictionaryObject, d2: DictionaryObject, already_compared_keys: list[str] | None = None) -> None:

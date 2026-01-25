@@ -8,7 +8,7 @@ from typing import Any
 
 from pypdf.generic import (ArrayObject, ByteStringObject, EncodedStreamObject, IndirectObject,
      NullObject, StreamObject, TextStringObject)
-from yaralyzer.output.rich_console import YARALYZER_THEME_DICT
+from yaralyzer.output.theme import YARALYZER_THEME_DICT
 
 from pdfalyzer.output.styles.rich_theme import PDF_ARRAY_STYLE
 from pdfalyzer.util import adobe_strings

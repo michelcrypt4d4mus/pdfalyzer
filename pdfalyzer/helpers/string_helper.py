@@ -7,11 +7,12 @@ from typing import Pattern
 
 from pypdf.generic import IndirectObject
 
-from yaralyzer.output.rich_console import console_width
+from yaralyzer.output.console import console_width
 
 ARRAY_IDX_REGEX = re.compile(r"\[\d+\]")
 INDENT_DEPTH = 4
-INDENTED_JOINER = ',\n' + (INDENT_DEPTH * ' ')
+INDENT_SPACES = INDENT_DEPTH * ' '
+INDENTED_JOINER = ',\n' + INDENT_SPACES
 PRETTY_PRINT_WIDTH = 60
 DIGIT_REGEX = re.compile("\\d+")
 NON_WORD_REGEX = re.compile(r"[^\w]")
@@ -78,14 +79,13 @@ def indented(s: str, spaces: int = 4, prefix: str = '') -> str:
     return indent + f"\n{indent}".join(s.split('\n'))
 
 
+def indented_paragraph(s: str, spaces: int = 4, prefix: str = '') -> str:
+    return '\n'.join([indented(line) for line in s.split('\n')])
+
+
 def is_array_idx(address: str) -> bool:
     """True if address looks like '[23]'."""
     return bool(ARRAY_IDX_REGEX.match(address))
-
-
-def numbered_list(objs: list, indent: int = 4) -> str:
-    list_str = '\n'.join([f"[{i + 1}] {e}" for i, e in enumerate(objs)])
-    return indented(list_str, spaces=indent)
 
 
 def is_prefixed_by_any(_string: str, prefixes: list[str]) -> bool:
@@ -99,9 +99,18 @@ def is_substring_of_longer_strings_in_list(_string: str, strings: list[str]) -> 
     return all([_string in longer_string for longer_string in longer_strings])
 
 
+def numbered_list(objs: list, indent: int = 4) -> str:
+    list_str = '\n'.join([f"[{i + 1}] {e}" for i, e in enumerate(objs)])
+    return indented(list_str, spaces=indent)
+
+
 def props_string(obj: object, keys: list[str] | None = None, joiner: str = ', ') -> str:
-    prefix = joiner if '\n' in joiner else ''
+    prefix = INDENT_SPACES if '\n' in joiner else ''
     return prefix + joiner.join(props_strings(obj, keys))
+
+
+def props_string_indented(obj: object, keys: list[str] | None = None) -> str:
+    return props_string(obj, keys, INDENTED_JOINER)
 
 
 def props_strings(obj: object, keys: list[str] | None = None) -> list[str]:

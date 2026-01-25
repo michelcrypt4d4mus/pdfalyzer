@@ -14,10 +14,10 @@ from pypdf.errors import DependencyError, FileNotDecryptedError, PdfReadError
 from pypdf.generic import DictionaryObject, IndirectObject
 from rich.prompt import Prompt
 from rich.text import Text
-from yaralyzer.helpers.file_helper import load_binary_data
-from yaralyzer.helpers.rich_text_helper import print_fatal_error, print_fatal_error_and_exit
-from yaralyzer.output.file_hashes_table import BytesInfo, compute_file_hashes
-from yaralyzer.output.rich_console import console
+from yaralyzer.output.console import console
+from yaralyzer.output.file_hashes_table import BytesInfo
+from yaralyzer.util.helpers.file_helper import load_binary_data
+from yaralyzer.util.exceptions import print_fatal_error, print_fatal_error_and_exit
 
 from pdfalyzer.decorators.document_model_printer import highlighted_raw_pdf_obj_str
 from pdfalyzer.decorators.indeterminate_node import IndeterminateNode
@@ -68,6 +68,8 @@ class Pdfalyzer:
     """
     pdf_path: Path
     password: str | None = None
+
+    # Non-arguments:
     font_infos: list[FontInfo] = field(default_factory=list)
     font_info_extraction_error: Exception | None = None
     max_generation: int = 0
@@ -107,7 +109,7 @@ class Pdfalyzer:
         # Load bytes etc
         self.pdf_basename = self.pdf_path.name
         self.pdf_bytes = load_binary_data(self.pdf_path)
-        self.pdf_bytes_info = compute_file_hashes(self.pdf_bytes)
+        self.pdf_bytes_info = BytesInfo(self.pdf_bytes)
 
         # Bootstrap the root of the tree with the trailer. PDFs are always read trailer first.
         # Technically the trailer has no PDF Object ID but we set it to the /Size of the PDF.

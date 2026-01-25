@@ -1,6 +1,24 @@
 # NEXT RELEASE
-* `--no-timestamps` option for exported filenames
-* Enable permanently setting `--output-dir` via the `.pdfalyzer` file
+* Accomodate lower python 3.11 minor versions
+* Improved handling of `/DescendantFonts` prop for CID and composite fonts (finds more fonts)
+* Translate each font's `/Flags` bits into human readable format in the font info table
+* Red blinking alert on font binaries whose length does not match the one they advertise in `/Length` props
+* Improve logging about unplaced PDF nodes, print missing node warnings at end not beginning
+* Better handling of `FileNotFoundError` at start
+* Extract fonts from nodes even if they can't be placed in the tree
+* Cache nodes being looked up in the tree in `Pdfalyzer._tree_nodes` dict
+* Placement of formerly orphaned nodes:
+   * Force unplaced `/ObjStm` nodes under the root node
+   * Place orphaned `/XRef` nodes with valid `/Root` property in tree
+   * Place lost nodes with valid `/P` reference to some parent
+
+# 1.19.0
+* Add `--export-png` option to render .png images of output
+* Add `--env-vars` option to display exactly which command line options can be set by which variables
+* Add `--echo-command` option to save the exact command used along with the output
+* Add `--no-timestamps` option for exported filenames
+* Add `--suppress-output` option
+* Enable permanently setting almost all command line options via environment variables or a custom `.pdfalyzer` file
 * Highlight some of the interesting object reference keys in the rich tree view
 * In rich tree view sort `DictionaryObject` key/value pairs by key alphabetically, except `/Type` and `/Subtype` are at the top
 * Display the number of revisions (max `generation` value) in metadata table
@@ -9,18 +27,9 @@
 * Coerce `/Nums` number trees into `dict` like objects for the purposes of assigning addresses
 * `/Annots` and other indeterminate nodes now have `/Subtype` integrated into their labeling (e.g. `/Annots:Link` instead of just `/Annots`)
 * Fancier table for PDF metadata that also contains the number of pages, images, and revisions (if possible)
-* Improved handling of `/DescendantFonts` prop for CID and composite fonts (finds more fonts)
-* Translate each font's `/Flags` bits into human readable format in the font info table
-* Red blinking alert on font binaries whose length does not match the one they advertise in `/Length` props
-* Improve logging about unplaced PDF nodes, print missing node warnings at end not beginning
+* Test suite now checks results against pre-recorded fixture output
+* Python 3.10 no longer officially supported even if it probably still works
 * Color highlighting for logs
-* Better handling of `FileNotFoundError` at start
-* Extract fonts from nodes even if they can't be placed in the tree
-* Cache nodes being looked up in the tree in `Pdfalyzer._tree_nodes` dict
-* Placement of formerly orphaned nodes:
-   * Force unplaced `/ObjStm` nodes under the root node
-   * Place orphaned `/XRef` nodes with valid `/Root` property in tree
-   * Place lost nodes with valid `/P` reference to some parent
 
 ### 1.18.1
 * Ensure `cryptography` package is installable as an extra

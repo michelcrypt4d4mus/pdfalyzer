@@ -7,7 +7,7 @@ from io import StringIO
 from pypdf.generic import ArrayObject, DictionaryObject, IndirectObject, PdfObject
 from rich.console import Console
 from rich.markup import escape
-from yaralyzer.output.rich_console import console_width
+from yaralyzer.output.console import console_width
 
 from pdfalyzer.helpers.pdf_object_helper import describe_obj, pypdf_class_name
 from pdfalyzer.helpers.string_helper import pp, INDENT_DEPTH

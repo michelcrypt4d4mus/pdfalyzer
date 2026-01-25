@@ -4,7 +4,7 @@ Functions for miscellaneous Rich text/string pretty printing operations.
 from rich.panel import Panel
 from rich.padding import Padding
 from rich.text import Text
-from yaralyzer.output.rich_console import console
+from yaralyzer.output.console import console
 
 ARROW_BULLET = '➤ '
 

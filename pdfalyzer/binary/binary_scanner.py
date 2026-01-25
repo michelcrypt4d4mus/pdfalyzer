@@ -10,10 +10,11 @@ from rich.text import Text
 from yaralyzer.bytes_match import BytesMatch
 from yaralyzer.decoding.bytes_decoder import BytesDecoder
 from yaralyzer.encoding_detection.character_encodings import BOMS
-from yaralyzer.helpers.bytes_helper import hex_string, print_bytes
-from yaralyzer.helpers.string_helper import escape_yara_pattern
+from yaralyzer.util.helpers.bytes_helper import hex_string, print_bytes
+from yaralyzer.util.helpers.string_helper import escape_yara_pattern
 from yaralyzer.output.regex_match_metrics import RegexMatchMetrics
-from yaralyzer.output.rich_console import BYTES_NO_DIM, console, console_width
+from yaralyzer.output.console import console, console_width
+from yaralyzer.output.theme import BYTES_NO_DIM
 from yaralyzer.util.logging import log
 from yaralyzer.yara.yara_rule_builder import HEX, REGEX, safe_label
 from yaralyzer.yaralyzer import Yaralyzer
@@ -92,7 +93,7 @@ class BinaryScanner:
         Find all strings matching `QUOTE_PATTERNS` (AKA between quote chars) and decode them with various
         encodings. The `--quote-type` arg will limit this decode to just one kind of quote.
         """
-        quote_selections = PdfalyzerConfig._args.extract_quoteds
+        quote_selections = PdfalyzerConfig.args.extract_quoteds
 
         if len(quote_selections) == 0:
             headline = "Skipping extract/decode of quoted bytes (--extract-quoted is empty)"
@@ -117,21 +118,21 @@ class BinaryScanner:
     # These extraction iterators will iterate over all matches for a specific pattern.
     # YARA rules are written on the fly and then YARA does the matching.
     # -------------------------------------------------------------------------------
-    def extract_guillemet_quoted_bytes(self) -> Iterator[Tuple[BytesMatch, BytesDecoder]]:
+    def extract_guillemet_quoted_bytes(self) -> Iterator[tuple[BytesMatch, BytesDecoder]]:
         """Iterate on all strings surrounded by Guillemet quotes, e.g. «string»."""
         return self._quote_yaralyzer(QUOTE_PATTERNS[GUILLEMET], GUILLEMET).match_iterator()
 
-    def extract_backtick_quoted_bytes(self) -> Iterator[Tuple[BytesMatch, BytesDecoder]]:
+    def extract_backtick_quoted_bytes(self) -> Iterator[tuple[BytesMatch, BytesDecoder]]:
         """Returns an interator over all strings surrounded by backticks."""
         return self._quote_yaralyzer(QUOTE_PATTERNS[BACKTICK], BACKTICK).match_iterator()
 
-    def extract_front_slash_quoted_bytes(self) -> Iterator[Tuple[BytesMatch, BytesDecoder]]:
+    def extract_front_slash_quoted_bytes(self) -> Iterator[tuple[BytesMatch, BytesDecoder]]:
         """Returns an interator over all strings surrounded by front_slashes (hint: regular expressions)."""
         return self._quote_yaralyzer(QUOTE_PATTERNS[FRONTSLASH], FRONTSLASH).match_iterator()
 
     def print_stream_preview(self, num_bytes=None, title_suffix=None) -> None:
         """Print a preview showing the beginning and end of the embedded stream data."""
-        num_bytes = num_bytes or PdfalyzerConfig._args.preview_stream_length or console_width()
+        num_bytes = num_bytes or PdfalyzerConfig.args.preview_stream_length or console_width()
         snipped_byte_count = self.stream_length - (num_bytes * 2)
         console.line()
 

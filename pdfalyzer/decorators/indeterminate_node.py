@@ -2,7 +2,7 @@ from dataclasses import dataclass
 from typing import Callable
 
 from rich.markup import escape
-from yaralyzer.helpers.string_helper import comma_join
+from yaralyzer.util.helpers.string_helper import comma_join
 from yaralyzer.util.logging import log
 
 from pdfalyzer.decorators.pdf_tree_node import PdfTreeNode

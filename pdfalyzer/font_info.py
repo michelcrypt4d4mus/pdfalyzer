@@ -6,7 +6,7 @@ from pypdf._font import Font
 from pypdf.generic import ArrayObject, DictionaryObject, IndirectObject, NameObject, PdfObject, StreamObject, is_null_or_none
 from rich.table import Table
 from rich.text import Text
-from yaralyzer.output.rich_console import console
+from yaralyzer.output.console import console
 from yaralyzer.util.logging import log
 
 from pdfalyzer.binary.binary_scanner import BinaryScanner

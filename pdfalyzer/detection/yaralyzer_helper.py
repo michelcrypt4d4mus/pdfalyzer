@@ -5,7 +5,7 @@ from importlib.resources import as_file, files
 from pathlib import Path
 
 from yaralyzer.config import YaralyzerConfig
-from yaralyzer.helpers.rich_text_helper import print_fatal_error_and_exit
+from yaralyzer.util.exceptions import print_fatal_error_and_exit
 from yaralyzer.yaralyzer import Yaralyzer
 
 from pdfalyzer.util.constants import PDFALYZER

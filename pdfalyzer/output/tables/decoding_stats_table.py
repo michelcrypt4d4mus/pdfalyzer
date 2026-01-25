@@ -5,7 +5,7 @@ from numbers import Number
 
 from rich.table import Table
 from rich.text import Text
-from yaralyzer.helpers.rich_text_helper import CENTER, na_txt, prefix_with_style
+from yaralyzer.util.helpers.rich_helper import na_txt, prefix_with_style
 
 from pdfalyzer.binary.binary_scanner import BinaryScanner
 from pdfalyzer.helpers.rich_text_helper import pct_txt
@@ -79,6 +79,6 @@ def _new_decoding_stats_table(title_str: str) -> Table:
         table.add_column(pad_header(header.upper()), **kwargs)
 
     add_column('Byte Pattern', vertical='middle', style='color(25) bold reverse', justify='right')
-    add_column('Aggregate Metrics', overflow='fold', justify=CENTER)
-    add_column('Per Encoding Metrics', justify=CENTER)
+    add_column('Aggregate Metrics', overflow='fold', justify='center')
+    add_column('Per Encoding Metrics', justify='center')
     return table

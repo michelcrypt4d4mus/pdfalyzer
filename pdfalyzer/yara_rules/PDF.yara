@@ -435,7 +435,7 @@ rule BlackHole_v2 : PDF {
         $magic in (0..1024) and $content
 }
 
-rule blackhole2_pdf : EK PDF{
+rule blackhole2_pdf : EK PDF {
     meta:
         author = "Josh Berry"
         date = "2016-06-27"

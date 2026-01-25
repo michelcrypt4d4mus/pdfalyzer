@@ -20,7 +20,8 @@ You can use `pip` but `pipx` is a cleaner way to install for normal users. Devel
 ```sh
 # If you want to open encrypted PDFs or use the tools that ship with Pdfalyzer (e.g. extract_pdf_text):
 pipx install pdfalyzer[extract]
-# Or if you don't care about extracting text, encrypted PDFs, etc. just do this:
+
+# Or if you don't care about extracting text, encrypted PDFs, images, etc. just do this:
 pipx install pdfalyzer
 
 # Then pdfalyze to your hearts content:
@@ -169,7 +170,12 @@ for backtick_quoted_string in font.binary_scanner.extract_backtick_quoted_bytes(
 -------------
 
 # Example Output
-The Pdfalyzer can export visualizations to HTML, ANSI colored text, and SVG images using the file export functionality that comes with [Rich](https://github.com/Textualize/rich). SVGs can be turned into `png` format images with a tool like Inkscape or `cairosvg` (Inkscape works a lot better in our experience). See `pdfalyze --help` for the specifics.
+The Pdfalyzer can export visualizations to HTML, ANSI colored text, and both PNG and SVG images using the file export functionality that comes with [Rich](https://github.com/Textualize/rich). SVGs can be turned into `png` format images with a tool like Inkscape or `cairosvg` (Inkscape works a lot better in our experience). See `pdfalyze --help` for the specifics.
+
+If you want to export .png images directly from Pdfalyzer you'll need to do one of these things:
+
+1. Install [Inkscape](https://inkscape.org/) (homebrew users can install it with `brew install --cask inkscape`)
+2. Ask for the `img` extra when installing Pdfalyzer which will install [`cairosvg`](https://pypi.org/project/CairoSVG/): `pipx install pdfalyzer[img]`
 
 
 ## Basic Tree View

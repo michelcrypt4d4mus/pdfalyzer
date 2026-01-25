@@ -4,8 +4,8 @@ Output formatting for font character mappings.
 from rich.columns import Columns
 from rich.padding import Padding
 from rich.text import Text
-from yaralyzer.helpers.bytes_helper import print_bytes
-from yaralyzer.output.rich_console import console
+from yaralyzer.util.helpers.bytes_helper import print_bytes
+from yaralyzer.output.console import console
 from yaralyzer.util.logging import log
 
 # from pdfalyzer.font_info import FontInfo  # Causes circular import
