@@ -91,9 +91,6 @@ class PdfalyzerConfig(YaralyzerConfig):
         super()._set_class_vars_from_env()
         cls.pdf_parser_path = cls.get_env_value(PDF_PARSER_PATH_ENV_VAR, Path) or DEFAULT_PDF_PARSER_PATH
 
-        if cls.pdf_parser_path.exists():
-            if not is_executable(cls.pdf_parser_path):
-                log.warning(f"{PDF_PARSER_PY} found at {cls.pdf_parser_path} but it's not executable...")
-        else:
+        if not cls.pdf_parser_path.exists():
             log.warning(f"Configured PDF_PARSER_PATH is '{cls.pdf_parser_path}' but that file doesn't exist!")
             cls.pdf_parser_path = None

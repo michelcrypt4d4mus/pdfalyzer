@@ -36,7 +36,7 @@ def pdfalyze():
     # Binary stream extraction is a special case
     if args.extract_binary_streams:
         try:
-            PdfParserManager(args).extract_all_streams()
+            PdfParserManager.from_args(args).extract_all_streams()
         except PdfParserError as e:
             print_fatal_error('Failed to extract binary streams!', e)
 

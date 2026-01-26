@@ -66,9 +66,13 @@ def test_pdfalyze_CLI_streams_scan(adobe_type1_fonts_pdf_path):
     _check_same_as_fixture(adobe_type1_fonts_pdf_path, '-s', '48')
 
 
-def test_pdfalyze_non_zero_return_code(form_evince_path):
+def test_pdfalyze_non_zero_return_code(analyzing_malicious_pdf_path):
+    cmd = safe_args([PDFALYZE, analyzing_malicious_pdf_path, '-t'])
+
     with pytest.raises(CalledProcessError):
-        check_output([PDFALYZE, form_evince_path, '-t'], env=environ).decode()
+        result = ShellResult.from_cmd(cmd)
+        assert 'Found 1 important missing node IDs: [67]' in result.stderr_stripped
+        result.result.check_returncode()
 
 
 def test_yara_rules_option(adobe_type1_fonts_pdf_path, additional_yara_rules_path):

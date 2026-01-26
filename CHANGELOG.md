@@ -1,4 +1,5 @@
 # NEXT RELEASE
+* Use `pdf-parser.py` to verify object IDs instead of checking all IDs from 0 to `num_nodes`
 
 ### 1.19.1
 * Fix situation where you could only use `--no-default-yara-rules` with `--yara-file` and not with `--yara-rules-dir` or `--regex-pattern`

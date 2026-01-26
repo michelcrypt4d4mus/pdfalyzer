@@ -2,6 +2,7 @@ import re
 from argparse import Namespace
 from dataclasses import dataclass, field
 from pathlib import Path
+from typing import Self
 
 from yaralyzer.util.helpers.shell_helper import ShellResult
 from yaralyzer.util.logging import log, log_and_print, log_console
@@ -28,29 +29,28 @@ PDF_PARSER_INSTALL_MSG = f"If you need to install pdf-parser.py it's a single .p
 @dataclass
 class PdfParserManager:
     """Instances of this class manage external calls to Didier Stevens's pdf-parser.py for a given PDF."""
-    args: Namespace
+    path_to_pdf: Path
+    output_dir: Path
     base_shell_cmd: list[str | Path] = field(init=False)
     object_ids: list[int] = field(default_factory=list)
     object_ids_containing_stream_data: list[int] = field(default_factory=list)
 
-    @property
-    def path_to_pdf(self):
-        return Path(self.args.file_to_scan_path)
+    @classmethod
+    def from_args(cls, args: Namespace) -> Self:
+        return cls(args.file_to_scan_path, args.output_dir)
 
     def __post_init__(self):
         if PdfalyzerConfig.pdf_parser_path is None:
             raise PdfParserError(f"{PDF_PARSER_PATH_ENV_VAR} not configured.\n\n{PDF_PARSER_INSTALL_MSG}")
-        elif not is_executable(PdfalyzerConfig.pdf_parser_path):
-            raise PdfParserError(f"{relative_path(PdfalyzerConfig.pdf_parser_path)} is not executable!")
 
-        self.base_shell_cmd = [PdfalyzerConfig.pdf_parser_path, '-O', self.path_to_pdf]
+        self.base_shell_cmd = ['python', PdfalyzerConfig.pdf_parser_path, '-O', self.path_to_pdf]
         self.extract_object_ids()
 
     def extract_object_ids(self) -> None:
         """Examine output of pdf-parser.py to find all object IDs as well as those object IDs that have streams"""
         try:
             result = ShellResult.from_cmd(self.base_shell_cmd, verify_success=True)
-            print(result.output_logs(True))
+            log.debug(result.output_logs(True))
         except Exception as e:
             raise PdfParserError(f"Failed to execute '{self.base_shell_cmd}' ({e})")
 
