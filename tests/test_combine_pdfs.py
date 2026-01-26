@@ -38,6 +38,7 @@ def test_combine_pdfs(combined_pdf_path, one_page_pdfs):
     assert file_size_in_mb(combined_pdf_path) == 0.18
 
 
+@pytest.mark.slow
 def test_combine_pdfs_image_quality(combined_pdf_path, one_page_pdfs):
     assert not combined_pdf_path.exists()
     check_output([COMBINE_PDFS, '-o', combined_pdf_path, '-iq', '1', *one_page_pdfs], env=environ).decode()

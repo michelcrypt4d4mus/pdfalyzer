@@ -1,37 +1,21 @@
 import code
 import sys
 from argparse import Namespace
-from os import environ, getcwd, path
-
-from dotenv import load_dotenv
-
-# Should be first local import before load_dotenv() (or at least I think it needs to come first)
-# TODO: this can't be right?
-from pdfalyzer.config import PdfalyzerConfig
-from pdfalyzer.util.constants import PDFALYZER
-
-# load_dotenv() should be called as soon as possible (before parsing local classes) but not for pytest
-if not environ.get('INVOKED_BY_PYTEST', False):
-    for dotenv_file in [path.join(dir, f".{PDFALYZER}") for dir in [getcwd(), path.expanduser('~')]]:
-        if path.exists(dotenv_file):
-            load_dotenv(dotenv_path=dotenv_file)
-            break
 
 from pypdf import PdfWriter
 from pypdf.errors import PdfReadError
 from rich.text import Text
 from yaralyzer.output.console import console
 from yaralyzer.output.file_export import invoke_rich_export
-from yaralyzer.output.theme import color_theme_grid
 from yaralyzer.util.exceptions import print_fatal_error
-from yaralyzer.util.logging import invocation_txt, log_console
+from yaralyzer.util.logging import invocation_txt, log_console, log_current_config
 
+from pdfalyzer.config import PdfalyzerConfig
 from pdfalyzer.decorators.pdf_file import PdfFile
 from pdfalyzer.helpers.filesystem_helper import file_size_in_mb, set_max_open_files
 from pdfalyzer.output.pdfalyzer_presenter import PdfalyzerPresenter
-from pdfalyzer.output.styles.rich_theme import PDFALYZER_THEME_DICT
 from pdfalyzer.pdfalyzer import Pdfalyzer
-from pdfalyzer.util.argument_parser import ask_to_proceed, parse_arguments
+from pdfalyzer.util.argument_parser import ask_to_proceed, parse_arguments, parser
 from pdfalyzer.util.cli_tools_argument_parser import (MAX_QUALITY, parse_combine_pdfs_args,
      parse_pdf_page_extraction_args, parse_text_extraction_args)
 from pdfalyzer.util.exceptions import PdfParserError
@@ -39,13 +23,13 @@ from pdfalyzer.util.logging import log  # noqa: F401  # Trigger log setup
 from pdfalyzer.util.output_section import OutputSection
 from pdfalyzer.util.pdf_parser_manager import PdfParserManager
 
-# For the table shown by running pdfalyzer_show_color_theme
-MAX_THEME_COL_SIZE = 35
+PdfalyzerConfig.set_parsers(parser, parse_arguments)
 
 
 def pdfalyze():
     """Main entry point for The Pdfalyzer command line tool."""
-    args = parse_arguments()
+    args = PdfalyzerConfig.parse_args()
+    log_current_config(PdfalyzerConfig)
     pdfalyzer = Pdfalyzer(args.file_to_scan_path, args.password)
     presenter = PdfalyzerPresenter(pdfalyzer)
 
@@ -63,10 +47,6 @@ def pdfalyze():
     for section in OutputSection.selected_sections(args, presenter):
         args._export_basepath = PdfalyzerConfig.get_export_basepath(section.method)
 
-        if args._any_export_selected:
-            log.debug(f"Exporting {section.argument} data to basepath '{args._export_basepath}'...")
-            console.record = True
-
         if args.echo_command:
             console.print(invocation_txt())
 
@@ -79,24 +59,18 @@ def pdfalyze():
         if args.export_svg:
             invoke_rich_export(console.save_svg, args)
 
-        # Clear the buffer if we have one
-        if args._any_export_selected:
-            del console._record_buffer[:]
+        # Clear the buffer (if we have one) to make way for next analysis section to be printed into it
+        del console._record_buffer[:]
 
     # Drop into interactive shell if requested
     if args.interact:
         code.interact(local=locals())
 
-    # Non-zero error code if PDF was not verified.
+    # Non-zero error code if PDF was not verified (must be checked before closing file handle)
     exit_code = int(not bool(pdfalyzer.verifier.was_successful() or args.allow_missed_nodes))
     pdfalyzer.verifier.log_missing_node_warnings()
     pdfalyzer.close()
     exit(exit_code)
-
-
-def pdfalyzer_show_color_theme() -> None:
-    """Utility method to show pdfalyzer's color theme. Invocable with 'pdfalyzer_show_color_theme'."""
-    console.print(color_theme_grid(PDFALYZER_THEME_DICT, PDFALYZER))
 
 
 def combine_pdfs():

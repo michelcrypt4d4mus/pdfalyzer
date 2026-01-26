@@ -768,13 +768,13 @@ files = [
 
 [[package]]
 name = "yaralyzer"
-version = "1.3.0"
+version = "1.3.2"
 description = "Visualize and force decode YARA and regex matches found in a file or byte stream with colors. Lots of colors."
 optional = false
 python-versions = "<4.0,>=3.10"
 files = [
-    {file = "yaralyzer-1.3.0-py3-none-any.whl", hash = "sha256:bd550607f0f2e38c2386aaa59ce8c14b64ade17d1debcc05f39f7706c52b194c"},
-    {file = "yaralyzer-1.3.0.tar.gz", hash = "sha256:7ced36cc8b88583583bd75e0aa2c8e9ef427a166dee7964bb60b07bf2569a13e"},
+    {file = "yaralyzer-1.3.2-py3-none-any.whl", hash = "sha256:7f60fd37170cbef45b50acd61c6c7b7389715aa490d17f95408c56f1f5787df6"},
+    {file = "yaralyzer-1.3.2.tar.gz", hash = "sha256:3be0492e12e03be83fe0718e80ecefa2107d20081e782f2f5f1f72438115cbb8"},
 ]
 
 [package.dependencies]
@@ -794,4 +794,4 @@ img = ["cairosvg"]
 [metadata]
 lock-version = "2.0"
 python-versions = "^3.11"
-content-hash = "683e8abac926be5bf9886a4e066c35c5d6b91508c55ebb9a11ed627ad2697bcb"
+content-hash = "189a73a4ca01956a5dd294e85ea9d7fc15b8448a637119ee0b82fa0f520f582a"

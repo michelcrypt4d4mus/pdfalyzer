@@ -14,12 +14,15 @@ from yaralyzer.util.logging import log
 from pdfalyzer.detection.yaralyzer_helper import YARA_RULES_FILES
 from pdfalyzer.helpers.filesystem_helper import (DEFAULT_PDF_PARSER_PATH, PDF_PARSER_PATH_ENV_VAR,
      PDF_PARSER_PY, is_executable)
+from pdfalyzer.output.styles.node_colors import NODE_COLOR_THEME_DICT
+from pdfalyzer.output.styles.rich_theme import PDFALYZER_THEME_DICT
 from pdfalyzer.util.constants import PDFALYZE, PDFALYZER_UPPER
 from pdfalyzer.util.output_section import ALL_STREAMS
 
 T = TypeVar('T')
 
 # These options will be read from env vars prefixed with YARALYZER, not PDFALYZER
+# TODO: for some reasonm PDFALYZER_PATTERNS_LABEL and PDFALYZER_REGEX_MODIFIER are showing up
 YARALYZER_SPECIFIC_OPTIONS = [
     action.dest
     for argument_group in [rules, tuning]
@@ -28,22 +31,12 @@ YARALYZER_SPECIFIC_OPTIONS = [
 
 
 class PdfalyzerConfig(YaralyzerConfig):
-    # Overrides the class var of same name in YaralyzerConfig
+    """Handles parsing of command line args and environment variables for Pdfalyzer."""
+    # Override the class vars of same name in YaralyzerConfig
     ENV_VAR_PREFIX = PDFALYZER_UPPER
+    COLOR_THEME = {**NODE_COLOR_THEME_DICT, **PDFALYZER_THEME_DICT}
 
     pdf_parser_path: Path | None = None
-
-    @classmethod
-    def find_pdf_parser(cls) -> None:
-        """Find the location of Didier Stevens's pdf-parser.py on the current system."""
-        cls.pdf_parser_path = cls.get_env_value(PDF_PARSER_PATH_ENV_VAR, Path) or DEFAULT_PDF_PARSER_PATH
-
-        if cls.pdf_parser_path.exists():
-            if not is_executable(cls.pdf_parser_path):
-                log.warning(f"{PDF_PARSER_PY} found at {cls.pdf_parser_path} but it's not executable...")
-        else:
-            log.warning(f"Configured PDF_PARSER_PATH is '{cls.pdf_parser_path}' but that file doesn't exist!")
-            cls.pdf_parser_path = None
 
     @classmethod
     def get_export_basepath(cls, export_method: Callable) -> str:
@@ -92,6 +85,15 @@ class PdfalyzerConfig(YaralyzerConfig):
         yara_rules_basenames =  [Path(f).name for f in yara_rules_files if not Path(f).name in YARA_RULES_FILES]
         return sorted(yara_rules_basenames)
 
+    @classmethod
+    def _set_class_vars_from_env(cls) -> None:
+        """Set log related class vars and find path to pdf-parser.py (if any)."""
+        super()._set_class_vars_from_env()
+        cls.pdf_parser_path = cls.get_env_value(PDF_PARSER_PATH_ENV_VAR, Path) or DEFAULT_PDF_PARSER_PATH
 
-PdfalyzerConfig.set_log_vars()
-PdfalyzerConfig.find_pdf_parser()
+        if cls.pdf_parser_path.exists():
+            if not is_executable(cls.pdf_parser_path):
+                log.warning(f"{PDF_PARSER_PY} found at {cls.pdf_parser_path} but it's not executable...")
+        else:
+            log.warning(f"Configured PDF_PARSER_PATH is '{cls.pdf_parser_path}' but that file doesn't exist!")
+            cls.pdf_parser_path = None

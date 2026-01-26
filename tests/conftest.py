@@ -155,6 +155,7 @@ def common_shell_cmd(common_args):
     return [PDFALYZE] + common_args
 
 
+# Argument fixtures
 @pytest.fixture
 def pdfalyze_analyzing_malicious_args(pdfalyze_analyzing_malicious_shell_cmd) -> list[str]:
     """Remove the 'pdfalyze' in front so we get just the args."""

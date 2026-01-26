@@ -5,14 +5,16 @@ import sys
 from argparse import ArgumentParser, Namespace
 from importlib.metadata import version
 from pathlib import Path
+from typing import Type
 
 from rich_argparse_plus import RichHelpFormatterPlus
 from rich.prompt import Confirm
 from rich.text import Text
-from yaralyzer.util.argument_parser import debug, epilog, export, parser, parse_arguments as parse_yaralyzer_args, rules, tuning
+from yaralyzer.util.argument_parser import (debug, epilog, export, parser as yparser,
+     parse_arguments as parse_yaralyzer_args, rules, rules, should_exit_early, tuning, yaras)
 from yaralyzer.util.constants import ENV_VARS_OPTION, YARALYZER_UPPER
 from yaralyzer.util.exceptions import print_fatal_error_and_exit
-from yaralyzer.util.logging import log, log_argparse_result, log_console, log_current_config, log_invocation
+from yaralyzer.util.logging import log, log_argparse_result, log_console, log_current_config
 
 from pdfalyzer.config import PdfalyzerConfig
 from pdfalyzer.detection.constants.binary_regexes import QUOTE_PATTERNS
@@ -29,47 +31,60 @@ DESCRIPTION = "Explore PDF's inner data structure with absurdly large and in dep
 
 YARALYZER_HELP_SUFFIX = "\nThese options are only relevant when you use the --yara or --streams option."
 
+
+####################################################
+# Adjust Yaralyzer's option parser in a few places #
+####################################################
+
 # Add one more top level argument
-parser.add_argument('--password',
-                    help='only required for encrypted PDFs')
-
-# Add one more option to yaralyzer's export options
-export.add_argument('-bin', '--extract-binary-streams',
-                    action='store_const',
-                    const='bin',
-                    help='extract all binary streams in the PDF to separate files (requires pdf-parser.py)')
-
-# Make sure --extract-binary-streams is grouped with other export options  # TODO: this really sucks.
-num_args = len(parser._actions)
-output_dir_idx = [i for i, arg in enumerate(parser._actions) if '--output-dir' in arg.option_strings][0]
-parser._actions = parser._actions[:output_dir_idx] + [parser._actions[-1]] + parser._actions[output_dir_idx:-1]
-assert len(parser._actions) == num_args, "Number of args changed after reorder!"
-
-for action_group in parser._action_groups:
-    action_group._actions = parser._actions
+yparser.add_argument('--password',
+                     help='only required for encrypted PDFs')
 
 # Add one more option to the YARA rules section
-rules.add_argument('--no-default-yara-rules',
-                    action='store_true',
-                    help='if --yara is selected use only custom rules from --yara-file arg and not the default included YARA rules')
+yaras.add_argument('--no-default-yara-rules',
+                     action='store_true',
+                     help='if --yara is selected use only custom rules from --yara-file arg and not the default included YARA rules')
 
 # Add one more option to the Debug section
 debug.add_argument('--allow-missed-nodes',
-                   action='store_true',
-                   help='force pdfalyze to return 0 to shell even if missing nodes encountered')
+                    action='store_true',
+                    help='force pdfalyze to return 0 to shell even if missing nodes encountered')
 
-# Rename the tuning section
+# Add one more option to yaralyzer's export options
+export.add_argument('-bin', '--extract-binary-streams',
+                     action='store_const',
+                     const='bin',
+                     help='extract all binary streams in the PDF to separate files (requires pdf-parser.py)')
+
+# Make sure --extract-binary-streams is grouped with other export options  # TODO: this really sucks.
+num_args = len(yparser._actions)
+output_dir_idx = [i for i, arg in enumerate(yparser._actions) if '--output-dir' in arg.option_strings][0]
+yparser._actions = yparser._actions[:output_dir_idx] + [yparser._actions[-1]] + yparser._actions[output_dir_idx:-1]
+assert len(yparser._actions) == num_args, "Number of args changed after reorder!"
+
+# Make yara options unrequired (yaralyzer requires one of them)
+rules.required = False
+
+for action_group in yparser._action_groups:
+    action_group._actions = yparser._actions
+
+# Rename the tuning section, append info about how these are Yaralyzer options
 tuning.title = f"{YARALYZER_UPPER} FINE TUNING"
-tuning.description += YARALYZER_HELP_SUFFIX
-rules.description += YARALYZER_HELP_SUFFIX
+tuning.description = f"{tuning.description}{YARALYZER_HELP_SUFFIX}"
+rules.description = f"{rules.description}{YARALYZER_HELP_SUFFIX}"
 
-# Note that we extend the yaralyzer's parser and export
+
+###############################
+# Pdfalyzer's argument parser #
+###############################
+
 parser = ArgumentParser(
     formatter_class=RichHelpFormatterPlus,
     description=DESCRIPTION,
     epilog=epilog(PdfalyzerConfig).rstrip(),
-    parents=[parser],  # Extend yaralyzer args
-    add_help=False)
+    parents=[yparser],  # NOTE: we're extending yaralyzer's parser
+    add_help=False
+)
 
 
 # Output section selection
@@ -122,27 +137,20 @@ select.add_argument('--preview-stream-length',
 
 # Make sure the selection section is at the top
 parser._action_groups = parser._action_groups[:2] + [parser._action_groups[-1]] + parser._action_groups[2:-1]
-PdfalyzerConfig.set_argument_parser(parser)
+is_pdfalyze_script = (parser.prog == PDFALYZE)
 
 
 ################################
 # Main argument parsing begins #
 ################################
-is_pdfalyze_script = (parser.prog == PDFALYZE)
 
-def parse_arguments(_argv: list[str] | None = None) -> Namespace:
+def parse_arguments(config: Type[PdfalyzerConfig], _args: Namespace | None) -> Namespace:
     """Parse command line args. Most args can also be communicated to the app by setting env vars."""
-    if '--version' in sys.argv:
-        print(f"{PDFALYZER} {version(PDFALYZER)}")
-        sys.exit()
-    elif ENV_VARS_OPTION in sys.argv:
-        PdfalyzerConfig.show_configurable_env_vars()
-        sys.exit()
+    if should_exit_early:
+        parse_yaralyzer_args(PdfalyzerConfig)  # Let Yaralyzer's parse_arguments handle these (will exit)
 
-    log.debug(f"pdfalyzer parse_arguments() _argv or argv: {_argv or sys.argv}")
-    args = parser.parse_args(_argv)
-    args = parse_yaralyzer_args(args)
-    log_invocation()
+    args = parser.parse_args()
+    args = parse_yaralyzer_args(PdfalyzerConfig, args)
 
     if not args.streams:
         if args.extract_quoteds:
@@ -150,8 +158,8 @@ def parse_arguments(_argv: list[str] | None = None) -> Namespace:
         if args.suppress_boms:
             log.warning("--suppress-boms has nothing to suppress if --streams is not selected")
 
-    if args.no_default_yara_rules and not args.yara_rules_files:
-        print_fatal_error_and_exit("--no-default-yara-rules requires at least one --yara-file argument")
+    if args.no_default_yara_rules and not any(getattr(args, opt.dest) for opt in rules._group_actions):
+        print_fatal_error_and_exit("--no-default-yara-rules requires at least one YARA rule argument")
 
     # File export options
     args.extract_quoteds = args.extract_quoteds or []
@@ -162,9 +170,6 @@ def parse_arguments(_argv: list[str] | None = None) -> Namespace:
         log.info(f"Using --output-dir '{env_output_dir}' from env PDFALYZER_OUTPUT_DIR...")
         args.output_dir = env_output_dir
 
-    PdfalyzerConfig.set_args(args)
-    log_argparse_result(args, 'parsed')
-    log_current_config()
     return args
 
 

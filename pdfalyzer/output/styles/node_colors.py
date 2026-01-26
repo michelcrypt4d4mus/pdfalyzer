@@ -10,6 +10,7 @@ from pypdf.generic import (ArrayObject, ByteStringObject, EncodedStreamObject, I
      NullObject, StreamObject, TextStringObject)
 from yaralyzer.output.theme import YARALYZER_THEME_DICT
 
+from pdfalyzer.helpers.string_helper import regex_to_capture_group_label
 from pdfalyzer.output.styles.rich_theme import PDF_ARRAY_STYLE
 from pdfalyzer.util import adobe_strings
 
@@ -78,6 +79,11 @@ LABEL_STYLES += [
     [re.compile(f'^{key}'), PDF_NON_TREE_REF]
     for key in adobe_strings.NON_TREE_REFERENCES
 ]
+
+NODE_COLOR_THEME_DICT = {
+    **{regex_to_capture_group_label(label_style[0]): label_style[1] for label_style in LABEL_STYLES},
+    **{regex_to_capture_group_label(re.compile(cs[0].__name__)): cs[1] for cs in PDF_TYPE_STYLES},
+}
 
 
 def get_class_style(obj: Any) -> str:

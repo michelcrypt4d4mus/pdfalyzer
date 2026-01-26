@@ -112,7 +112,6 @@ The Pdfalyzer comes with a few command line tools for doing stuff with PDFs:
 * `combine_pdfs` - Combines multiple PDFs into a single PDF. Run `combine_pdfs --help` for more info.
 * `extract_pdf_pages` - Extracts page ranges (e.g. "10-25") from a PDF and writes them to a new PDF. Run `extract_pdf_pages --help` for more info.
 * `extract_pdf_text` - Extracts text from a PDF, including applying OCR to all embedded images. Run `extract_pdf_text --help` for more info.
-* `pdfalyzer_show_color_theme` - Run to see the color theme employed in Pdfalyzer's output.
 
 Running `extract_pdf_text` requires that you install The Pdfalyzer's optional dependencies:
 
