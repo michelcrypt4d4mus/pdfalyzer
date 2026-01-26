@@ -26,15 +26,13 @@ jobs:
         uses: abatilo/actions-poetry@v3
         with:
           poetry-version: ${{ matrix.poetry-version }}
-      - name: Install dependencies
+      - name: Install dependencies and PDF tools
         run: |
           poetry install --all-extras
-          mkdir ./tools
-          curl -o ./tools/pdf-parser.py https://raw.githubusercontent.com/DidierStevens/DidierStevensSuite/master/pdf-parser.py
-          chmod +x ./tools/pdf-parser.py
+          poetry run python scripts/install_didier_stevens_pdf_tools.py
       - name: Test with pytest
         run: |
-          PDFALYZER_PDF_PARSER_PY_PATH=./tools/pdf-parser.py poetry run pytest -vv --slow
+          poetry run pytest -vv --slow
       - name: Lint with flake8
         run: |
           # stop the build if there are Python syntax errors or undefined names

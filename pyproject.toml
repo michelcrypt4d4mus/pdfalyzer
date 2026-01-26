@@ -95,6 +95,7 @@ img = ["cairosvg"]
 flake8 = "^7.3.0"
 pytest = "^7.1.2"
 pytest-skip-slow = "^0.0.3"
+requests = "^2.32.5"
 
 
 #############
