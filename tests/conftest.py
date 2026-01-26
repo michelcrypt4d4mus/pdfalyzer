@@ -1,11 +1,21 @@
-from copy import copy
-from os import environ, path, remove
+from os import environ, remove
 from pathlib import Path
-from typing import Callable
-environ['INVOKED_BY_PYTEST'] = 'True'  # Must be set before importing yaralyzer (?)
+
+PYTESTS_DIR = Path(__file__).parent
+TMP_DIR = PYTESTS_DIR.joinpath('tmp')
+PROJECT_DIR = PYTESTS_DIR.parent
+LOG_DIR = PROJECT_DIR.joinpath('log').resolve()
+
+for required_dir in [LOG_DIR, TMP_DIR]:
+    if not required_dir.exists():
+        print(f"Creating required dir '{required_dir}'")
+        required_dir.mkdir(parents=True, exist_ok=True)
+
+# Must be set before importing yaralyzer.helper.env_helper
+environ['INVOKED_BY_PYTEST'] = 'True'
 
 import pytest  # noqa: E402
-from yaralyzer.util.constants import ECHO_COMMAND_OPTION, NO_TIMESTAMPS_OPTION
+from yaralyzer.util.constants import ECHO_COMMAND_OPTION, INVOKED_BY_PYTEST, NO_TIMESTAMPS_OPTION
 from yaralyzer.util.helpers.file_helper import files_in_dir, relative_path     # noqa: E402
 from yaralyzer.util.helpers.shell_helper import safe_args
 
@@ -16,9 +26,6 @@ from pdfalyzer.util.logging import log
 # TODO: importlib doesn't play nice with running tests via GitHub actions
 # import importlib.resources
 # PROJECT_DIR = path.join(str(importlib.resources.files('pdfalyzer')), pardir)
-PYTESTS_DIR = Path(path.dirname(__file__))
-TMP_DIR = PYTESTS_DIR.joinpath('tmp')
-PROJECT_DIR = PYTESTS_DIR.parent
 DOCUMENTATION_DIR = PROJECT_DIR.joinpath('doc')
 SVG_DIR = DOCUMENTATION_DIR.joinpath('svgs')
 RENDERED_IMAGES_DIR = SVG_DIR.joinpath('rendered_images')
