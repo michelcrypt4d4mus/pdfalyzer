@@ -20,6 +20,7 @@ pdf_errors/
 
 # environment
 .pdfalyzer
+local_yaralyzer_pyproject.toml
 
 # Other
 .DS_Store
