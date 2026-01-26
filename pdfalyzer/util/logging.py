@@ -15,7 +15,7 @@ from yaralyzer.output.theme import YARALYZER_THEME_DICT
 from yaralyzer.util.logging import DEFAULT_LOG_HANDLER_KWARGS, log, log_console, log_trace
 
 from pdfalyzer.helpers.string_helper import regex_to_highlight_pattern, regex_to_capture_group_label
-from pdfalyzer.output.styles.node_colors import LABEL_STYLES, PARENT_STYLE, PDF_TYPE_STYLES
+from pdfalyzer.output.styles.node_colors import LABEL_STYLES, NODE_COLOR_THEME_DICT, PARENT_STYLE, PDF_TYPE_STYLES
 from pdfalyzer.output.styles.rich_theme import PDF_ARRAY_STYLE, PDF_DICTIONARY_STYLE
 
 LONG_ENOUGH_LABEL_STYLES = [ls for ls in LABEL_STYLES if len(ls[0].pattern) > 4]
@@ -36,8 +36,7 @@ LOG_THEME_DICT = {
     'call': 'magenta',
     'ipv4': 'cyan',
     'ipv6': 'cyan',
-    **{regex_to_capture_group_label(label_style[0]): label_style[1] for label_style in LONG_ENOUGH_LABEL_STYLES},
-    **{regex_to_capture_group_label(re.compile(cs[0].__name__)): cs[1] for cs in PDF_TYPE_STYLES},
+    **NODE_COLOR_THEME_DICT,
 }
 
 PYPDF_LOG_PFX_PATTERN = r"\(pypdf\)"

@@ -44,7 +44,7 @@ def _build_yaralyzer(scannable: bytes | str | Path, label: str | None = None) ->
                         rules_paths = YaralyzerConfig.args.yara_rules_files or []
 
                         if not YaralyzerConfig.args.no_default_yara_rules:
-                            rules_paths += [str(y) for y in [yara0, yara1, yara2, yara3, yara4]]
+                            rules_paths = rules_paths + [str(y) for y in [yara0, yara1, yara2, yara3, yara4]]
 
                         try:
                             return Yaralyzer.for_rules_files(rules_paths, scannable, label)

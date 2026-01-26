@@ -1,4 +1,7 @@
 # NEXT RELEASE
+* Fix situation where you could only use `--no-default-yara-rules` with `--yara-file` and not with `--yara-rules-dir` or `--regex-pattern`
+* Fix bug where the packaged YARA rules files were getting scanned multiple times
+* Drop the `pdfalyzer_show_color_theme` script in favour of a `--show-colors` debug option
 * Accomodate lower python 3.11 minor versions
 * Improved handling of `/DescendantFonts` prop for CID and composite fonts (finds more fonts)
 * Translate each font's `/Flags` bits into human readable format in the font info table

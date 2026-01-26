@@ -1,17 +1,28 @@
-from contextlib import contextmanager
 from os import environ
 from pathlib import Path
 
-from yaralyzer.util.helpers.env_helper import temporary_env
+import pytest
+from yaralyzer.util.helpers.env_helper import temporary_argv
+from yaralyzer.util.helpers.shell_helper import safe_args
 
 from pdfalyzer.config import PdfalyzerConfig
 from pdfalyzer.output.pdfalyzer_presenter import PdfalyzerPresenter
 from pdfalyzer.util.argument_parser import parse_arguments
-from pdfalyzer.util.constants import PDFALYZER_UPPER
+from pdfalyzer.util.constants import PDFALYZE, PDFALYZER_UPPER
+from pdfalyzer.util.logging import log
+from pdfalyzer.helpers.string_helper import props_string_indented
 
 
-def test_get_export_basepath(pdfalyze_analyzing_malicious_args, analyzing_malicious_pdfalyzer, tmp_dir):
-    parse_arguments(pdfalyze_analyzing_malicious_args)
+@pytest.fixture
+def pdfalyze_analyzing_malicious_shell_cmd(analyzing_malicious_pdf_path, common_args) -> list[str]:
+    return [PDFALYZE] + safe_args(common_args + [analyzing_malicious_pdf_path])
+
+
+def test_get_export_basepath(pdfalyze_analyzing_malicious_shell_cmd, analyzing_malicious_pdfalyzer, tmp_dir):
+    with temporary_argv(pdfalyze_analyzing_malicious_shell_cmd):
+        args = PdfalyzerConfig.parse_args()
+        # log.warning(props_string_indented(args))
+
     presenter = PdfalyzerPresenter(analyzing_malicious_pdfalyzer)
     export_basepath = PdfalyzerConfig.get_export_basepath(presenter.print_document_info)
     assert export_basepath == f'{tmp_dir}/analyzing-malicious-document-files.pdf.document_info'

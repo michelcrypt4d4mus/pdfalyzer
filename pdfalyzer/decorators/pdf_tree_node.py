@@ -108,7 +108,7 @@ class PdfTreeNode(NodeMixin):
 
         self.parent = parent
         self.remove_non_tree_relationship(parent)
-        self.known_to_parent_as = self.address_of_this_node_in_other(parent) or self.pdf_object.first_address
+        self.known_to_parent_as = self.address_of_this_node_in_other(parent) or self.pdf_object.address
         log.info(f"  Added {parent} as parent of {self}" + (' by force' if force else ''))
 
     def add_child(self, child: Self) -> None:

@@ -100,7 +100,7 @@ If it finds a `.pdfalyzer` file in either such place it will load configuration 
 Even if you don't configure your own `.pdfalyzer` file you may still glean some insight from reading the descriptions of the various variables in [`.pdfalyzer.example`](.pdfalyzer.example); there's a little more exposition there than in the output of `pdfalyze -h`.
 
 ### Guarantees
-Warnings will be printed if any PDF object ID between 1 and the `/Size` reported by the PDF itself could not be successfully placed in the tree. If you do not get any warnings then all[^2] of the inner PDF objects should be seen in the output.
+If any PDF object ID between 1 and the `/Size` reported by the PDF itself could not be successfully placed in the tree warnings will be printed and the `pdfalyze` command will return an error code (1, specifically) to the shell. If you do not get any warnings and/or `pdfalyze` returns success then all[^2] of the inner PDF objects should be seen in the output.
 
 ## Example Malicious PDF Investigation
 [BUFFERZONE Team](https://bufferzonesecurity.com) posted [an excellent example](https://bufferzonesecurity.com/the-beginners-guide-to-adobe-pdf-malware-reverse-engineering-part-1/) of how one might use The Pdfalyzer in tandem with [Didier Stevens' PDF tools](#installing-didier-stevenss-pdf-analysis-tools) to investigate a potentially malicious PDF (archived in [the `doc/` dir in this repo](./doc/) if the link rots).
@@ -112,7 +112,6 @@ The Pdfalyzer comes with a few command line tools for doing stuff with PDFs:
 * `combine_pdfs` - Combines multiple PDFs into a single PDF. Run `combine_pdfs --help` for more info.
 * `extract_pdf_pages` - Extracts page ranges (e.g. "10-25") from a PDF and writes them to a new PDF. Run `extract_pdf_pages --help` for more info.
 * `extract_pdf_text` - Extracts text from a PDF, including applying OCR to all embedded images. Run `extract_pdf_text --help` for more info.
-* `pdfalyzer_show_color_theme` - Run to see the color theme employed in Pdfalyzer's output.
 
 Running `extract_pdf_text` requires that you install The Pdfalyzer's optional dependencies:
 

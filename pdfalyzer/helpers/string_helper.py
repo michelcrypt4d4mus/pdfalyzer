@@ -8,14 +8,11 @@ from typing import Pattern
 from pypdf.generic import IndirectObject
 
 from yaralyzer.output.console import console_width
+from yaralyzer.util.helpers.string_helper import INDENT_DEPTH, INDENT_SPACES, INDENTED_JOINER, NON_WORD_CHAR_REGEX, indented
 
 ARRAY_IDX_REGEX = re.compile(r"\[\d+\]")
-INDENT_DEPTH = 4
-INDENT_SPACES = INDENT_DEPTH * ' '
-INDENTED_JOINER = ',\n' + INDENT_SPACES
 PRETTY_PRINT_WIDTH = 60
-DIGIT_REGEX = re.compile("\\d+")
-NON_WORD_REGEX = re.compile(r"[^\w]")
+DIGIT_REGEX = re.compile(r"\d+")
 
 # Pretty Printer
 pp = PrettyPrinter(
@@ -73,16 +70,6 @@ def has_a_common_substring(strings: list[str]) -> bool:
     return all([is_substring_of_longer_strings_in_list(s, strings) for s in strings])
 
 
-def indented(s: str, spaces: int = 4, prefix: str = '') -> str:
-    indent = ' ' * spaces
-    indent += prefix
-    return indent + f"\n{indent}".join(s.split('\n'))
-
-
-def indented_paragraph(s: str, spaces: int = 4, prefix: str = '') -> str:
-    return '\n'.join([indented(line) for line in s.split('\n')])
-
-
 def is_array_idx(address: str) -> bool:
     """True if address looks like '[23]'."""
     return bool(ARRAY_IDX_REGEX.match(address))
@@ -127,7 +114,7 @@ def props_strings(obj: object, keys: list[str] | None = None) -> list[str]:
 
 
 def regex_to_capture_group_label(regex: re.Pattern) -> str:
-    return NON_WORD_REGEX.sub('', regex.pattern.replace('|', '_'))
+    return NON_WORD_CHAR_REGEX.sub('', regex.pattern.replace('|', '_'))
 
 
 def regex_to_highlight_pattern(regex: re.Pattern) -> str:
