@@ -1,6 +1,6 @@
 Invoked with this command:
 
-[38;5;101m   pdfalyze --allow-missed-nodes --output-dir tests/tmp tests/fixtures/SF424_page2.pdf -r -txt --no-timestamps[0m
+[38;5;101m   pdfalyze --allow-missed-nodes --no-timestamps --output-dir tests/tmp tests/fixtures/SF424_page2.pdf -r -txt[0m
 
 
 

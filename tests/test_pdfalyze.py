@@ -28,7 +28,7 @@ def compare_to_fixture(pdfalyze_file_cmd) -> Callable[[Path, Sequence[str | Path
         'fixture_name' arg should be used in cases where tests with different filename outputs
         can be compared against the same fixture file.
         """
-        cmd = pdfalyze_file_cmd(file_to_scan, *[*args, '-txt', NO_TIMESTAMPS_OPTION])
+        cmd = pdfalyze_file_cmd(file_to_scan, *[*args, '-txt'])
         return ShellResult.run_and_compare_exported_files_to_existing(cmd, RENDERED_FIXTURES_DIR)#, DEFAULT_CLI_ARGS)
 
     return _compare_exported_txt_to_fixture

@@ -956,23 +956,21 @@ name = "yaralyzer"
 version = "1.3.6"
 description = "Visualize and force decode YARA and regex matches found in a file or byte stream with colors. Lots of colors."
 optional = false
-python-versions = "^3.10"
-files = []
-develop = true
+python-versions = "<4.0,>=3.10"
+files = [
+    {file = "yaralyzer-1.3.6-py3-none-any.whl", hash = "sha256:a0b2958bac4c1174bcbf5f04345c763dae322fe7263353f045ecba84bceff767"},
+    {file = "yaralyzer-1.3.6.tar.gz", hash = "sha256:d94c2eb2cf88edf2589c273d7fb24589afdf9f78f1daac77a76f44766c60e96c"},
+]
 
 [package.dependencies]
 chardet = ">=5.0.0,<6.0.0"
-python-dotenv = "^1.1.1"
+python-dotenv = ">=1.1.1,<2.0.0"
 rich = "14.2.0"
-rich-argparse-plus = "^0.3.1"
-yara-python = "^4.5.4"
+rich-argparse-plus = ">=0.3.1,<0.4.0"
+yara-python = ">=4.5.4,<5.0.0"
 
 [package.extras]
 img = ["cairosvg (>=2.8.2,<3.0.0)"]
-
-[package.source]
-type = "directory"
-url = "../yaralyzer"
 
 [extras]
 extract = ["PyMuPDF", "cryptography", "pytesseract"]
@@ -981,4 +979,4 @@ img = ["cairosvg"]
 [metadata]
 lock-version = "2.0"
 python-versions = "^3.11"
-content-hash = "e670f69749ee04157ab6d631b98c666e617d4373ac9fae3c4954e7fa11879da7"
+content-hash = "fcb25e7fc26b861368ebf95d20bb77f3421e4db5867035ceb05581d1a87dabe1"

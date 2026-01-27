@@ -1,6 +1,6 @@
 Invoked with this command:
 
-[38;5;101m   pdfalyze --allow-missed-nodes --output-dir tests/tmp doc/Type1_Acrobat_Font_Explanation.pdf -s -txt --no-timestamps[0m
+[38;5;101m   pdfalyze --allow-missed-nodes --no-timestamps --output-dir tests/tmp doc/Type1_Acrobat_Font_Explanation.pdf -s -txt[0m
 
 
 
