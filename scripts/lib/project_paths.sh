@@ -4,6 +4,7 @@ set -e
 
 PDFALYZER_SCRIPT_LIB_PATH="${BASH_SOURCE[0]}";
 PYPROJECT_TOML=pyproject.toml
+SED_BACKUP_EXT=.sedbak
 
 pushd . > /dev/null
 
@@ -78,7 +79,8 @@ update_pyproject_toml() {
     fi
 
     local sed_cmd="s/^$YARALYZER = .*/$YARALYZER = $new_package_version/"
-    echo_debug "\n  sed -i .sedbak \"$sed_cmd\" $PDFALYZER_PYPROJECT_TOML\n"
-    sed -i "$sed_cmd" $PDFALYZER_PYPROJECT_TOML
-    echo_status "Updated $(basename $PYPROJECT_TOML)'s $package_to_update to $new_package_version"
+    echo_debug "\n  sed -i $SED_BACKUP_EXT \"$sed_cmd\" $PDFALYZER_PYPROJECT_TOML\n"
+    sed -i $SED_BACKUP_EXT "$sed_cmd" "$PDFALYZER_PYPROJECT_TOML"
+    rm "${PDFALYZER_PYPROJECT_TOML}${SED_BACKUP_EXT}"
+    echo_status "Updated $(basename $PDFALYZER_PYPROJECT_TOML)'s $package_to_update to $new_package_version"
 }
