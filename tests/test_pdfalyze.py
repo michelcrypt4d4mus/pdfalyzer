@@ -8,9 +8,10 @@ from sys import version_info
 from typing import Callable, Sequence
 
 import pytest
-from yaralyzer.util.helpers.shell_helper import ShellResult, safe_args
+from yaralyzer.util.constants import dotfile_name
+from yaralyzer.util.helpers.shell_helper import ShellResult
 
-from pdfalyzer.util.constants import PDFALYZE
+from pdfalyzer.util.constants import PDFALYZER
 
 from .conftest import RENDERED_FIXTURES_DIR
 
@@ -50,11 +51,11 @@ def test_font_scan(adobe_type1_fonts_pdf_path, compare_to_fixture):
     compare_to_fixture(adobe_type1_fonts_pdf_path, '-f')
 
 
-# Asking for help screen is a good canary test... proves code compiles, at least.
 def test_help_option(pdfalyze_run):
     help_text = pdfalyze_run('-h').stdout_stripped
     assert 'maximize-width' in help_text
     assert 'http' not in help_text
+    assert dotfile_name(PDFALYZER) in help_text
     assert len(help_text) > 2000
     assert len(help_text.split('\n')) > 50
 
