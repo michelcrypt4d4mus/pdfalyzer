@@ -33,7 +33,7 @@ SVG_DIR = DOCUMENTATION_DIR.joinpath('svgs')
 RENDERED_IMAGES_DIR = SVG_DIR.joinpath('rendered_images')
 FIXTURES_DIR = PYTESTS_DIR.joinpath('fixtures')
 RENDERED_FIXTURES_DIR = FIXTURES_DIR.joinpath('rendered')
-PDFALYZE_BASE_CMD = [PDFALYZE, '--echo-command', '--allow-missed-nodes']
+PDFALYZE_BASE_CMD = [PDFALYZE, '--echo-command', '--allow-missed-nodes', NO_TIMESTAMPS_OPTION]
 
 # TODO: --output path should be in here but then it won't trigger the directory cleanup of tmp_dir
 COMMON_ARGS = [
@@ -130,43 +130,9 @@ def multipage_pdf_path():
     return FIXTURES_DIR.joinpath('The Consul General at Berlin to FDR underecretary of State June 1933.pdf')
 
 
-# This might have been too clever
-# @pytest.fixture
-# def rendered_output_dir(tmp_dir) -> Path:
-#     if should_rebuild_fixtures():
-#         return RENDERED_FIXTURES_DIR
-#     else:
-#         return tmp_dir
-
-
-@pytest.fixture
-def rendered_fixtures_dir() -> Path:
-    return RENDERED_FIXTURES_DIR
-
-
-@pytest.fixture
-def tmp_dir() -> Path:
-    """Clear the tmp dir when fixture is loaded."""
-    return TMP_DIR
-
-
 def _pdf_in_doc_dir(filename: str) -> Path:
     """The couple of PDFs in the /doc dir make handy fixtures"""
     return DOCUMENTATION_DIR.joinpath(filename)
-
-
-# # Argument fixtures
-# @pytest.fixture
-# def common_args(tmp_dir) -> list[str]:
-#     """These args are always used by tests."""
-#     return safe_args(['--output-dir', tmp_dir] + ARGPARSE_ARGS)
-
-
-# # Argument fixtures
-# @pytest.fixture
-# def common_shell_cmd(common_args):
-#     """These args are always used by tests."""
-#     return [PDFALYZE] + common_args
 
 
 @pytest.fixture
@@ -184,6 +150,11 @@ def pdfalyze_analyzing_malicious_args(pdfalyze_analyzing_malicious_shell_cmd) ->
 @pytest.fixture
 def pdfalyze_analyzing_malicious_shell_cmd(analyzing_malicious_pdf_path, pdfalyze_file_cmd) -> list[str]:
     return pdfalyze_file_cmd(analyzing_malicious_pdf_path)
+
+
+@pytest.fixture
+def rendered_fixtures_dir() -> Path:
+    return RENDERED_FIXTURES_DIR
 
 
 @pytest.fixture
@@ -230,10 +201,7 @@ def pdfalyze_file(pdfalyze_file_cmd) -> Callable[[Path, Sequence[str | Path]], S
     return _run_yaralyze
 
 
-
-# def pdfalyze_cmd(pdf_path: str | Path, *args) -> list[str]:
-#     return safe_args([PDFALYZE, pdf_path, *COMMON_ARGS, *args])
-
-
-# def export_txt_cmd(pdf_path: str | Path, *args) -> list[str]:
-#     return pdfalyze_cmd(pdf_path, '--output-dir', TMP_DIR,  '-txt', *args)
+@pytest.fixture
+def tmp_dir() -> Path:
+    """Clear the tmp dir when fixture is loaded."""
+    return TMP_DIR

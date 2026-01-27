@@ -14,8 +14,9 @@ from pdfalyzer.helpers.string_helper import props_string_indented
 
 
 @pytest.fixture
-def pdfalyze_analyzing_malicious_shell_cmd(analyzing_malicious_pdf_path, common_args) -> list[str]:
-    return [PDFALYZE] + safe_args(common_args + [analyzing_malicious_pdf_path])
+def pdfalyze_analyzing_malicious_shell_cmd(analyzing_malicious_pdf_path, pdfalyze_file_cmd) -> list[str]:
+    log.warning(f"pdfalyze_file_cmd: {pdfalyze_file_cmd(analyzing_malicious_pdf_path)}")
+    return pdfalyze_file_cmd(analyzing_malicious_pdf_path)
 
 
 def test_get_export_basepath(pdfalyze_analyzing_malicious_shell_cmd, analyzing_malicious_pdfalyzer, tmp_dir):
