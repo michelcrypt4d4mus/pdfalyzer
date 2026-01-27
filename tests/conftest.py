@@ -58,6 +58,7 @@ ARGPARSE_ARGS = COMMON_ARGS + [
 is_windows = lambda: platform.system().lower() == 'windows'
 
 
+# Runs at start every time to clean up tmp_dir
 @pytest.fixture(scope='session', autouse=True)
 def clean_tmp_dir():
     for file in files_in_dir(TMP_DIR):
@@ -66,6 +67,11 @@ def clean_tmp_dir():
 
         log.warning(f"Deleting temp file '{relative_path(file)}'")
         remove(file)
+
+
+@pytest.fixture(scope="session")
+def additional_yara_rules_path():
+    return FIXTURES_DIR.joinpath('additional_yara_rules.yara')
 
 
 # Full paths to PDF test fixtures
@@ -94,7 +100,7 @@ def font_obj_ids_in_analyzing_malicious_docs_pdf():
     return [5, 9, 11, 13, 15, 17]
 
 
-# PDFalyzers to parse them
+# PDFalyzers to parse fixture PDFs
 @pytest.fixture(scope="session")
 def analyzing_malicious_pdfalyzer(analyzing_malicious_pdf_path):
     return Pdfalyzer(analyzing_malicious_pdf_path)
@@ -104,16 +110,6 @@ def adobe_type1_fonts_pdfalyzer(adobe_type1_fonts_pdf_path):
     return Pdfalyzer(adobe_type1_fonts_pdf_path)
 
 
-# /Page and /Pages nodes
-@pytest.fixture(scope="session")
-def page_node(analyzing_malicious_pdfalyzer):
-    return analyzing_malicious_pdfalyzer.find_node_by_idnum(3)
-
-@pytest.fixture(scope="session")
-def pages_node(analyzing_malicious_pdfalyzer):
-    return analyzing_malicious_pdfalyzer.find_node_by_idnum(2)
-
-
 # A font info object
 @pytest.fixture(scope="session")
 def font_info(analyzing_malicious_pdfalyzer):
@@ -121,45 +117,13 @@ def font_info(analyzing_malicious_pdfalyzer):
 
 
 @pytest.fixture(scope="session")
-def additional_yara_rules_path():
-    return FIXTURES_DIR.joinpath('additional_yara_rules.yara')
-
-
-@pytest.fixture(scope="session")
 def multipage_pdf_path():
     return FIXTURES_DIR.joinpath('The Consul General at Berlin to FDR underecretary of State June 1933.pdf')
-
-
-def _pdf_in_doc_dir(filename: str) -> Path:
-    """The couple of PDFs in the /doc dir make handy fixtures"""
-    return DOCUMENTATION_DIR.joinpath(filename)
 
 
 @pytest.fixture
 def output_dir_args(tmp_dir) -> list[str]:
     return safe_args(['--output-dir', tmp_dir])
-
-
-# Argument fixtures
-@pytest.fixture
-def pdfalyze_analyzing_malicious_args(pdfalyze_analyzing_malicious_shell_cmd) -> list[str]:
-    """Remove the 'pdfalyze' in front so we get just the args."""
-    return pdfalyze_analyzing_malicious_shell_cmd[1:]
-
-
-@pytest.fixture
-def pdfalyze_analyzing_malicious_shell_cmd(analyzing_malicious_pdf_path, pdfalyze_file_cmd) -> list[str]:
-    return pdfalyze_file_cmd(analyzing_malicious_pdf_path)
-
-
-@pytest.fixture
-def rendered_fixtures_dir() -> Path:
-    return RENDERED_FIXTURES_DIR
-
-
-@pytest.fixture
-def script_cmd_prefix() -> list[str]:
-    return ['poetry', 'run'] if is_windows() else []
 
 
 @pytest.fixture
@@ -186,14 +150,6 @@ def pdfalyze_file_cmd(pdfalyze_cmd) -> Callable[[Path, Sequence[str | Path]], li
 
 
 @pytest.fixture
-def pdfalyze_run(pdfalyze_cmd) -> Callable[[Sequence[str | Path]], ShellResult]:
-    def _run_yaralyze(*args) -> ShellResult:
-        return ShellResult.from_cmd(pdfalyze_cmd(*args), verify_success=True)
-
-    return _run_yaralyze
-
-
-@pytest.fixture
 def pdfalyze_file(pdfalyze_file_cmd) -> Callable[[Path, Sequence[str | Path]], ShellResult]:
     def _run_yaralyze(file_to_scan: str | Path, *args) -> ShellResult:
         return ShellResult.from_cmd(pdfalyze_file_cmd(file_to_scan, *args), verify_success=True)
@@ -202,6 +158,25 @@ def pdfalyze_file(pdfalyze_file_cmd) -> Callable[[Path, Sequence[str | Path]], S
 
 
 @pytest.fixture
+def pdfalyze_run(pdfalyze_cmd) -> Callable[[Sequence[str | Path]], ShellResult]:
+    """Actually executes the command."""
+    def _run_yaralyze(*args) -> ShellResult:
+        return ShellResult.from_cmd(pdfalyze_cmd(*args), verify_success=True)
+
+    return _run_yaralyze
+
+
+@pytest.fixture
+def script_cmd_prefix() -> list[str]:
+    return ['poetry', 'run'] if is_windows() else []
+
+
+@pytest.fixture
 def tmp_dir() -> Path:
     """Clear the tmp dir when fixture is loaded."""
     return TMP_DIR
+
+
+def _pdf_in_doc_dir(filename: str) -> Path:
+    """The couple of PDFs in the /doc dir make handy fixtures"""
+    return DOCUMENTATION_DIR.joinpath(filename)
