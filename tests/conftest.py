@@ -61,16 +61,14 @@ def adobe_type1_fonts_pdf_path() -> Path:
 def analyzing_malicious_pdf_path() -> Path:
     return DOCUMENTATION_DIR.joinpath('analyzing-malicious-document-files.pdf')
 
-# Has unplaced empty nodes, formerly unplaced nodes, and /AA /JavaScript nodes
-@pytest.fixture(scope='session')
-def sf424_page2_pdf_path() -> Path:
-    return FIXTURES_DIR.joinpath('SF424_page2.pdf')
-
-
 # Has a Type1 font with character map. PDF comes from pypdf repo. also has a '?:FileAttachment'
 @pytest.fixture(scope='session')
 def attachment_pdf_pdfalyzer():
     return Pdfalyzer(FIXTURES_DIR.joinpath('attachment.pdf'))
+
+@pytest.fixture(scope='session')
+def sf424_page2_pdf_path() -> Path:
+    return FIXTURES_DIR.joinpath('SF424_page2.pdf')
 
 
 # Has a Type1 font with character map. PDF comes from pypdf repo. also has a '?:FileAttachment'
