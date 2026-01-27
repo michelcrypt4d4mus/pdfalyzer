@@ -5,7 +5,7 @@ SCRIPT_PATH=$(dirname -- "$(readlink -f -- "$0";)";)
 
 
 if [ $# -eq 0 ]; then
-    print_status "\nDeleting existing fixtures rendered fixtures from $PDFALYZER_RENDERED_FIXTURES_DIR..."
+    echo_status "\nDeleting existing fixtures rendered fixtures from $PDFALYZER_RENDERED_FIXTURES_DIR..."
     rm "$PDFALYZER_RENDERED_FIXTURES_DIR/*.txt"
 fi
 

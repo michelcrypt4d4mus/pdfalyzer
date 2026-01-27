@@ -3,7 +3,7 @@ SCRIPT_PATH=$(dirname -- "$(readlink -f -- "$0";)";)
 source "$SCRIPT_PATH/lib/project_paths.sh"
 
 # Exporting makes these available to the 'find -exec bash -c' invocation
-export PDFALYZER_EXECUTABLE
+export PDFALYZE
 export SUCCESS_LOG=log/successfully_parsed.txt
 export FAILURE_LOG=log/failed_to_parse.txt
 
@@ -17,7 +17,7 @@ pdfalyze_doc() {
         return
     fi
 
-    cmd="$PDFALYZER_EXECUTABLE -f -r -t \"$pdf_full_path\""
+    cmd="$PDFALYZE -f -r -t \"$pdf_full_path\""
     echo -e "\nCommand to run: $cmd"
 
     eval $cmd
