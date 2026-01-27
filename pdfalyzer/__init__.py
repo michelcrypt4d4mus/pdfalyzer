@@ -23,7 +23,7 @@ from pdfalyzer.util.logging import log  # noqa: F401  # Trigger log setup
 from pdfalyzer.util.output_section import OutputSection
 from pdfalyzer.util.pdf_parser_manager import PdfParserManager
 
-PdfalyzerConfig.set_parsers(parser, parse_arguments)
+PdfalyzerConfig.init(parser, parse_arguments)
 
 
 def pdfalyze():
