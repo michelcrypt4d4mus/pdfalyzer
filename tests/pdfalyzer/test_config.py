@@ -25,7 +25,7 @@ def test_get_export_basepath(pdfalyze_analyzing_malicious_shell_cmd, analyzing_m
 
     presenter = PdfalyzerPresenter(analyzing_malicious_pdfalyzer)
     export_basepath = PdfalyzerConfig.get_export_basepath(presenter.print_document_info)
-    assert export_basepath == f'{tmp_dir}/analyzing-malicious-document-files.pdf.document_info'
+    assert export_basepath == str(tmp_dir.joinpath(analyzing_malicious_pdfalyzer.pdf_basename + '.document_info'))
 
 
 def test_env_var_for_command_line_option():
