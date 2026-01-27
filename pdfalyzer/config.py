@@ -32,9 +32,11 @@ YARALYZER_SPECIFIC_OPTIONS = [
 
 class PdfalyzerConfig(YaralyzerConfig):
     """Handles parsing of command line args and environment variables for Pdfalyzer."""
+
     # Override the class vars of same name in YaralyzerConfig
     ENV_VAR_PREFIX = PDFALYZER_UPPER
     COLOR_THEME = {**NODE_COLOR_THEME_DICT, **PDFALYZER_THEME_DICT}
+    ONLY_CLI_ARGS = YaralyzerConfig.ONLY_CLI_ARGS + ['extract_binary_streams']
 
     pdf_parser_path: Path | None = None
 

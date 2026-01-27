@@ -11,10 +11,10 @@ from rich.logging import RichHandler
 from rich.theme import Theme
 from yaralyzer.output.console import console
 from yaralyzer.output.theme import YARALYZER_THEME_DICT
-# Other files coult import yaralyzer's log directly but they do it from here to trigger logging setup
+# Other files could import yaralyzer's log directly but they do it from here to trigger logging setup
 from yaralyzer.util.logging import DEFAULT_LOG_HANDLER_KWARGS, log, log_console, log_trace
 
-from pdfalyzer.helpers.string_helper import regex_to_highlight_pattern, regex_to_capture_group_label
+from pdfalyzer.helpers.string_helper import regex_to_highlight_pattern
 from pdfalyzer.output.styles.node_colors import LABEL_STYLES, NODE_COLOR_THEME_DICT, PARENT_STYLE, PDF_TYPE_STYLES
 from pdfalyzer.output.styles.rich_theme import PDF_ARRAY_STYLE, PDF_DICTIONARY_STYLE
 

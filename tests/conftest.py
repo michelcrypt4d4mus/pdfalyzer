@@ -21,7 +21,6 @@ from yaralyzer.util.constants import ECHO_COMMAND_OPTION, NO_TIMESTAMPS_OPTION
 from yaralyzer.util.helpers.file_helper import files_in_dir, relative_path     # noqa: E402
 from yaralyzer.util.helpers.shell_helper import ShellResult, safe_args
 
-from pdfalyzer.pdfalyzer import Pdfalyzer                  # noqa: E402
 from pdfalyzer.util.constants import PDFALYZE
 from pdfalyzer.util.logging import log
 
