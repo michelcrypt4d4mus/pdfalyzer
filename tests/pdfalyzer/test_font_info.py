@@ -6,11 +6,6 @@ from pdfalyzer.pdfalyzer import Pdfalyzer
 from ..conftest import FIXTURES_DIR
 
 
-# Has a Type1 font with character map. PDF comes from pypdf repo.
-@pytest.fixture(scope='session')
-def attachment_pdf_pdfalyzer():
-    return Pdfalyzer(FIXTURES_DIR.joinpath('attachment.pdf'))
-
 # Has /Resources that is not an IndirectObject, also has multiple /DescendantFonts and /ObjStm
 @pytest.fixture(scope='session')
 def geobase_pdfalyzer():

@@ -63,7 +63,7 @@ class PdfObjectProperties:
             self._type = NullObject.__name__
 
         # Use address as type if no explicit /Type, e.g. obj referenced as '/Font' is considered a /Font type.
-        self.type = self._type or (root_address(self.address) if not is_array_idx(self.address) else None)
+        self.type = self._type or (root_address(self.address) if not is_array_idx(self.address) else '?')
         log_trace(f"Built {repr(self)}")
 
     @classmethod

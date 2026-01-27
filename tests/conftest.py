@@ -21,6 +21,7 @@ from yaralyzer.util.constants import ECHO_COMMAND_OPTION, NO_TIMESTAMPS_OPTION
 from yaralyzer.util.helpers.file_helper import files_in_dir, relative_path     # noqa: E402
 from yaralyzer.util.helpers.shell_helper import ShellResult, safe_args
 
+from pdfalyzer.pdfalyzer import Pdfalyzer
 from pdfalyzer.util.constants import PDFALYZE
 from pdfalyzer.util.logging import log
 
@@ -65,10 +66,17 @@ def analyzing_malicious_pdf_path() -> Path:
 def sf424_page2_pdf_path() -> Path:
     return FIXTURES_DIR.joinpath('SF424_page2.pdf')
 
-# Has mysterious unplaced nodes
+
+# Has a Type1 font with character map. PDF comes from pypdf repo. also has a '?:FileAttachment'
 @pytest.fixture(scope='session')
-def form_evince_path() -> Path:
-    return FIXTURES_DIR.joinpath('form_evince.pdf')
+def attachment_pdf_pdfalyzer():
+    return Pdfalyzer(FIXTURES_DIR.joinpath('attachment.pdf'))
+
+
+# Has a Type1 font with character map. PDF comes from pypdf repo. also has a '?:FileAttachment'
+@pytest.fixture(scope='session')
+def form_evince_pdfalyzer():
+    return Pdfalyzer(FIXTURES_DIR.joinpath('form_evince.pdf'))
 
 
 # Some obj ids for use with -f when you want to limit yourself to the font
