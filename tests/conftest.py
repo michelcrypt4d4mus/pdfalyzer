@@ -50,19 +50,14 @@ def clean_tmp_dir():
         remove(file)
 
 
-@pytest.fixture(scope="session")
-def additional_yara_rules_path():
-    return FIXTURES_DIR.joinpath('additional_yara_rules.yara')
-
-
 # Full paths to PDF test fixtures
 @pytest.fixture(scope='session')
 def adobe_type1_fonts_pdf_path() -> Path:
-    return _pdf_in_doc_dir('Type1_Acrobat_Font_Explanation.pdf')
+    return DOCUMENTATION_DIR.joinpath('Type1_Acrobat_Font_Explanation.pdf')
 
 @pytest.fixture(scope='session')
 def analyzing_malicious_pdf_path() -> Path:
-    return _pdf_in_doc_dir('analyzing-malicious-document-files.pdf')
+    return DOCUMENTATION_DIR.joinpath('analyzing-malicious-document-files.pdf')
 
 # Has unplaced empty nodes, formerly unplaced nodes, and /AA /JavaScript nodes
 @pytest.fixture(scope='session')
@@ -81,31 +76,11 @@ def font_obj_ids_in_analyzing_malicious_docs_pdf():
     return [5, 9, 11, 13, 15, 17]
 
 
-# PDFalyzers to parse fixture PDFs
-@pytest.fixture(scope="session")
-def analyzing_malicious_pdfalyzer(analyzing_malicious_pdf_path):
-    return Pdfalyzer(analyzing_malicious_pdf_path)
-
-@pytest.fixture(scope="session")
-def adobe_type1_fonts_pdfalyzer(adobe_type1_fonts_pdf_path):
-    return Pdfalyzer(adobe_type1_fonts_pdf_path)
-
-
-@pytest.fixture(scope="session")
-def multipage_pdf_path():
-    return FIXTURES_DIR.joinpath('The Consul General at Berlin to FDR underecretary of State June 1933.pdf')
-
-
 @pytest.fixture
-def output_dir_args(tmp_dir) -> list[str]:
-    return safe_args(['--output-dir', tmp_dir])
-
-
-@pytest.fixture
-def pdfalyze_cmd(output_dir_args, script_cmd_prefix) -> Callable[[Sequence[str | Path]], list[str]]:
+def pdfalyze_cmd(script_cmd_prefix, _output_dir_args) -> Callable[[Sequence[str | Path]], list[str]]:
     """Shell command to run run yaralyze [whatever]."""
     def _shell_cmd(*args) -> list[str]:
-        cmd = safe_args(script_cmd_prefix + PDFALYZE_BASE_CMD + output_dir_args + [*args])
+        cmd = safe_args(script_cmd_prefix + PDFALYZE_BASE_CMD + _output_dir_args + [*args])
 
         if True:# is_windows():
             log.warning(f"current test: {environ.get('PYTEST_CURRENT_TEST')}\n         cmd: {cmd}")
@@ -133,15 +108,6 @@ def pdfalyze_file(pdfalyze_file_cmd) -> Callable[[Path, Sequence[str | Path]], S
 
 
 @pytest.fixture
-def pdfalyze_run(pdfalyze_cmd) -> Callable[[Sequence[str | Path]], ShellResult]:
-    """Actually executes the command."""
-    def _run_yaralyze(*args) -> ShellResult:
-        return ShellResult.from_cmd(pdfalyze_cmd(*args), verify_success=True)
-
-    return _run_yaralyze
-
-
-@pytest.fixture
 def script_cmd_prefix() -> list[str]:
     return ['poetry', 'run'] if is_windows() else []
 
@@ -152,6 +118,6 @@ def tmp_dir() -> Path:
     return TMP_DIR
 
 
-def _pdf_in_doc_dir(filename: str) -> Path:
-    """The couple of PDFs in the /doc dir make handy fixtures"""
-    return DOCUMENTATION_DIR.joinpath(filename)
+@pytest.fixture
+def _output_dir_args(tmp_dir) -> list[str]:
+    return safe_args(['--output-dir', tmp_dir])

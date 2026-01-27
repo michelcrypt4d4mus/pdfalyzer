@@ -13,7 +13,12 @@ from yaralyzer.util.helpers.shell_helper import ShellResult
 
 from pdfalyzer.util.constants import PDFALYZER
 
-from .conftest import RENDERED_FIXTURES_DIR
+from .conftest import FIXTURES_DIR, RENDERED_FIXTURES_DIR
+
+
+@pytest.fixture(scope="session")
+def additional_yara_rules_path():
+    return FIXTURES_DIR.joinpath('additional_yara_rules.yara')
 
 
 @pytest.fixture
@@ -28,6 +33,15 @@ def compare_to_fixture(pdfalyze_file_cmd) -> Callable[[Path, Sequence[str | Path
         return ShellResult.run_and_compare_exported_files_to_existing(cmd, RENDERED_FIXTURES_DIR)#, DEFAULT_CLI_ARGS)
 
     return _compare_exported_txt_to_fixture
+
+
+@pytest.fixture
+def pdfalyze_run(pdfalyze_cmd) -> Callable[[Sequence[str | Path]], ShellResult]:
+    """Actually executes the command."""
+    def _run_yaralyze(*args) -> ShellResult:
+        return ShellResult.from_cmd(pdfalyze_cmd(*args), verify_success=True)
+
+    return _run_yaralyze
 
 
 # Can't use match='...' because the error msg goes to STDERR and is not captured by Python
