@@ -3,21 +3,16 @@ Tests of the command line script 'pdfalyze FILE [OPTIONS].
 Unit tests for Pdfalyzer *class* are in the other file: test_pdfalyzer.py.
 """
 from pathlib import Path
+from subprocess import CalledProcessError
 from sys import version_info
 from typing import Callable, Sequence
 
 import pytest
-from os import environ
-from subprocess import CalledProcessError, check_output
-
-from yaralyzer.util.constants import NO_TIMESTAMPS_OPTION
 from yaralyzer.util.helpers.shell_helper import ShellResult, safe_args
 
 from pdfalyzer.util.constants import PDFALYZE
 
-from .conftest import COMMON_ARGS, OUTPUT_DIR_ARGS, RENDERED_FIXTURES_DIR
-
-NO_LOG_ARGS = safe_args(COMMON_ARGS + OUTPUT_DIR_ARGS)
+from .conftest import RENDERED_FIXTURES_DIR
 
 
 @pytest.fixture
@@ -70,10 +65,9 @@ def test_multi_export(analyzing_malicious_pdf_path, compare_to_fixture):
     assert len(exported_files) == 6
 
 
-def test_non_zero_return_code(analyzing_malicious_pdf_path, script_cmd_prefix):
-    cmd = script_cmd_prefix + safe_args([PDFALYZE, analyzing_malicious_pdf_path, '-t'])
-
+def test_non_zero_return_code(analyzing_malicious_pdf_path, pdfalyze_file_cmd):
     with pytest.raises(CalledProcessError):
+        cmd = [a for a in pdfalyze_file_cmd(analyzing_malicious_pdf_path, '-t') if a != '--allow-missed-nodes']
         result = ShellResult.from_cmd(cmd)
         assert 'Found 1 important missing node IDs: [67]' in (result.stderr_stripped or '')
         result.result.check_returncode()
