@@ -87,5 +87,5 @@ update_pyproject_toml() {
     #echo -e "\n  sed -i .sedbak \"$sed_cmd\" $PDFALYZER_PYPROJECT_TOML\n"
     sed -i .sedbak "$sed_cmd" $PDFALYZER_PYPROJECT_TOML
     rm "$PDFALYZER_PYPROJECT_TOML.sedbak"
-    echo_status "Updated $(basename $PDFALYZER_PYPROJECT_TOML)'s $package_to_update to $new_package_version"
+    echo_status "Updated $(basename $PYPROJECT_TOML)'s $package_to_update to $new_package_version"
 }
