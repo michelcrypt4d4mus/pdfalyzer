@@ -37,15 +37,9 @@ NO_COLOR='\033[0m'
 
 
 # Functions
-echo_debug() {
-    echo -e "$1"
-}
-echo_error() {
-    echo -e "${RED}ERROR: ${1}${NO_COLOR}"
-}
-echo_status() {
-    echo -e "${CYAN}${1}${NO_COLOR}"
-}
+echo_debug() { echo -e "$1"; }
+echo_error() { echo -e "${RED}ERROR: ${1}${NO_COLOR}"; }
+echo_status() { echo -e "${CYAN}${1}${NO_COLOR}"; }
 
 
 git_current_branch() {
@@ -77,15 +71,14 @@ update_pyproject_toml() {
         echo_error "No package_to_update provided." >&2
         exit 1
     elif [[ -z $new_package_version ]]; then
-        echo_error "No package_to_update provided." >&2
+        echo_error "No new_package_version provided." >&2
         exit 1
     else
         echo_status "Updating $package_to_update to $new_package_version in $PDFALYZER_PYPROJECT_TOML..."
     fi
 
     local sed_cmd="s/^$YARALYZER = .*/$YARALYZER = $new_package_version/"
-    #echo -e "\n  sed -i .sedbak \"$sed_cmd\" $PDFALYZER_PYPROJECT_TOML\n"
-    sed -i .sedbak "$sed_cmd" $PDFALYZER_PYPROJECT_TOML
-    rm "$PDFALYZER_PYPROJECT_TOML.sedbak"
+    echo_debug "\n  sed -i .sedbak \"$sed_cmd\" $PDFALYZER_PYPROJECT_TOML\n"
+    sed -i "$sed_cmd" $PDFALYZER_PYPROJECT_TOML
     echo_status "Updated $(basename $PYPROJECT_TOML)'s $package_to_update to $new_package_version"
 }
