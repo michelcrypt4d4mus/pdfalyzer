@@ -78,7 +78,7 @@ def font_obj_ids_in_analyzing_malicious_docs_pdf():
 
 @pytest.fixture
 def pdfalyze_cmd(script_cmd_prefix, _output_dir_args) -> Callable[[Sequence[str | Path]], list[str]]:
-    """Shell command to run run yaralyze [whatever]."""
+    """Shell command to run 'pdfalyze [whatever]'."""
     def _shell_cmd(*args) -> list[str]:
         cmd = safe_args(script_cmd_prefix + PDFALYZE_BASE_CMD + _output_dir_args + [*args])
 
@@ -92,7 +92,7 @@ def pdfalyze_cmd(script_cmd_prefix, _output_dir_args) -> Callable[[Sequence[str 
 
 @pytest.fixture
 def pdfalyze_file_cmd(pdfalyze_cmd) -> Callable[[Path, Sequence[str | Path]], list[str]]:
-    """Shell command to run run yaralyze [FILE] [whatever]."""
+    """Shell command to run run 'pdfalyze [FILE] [whatever]'."""
     def _shell_cmd(file_path: Path, *args) -> list[str]:
         return safe_args(pdfalyze_cmd(file_path, *args))
 
@@ -101,10 +101,10 @@ def pdfalyze_file_cmd(pdfalyze_cmd) -> Callable[[Path, Sequence[str | Path]], li
 
 @pytest.fixture
 def pdfalyze_file(pdfalyze_file_cmd) -> Callable[[Path, Sequence[str | Path]], ShellResult]:
-    def _run_yaralyze(file_to_scan: str | Path, *args) -> ShellResult:
+    def _run_pdfalyze(file_to_scan: str | Path, *args) -> ShellResult:
         return ShellResult.from_cmd(pdfalyze_file_cmd(file_to_scan, *args), verify_success=True)
 
-    return _run_yaralyze
+    return _run_pdfalyze
 
 
 @pytest.fixture
