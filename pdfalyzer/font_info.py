@@ -11,6 +11,7 @@ from pypdf.generic import DictionaryObject, EncodedStreamObject, IndirectObject,
 from rich.table import Table
 from rich.text import Text
 from yaralyzer.output.console import console
+from yaralyzer.util.helpers.rich_helper import DEFAULT_TABLE_OPTIONS
 from yaralyzer.util.logging import log
 
 from pdfalyzer.binary.binary_scanner import BinaryScanner
@@ -151,7 +152,7 @@ class FontInfo:
 
     def _summary_table(self) -> Table:
         """Build a Rich `Table` with important info about the font"""
-        table = Table(show_header=False)
+        table = Table(show_header=False, **DEFAULT_TABLE_OPTIONS)
         table.add_column(style='font.property', justify='right')
         table.add_column()
 

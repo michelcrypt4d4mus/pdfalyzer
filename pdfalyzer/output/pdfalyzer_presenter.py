@@ -18,7 +18,7 @@ from yaralyzer.output.console import console
 from yaralyzer.output.file_hashes_table import bytes_hashes_table
 from yaralyzer.output.theme import BYTES_HIGHLIGHT
 from yaralyzer.util.exceptions import print_fatal_error
-from yaralyzer.util.helpers.rich_helper import size_in_bytes_text
+from yaralyzer.util.helpers.rich_helper import DEFAULT_TABLE_OPTIONS, size_in_bytes_text
 from yaralyzer.yara.error import yara_error_msg
 from yaralyzer.yaralyzer import Yaralyzer
 
@@ -183,7 +183,7 @@ class PdfalyzerPresenter:
                 continue
 
             console.line(2)
-            console.print(Panel(f"Non tree relationships for {node}", expand=False))
+            console.print(Panel(f"Non tree relationships for {node}", expand=False, **DEFAULT_TABLE_OPTIONS))
             node.print_non_tree_relationships()
 
     def _analyze_tree(self) -> dict:
@@ -216,7 +216,7 @@ class PdfalyzerPresenter:
         for child in node.children:
             if isinstance(child, SymlinkNode):
                 symlink_rep = self._get_symlink_representation(node, child)
-                tree.add(Panel(symlink_rep.text, style=symlink_rep.style, expand=False))
+                tree.add(Panel(symlink_rep.text, style=symlink_rep.style, expand=False, **DEFAULT_TABLE_OPTIONS))
                 continue
 
             child_branch = tree.add(child.as_tree_node_table(self.pdfalyzer))
@@ -240,7 +240,15 @@ class PdfalyzerPresenter:
 
     def _stream_objects_table(self) -> Table:
         """Build a table of stream objects and their lengths."""
-        table = Table('Stream Length', 'Node', title=' Embedded Streams', title_style='grey', title_justify='left')
+        table = Table(
+            'Stream Length',
+            'Node',
+            title=' Embedded Streams',
+            title_style='grey',
+            title_justify='left',
+            **DEFAULT_TABLE_OPTIONS
+        )
+
         table.columns[0].justify = 'right'
 
         for node in self.pdfalyzer.stream_nodes():
@@ -250,7 +258,14 @@ class PdfalyzerPresenter:
 
     def _metadata_table(self) -> Table:
         """Build a table of metadata extracted from/computed about the PDF."""
-        table = Table(header_style='bold', title=' Metadata', title_style='grey', title_justify='left')
+        table = Table(
+            header_style='bold',
+            title=' Metadata',
+            title_style='grey',
+            title_justify='left',
+            **DEFAULT_TABLE_OPTIONS
+        )
+
         table.add_column('Property', justify='right')
         table.add_column('Value', min_width=40)
 

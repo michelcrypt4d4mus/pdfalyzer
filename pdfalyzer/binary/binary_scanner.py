@@ -15,6 +15,7 @@ from yaralyzer.util.helpers.string_helper import escape_yara_pattern
 from yaralyzer.output.regex_match_metrics import RegexMatchMetrics
 from yaralyzer.output.console import console, console_width
 from yaralyzer.output.theme import BYTES_NO_DIM
+from yaralyzer.util.helpers.rich_helper import DEFAULT_TABLE_OPTIONS
 from yaralyzer.util.logging import log
 from yaralyzer.yara.yara_rule_builder import HEX, REGEX, safe_label
 from yaralyzer.yaralyzer import Yaralyzer
@@ -219,7 +220,7 @@ class BinaryScanner:
             return
 
         suppression_notices_txt = Text("\n").join([notice for notice in self.suppression_notice_queue])
-        panel = Panel(suppression_notices_txt, style='bytes', expand=False)
+        panel = Panel(suppression_notices_txt, style='bytes', expand=False, **DEFAULT_TABLE_OPTIONS)
         console.print(panel)
         self.suppression_notice_queue = []
 

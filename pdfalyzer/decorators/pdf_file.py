@@ -10,6 +10,7 @@ from rich.markup import escape
 from rich.panel import Panel
 from rich.text import Text
 from yaralyzer.output.console import console
+from yaralyzer.util.helpers.rich_helper import DEFAULT_TABLE_OPTIONS
 from yaralyzer.util.logging import log as yaralyzer_log
 
 from pdfalyzer.helpers.filesystem_helper import create_dir_if_it_does_not_exist, insert_suffix_before_extension
@@ -135,7 +136,7 @@ class PdfFile:
 
                 self._log_to_stderr(f"Parsing page {page_number}...")
                 page_buffer = Console(file=io.StringIO())
-                page_buffer.print(Panel(f"PAGE {page_number}", padding=(0, 15), expand=False))
+                page_buffer.print(Panel(f"PAGE {page_number}", padding=(0, 15), expand=False, **DEFAULT_TABLE_OPTIONS))
                 page_buffer.print(escape(page.extract_text().strip()))
                 image_number = 1
 
@@ -144,7 +145,7 @@ class PdfFile:
                     for image_number, image in enumerate(page.images, start=1):
                         image_name = f"Page {page_number}, Image {image_number}"
                         self._log_to_stderr(f"   OCRing {image_name}...", "dim")
-                        page_buffer.print(Panel(image_name, expand=False))
+                        page_buffer.print(Panel(image_name, expand=False, **DEFAULT_TABLE_OPTIONS))
                         image_obj = Image.open(io.BytesIO(image.data))
                         image_text = ocr_text(image_obj, f"{self.file_path} ({image_name})")
                         page_buffer.print(escape(image_text or '').strip())
@@ -179,7 +180,7 @@ class PdfFile:
 
     def print_extracted_text(self, page_range: PageRange | None = None, print_as_parsed: bool = False) -> None:
         """Fancy wrapper for printing the extracted text to the screen."""
-        console.print(Panel(str(self.file_path), expand=False, style='bright_white reverse'))
+        console.print(Panel(str(self.file_path), expand=False, style='bright_white reverse', **DEFAULT_TABLE_OPTIONS))
         txt = self.extract_text(page_range=page_range, print_as_parsed=print_as_parsed)
 
         if not print_as_parsed:

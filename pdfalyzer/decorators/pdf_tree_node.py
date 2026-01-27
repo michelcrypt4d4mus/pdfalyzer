@@ -11,6 +11,7 @@ from rich.markup import escape
 from rich.table import Table
 from rich.text import Text
 from yaralyzer.output.console import console
+from yaralyzer.util.helpers.rich_helper import DEFAULT_TABLE_OPTIONS
 
 from pdfalyzer.decorators.pdf_object_properties import PdfObjectProperties
 from pdfalyzer.helpers.pdf_object_helper import pypdf_class_name
@@ -271,7 +272,7 @@ class PdfTreeNode(NodeMixin):
         else:
             table_style = ''
 
-        table = Table(title, address, pypdf_class_name(self.obj), style=table_style)
+        table = Table(title, address, pypdf_class_name(self.obj), style=table_style, **DEFAULT_TABLE_OPTIONS)
         table.columns[0].header_style = f'reverse {get_label_style(self.label)}'
         table.columns[1].header_style = 'dim'
         table.columns[1].overflow = 'fold'

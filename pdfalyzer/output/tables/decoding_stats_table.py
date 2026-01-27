@@ -5,7 +5,7 @@ from numbers import Number
 
 from rich.table import Table
 from rich.text import Text
-from yaralyzer.util.helpers.rich_helper import na_txt, prefix_with_style
+from yaralyzer.util.helpers.rich_helper import DEFAULT_TABLE_OPTIONS, na_txt, prefix_with_style
 
 from pdfalyzer.binary.binary_scanner import BinaryScanner
 from pdfalyzer.helpers.rich_text_helper import pct_txt
@@ -65,14 +65,15 @@ def _new_decoding_stats_table(title_str: str) -> Table:
     title.append(": Decoding Attempts Summary Statistics", style='bright_white bold')
 
     table = Table(
-        title=title,
-        min_width=half_width(),
-        show_lines=True,
-        padding=(0, 1),
-        style='color(18)',
         border_style='color(111) dim',
         header_style='color(235) on color(249) reverse',
-        title_style='color(249) bold'
+        min_width=half_width(),
+        padding=(0, 1),
+        show_lines=True,
+        style='color(18)',
+        title=title,
+        title_style='color(249) bold',
+        **DEFAULT_TABLE_OPTIONS
     )
 
     def add_column(header, **kwargs):
