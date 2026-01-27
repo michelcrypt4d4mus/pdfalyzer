@@ -1,21 +1,16 @@
-from os import environ
-from pathlib import Path
-
 import pytest
 from yaralyzer.util.helpers.env_helper import temporary_argv
-from yaralyzer.util.helpers.shell_helper import safe_args
 
 from pdfalyzer.config import PdfalyzerConfig
 from pdfalyzer.output.pdfalyzer_presenter import PdfalyzerPresenter
 from pdfalyzer.util.argument_parser import parse_arguments
-from pdfalyzer.util.constants import PDFALYZE, PDFALYZER_UPPER
+from pdfalyzer.util.constants import PDFALYZER_UPPER
 from pdfalyzer.util.logging import log
-from pdfalyzer.helpers.string_helper import props_string_indented
 
 
 @pytest.fixture
-def pdfalyze_analyzing_malicious_shell_cmd(analyzing_malicious_pdf_path, pdfalyze_file_cmd) -> list[str]:
-    return pdfalyze_file_cmd(analyzing_malicious_pdf_path)
+def pdfalyze_analyzing_malicious_shell_cmd(analyzing_malicious_pdf_path, pdfalyze_file_cmd, script_cmd_prefix) -> list[str]:
+    return [a for a in pdfalyze_file_cmd(analyzing_malicious_pdf_path) if a not in script_cmd_prefix]
 
 
 def test_get_export_basepath(pdfalyze_analyzing_malicious_shell_cmd, analyzing_malicious_pdfalyzer, tmp_dir):
