@@ -1,6 +1,6 @@
 Invoked with this command:
 
-[38;5;101m   pdfalyze --allow-missed-nodes --no-timestamps --output-dir tests/tmp doc/analyzing-malicious-document-files.pdf -txt[0m
+[38;5;101m   pdfalyze --echo-command --allow-missed-nodes --no-timestamps --output-dir tests/tmp doc/analyzing-malicious-document-files.pdf -txt[0m
 
 
 
