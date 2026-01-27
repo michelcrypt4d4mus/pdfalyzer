@@ -3,7 +3,7 @@
 #
 # This can be used to specify a path to Didier Stevens's pdf-parser.py on your local system, which is
 # required for extracting binary streams from PDFs to individual files via the --extract-binary-streams
-# option (there's a script to download pdf-parser.py in this repo in scripts/install_didier_stevens_pdf_tools.sh).
+# option (there's a script to download pdf-parser.py in this repo in scripts/install_didier_stevens_pdf_tools.py).
 #
 #    PDFALYZER_PDF_PARSER_PY_PATH=path/to/pdf-parser.py
 #

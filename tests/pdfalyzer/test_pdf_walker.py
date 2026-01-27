@@ -8,7 +8,7 @@ class TestPdfalyzer:
         assert struct_elem_node.parent.idnum == 119
 
     def test_all_nodes_in_tree(self, analyzing_malicious_pdfalyzer, pdf_parser_manager_args):
-        for object_id in PdfParserManager(pdf_parser_manager_args).object_ids:
+        for object_id in PdfParserManager.from_args(pdf_parser_manager_args).object_ids:
             if object_id == 71:
                 continue  # 71 is the ID of the object stream holding many of the /StructElem
             elif object_id == 67:

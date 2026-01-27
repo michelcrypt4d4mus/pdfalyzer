@@ -18,7 +18,7 @@ OBJ_SIZES = {
 
 
 def test_pdf_parser_manager(pdf_parser_manager_args, tmp_dir):
-    pdf_parser_manager = PdfParserManager(pdf_parser_manager_args)
+    pdf_parser_manager = PdfParserManager.from_args(pdf_parser_manager_args)
     assert pdf_parser_manager.object_ids_containing_stream_data == sorted(id for id in OBJ_SIZES)
     pdf_parser_manager.extract_all_streams()
     file_basename = Path(pdf_parser_manager_args.file_to_scan_path).name

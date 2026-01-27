@@ -3,7 +3,6 @@ Parse command line arguments for `pdfalyze` and construct the `PdfalyzerConfig` 
 """
 import sys
 from argparse import ArgumentParser, Namespace
-from importlib.metadata import version
 from pathlib import Path
 from typing import Type
 
@@ -12,7 +11,7 @@ from rich.prompt import Confirm
 from rich.text import Text
 from yaralyzer.util.argument_parser import (debug, epilog, export, parser as yparser,
      parse_arguments as parse_yaralyzer_args, rules, rules, should_exit_early, tuning, yaras)
-from yaralyzer.util.constants import ENV_VARS_OPTION, YARALYZER_UPPER
+from yaralyzer.util.constants import YARALYZER_UPPER
 from yaralyzer.util.exceptions import print_fatal_error_and_exit
 from yaralyzer.util.logging import log, log_argparse_result, log_console, log_current_config
 
@@ -137,7 +136,7 @@ select.add_argument('--preview-stream-length',
 
 # Make sure the selection section is at the top
 parser._action_groups = parser._action_groups[:2] + [parser._action_groups[-1]] + parser._action_groups[2:-1]
-is_pdfalyze_script = (parser.prog == PDFALYZE)
+is_pdfalyze_script = parser.prog.startswith(PDFALYZE)  # startswith() bc on Windows we end up with 'pdfalyze.cmd'?
 
 
 ################################

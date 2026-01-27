@@ -23,7 +23,7 @@ from pdfalyzer.util.logging import log  # noqa: F401  # Trigger log setup
 from pdfalyzer.util.output_section import OutputSection
 from pdfalyzer.util.pdf_parser_manager import PdfParserManager
 
-PdfalyzerConfig.set_parsers(parser, parse_arguments)
+PdfalyzerConfig.init(parser, parse_arguments)
 
 
 def pdfalyze():
@@ -36,7 +36,7 @@ def pdfalyze():
     # Binary stream extraction is a special case
     if args.extract_binary_streams:
         try:
-            PdfParserManager(args).extract_all_streams()
+            PdfParserManager.from_args(args).extract_all_streams()
         except PdfParserError as e:
             print_fatal_error('Failed to extract binary streams!', e)
 

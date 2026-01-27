@@ -19,6 +19,7 @@ from yaralyzer.output.file_hashes_table import BytesInfo
 from yaralyzer.util.helpers.file_helper import load_binary_data
 from yaralyzer.util.exceptions import print_fatal_error, print_fatal_error_and_exit
 
+from pdfalyzer.config import PdfalyzerConfig
 from pdfalyzer.decorators.document_model_printer import highlighted_raw_pdf_obj_str
 from pdfalyzer.decorators.indeterminate_node import IndeterminateNode
 from pdfalyzer.decorators.pdf_tree_node import PdfTreeNode
@@ -28,8 +29,9 @@ from pdfalyzer.helpers.pdf_object_helper import RefAndObj, describe_obj
 from pdfalyzer.pdf_object_relationship import PdfObjectRelationship
 from pdfalyzer.util.adobe_strings import *
 from pdfalyzer.util.argument_parser import is_pdfalyze_script
-from pdfalyzer.util.exceptions import PdfWalkError
+from pdfalyzer.util.exceptions import PdfParserError, PdfWalkError
 from pdfalyzer.util.logging import log, log_trace  # Triggers log setup
+from pdfalyzer.util.pdf_parser_manager import PdfParserManager
 
 MISSING_NODE_WARN_THRESHOLD = 200
 NODE_COUNT_WARN_THRESHOLD = 10_000
@@ -72,6 +74,7 @@ class Pdfalyzer:
     # Non-arguments:
     font_infos: list[FontInfo] = field(default_factory=list)
     font_info_extraction_error: Exception | None = None
+    idnums_found_by_parser: list[int] | None = None
     max_generation: int = 0
     nodes_encountered: dict[int, PdfTreeNode] = field(default_factory=dict)
     num_nodes: int | None = None
@@ -185,11 +188,33 @@ class Pdfalyzer:
 
     def missing_node_ids(self) -> list[int]:
         """We expect to see all ordinals up to the number of nodes /Trailer claims exist as obj IDs."""
-        if self.num_nodes is None:
-            log.error(f"{SIZE} not found in PDF trailer; cannot verify all nodes are in tree")
-            return []
+        all_object_ids = []
 
-        return [i for i in range(1, self.num_nodes) if self.find_node_by_idnum(i) is None]
+        # Try to get the list of object IDs with pdf-parser.py
+        if PdfalyzerConfig.pdf_parser_path:
+            if self.idnums_found_by_parser is None:
+                try:
+                    self.idnums_found_by_parser = PdfParserManager(self.pdf_path, PdfalyzerConfig.args.output_dir).object_ids
+                    all_object_ids = self.idnums_found_by_parser
+                    log.info(f"pdf-parser.py found {len(all_object_ids)} object IDs to verify...")
+
+                    if self.num_nodes and self.num_nodes != (len(self.idnums_found_by_parser) + 1):
+                        log.warning(f"pdf-parser.py found {len(self.idnums_found_by_parser)} objs but PDF reports {self.num_nodes}!")
+                except Exception as e:
+                    log.warning(f"Failed to extract object IDs with pdf-parser.py")
+                    self.idnums_found_by_parser = []
+            else:
+                all_object_ids = self.idnums_found_by_parser
+
+        # Fall back to all IDs between 0 and self.num_nodes
+        if not all_object_ids:
+            if self.num_nodes is None:
+                log.error(f"no pdf-parser.py and {SIZE} not found in PDF trailer; cannot verify all nodes are in tree")
+                return []
+
+            all_object_ids = [i for i in range(1, self.num_nodes)]
+
+        return [i for i in all_object_ids if self.find_node_by_idnum(i) is None]
 
     def node_iterator(self) -> Iterator[PdfTreeNode]:
         """Iterate over nodes walking the tree from the top, grouped by distance from the root."""

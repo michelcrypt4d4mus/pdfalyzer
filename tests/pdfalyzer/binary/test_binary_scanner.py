@@ -1,6 +1,11 @@
 import pytest
 
 
+@pytest.fixture(scope="session")
+def font_info(analyzing_malicious_pdfalyzer):
+    return next(fi for fi in analyzing_malicious_pdfalyzer.font_infos if fi.idnum == 5)
+
+
 @pytest.mark.slow
 def test_quote_extraction_methods(font_info):
     _check_matches(font_info.binary_scanner.extract_backtick_quoted_bytes, 163, 52840, 2, 7_000)

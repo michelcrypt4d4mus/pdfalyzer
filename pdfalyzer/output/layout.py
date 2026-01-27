@@ -6,6 +6,7 @@ from rich.padding import Padding
 from rich.panel import Panel
 from rich.table import Table
 from yaralyzer.output.console import console, console_width
+from yaralyzer.util.helpers.rich_helper import DEFAULT_TABLE_OPTIONS
 
 from pdfalyzer.helpers.rich_text_helper import indent_padding
 
@@ -16,14 +17,14 @@ HEADER_PADDING = (1, 1)
 def generate_subtable(cols: list[str], header_style: str = 'subtable') -> Table:
     """Suited for placement in larger tables."""
     table = Table(
-        box=box.SIMPLE,
-        show_edge=False,
-        collapse_padding=True,
-        padding=(0, 0, 0, 0),
-        header_style=header_style,
-        show_lines=False,
         border_style='grey.dark',
-        expand=True
+        collapse_padding=True,
+        expand=True,
+        header_style=header_style,
+        padding=(0, 0, 0, 0),
+        show_edge=False,
+        show_lines=False,
+        **DEFAULT_TABLE_OPTIONS,
     )
 
     for i, col in enumerate(cols):
@@ -94,6 +95,7 @@ def _print_header_panel(
         padding=internal_padding or (0,),
         style=style,
         width=width or subheading_width(),
+        **DEFAULT_TABLE_OPTIONS
     )
 
     console.print(Padding(panel, indent_padding(indent)))

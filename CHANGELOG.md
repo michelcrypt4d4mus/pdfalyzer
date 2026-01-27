@@ -1,4 +1,7 @@
 # NEXT RELEASE
+* Use `pdf-parser.py` to verify object IDs instead of checking all IDs from 0 to `num_nodes`
+
+### 1.19.1
 * Fix situation where you could only use `--no-default-yara-rules` with `--yara-file` and not with `--yara-rules-dir` or `--regex-pattern`
 * Fix bug where the packaged YARA rules files were getting scanned multiple times
 * Drop the `pdfalyzer_show_color_theme` script in favour of a `--show-colors` debug option
