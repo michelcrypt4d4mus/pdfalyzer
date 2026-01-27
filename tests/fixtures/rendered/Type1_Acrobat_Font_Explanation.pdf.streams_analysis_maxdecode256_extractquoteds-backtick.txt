@@ -1,6 +1,6 @@
 Invoked with this command:
 
-[38;5;101m   pdfalyze doc/Type1_Acrobat_Font_Explanation.pdf --allow-missed-nodes --no-timestamps --output-dir tests/tmp -txt --extract-quoted backtick -s[0m
+[38;5;101m   pdfalyze --allow-missed-nodes --output-dir tests/tmp doc/Type1_Acrobat_Font_Explanation.pdf --extract-quoted backtick -s -txt --no-timestamps[0m
 
 
 

@@ -1,6 +1,7 @@
 import platform
 from os import environ, remove
 from pathlib import Path
+from typing import Callable, Sequence
 
 PYTESTS_DIR = Path(__file__).parent
 TMP_DIR = PYTESTS_DIR.joinpath('tmp')
@@ -18,7 +19,7 @@ environ['INVOKED_BY_PYTEST'] = 'True'
 import pytest  # noqa: E402
 from yaralyzer.util.constants import ECHO_COMMAND_OPTION, INVOKED_BY_PYTEST, NO_TIMESTAMPS_OPTION
 from yaralyzer.util.helpers.file_helper import files_in_dir, relative_path     # noqa: E402
-from yaralyzer.util.helpers.shell_helper import safe_args
+from yaralyzer.util.helpers.shell_helper import ShellResult, safe_args
 
 from pdfalyzer.pdfalyzer import Pdfalyzer                  # noqa: E402
 from pdfalyzer.util.constants import PDFALYZE
@@ -32,6 +33,7 @@ SVG_DIR = DOCUMENTATION_DIR.joinpath('svgs')
 RENDERED_IMAGES_DIR = SVG_DIR.joinpath('rendered_images')
 FIXTURES_DIR = PYTESTS_DIR.joinpath('fixtures')
 RENDERED_FIXTURES_DIR = FIXTURES_DIR.joinpath('rendered')
+PDFALYZE_BASE_CMD = [PDFALYZE, '--echo-command', '--allow-missed-nodes']
 
 # TODO: --output path should be in here but then it won't trigger the directory cleanup of tmp_dir
 COMMON_ARGS = [
@@ -153,18 +155,23 @@ def _pdf_in_doc_dir(filename: str) -> Path:
     return DOCUMENTATION_DIR.joinpath(filename)
 
 
-# Argument fixtures
-@pytest.fixture
-def common_args(tmp_dir) -> list[str]:
-    """These args are always used by tests."""
-    return safe_args(['--output-dir', tmp_dir] + ARGPARSE_ARGS)
+# # Argument fixtures
+# @pytest.fixture
+# def common_args(tmp_dir) -> list[str]:
+#     """These args are always used by tests."""
+#     return safe_args(['--output-dir', tmp_dir] + ARGPARSE_ARGS)
 
 
-# Argument fixtures
+# # Argument fixtures
+# @pytest.fixture
+# def common_shell_cmd(common_args):
+#     """These args are always used by tests."""
+#     return [PDFALYZE] + common_args
+
+
 @pytest.fixture
-def common_shell_cmd(common_args):
-    """These args are always used by tests."""
-    return [PDFALYZE] + common_args
+def output_dir_args(tmp_dir) -> list[str]:
+    return safe_args(['--output-dir', tmp_dir])
 
 
 # Argument fixtures
@@ -175,8 +182,8 @@ def pdfalyze_analyzing_malicious_args(pdfalyze_analyzing_malicious_shell_cmd) ->
 
 
 @pytest.fixture
-def pdfalyze_analyzing_malicious_shell_cmd(analyzing_malicious_pdf_path, common_args) -> list[str]:
-    return [PDFALYZE] + safe_args(common_args + [analyzing_malicious_pdf_path])
+def pdfalyze_analyzing_malicious_shell_cmd(analyzing_malicious_pdf_path, pdfalyze_file_cmd) -> list[str]:
+    return pdfalyze_file_cmd(analyzing_malicious_pdf_path)
 
 
 @pytest.fixture
@@ -184,17 +191,49 @@ def script_cmd_prefix() -> list[str]:
     return ['poetry', 'run'] if is_windows() else []
 
 
-# @pytest.fixture
-# def pdfalyze_export_txt_cmd(tmp_dir) -> Callable[[str | Path, list[object]], list[str]]:
-#     def _export_txt_cmd(pdf_path: str | Path, *args) -> list[str]:
-#         return pdfalyze_cmd(pdf_path, '--output-dir', tmp_dir,  '-txt', *args)
+@pytest.fixture
+def pdfalyze_cmd(output_dir_args, script_cmd_prefix) -> Callable[[Sequence[str | Path]], list[str]]:
+    """Shell command to run run yaralyze [whatever]."""
+    def _shell_cmd(*args) -> list[str]:
+        cmd = safe_args(script_cmd_prefix + PDFALYZE_BASE_CMD + output_dir_args + [*args])
 
-#     return _export_txt_cmd
+        if True:# is_windows():
+            log.warning(f"current test: {environ.get('PYTEST_CURRENT_TEST')}\n         cmd: {cmd}")
+
+        return cmd
+
+    return _shell_cmd
 
 
-def pdfalyze_cmd(pdf_path: str | Path, *args) -> list[str]:
-    return safe_args([PDFALYZE, pdf_path, *COMMON_ARGS, *args])
+@pytest.fixture
+def pdfalyze_file_cmd(pdfalyze_cmd) -> Callable[[Path, Sequence[str | Path]], list[str]]:
+    """Shell command to run run yaralyze [FILE] [whatever]."""
+    def _shell_cmd(file_path: Path, *args) -> list[str]:
+        return safe_args(pdfalyze_cmd(file_path, *args))
+
+    return _shell_cmd
 
 
-def export_txt_cmd(pdf_path: str | Path, *args) -> list[str]:
-    return pdfalyze_cmd(pdf_path, '--output-dir', TMP_DIR,  '-txt', *args)
+@pytest.fixture
+def pdfalyze_run(pdfalyze_cmd) -> Callable[[Sequence[str | Path]], ShellResult]:
+    def _run_yaralyze(*args) -> ShellResult:
+        return ShellResult.from_cmd(pdfalyze_cmd(*args), verify_success=True)
+
+    return _run_yaralyze
+
+
+@pytest.fixture
+def pdfalyze_file(pdfalyze_file_cmd) -> Callable[[Path, Sequence[str | Path]], ShellResult]:
+    def _run_yaralyze(file_to_scan: str | Path, *args) -> ShellResult:
+        return ShellResult.from_cmd(pdfalyze_file_cmd(file_to_scan, *args), verify_success=True)
+
+    return _run_yaralyze
+
+
+
+# def pdfalyze_cmd(pdf_path: str | Path, *args) -> list[str]:
+#     return safe_args([PDFALYZE, pdf_path, *COMMON_ARGS, *args])
+
+
+# def export_txt_cmd(pdf_path: str | Path, *args) -> list[str]:
+#     return pdfalyze_cmd(pdf_path, '--output-dir', TMP_DIR,  '-txt', *args)
