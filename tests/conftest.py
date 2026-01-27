@@ -1,4 +1,4 @@
-import os
+import platform
 from os import environ, remove
 from pathlib import Path
 
@@ -53,7 +53,7 @@ ARGPARSE_ARGS = COMMON_ARGS + [
 ]
 
 # TODO: use env_helpers
-is_windows = lambda: os.name == 'windows'
+is_windows = lambda: platform.system.lower() == 'windows'
 
 
 @pytest.fixture(scope='session', autouse=True)
