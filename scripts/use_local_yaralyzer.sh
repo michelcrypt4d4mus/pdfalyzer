@@ -5,7 +5,8 @@ set -e
 LOCAL_YARALYZER_REQ='{path = "..\/yaralyzer", develop = true}'
 PYPROJECT_TOML=pyproject.toml
 YARALYZER=yaralyzer
-LOCAL_YARALYZER_BRANCH=$1
+
+local_yaralyzer_branch=$1
 
 
 git_current_branch() {
@@ -35,7 +36,7 @@ update_pyproject_toml() {
 }
 
 
-if [[ -z $LOCAL_YARALYZER_BRANCH ]]; then
+if [[ -z $local_yaralyzer_branch ]]; then
     echo "No branch name provided." >&2
     exit 1
 fi
@@ -43,6 +44,6 @@ fi
 
 git_check_master_branch
 update_pyproject_toml
-git checkout -b $LOCAL_YARALYZER_BRANCH
+git checkout -b $local_yaralyzer_branch
 poetry lock
 poetry install --all-extras

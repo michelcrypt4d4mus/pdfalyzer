@@ -2,11 +2,10 @@
 Methods to create the rich table view for a PdfTreeNode.
 """
 from rich.text import Text
-from yaralyzer.encoding_detection.character_encodings import NEWLINE_BYTE
-from yaralyzer.util.helpers.bytes_helper import clean_byte_string, hex_text
+from yaralyzer.output.theme import BYTES_NO_DIM
+from yaralyzer.util.helpers.bytes_helper import NEWLINE_BYTE, clean_byte_string, hex_text
 from yaralyzer.util.helpers.rich_helper import size_text
 from yaralyzer.util.logging import log
-from yaralyzer.output.theme import BYTES_NO_DIM
 
 from pdfalyzer.util.adobe_strings import *
 

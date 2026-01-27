@@ -25,6 +25,10 @@ from pdfalyzer.util.pdf_parser_manager import PdfParserManager
 
 PdfalyzerConfig.init(parser, parse_arguments)
 
+# from pdfalyzer.output.styles.rich_theme import YARALYZER_THEME_DICT, PDFALYZER_THEME_DICT
+# from pdfalyzer.helpers.collections_helper import compare_dicts
+# compare_dicts(YARALYZER_THEME_DICT, PDFALYZER_THEME_DICT)
+
 
 def pdfalyze():
     """Main entry point for The Pdfalyzer command line tool."""

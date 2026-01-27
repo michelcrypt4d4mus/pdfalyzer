@@ -7,18 +7,15 @@ from yaralyzer.output.console import console
 from yaralyzer.output.theme import GREY_ADDRESS, YARALYZER_THEME_DICT
 
 # Colors / PDF object styles
-DANGER_HEADER = 'color(88) on white'  # Red
 PDF_ARRAY_STYLE = 'color(143)'  # color(120)
 PDF_DICTIONARY_STYLE = 'color(64)'
 PDF_NON_TREE_REF_STYLE = 'color(243)'
 PDFALYZER_THEME_DICT = YARALYZER_THEME_DICT.copy()
 
 PDFALYZER_THEME_DICT.update({
-    'address': GREY_ADDRESS,
     'BOM': 'bright_green',
     # PDF objects
     'pdf.array': PDF_ARRAY_STYLE,
-    'pdf.non_tree_ref': PDF_NON_TREE_REF_STYLE,
     # fonts
     'font.property': 'color(135)',
     'font.title': 'reverse dark_blue on color(253)',
@@ -30,29 +27,9 @@ PDFALYZER_THEME_DICT.update({
     'charmap.char': 'color(120) bold',
     # design elements
     'subtable': 'color(8) on color(232)',
-    'header.minor': 'color(249) bold',
-    'header.danger': DANGER_HEADER,
-    'header.danger_reverse': f'{DANGER_HEADER} reverse',
-    # neutral log events
-    'event.attn': 'bold bright_cyan',
-    'event.lowpriority': 'bright_black',
-    # good log events
-    'event.good': 'green4',
-    'event.better': 'turquoise4',
-    'event.reallygood': 'dark_cyan',
-    'event.reallygreat': 'spring_green1',
-    'event.great': 'sea_green2',
-    'event.evenbetter': 'chartreuse1',
-    'event.best': 'green1',
-    'event.siren': 'blink bright_white on red3',
     # warn log events
     'warn': 'bright_yellow',
-    'warn.mild': 'yellow2',
-    'warn.milder': 'dark_orange3',
-    'warn.harsh': 'reverse bright_yellow',
     # error log events
-    'fail': 'bold reverse red',
-    'mild_error': 'red',  # TODO: unused?
     'mild_warning': 'color(228) dim',
     'red_alert': 'blink bold red reverse on white',
 })

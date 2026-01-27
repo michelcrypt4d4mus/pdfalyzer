@@ -54,7 +54,7 @@ def _format_charmap_entry(k: str, v: str) -> Text:
         if len(key) > 1 and key.startswith(quote_char) and key.endswith(quote_char):
             key = key[1:-1]
 
-    return quoted_text(key, 'charmap.byte') + Text(' => ') + quoted_text(str(v), 'charmap.char')
+    return quoted_text(key, 'charmap.byte') + Text(' => ') + quoted_text(str(v), style='charmap.char')
 
 
 def _print_charmap_header(headline: str, style: str) -> None:
