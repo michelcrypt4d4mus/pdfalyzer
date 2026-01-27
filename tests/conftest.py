@@ -60,16 +60,6 @@ def adobe_type1_fonts_pdf_path() -> Path:
 def analyzing_malicious_pdf_path() -> Path:
     return DOCUMENTATION_DIR.joinpath('analyzing-malicious-document-files.pdf')
 
-# Has a Type1 font with character map. PDF comes from pypdf repo.
-@pytest.fixture(scope='session')
-def attachment_pdf_pdfalyzer():
-    return Pdfalyzer(FIXTURES_DIR.joinpath('attachment.pdf'))
-
-# Has /Resources that is not an IndirectObject, also has multiple /DescendantFonts and /ObjStm
-@pytest.fixture(scope='session')
-def geobase_pdfalyzer():
-    return Pdfalyzer(FIXTURES_DIR.joinpath('GeoBase_NHNC1_Data_Model_UML_EN.pdf'))
-
 # Has unplaced empty nodes, formerly unplaced nodes, and /AA /JavaScript nodes
 @pytest.fixture(scope='session')
 def sf424_page2_pdf_path() -> Path:
