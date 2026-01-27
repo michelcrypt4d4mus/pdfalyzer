@@ -17,7 +17,7 @@ for required_dir in [LOG_DIR, TMP_DIR]:
 environ['INVOKED_BY_PYTEST'] = 'True'
 
 import pytest  # noqa: E402
-from yaralyzer.util.constants import ECHO_COMMAND_OPTION, INVOKED_BY_PYTEST, NO_TIMESTAMPS_OPTION
+from yaralyzer.util.constants import ECHO_COMMAND_OPTION, NO_TIMESTAMPS_OPTION
 from yaralyzer.util.helpers.file_helper import files_in_dir, relative_path     # noqa: E402
 from yaralyzer.util.helpers.shell_helper import ShellResult, safe_args
 
@@ -33,26 +33,7 @@ SVG_DIR = DOCUMENTATION_DIR.joinpath('svgs')
 RENDERED_IMAGES_DIR = SVG_DIR.joinpath('rendered_images')
 FIXTURES_DIR = PYTESTS_DIR.joinpath('fixtures')
 RENDERED_FIXTURES_DIR = FIXTURES_DIR.joinpath('rendered')
-PDFALYZE_BASE_CMD = [PDFALYZE, '--echo-command', '--allow-missed-nodes', NO_TIMESTAMPS_OPTION]
-
-# TODO: --output path should be in here but then it won't trigger the directory cleanup of tmp_dir
-COMMON_ARGS = [
-    '--allow-missed-nodes',
-    ECHO_COMMAND_OPTION,
-    NO_TIMESTAMPS_OPTION,
-]
-
-OUTPUT_DIR_ARGS = safe_args([
-    '--output-dir',
-    TMP_DIR,
-])
-
-ARGPARSE_ARGS = COMMON_ARGS + [
-    '--min-decode-length', '50',
-    '--max-decode-length', '51',
-    '--suppress-decodes',
-    '--export-txt',
-]
+PDFALYZE_BASE_CMD = [PDFALYZE, ECHO_COMMAND_OPTION, '--allow-missed-nodes', NO_TIMESTAMPS_OPTION]
 
 # TODO: use env_helpers
 is_windows = lambda: platform.system().lower() == 'windows'
@@ -108,12 +89,6 @@ def analyzing_malicious_pdfalyzer(analyzing_malicious_pdf_path):
 @pytest.fixture(scope="session")
 def adobe_type1_fonts_pdfalyzer(adobe_type1_fonts_pdf_path):
     return Pdfalyzer(adobe_type1_fonts_pdf_path)
-
-
-# A font info object
-@pytest.fixture(scope="session")
-def font_info(analyzing_malicious_pdfalyzer):
-    return next(fi for fi in analyzing_malicious_pdfalyzer.font_infos if fi.idnum == 5)
 
 
 @pytest.fixture(scope="session")
