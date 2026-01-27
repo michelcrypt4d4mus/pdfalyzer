@@ -1,3 +1,4 @@
+import os
 from os import environ, remove
 from pathlib import Path
 
@@ -50,6 +51,10 @@ ARGPARSE_ARGS = COMMON_ARGS + [
     '--suppress-decodes',
     '--export-txt',
 ]
+
+# TODO: use env_helpers
+is_windows = lambda: os.name == 'windows'
+
 
 @pytest.fixture(scope='session', autouse=True)
 def clean_tmp_dir():
@@ -172,6 +177,11 @@ def pdfalyze_analyzing_malicious_args(pdfalyze_analyzing_malicious_shell_cmd) ->
 @pytest.fixture
 def pdfalyze_analyzing_malicious_shell_cmd(analyzing_malicious_pdf_path, common_args) -> list[str]:
     return [PDFALYZE] + safe_args(common_args + [analyzing_malicious_pdf_path])
+
+
+@pytest.fixture
+def script_cmd_prefix() -> list[str]:
+    return ['poetry', 'run'] if is_windows() else []
 
 
 # @pytest.fixture

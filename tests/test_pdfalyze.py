@@ -66,8 +66,8 @@ def test_pdfalyze_CLI_streams_scan(adobe_type1_fonts_pdf_path):
     _check_same_as_fixture(adobe_type1_fonts_pdf_path, '-s', '48')
 
 
-def test_pdfalyze_non_zero_return_code(analyzing_malicious_pdf_path):
-    cmd = safe_args([PDFALYZE, analyzing_malicious_pdf_path, '-t'])
+def test_pdfalyze_non_zero_return_code(analyzing_malicious_pdf_path, script_cmd_prefix):
+    cmd = script_cmd_prefix + safe_args([PDFALYZE, analyzing_malicious_pdf_path, '-t'])
 
     with pytest.raises(CalledProcessError):
         result = ShellResult.from_cmd(cmd)
