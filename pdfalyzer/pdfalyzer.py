@@ -16,7 +16,6 @@ from rich.prompt import Prompt
 from rich.text import Text
 from yaralyzer.output.console import console
 from yaralyzer.output.file_hashes_table import BytesInfo
-from yaralyzer.util.helpers.file_helper import load_binary_data
 from yaralyzer.util.exceptions import print_fatal_error, print_fatal_error_and_exit
 
 from pdfalyzer.config import PdfalyzerConfig
@@ -58,7 +57,6 @@ class Pdfalyzer:
         font_info_extraction_error (Exception | None): Error encountered extracting FontInfo (if any)
         max_generation (int): Max revision number ("generation") encounted in this PDF.
         nodes_encountered (dict[int, PdfTreeNode]): Nodes we've traversed already even if not in tree yet.
-        pdf_basename (str): The base name of the PDF file (with extension).
         pdf_bytes (bytes): PDF binary data.
         pdf_bytes_info (BytesInfo): File size, hashes, and other data points about the PDF's raw bytes.
         pdf_filehandle (BufferedReader): File handle that reads the PDF.
@@ -78,7 +76,6 @@ class Pdfalyzer:
     max_generation: int = 0
     nodes_encountered: dict[int, PdfTreeNode] = field(default_factory=dict)
     num_nodes: int | None = None
-    pdf_basename: str = field(init=False)
     pdf_bytes: bytes = field(init=False)
     pdf_bytes_info: BytesInfo = field(init=False)
     pdf_filehandle: BufferedReader = field(init=False)
@@ -88,12 +85,16 @@ class Pdfalyzer:
     _indeterminate_ids: set[int] = field(default_factory=set)
     _tree_nodes: dict[int, PdfTreeNode | None] = field(default_factory=dict)
 
+    @property
+    def pdf_basename(self):
+        return self.pdf_path.name
+
     def __post_init__(self):
         self.pdf_path = Path(self.pdf_path)
         started_at = time.perf_counter()
 
         try:
-            self.pdf_filehandle = open(self.pdf_path, 'rb')  # Filehandle must be left open for PyPDF to perform seeks
+            self.pdf_filehandle = open(self.pdf_path, 'rb')  # Filehandle must stay open so PyPDF can perform seeks
             self.pdf_reader = PdfReader(self.pdf_filehandle)
         except DependencyError as e:
             self._handle_fatal_error(f"Missing dependency required for this file.", e)
@@ -110,8 +111,7 @@ class Pdfalyzer:
                 self._handle_fatal_error(f"Wrong password", FileNotDecryptedError("encrypted PDF"))
 
         # Load bytes etc
-        self.pdf_basename = self.pdf_path.name
-        self.pdf_bytes = load_binary_data(self.pdf_path)
+        self.pdf_bytes = self.pdf_path.read_bytes()
         self.pdf_bytes_info = BytesInfo(self.pdf_bytes)
 
         # Bootstrap the root of the tree with the trailer. PDFs are always read trailer first.

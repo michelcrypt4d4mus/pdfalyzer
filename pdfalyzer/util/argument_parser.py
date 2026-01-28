@@ -17,7 +17,7 @@ from yaralyzer.util.logging import log, log_argparse_result, log_console, log_cu
 
 from pdfalyzer.config import PdfalyzerConfig
 from pdfalyzer.detection.constants.binary_regexes import QUOTE_PATTERNS
-from pdfalyzer.util.constants import PDFALYZE, PDFALYZER
+from pdfalyzer.util.constants import PDFALYZE
 from pdfalyzer.util.helpers.string_helper import props_string_indented
 from pdfalyzer.util.output_section import ALL_STREAMS
 

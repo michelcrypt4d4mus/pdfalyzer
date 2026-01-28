@@ -33,8 +33,7 @@ pypdf_log_handler.formatter = logging.Formatter(PYPDF_LOG_PFX + ' %(message)s')
 logging.getLogger("pypdf").addHandler(pypdf_log_handler)
 
 # pdfalyzer log highlighting
-pdfalyzer_log_handler = RichHandler(**log_handler_kwargs)
-log.handlers = [pdfalyzer_log_handler]
+log.handlers = [RichHandler(**log_handler_kwargs)]
 
 # pdfalyzer output highlighting
 log_console.push_theme(Theme(LOG_THEME_DICT))
