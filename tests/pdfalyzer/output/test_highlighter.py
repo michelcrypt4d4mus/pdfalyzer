@@ -8,6 +8,4 @@ def test_highlighter_patterns():
 
     for capture_group_label in CUSTOM_LOG_HIGHLIGHTS.keys():
         label = f"<{capture_group_label.removeprefix(ReprHighlighter.base_style)}>"
-        print(f" label: {label}")
-        #import pdb;pdb.set_trace()
         assert any(label in pattern for pattern in HIGHLIGHT_PATTERNS), f"Capture group {label} not found!"
