@@ -44,7 +44,7 @@ PDF_DICTIONARY_STYLE = 'color(64)'
 PDF_NON_TREE_REF_STYLE = 'color(243)'
 PDFALYZER_THEME_DICT = YARALYZER_THEME_DICT.copy()
 RED_ALERT_BASE_STYLE = 'blink bold red'
-TRAILER_OBJ_STYLE = 'bright_green'
+TRAILER_OBJ_STYLE = 'chartreuse2'
 
 PDFALYZER_THEME_DICT.update({
     'BOM': 'bright_green',

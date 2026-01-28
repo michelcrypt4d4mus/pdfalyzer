@@ -5,22 +5,16 @@ set -e
 PDFALYZER_SCRIPT_LIB_PATH="${BASH_SOURCE[0]}";
 PYPROJECT_TOML=pyproject.toml
 SED_BACKUP_EXT=.sedbak
-
-pushd . > /dev/null
-
-while([ -h "${PDFALYZER_SCRIPT_LIB_PATH}" ]); do
-    cd "`dirname "${PDFALYZER_SCRIPT_LIB_PATH}"`"
-    PDFALYZER_SCRIPT_LIB_PATH="$(readlink "`basename "${PDFALYZER_SCRIPT_LIB_PATH}"`")";
-done
-
-cd "`dirname "${PDFALYZER_SCRIPT_LIB_PATH}"`" > /dev/null
-
 PDFALYZE=pdfalyze
+
+pushd . > /dev/null  # TODO: wtf?
+cd "`dirname "${PDFALYZER_SCRIPT_LIB_PATH}"`" > /dev/null
 PDFALYZER_SCRIPT_LIB_PATH="`pwd`";
 PDFALYZER_PROJECT_PATH=$(realpath "$PDFALYZER_SCRIPT_LIB_PATH/../..")
 PDFALYZER_PYPROJECT_TOML="$PDFALYZER_PROJECT_PATH/pyproject.toml"
 PDFALYZER_TOOLS_DIR="$PDFALYZER_PROJECT_PATH/tools"
 PDFALYZER_RENDERED_FIXTURES_DIR="$PDFALYZER_PROJECT_PATH/tests/fixtures"
+popd > /dev/null
 
 # Yaralyzer
 YARALYZE=yaralyze
@@ -33,9 +27,6 @@ PYPDF_REPO_DIR="$PDFALYZER_PROJECT_PATH/../pypdf"
 PYPDF_RESOURCES_DIR="$PYPDF_REPO_DIR/resources/"
 PYPDF_SAMPLES_DIR="$PYPDF_REPO_DIR/sample-files/"
 
-
-popd > /dev/null  # TODO wtf?
-
 # Colors
 CYAN='\033[0;36m'
 RED='\033[0;31m'
@@ -47,7 +38,7 @@ NO_COLOR='\033[0m'
 echo_debug() { echo -e "$1" >&2; }
 echo_error() { echo -e "${RED}ERROR: ${1}${NO_COLOR}" >&2; }
 echo_status() { echo -e "${CYAN}${1}${NO_COLOR}" >&2; }
-echo_warning() { echo -e "${YELLOW}${1}${NO_COLOR}" >&2; }
+echo_warning() { echo -e "${YELLOW}WARNING: ${1}${NO_COLOR}" >&2; }
 
 
 git_current_branch() {
