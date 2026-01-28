@@ -4,6 +4,7 @@ SCRIPT_PATH=$(dirname -- "$(readlink -f -- "$0";)";)
 . "$SCRIPT_PATH/lib/project_paths.sh"
 set -e
 
+
 yaralyzer_version=$(egrep '^version' $YARALYZER_PYPROJECT_TOML  | awk '{print $3}')
 
 if [[ -z $yaralyzer_version ]]; then

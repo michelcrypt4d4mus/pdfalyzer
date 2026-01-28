@@ -38,9 +38,9 @@ NO_COLOR='\033[0m'
 
 
 # Functions
-echo_debug() { echo -e "$1"; }
-echo_error() { echo -e "${RED}ERROR: ${1}${NO_COLOR}"; }
-echo_status() { echo -e "${CYAN}${1}${NO_COLOR}"; }
+echo_debug() { echo -e "$1" >&2; }
+echo_error() { echo -e "${RED}ERROR: ${1}${NO_COLOR}" >&2; }
+echo_status() { echo -e "${CYAN}${1}${NO_COLOR}" >&2; }
 
 
 git_current_branch() {
@@ -59,9 +59,9 @@ git_check_master_branch() {
 
 
 update_pyproject_toml() {
+    echo_debug "\nupdate_pyproject_toml called with:\n  [1] $1\n  [2] $2\n"
     local package_to_update="$1"
     local new_package_version="$2"
-    echo_debug "\nupdate_pyproject_toml called with:\n  [1] $1\n  [2] $2\n"
 
     if [[ ! -f $PYPROJECT_TOML ]]; then
         echo_error "$PYPROJECT_TOML does not exist..."

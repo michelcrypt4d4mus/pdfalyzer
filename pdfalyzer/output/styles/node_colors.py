@@ -14,14 +14,17 @@ from pdfalyzer.helpers.string_helper import regex_to_capture_group_label
 from pdfalyzer.output.styles.rich_theme import PDF_ARRAY_STYLE
 from pdfalyzer.util import adobe_strings
 
-ClassStyle = namedtuple('ClassStyle', ['klass', 'style'])
+ClassStyle = namedtuple('ClassStyle', ['cls', 'style'])
 
 DEFAULT_LABEL_STYLE = 'yellow'
 FONT_OBJ_BLUE = 'deep_sky_blue4 bold'
 PDF_NON_TREE_REF = 'color(243)'
 PARENT_STYLE = 'violet'
 
-PDF_TYPE_STYLES = [
+NODE_STYLE_PFX = 'pdfnode.'
+PDF_OBJ_STYLE_PFX = 'pdfobj.'
+
+PDF_OBJ_TYPE_STYLES = [
     ClassStyle(IndirectObject, 'color(225)'),
     ClassStyle(ByteStringObject, YARALYZER_THEME_DICT['bytes']),
     ClassStyle(EncodedStreamObject, YARALYZER_THEME_DICT['bytes']),
@@ -32,7 +35,7 @@ PDF_TYPE_STYLES = [
 ]
 
 # Subclasses of the key type will be styled with the value string
-NODE_TYPE_STYLES = PDF_TYPE_STYLES + [
+NODE_TYPE_STYLES = PDF_OBJ_TYPE_STYLES + [
     ClassStyle(Number, 'cyan bold'),
     ClassStyle(dict, 'color(64)'),
     ClassStyle(list, 'color(143)'),
@@ -74,7 +77,7 @@ LABEL_STYLES = [
     [re.compile(adobe_strings.TRUE),                      'green bold'],
 ]
 
-# Add common color for all NON_TREE_REFERENCES
+# Add styles for all NON_TREE_REFERENCES
 LABEL_STYLES += [
     [re.compile(f'^{key}'), PDF_NON_TREE_REF]
     for key in adobe_strings.NON_TREE_REFERENCES
@@ -82,7 +85,7 @@ LABEL_STYLES += [
 
 NODE_COLOR_THEME_DICT = {
     **{regex_to_capture_group_label(label_style[0]): label_style[1] for label_style in LABEL_STYLES},
-    **{regex_to_capture_group_label(re.compile(cs[0].__name__)): cs[1] for cs in PDF_TYPE_STYLES},
+    **{regex_to_capture_group_label(re.compile(cs[0].__name__)): cs[1] for cs in PDF_OBJ_TYPE_STYLES},
 }
 
 
@@ -93,7 +96,7 @@ def get_class_style(obj: Any) -> str:
     elif obj is False:
         return 'bright_red bold'
     else:
-        return next((cs.style for cs in NODE_TYPE_STYLES if isinstance(obj, cs.klass)), '')
+        return next((cs.style for cs in NODE_TYPE_STYLES if isinstance(obj, cs.cls)), '')
 
 
 def get_class_style_dim(obj: Any) -> str:
@@ -113,3 +116,16 @@ def get_class_style_italic(obj: Any) -> str:
 def get_label_style(label: str) -> str:
     """Lookup a style based on the node's label string (either its type or first address)."""
     return next((ls[1] for ls in LABEL_STYLES if ls[0].search(label)), DEFAULT_LABEL_STYLE)
+
+
+# TODO: Right now NODE_COLOR_THEME_DICT is the real action. These need to be integrated into the main theme.
+THEME_COLORS_FOR_SHOW_ONLY_DICT = {}
+
+for label_style in LABEL_STYLES:
+    patterns = [regex_to_capture_group_label(p) for p in label_style[0].pattern.strip().split('|')]
+
+    for obj_type in patterns:
+        THEME_COLORS_FOR_SHOW_ONLY_DICT[f"{NODE_STYLE_PFX}{obj_type}"] = label_style[1]
+
+for cls_style in PDF_OBJ_TYPE_STYLES:
+    THEME_COLORS_FOR_SHOW_ONLY_DICT[f"{PDF_OBJ_STYLE_PFX}{cls_style.cls.__name__}"] = cls_style.style

@@ -15,7 +15,7 @@ from yaralyzer.output.theme import YARALYZER_THEME_DICT
 from yaralyzer.util.logging import DEFAULT_LOG_HANDLER_KWARGS, log, log_console, log_trace
 
 from pdfalyzer.helpers.string_helper import regex_to_highlight_pattern
-from pdfalyzer.output.styles.node_colors import LABEL_STYLES, NODE_COLOR_THEME_DICT, PARENT_STYLE, PDF_TYPE_STYLES
+from pdfalyzer.output.styles.node_colors import LABEL_STYLES, NODE_COLOR_THEME_DICT, PARENT_STYLE, PDF_OBJ_TYPE_STYLES
 from pdfalyzer.output.styles.rich_theme import PDF_ARRAY_STYLE, PDF_DICTIONARY_STYLE
 
 LONG_ENOUGH_LABEL_STYLES = [ls for ls in LABEL_STYLES if len(ls[0].pattern) > 4]
@@ -80,7 +80,7 @@ HIGHLIGHT_PATTERNS = DEFAULT_REPR_HIGHLIGHTER_PATTERNS + [
     r"(?P<relationship>via symlink|parent/child|child/parent)",
     r"(?P<stream_object>((De|En)coded)?Stream(Object)?)",
     *[regex_to_highlight_pattern(label_style[0]) for label_style in LONG_ENOUGH_LABEL_STYLES],
-    *[regex_to_highlight_pattern(re.compile(cs[0].__name__)) for cs in PDF_TYPE_STYLES],
+    *[regex_to_highlight_pattern(re.compile(cs[0].__name__)) for cs in PDF_OBJ_TYPE_STYLES],
 ]
 
 assert all('(?P<' in pattern for pattern in HIGHLIGHT_PATTERNS)

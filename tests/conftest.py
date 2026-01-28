@@ -27,11 +27,13 @@ from pdfalyzer.util.logging import log
 # TODO: importlib doesn't play nice with running tests via GitHub actions
 # import importlib.resources
 # PROJECT_DIR = path.join(str(importlib.resources.files('pdfalyzer')), pardir)
+FIXTURES_DIR = PYTESTS_DIR.joinpath('fixtures')
+RENDERED_FIXTURES_DIR = FIXTURES_DIR.joinpath('rendered')
+
 DOCUMENTATION_DIR = PROJECT_DIR.joinpath('doc')
 SVG_DIR = DOCUMENTATION_DIR.joinpath('svgs')
 RENDERED_IMAGES_DIR = SVG_DIR.joinpath('rendered_images')
-FIXTURES_DIR = PYTESTS_DIR.joinpath('fixtures')
-RENDERED_FIXTURES_DIR = FIXTURES_DIR.joinpath('rendered')
+
 PDFALYZE_BASE_CMD = [PDFALYZE, ECHO_COMMAND_OPTION, '--allow-missed-nodes', NO_TIMESTAMPS_OPTION]
 
 # TODO: use env_helpers
