@@ -9,6 +9,7 @@ from typing import Any
 from pypdf.generic import (ArrayObject, ByteStringObject, EncodedStreamObject, IndirectObject,
      NullObject, StreamObject, TextStringObject)
 from yaralyzer.output.theme import YARALYZER_THEME_DICT
+from yaralyzer.util.logging import log_console
 
 from pdfalyzer.helpers.string_helper import regex_to_capture_group_label
 from pdfalyzer.output.styles.rich_theme import PDF_ARRAY_STYLE
@@ -35,13 +36,11 @@ PDF_OBJ_TYPE_STYLES = [
 ]
 
 # Subclasses of the key type will be styled with the value string
-NODE_TYPE_STYLES = PDF_OBJ_TYPE_STYLES + [
+OBJ_TYPE_STYLES = PDF_OBJ_TYPE_STYLES + [
     ClassStyle(Number, 'cyan bold'),
     ClassStyle(dict, 'color(64)'),
     ClassStyle(list, 'color(143)'),
     ClassStyle(str, 'bright_white bold'),
-    # Default
-    ClassStyle(object, 'bright_yellow'),
 ]
 
 LABEL_STYLES = [
@@ -92,11 +91,14 @@ NODE_COLOR_THEME_DICT = {
 def get_class_style(obj: Any) -> str:
     """Style for various types of data (e.g. DictionaryObject)"""
     if obj is True:
-        return 'bright_green bold'
+        cls_style = 'bright_green bold'
     elif obj is False:
-        return 'bright_red bold'
+        cls_style = 'bright_red bold'
     else:
-        return next((cs.style for cs in NODE_TYPE_STYLES if isinstance(obj, cs.cls)), '')
+        cls_style = next((cs.style for cs in OBJ_TYPE_STYLES if isinstance(obj, cs.cls)), '')
+
+    # log_console.print(f"{type(obj).__name__} style resolved as {cls_style}", style=cls_style)
+    return cls_style
 
 
 def get_class_style_dim(obj: Any) -> str:

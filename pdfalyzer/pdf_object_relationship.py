@@ -88,7 +88,8 @@ class PdfObjectRelationship:
 
                 references += cls.build_node_references(from_node, val, ref_key or key, _build_address(key, address))
         else:
-            log.debug(f"Adding no references for PdfObject reference '{ref_key}' -> '{from_obj}'")
+            pass
+            # log.debug(f"Adding no references for PdfObject reference '{ref_key}' -> '{from_obj}'")
 
         # Set all returned relationships to originate from top level from_obj before returning
         for ref in references:
