@@ -32,6 +32,7 @@ from pdfalyzer.output.tables.decoding_stats_table import build_decoding_stats_ta
 from pdfalyzer.output.theme import get_label_style
 from pdfalyzer.pdfalyzer import Pdfalyzer
 from pdfalyzer.util.adobe_strings import DANGEROUS_PDF_KEYS, FALSE, TRUE
+from pdfalyzer.util.helpers.collections_helper import safe_json
 from pdfalyzer.util.helpers.string_helper import root_address
 from pdfalyzer.util.logging import highlight, log
 
@@ -101,7 +102,7 @@ class PdfalyzerPresenter:
     def print_summary(self) -> None:
         """Print node type counts and so on."""
         print_section_header(f'PDF Node Summary for {self.pdfalyzer.pdf_basename}')
-        console.print_json(data=self._analyze_tree(), sort_keys=True)
+        console.print_json(safe_json(self._analyze_tree()), sort_keys=True)
 
     def print_font_info(self, font_idnum=None) -> None:
         """Print informatin about all fonts that appear in this PDF."""

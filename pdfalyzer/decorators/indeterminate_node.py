@@ -6,7 +6,7 @@ from yaralyzer.util.helpers.string_helper import comma_join
 from yaralyzer.util.logging import log
 
 from pdfalyzer.decorators.pdf_tree_node import PdfTreeNode
-from pdfalyzer.util.adobe_strings import *
+from pdfalyzer.util.adobe_strings import COLOR_SPACE, K, KIDS, NON_TREE_KEYS, PAGE, PAGES, PAGE_AND_PAGES
 from pdfalyzer.util.helpers.string_helper import all_strings_are_same_ignoring_numbers, has_a_common_substring
 
 
@@ -59,7 +59,7 @@ class IndeterminateNode:
         """Find node with a reference to this one that has the most descendants"""
         list_of_nodes = list_of_nodes or [r.from_node for r in self.node.non_tree_relationships]
         max_descendants = max([node.descendants_count() for node in list_of_nodes])
-        return find_node_with_lowest_id([n for n in list_of_nodes if n.descendants_count() == max_descendants])
+        return _node_with_lowest_id([n for n in list_of_nodes if n.descendants_count() == max_descendants])
 
     def _has_only_similar_relationships(self) -> bool:
         """
@@ -78,7 +78,7 @@ class IndeterminateNode:
         return reference_keys_or_nodes_are_same
 
     def _check_for_common_ancestor(self) -> bool:
-        common_ancestor = self._find_common_ancestor_among_nodes(self.node.nodes_with_here_references())
+        common_ancestor = _find_common_ancestor_among_nodes(self.node.nodes_with_here_references())
 
         if common_ancestor is not None:
             log.info(f"  Found common ancestor: {common_ancestor}")
@@ -86,19 +86,6 @@ class IndeterminateNode:
             return True
         else:
             return False
-
-    # TODO could be static method
-    def _find_common_ancestor_among_nodes(self, nodes: list[PdfTreeNode]) -> PdfTreeNode | None:
-        """If any of 'nodes' is a common ancestor of the rest of the 'nodes', return it."""
-        for possible_ancestor in nodes:
-            log.debug(f"  Checking possible common ancestor: {possible_ancestor}")
-            other_nodes = [n for n in nodes if n != possible_ancestor]
-
-            # Look for a common ancestor; if there is one choose it as the parent.
-            if all(possible_ancestor in node.ancestors for node in other_nodes):
-                other_nodes_str = comma_join([str(node) for node in other_nodes])
-                log.info(f"{possible_ancestor} is the common ancestor of {other_nodes_str}")
-                return possible_ancestor
 
     def _check_single_relation_rules(self) -> bool:
         """Check various ways of narrowing down the list of potential parents to one node."""
@@ -123,7 +110,20 @@ class IndeterminateNode:
             return False
 
 
-def find_node_with_lowest_id(list_of_nodes: list[PdfTreeNode]) -> PdfTreeNode:
+def _find_common_ancestor_among_nodes(nodes: list[PdfTreeNode]) -> PdfTreeNode | None:
+    """If any of 'nodes' is a common ancestor of the rest of the 'nodes', return it."""
+    for possible_ancestor in nodes:
+        log.debug(f"  Checking possible common ancestor: {possible_ancestor}")
+        other_nodes = [n for n in nodes if n != possible_ancestor]
+
+        # Look for a common ancestor; if there is one choose it as the parent.
+        if all(possible_ancestor in node.ancestors for node in other_nodes):
+            other_nodes_str = comma_join([str(node) for node in other_nodes])
+            log.info(f"{possible_ancestor} is the common ancestor of {other_nodes_str}")
+            return possible_ancestor
+
+
+def _node_with_lowest_id(list_of_nodes: list[PdfTreeNode]) -> PdfTreeNode:
     """Return node in `list_of_nodes` with lowest ID."""
     lowest_idnum = min([n.idnum for n in list_of_nodes])
     return next(n for n in list_of_nodes if n.idnum == lowest_idnum)

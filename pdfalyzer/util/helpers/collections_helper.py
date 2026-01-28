@@ -2,6 +2,7 @@
 Helper methods for dealing with lists and dicts.
 """
 import json
+
 from pypdf.generic import DictionaryObject
 from yaralyzer.util.logging import log
 
@@ -36,13 +37,14 @@ def safe_json(obj: object) -> str:
 
 
 def stringify_props(obj: object) -> object:
+    """Make `obj` safe for JSON export."""
     if isinstance(obj, list):
         return [stringify_props(element) for element in obj]
     elif isinstance(obj, dict):
         return {str(k): stringify_props(v) for k, v in obj.items()}
     elif '__dict__' in dir(obj):
         return {str(k): stringify_props(v) for k, v in vars(obj).items()}
-    elif isinstance(obj, str):
+    elif isinstance(obj, (float, int, str)):
         return obj
     else:
         try:

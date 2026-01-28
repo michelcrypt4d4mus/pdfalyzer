@@ -122,7 +122,7 @@ class FontInfo:
             self.font_descriptor_dict = cast(DictionaryObject, self.font_dict[FONT_DESCRIPTOR].get_object())
 
         # pypdf FontDescriptor fills in defaults for these props so we have to extract from source
-        if self.font_descriptor_dict:
+        if 'font_descriptor_dict' in dir(self) and self.font_descriptor_dict:
             self.bounding_box = self.font_descriptor_dict.get('/FontBBox')
             self.flags = int(self.font_descriptor_dict.get('/Flags'))
         else:

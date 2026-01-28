@@ -26,7 +26,7 @@ from pdfalyzer.decorators.pdf_tree_verifier import PdfTreeVerifier
 from pdfalyzer.font_info import FontInfo
 from pdfalyzer.util.helpers.pdf_object_helper import RefAndObj, describe_obj
 from pdfalyzer.pdf_object_relationship import PdfObjectRelationship
-from pdfalyzer.util.adobe_strings import *
+from pdfalyzer.util import adobe_strings
 from pdfalyzer.util.argument_parser import is_pdfalyze_script
 from pdfalyzer.util.exceptions import PdfParserError, PdfWalkError
 from pdfalyzer.util.logging import log, log_trace  # Triggers log setup
@@ -117,9 +117,9 @@ class Pdfalyzer:
         # Bootstrap the root of the tree with the trailer. PDFs are always read trailer first.
         # Technically the trailer has no PDF Object ID but we set it to the /Size of the PDF.
         trailer = self.pdf_reader.trailer
-        self.num_nodes = trailer.get(SIZE)
+        self.num_nodes = trailer.get(adobe_strings.SIZE)
         trailer_id = self.num_nodes if self.num_nodes is not None else TRAILER_FALLBACK_ID
-        self.pdf_tree = PdfTreeNode.from_obj(trailer, TRAILER, trailer_id)
+        self.pdf_tree = PdfTreeNode.from_obj(trailer, adobe_strings.TRAILER, trailer_id)
         self.nodes_encountered[self.pdf_tree.idnum] = self.pdf_tree
 
         if not self.num_nodes:
@@ -209,7 +209,7 @@ class Pdfalyzer:
         # Fall back to all IDs between 0 and self.num_nodes
         if not all_object_ids:
             if self.num_nodes is None:
-                log.error(f"no pdf-parser.py and {SIZE} not found in PDF trailer; cannot verify all nodes are in tree")
+                log.error(f"no pdf-parser.py and {adobe_strings.SIZE} not found in PDF trailer; cannot verify all nodes are in tree")
                 return []
 
             all_object_ids = [i for i in range(1, self.num_nodes)]
@@ -332,13 +332,13 @@ class Pdfalyzer:
             from_node.add_child(to_node)
 
         # /StructElems in a /StructTreeRoot hierarchy sometimes have no /Type so we set it manually
-        if to_node.type == K and STRUCT_TREE_ROOT in to_node.tree_address():
-            to_node.pdf_object.type = STRUCT_ELEM
+        if to_node.type == adobe_strings.K and adobe_strings.STRUCT_TREE_ROOT in to_node.tree_address():
+            to_node.pdf_object.type = adobe_strings.STRUCT_ELEM
 
         return to_node
 
     def _catalog_node(self) -> PdfTreeNode | None:
-        return self.find_node_with_attr('type', '/Catalog')
+        return self.find_node_with_attr('type', adobe_strings.CATALOG)
 
     def _handle_fatal_error(self, msg: str, e: Exception) -> None:
         self.close()
@@ -351,7 +351,7 @@ class Pdfalyzer:
             raise e
 
     def _info_node(self) -> PdfTreeNode | None:
-        return self.find_node_with_attr('type', '/Info')
+        return self.find_node_with_attr('type', adobe_strings.INFO)
 
     def _resolve_indeterminate_nodes(self) -> None:
         """Place indeterminate nodes in the tree."""
@@ -380,39 +380,39 @@ class Pdfalyzer:
             # Make sure we didn't already fix this node up in the course of other repairs
             node = self.find_node_by_idnum(ref.idnum)
 
-            if not isinstance(obj, DictionaryObject) or (node is not None and node.parent):
+            if not isinstance(obj, (dict)) or (node is not None and node.parent):
                 continue
 
             # Handle special Linearization info nodes
-            if obj.get(TYPE) is None and '/Linearized' in obj:
+            if obj.get(adobe_strings.TYPE) is None and '/Linearized' in obj:
                 log.warning(f"Placing special /Linearized node {describe_obj(ref_and_obj)} as child of root")
                 self.pdf_tree.add_child(self._build_or_find_node(ref, '/Linearized'))
-            elif isinstance(obj.get(P), IndirectObject):
-                parent = self.find_node_by_idnum(obj.get(P).idnum)
+            elif isinstance(obj.get(adobe_strings.P), IndirectObject):
+                parent = self.find_node_by_idnum(obj.get(adobe_strings.P).idnum)
 
                 if parent:
                     log.warning(f"Placing lost {describe_obj(ref_and_obj)} with /P ref pointing to {parent}")
                     parent.add_child(self._build_or_find_node(ref, '/P(arent)'))
-            elif isinstance(obj.get(COLOR_SPACE), IndirectObject):
-                parent = self.find_node_by_idnum(obj.get(COLOR_SPACE).idnum)
+            elif isinstance(obj.get(adobe_strings.COLOR_SPACE), IndirectObject):
+                parent = self.find_node_by_idnum(obj.get(adobe_strings.COLOR_SPACE).idnum)
 
                 if parent:  # TODO: maybe this should be inserted as parent in the middle instead of as child?
-                    log.warning(f"Placing lost {describe_obj(ref_and_obj)} with {COLOR_SPACE} ref pointing to {parent}")
+                    log.warning(f"Placing lost {describe_obj(ref_and_obj)} with {adobe_strings.COLOR_SPACE} ref pointing to {parent}")
                     parent.add_child(self._build_or_find_node(ref, '/C(olorSpace))'))
-            elif obj.get(TYPE) == OBJ_STM:
+            elif obj.get(adobe_strings.TYPE) == adobe_strings.OBJ_STM:
                 # Place /ObjStm at root if no other location found.
                 # TODO: these /ObjStm objs should have been unrolled into other PDF objects
                 log.warning(f"Forcing {describe_obj(ref_and_obj)} to appear as child of root node")
-                self.pdf_tree.add_child(self._build_or_find_node(ref, OBJ_STM))
-            elif obj.get(TYPE) == ANNOT and isinstance(obj.get('/AP'), DictionaryObject) and '/N' in obj['/AP']:
+                self.pdf_tree.add_child(self._build_or_find_node(ref, adobe_strings.OBJ_STM))
+            elif obj.get(adobe_strings.TYPE) == adobe_strings.ANNOT and isinstance(obj.get('/AP'), DictionaryObject) and '/N' in obj['/AP']:
                 annot_normal_appearance_ref = obj['/AP'].get('/N')
 
                 if isinstance(annot_normal_appearance_ref, IndirectObject):
                     appearance_node = self.find_node_by_idnum(annot_normal_appearance_ref.idnum) or \
                                             self._build_or_find_node(annot_normal_appearance_ref, '[/AP]/N')
 
-                    if appearance_node.type == XOBJECT and appearance_node.obj.get(SUBTYPE) == '/Form':
-                        form = self.find_node_with_attr('type', ACRO_FORM)
+                    if appearance_node.type == adobe_strings.XOBJECT and appearance_node.obj.get(adobe_strings.SUBTYPE) == '/Form':
+                        form = self.find_node_with_attr('type', adobe_strings.ACRO_FORM)
 
                         if form:
                             annot_node = self._build_or_find_node(ref, '/A(nnot)')
@@ -420,31 +420,31 @@ class Pdfalyzer:
                             appearance_node.set_parent(annot_node)
                             # log.warning(f"Calling emergency walk_node({annot_node})")
                             # self.walk_node(annot_node)
-            elif obj.get(TYPE) == XOBJECT and obj.get(SUBTYPE) == '/Form':
-                if (form := self.find_node_with_attr('type', ACRO_FORM)):
-                    log.warning(f"Forcing homeless {describe_obj(ref_and_obj)} to be child of {ACRO_FORM}")
-                    form.add_child(self._build_or_find_node(ref, XOBJECT))
-            elif obj.get(TYPE) == XREF:
-                is_child_of_trailer = XREF_STREAM in self.pdf_reader.trailer
+            elif obj.get(adobe_strings.TYPE) == adobe_strings.XOBJECT and obj.get(adobe_strings.SUBTYPE) == '/Form':
+                if (form := self.find_node_with_attr('type', adobe_strings.ACRO_FORM)):
+                    log.warning(f"Forcing homeless {describe_obj(ref_and_obj)} to be child of {adobe_strings.ACRO_FORM}")
+                    form.add_child(self._build_or_find_node(ref, adobe_strings.XOBJECT))
+            elif obj.get(adobe_strings.TYPE) == adobe_strings.XREF:
+                is_child_of_trailer = adobe_strings.XREF_STREAM in self.pdf_reader.trailer
 
                 for k, v in self.pdf_reader.trailer.items():
                     xref_val_for_key = obj.get(k)
 
-                    if k in [XREF_STREAM, PREV]:
+                    if k in [adobe_strings.XREF_STREAM, adobe_strings.PREV]:
                         continue
-                    elif k == SIZE:
+                    elif k == adobe_strings.SIZE:
                         if xref_val_for_key is None or v != (xref_val_for_key + 1):
-                            log.warning(f"{XREF} has {SIZE} of {xref_val_for_key}, trailer has {SIZE} of {v}")
+                            log.warning(f"{adobe_strings.XREF} has {adobe_strings.SIZE} of {xref_val_for_key}, trailer has {adobe_strings.SIZE} of {v}")
                             is_child_of_trailer = False
 
                         continue
                     elif k not in obj or v != obj.get(k):
-                        log.info(f"Trailer has {k} -> {v} but {XREF} obj has {obj.get(k)} at that key")
+                        log.info(f"Trailer has {k} -> {v} but {adobe_strings.XREF} obj has {obj.get(k)} at that key")
                         is_child_of_trailer = False
 
                 if is_child_of_trailer:
                     log.warning(f"Forcing {describe_obj(ref_and_obj)} to be child of root node")
-                    self.pdf_tree.add_child(self._build_or_find_node(ref, XREF_STREAM))
+                    self.pdf_tree.add_child(self._build_or_find_node(ref, adobe_strings.XREF_STREAM))
                     continue
 
                 if '/Root' in obj:
@@ -458,18 +458,18 @@ class Pdfalyzer:
 
                     if root_node:
                         log.info(f"Placing {describe_obj(ref_and_obj)} under {root_node} based on /Root property")
-                        relationship_key = XREF
+                        relationship_key = adobe_strings.XREF
 
                         if isinstance(root_node.obj, DictionaryObject):
-                            relationship_key = XREF_STREAM if XREF_STREAM in root_node.obj else XREF
+                            relationship_key = adobe_strings.XREF_STREAM if adobe_strings.XREF_STREAM in root_node.obj else adobe_strings.XREF
 
                         root_node.add_child(self._build_or_find_node(ref, relationship_key))
                         continue
 
         # Force /Pages to be children of /Catalog
         for node in self.nodes_without_parents():
-            if node.type == PAGES and (catalog_node := self._catalog_node()):
-                log.warning(f"Forcing orphaned {PAGES} node {node} to be child of {catalog_node}")
+            if node.type == adobe_strings.PAGES and (catalog_node := self._catalog_node()):
+                log.warning(f"Forcing orphaned {adobe_strings.PAGES} node {node} to be child of {catalog_node}")
                 node.set_parent(catalog_node)
 
     def _extract_font_infos(self) -> None:
@@ -491,7 +491,7 @@ class Pdfalyzer:
             # TODO: this should be a walk_node() call bc it misses the /FontDescriptor as is
             ref_and_obj = self.ref_and_obj_for_id(font_info.idnum)
             log.warning(f'Found font {font_info} but no corresponding node for {ref_and_obj}!')
-            font_node = self._build_or_find_node(ref_and_obj.ref, f"{FONT}/{font_info.label}")
+            font_node = self._build_or_find_node(ref_and_obj.ref, f"{adobe_strings.FONT}/{font_info.label}")
             font_node.set_parent(node)
             # import pdb;pdb.set_trace()
 

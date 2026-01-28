@@ -118,11 +118,11 @@ NODE_STYLES_BASE_DICT.update({
     adobe_strings.W:                                           'color(67)',
     adobe_strings.RESOURCES:                                   'magenta',
     # Doc info
-    '/Catalog':                                                'color(47)',
+    adobe_strings.CATALOG:                                     'color(47)',
     adobe_strings.CONTENTS:                                    'medium_purple1',
     adobe_strings.TRAILER:                                     TRAILER_OBJ_STYLE,
     '/Root':                                                   TRAILER_OBJ_STYLE,
-    '/Info':                                                   INFO_OBJ_STYLE,
+    adobe_strings.INFO:                                        INFO_OBJ_STYLE,
     '/Outlines':                                               INFO_OBJ_STYLE,
     '/Metadata':                                              'color(35)',
     '/ViewerPreferences':                                     'color(35)',
