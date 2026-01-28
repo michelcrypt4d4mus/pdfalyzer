@@ -59,7 +59,7 @@ class IndeterminateNode:
         """Find node with a reference to this one that has the most descendants"""
         list_of_nodes = list_of_nodes or [r.from_node for r in self.node.non_tree_relationships]
         max_descendants = max([node.descendants_count() for node in list_of_nodes])
-        return find_node_with_lowest_id([n for n in list_of_nodes if n.descendants_count() == max_descendants])
+        return _node_with_lowest_id([n for n in list_of_nodes if n.descendants_count() == max_descendants])
 
     def _has_only_similar_relationships(self) -> bool:
         """
@@ -123,7 +123,7 @@ class IndeterminateNode:
             return False
 
 
-def find_node_with_lowest_id(list_of_nodes: list[PdfTreeNode]) -> PdfTreeNode:
+def _node_with_lowest_id(list_of_nodes: list[PdfTreeNode]) -> PdfTreeNode:
     """Return node in `list_of_nodes` with lowest ID."""
     lowest_idnum = min([n.idnum for n in list_of_nodes])
     return next(n for n in list_of_nodes if n.idnum == lowest_idnum)
