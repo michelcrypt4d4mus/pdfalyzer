@@ -6,7 +6,7 @@ from pypdf.errors import FileNotDecryptedError
 
 from pdfalyzer.pdfalyzer import Pdfalyzer
 
-from tests.conftest import FIXTURES_DIR
+from ..conftest import FIXTURES_DIR
 
 
 def test_password():
