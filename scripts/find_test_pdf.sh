@@ -1,8 +1,8 @@
 #!/bin/bash -e
 # Search the test files in the pypdf repo for a key like /FontFile or whatever
+SCRIPT_PATH=$(dirname -- "$(readlink -f -- "$0";)";)
+. "$SCRIPT_PATH/lib/project_paths.sh"
+set -e
 
-PYPDF_REPO_DIR="../pypdf"
-PYPDF_RESOURCES_DIR="$PYPDF_REPO_DIR/resources/"
-PYPDF_SAMPLES_DIR="$PYPDF_REPO_DIR/sample-files/"
 
 egrep --color -r --text "$1" "$PYPDF_RESOURCES_DIR" "$PYPDF_SAMPLES_DIR"
