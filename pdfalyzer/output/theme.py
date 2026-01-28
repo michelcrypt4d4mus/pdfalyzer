@@ -80,41 +80,41 @@ OBJ_TYPE_STYLES = PDF_OBJ_TYPE_STYLES + [
 # Order matters - first match will be the style
 LABEL_STYLES_BASE = {
     re.compile(r'(AA|JavaScript|JS|OpenAction)', re.I | re.M): 'blink bold red',
-    adobe_strings.FONT_DESCRIPTOR:    'cornflower_blue',
-    fr'{adobe_strings.FONT_FILE}\d?':       'steel_blue1',
-    f'/(Font(Name)?|BaseFont)':             FONT_OBJ_BLUE,
-    adobe_strings.DESCENDANT_FONTS:                    f"{FONT_OBJ_BLUE} dim",
-    f'/CharProc':                            'dark_cyan',
-    adobe_strings.TO_UNICODE:         'grey30',
-    adobe_strings.ENCODING:            YARALYZER_THEME_DICT['encoding.header'],
-    adobe_strings.WIDTHS:             'color(67)',
-    adobe_strings.W:                  'color(67)',
-    adobe_strings.RESOURCES:          'magenta',
-    r'/(Trailer|Root|Info|Outlines)':        'bright_green',
-    r'/Catalog':                             'color(47)',
-    '/(Metadata|ViewerPreferences)':         'color(35)',
-    adobe_strings.OBJ_STM:            YARALYZER_THEME_DICT['bytes'],
-    adobe_strings.NUMS:               'grey23',
-    adobe_strings.CONTENTS:                            'medium_purple1',
-    '/Action':                              'dark_red',
-    adobe_strings.ANNOTS:                              'deep_sky_blue4',
-    adobe_strings.ANNOT:                               'color(24)',
-    adobe_strings.PAGES:                               'dark_orange3',
-    '/(Page|Pg)':                           'light_salmon3',
-    adobe_strings.COLOR_SPACE:                          'medium_orchid1',
-    '/(URI|Names)':                         'white',
-    adobe_strings.XOBJECT:            'grey37',
-    adobe_strings.UNLABELED:          'grey35 reverse',
-    adobe_strings.XREF:               'color(148)',
-    fr'/Parent(Tree(NextKey)?)?':            PARENT_STYLE,
-    adobe_strings.FALSE:                     'bright_red',
-    adobe_strings.TRUE:                      'green bold',
+    adobe_strings.FONT_DESCRIPTOR:                             'cornflower_blue',
+    fr'{adobe_strings.FONT_FILE}\d?':                          'steel_blue1',
+    r'/(Font(Name)?|BaseFont)':                                FONT_OBJ_BLUE,
+    adobe_strings.DESCENDANT_FONTS:                            f"{FONT_OBJ_BLUE} dim",
+    r'/CharProc':                                              'dark_cyan',
+    adobe_strings.TO_UNICODE:                                  'grey30',
+    adobe_strings.ENCODING:                                    YARALYZER_THEME_DICT['encoding.header'],
+    adobe_strings.WIDTHS:                                      'color(67)',
+    adobe_strings.W:                                           'color(67)',
+    adobe_strings.RESOURCES:                                   'magenta',
+    r'/(Trailer|Root|Info|Outlines)':                          'bright_green',
+    r'/Catalog':                                               'color(47)',
+    r'/(Metadata|ViewerPreferences)':                          'color(35)',
+    adobe_strings.OBJ_STM:                                     YARALYZER_THEME_DICT['bytes'],
+    adobe_strings.NUMS:                                        'grey23',
+    adobe_strings.CONTENTS:                                    'medium_purple1',
+    r'/Action':                                                'dark_red',
+    adobe_strings.ANNOTS:                                      'deep_sky_blue4',
+    adobe_strings.ANNOT:                                       'color(24)',
+    adobe_strings.PAGES:                                       'dark_orange3',
+    r'/(Page|Pg)':                                             'light_salmon3',
+    adobe_strings.COLOR_SPACE:                                 'medium_orchid1',
+    r'/(URI|Names)':                                           'white',
+    adobe_strings.XOBJECT:                                     'grey37',
+    adobe_strings.UNLABELED:                                   'grey35 reverse',
+    adobe_strings.XREF:                                        'color(148)',
+    r'/Parent(Tree(NextKey)?)?':                               PARENT_STYLE,
+    adobe_strings.FALSE:                                       'bright_red',
+    adobe_strings.TRUE:                                        'green bold',
 }
 
 # Add styles for all NON_TREE_REFERENCES
 LABEL_STYLES_BASE.update({
-    key: PDF_NON_TREE_REF_STYLE
-    for key in adobe_strings.NON_TREE_REFERENCES
+    non_tree_ref: PDF_NON_TREE_REF_STYLE
+    for non_tree_ref in adobe_strings.NON_TREE_REFERENCES
 })
 
 # Compile regexes as keys
