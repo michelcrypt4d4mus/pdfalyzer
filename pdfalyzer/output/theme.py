@@ -36,12 +36,14 @@ DEFAULT_LABEL_STYLE = 'yellow'
 DEFAULT_OBJ_TYPE_STYLE = 'bright_yellow'
 FONT_FILE_BLUE = 'steel_blue1'
 FONT_OBJ_BLUE = 'deep_sky_blue4 bold'
+INFO_OBJ_STYLE = 'yellow4'
+LINK_OBJ_STYLE = 'grey46'
 NULL_STYLE = 'grey23'
 PAGE_OBJ_STYLE = 'light_salmon3'
 PARENT_STYLE = 'violet'
 PDF_ARRAY_STYLE = 'color(143)'  # color(120)
 PDF_DICTIONARY_STYLE = 'color(64)'
-PDF_NON_TREE_REF_STYLE = 'color(243)'
+PDF_NON_TREE_REF_STYLE = 'color(243)'  # grey46?
 PDFALYZER_THEME_DICT = YARALYZER_THEME_DICT.copy()
 RED_ALERT_BASE_STYLE = 'blink bold red'
 TRAILER_OBJ_STYLE = 'chartreuse2'
@@ -85,12 +87,19 @@ OBJ_TYPE_STYLES = PDF_OBJ_TYPE_STYLES + [
     ClassStyle(str, 'bright_white bold'),
 ]
 
+# Add styles for all NON_TREE_REFERENCES first because /OpenAction is one such action
+LABEL_STYLES_BASE = {
+    key: PDF_NON_TREE_REF_STYLE
+    for key in (adobe_strings.NON_TREE_REFERENCES + adobe_strings.LINK_NODE_KEYS + [adobe_strings.FIRST])
+}
+
 # Order matters - first match will be the style
-LABEL_STYLES_BASE: dict[str, str] = {
+LABEL_STYLES_BASE.update({
     '/AA':                                                      RED_ALERT_BASE_STYLE,
     adobe_strings.JAVASCRIPT:                                   RED_ALERT_BASE_STYLE,
     adobe_strings.JS:                                           RED_ALERT_BASE_STYLE,
     adobe_strings.OPEN_ACTION:                                  RED_ALERT_BASE_STYLE,
+    adobe_strings.GO_TO_R:                                      RED_ALERT_BASE_STYLE,
     '/Action':                                                 'dark_red',
     # Fonts
     adobe_strings.FONT_DESCRIPTOR:                             'cornflower_blue',
@@ -112,8 +121,8 @@ LABEL_STYLES_BASE: dict[str, str] = {
     adobe_strings.CONTENTS:                                    'medium_purple1',
     adobe_strings.TRAILER:                                     TRAILER_OBJ_STYLE,
     '/Root':                                                   TRAILER_OBJ_STYLE,
-    '/Info':                                                   TRAILER_OBJ_STYLE,
-    '/Outlines':                                               TRAILER_OBJ_STYLE,
+    '/Info':                                                   INFO_OBJ_STYLE,
+    '/Outlines':                                               INFO_OBJ_STYLE,
     '/Metadata':                                              'color(35)',
     '/ViewerPreferences':                                     'color(35)',
     adobe_strings.OBJ_STM:                                     YARALYZER_THEME_DICT['bytes'],
@@ -138,12 +147,6 @@ LABEL_STYLES_BASE: dict[str, str] = {
     # Booleans
     adobe_strings.FALSE:                                       'bright_red',
     adobe_strings.TRUE:                                        'green bold',
-}
-
-# Add styles for all NON_TREE_REFERENCES
-LABEL_STYLES_BASE.update({
-    non_tree_ref: PDF_NON_TREE_REF_STYLE
-    for non_tree_ref in adobe_strings.NON_TREE_REFERENCES
 })
 
 # Compile regexes as keys

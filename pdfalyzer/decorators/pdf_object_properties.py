@@ -44,6 +44,11 @@ class PdfObjectProperties:
     @property
     def label_style(self) -> str:
         type_no_slash = (self.type or '').removeprefix('/')
+        sub_type = self.sub_type or ''
+
+        if sub_type.startswith(GO_TO_R) or sub_type.startswith(GO_TO_E):
+            return COMPLETE_THEME_DICT[GO_TO_R]
+
         return COMPLETE_THEME_DICT.get(f"{NODE_STYLE_PFX}{type_no_slash}", DEFAULT_LABEL_STYLE)
 
     @type.setter
