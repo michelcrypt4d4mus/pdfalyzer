@@ -11,9 +11,8 @@ LOCAL_YARALYZER_REQ='{path = "..\/yaralyzer", develop = true}'
 local_yaralyzer_branch=$1
 
 if [[ ! -z $local_yaralyzer_branch ]]; then
-    echo -e "Creating new branch $local_yaralyzer_branch..."
+    echo_status "Creating new branch $local_yaralyzer_branch for local $YARALYZER..."
     git checkout -b $local_yaralyzer_branch
-    exit 1
 fi
 
 update_pyproject_toml $YARALYZER "$LOCAL_YARALYZER_REQ"
