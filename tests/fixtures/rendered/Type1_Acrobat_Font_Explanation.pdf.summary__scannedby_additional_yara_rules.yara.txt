@@ -83,6 +83,21 @@ Invoked with this command:
     [1;34m"/Resources"[0m: [1;36m12[0m,
     [1;34m"/Trailer"[0m: [1;36m1[0m
   [1m}[0m,
+  [1;34m"node_types"[0m: [1m{[0m
+    [1;34m"/Catalog"[0m: [1;36m1[0m,
+    [1;34m"/Contents"[0m: [1;36m6[0m,
+    [1;34m"/Encoding"[0m: [1;36m4[0m,
+    [1;34m"/ExtGState"[0m: [1;36m6[0m,
+    [1;34m"/Font"[0m: [1;36m27[0m,
+    [1;34m"/FontDescriptor"[0m: [1;36m6[0m,
+    [1;34m"/FontFile3"[0m: [1;36m6[0m,
+    [1;34m"/Info"[0m: [1;36m1[0m,
+    [1;34m"/Metadata"[0m: [1;36m1[0m,
+    [1;34m"/Page"[0m: [1;36m6[0m,
+    [1;34m"/Pages"[0m: [1;36m1[0m,
+    [1;34m"/Resources"[0m: [1;36m12[0m,
+    [1;34m"/Trailer"[0m: [1;36m1[0m
+  [1m}[0m,
   [1;34m"pdf_object_types"[0m: [1m{[0m
     [1;34m"DecodedStreamObject"[0m: [1;36m1[0m,
     [1;34m"DictionaryObject"[0m: [1;36m65[0m,

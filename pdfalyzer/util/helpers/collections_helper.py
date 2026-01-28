@@ -1,6 +1,7 @@
 """
 Helper methods for dealing with lists and dicts.
 """
+import json
 from pypdf.generic import DictionaryObject
 from yaralyzer.util.logging import log
 
@@ -28,6 +29,26 @@ def compare_dicts(d1: DictionaryObject, d2: DictionaryObject, already_compared_k
 def prefix_keys(prefix: str, _dict: dict[str, str]) -> dict[str, str]:
     """Add `prefix` to the front of all the keys in `_dict`."""
     return {f"{prefix}{k}": v for k, v in _dict.items()}
+
+
+def safe_json(obj: object) -> str:
+    return json.dumps(stringify_props(obj), indent=4)
+
+
+def stringify_props(obj: object) -> object:
+    if isinstance(obj, list):
+        return [stringify_props(element) for element in obj]
+    elif isinstance(obj, dict):
+        return {str(k): stringify_props(v) for k, v in obj.items()}
+    elif '__dict__' in dir(obj):
+        return {str(k): stringify_props(v) for k, v in vars(obj).items()}
+    elif isinstance(obj, str):
+        return obj
+    else:
+        try:
+            return json.dumps(obj)
+        except Exception as e:
+            return str(obj)
 
 
 def without_falsey(_list: list) -> list:

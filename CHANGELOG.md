@@ -1,4 +1,8 @@
 # NEXT RELEASE
+* `/AA:JavaScript` and `/GoToR` nodes get the red blinking alert treatment
+* Refactor overall theme / color / style situation for PDF nodes
+* Extra debug output for `--show-colors --debug` option combinattion
+* Adjust green for `/Outlines` and `/Trailer`, make `/First` grey
 
 ### 1.19.2
 * Use `pdf-parser.py` to verify object IDs instead of checking all IDs from 0 to `num_nodes`

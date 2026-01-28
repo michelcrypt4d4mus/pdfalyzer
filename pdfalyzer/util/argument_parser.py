@@ -1,6 +1,7 @@
 """
 Parse command line arguments for `pdfalyze` and construct the `PdfalyzerConfig` object.
 """
+import json
 import sys
 from argparse import ArgumentParser, Namespace
 from pathlib import Path
@@ -9,16 +10,17 @@ from typing import Type
 from rich_argparse_plus import RichHelpFormatterPlus
 from rich.prompt import Confirm
 from rich.text import Text
-from yaralyzer.util.argument_parser import (debug, epilog, export, parser as yparser,
+from yaralyzer.util.argument_parser import (debug, epilog, export, parser as yaralyzer_parser,
      parse_arguments as parse_yaralyzer_args, rules, rules, should_exit_early, tuning, yaras)
 from yaralyzer.util.constants import YARALYZER_UPPER
 from yaralyzer.util.exceptions import print_fatal_error_and_exit
-from yaralyzer.util.logging import log, log_argparse_result, log_console, log_current_config
+from yaralyzer.util.logging import log, log_console
 
 from pdfalyzer.config import PdfalyzerConfig
 from pdfalyzer.detection.constants.binary_regexes import QUOTE_PATTERNS
-from pdfalyzer.helpers.string_helper import props_string_indented
-from pdfalyzer.util.constants import PDFALYZE, PDFALYZER
+from pdfalyzer.output.highlighter import LogHighlighter, PdfHighlighter
+from pdfalyzer.output.theme import debug_themes
+from pdfalyzer.util.constants import PDFALYZE
 from pdfalyzer.util.output_section import ALL_STREAMS
 
 RichHelpFormatterPlus.choose_theme('prince')
@@ -36,8 +38,7 @@ YARALYZER_HELP_SUFFIX = "\nThese options are only relevant when you use the --ya
 ####################################################
 
 # Add one more top level argument
-yparser.add_argument('--password',
-                     help='only required for encrypted PDFs')
+yaralyzer_parser.add_argument('--password', help='only required for encrypted PDFs')
 
 # Add one more option to the YARA rules section
 yaras.add_argument('--no-default-yara-rules',
@@ -56,16 +57,20 @@ export.add_argument('-bin', '--extract-binary-streams',
                      help='extract all binary streams in the PDF to separate files (requires pdf-parser.py)')
 
 # Make sure --extract-binary-streams is grouped with other export options  # TODO: this really sucks.
-num_args = len(yparser._actions)
-output_dir_idx = [i for i, arg in enumerate(yparser._actions) if '--output-dir' in arg.option_strings][0]
-yparser._actions = yparser._actions[:output_dir_idx] + [yparser._actions[-1]] + yparser._actions[output_dir_idx:-1]
-assert len(yparser._actions) == num_args, "Number of args changed after reorder!"
+num_args = len(yaralyzer_parser._actions)
+output_dir_idx = [i for i, arg in enumerate(yaralyzer_parser._actions) if '--output-dir' in arg.option_strings][0]
+
+yaralyzer_parser._actions = yaralyzer_parser._actions[:output_dir_idx] + \
+                            [yaralyzer_parser._actions[-1]] + \
+                            yaralyzer_parser._actions[output_dir_idx:-1]
+
+assert len(yaralyzer_parser._actions) == num_args, "Number of args changed after reorder!"
 
 # Make yara options unrequired (yaralyzer requires one of them)
 rules.required = False
 
-for action_group in yparser._action_groups:
-    action_group._actions = yparser._actions
+for action_group in yaralyzer_parser._action_groups:
+    action_group._actions = yaralyzer_parser._actions
 
 # Rename the tuning section, append info about how these are Yaralyzer options
 tuning.title = f"{YARALYZER_UPPER} FINE TUNING"
@@ -81,7 +86,7 @@ parser = ArgumentParser(
     formatter_class=RichHelpFormatterPlus,
     description=DESCRIPTION,
     epilog=epilog(PdfalyzerConfig).rstrip(),
-    parents=[yparser],  # NOTE: we're extending yaralyzer's parser
+    parents=[yaralyzer_parser],  # NOTE: we're extending yaralyzer's parser
     add_help=False
 )
 
@@ -145,11 +150,19 @@ is_pdfalyze_script = parser.prog.startswith(PDFALYZE)  # startswith() bc on Wind
 
 def parse_arguments(config: Type[PdfalyzerConfig], _args: Namespace | None) -> Namespace:
     """Parse command line args. Most args can also be communicated to the app by setting env vars."""
+    # Let Yaralyzer's parse_arguments() handle args like --env-vars (it will exit afterwards)
     if should_exit_early:
-        parse_yaralyzer_args(PdfalyzerConfig)  # Let Yaralyzer's parse_arguments handle these (will exit)
+        if '--show-colors' in sys.argv and '--debug' in sys.argv:
+            LogHighlighter.debug_highlight_patterns()
+            PdfHighlighter.debug_highlight_patterns()
+            debug_themes()
+
+        parse_yaralyzer_args(PdfalyzerConfig)
 
     args = parser.parse_args()
     args = parse_yaralyzer_args(PdfalyzerConfig, args)
+    args.extract_quoteds = args.extract_quoteds or []
+    args._export_basename = f"{args.file_prefix}{args.file_to_scan_path.name}"
 
     if not args.streams:
         if args.extract_quoteds:
@@ -159,15 +172,6 @@ def parse_arguments(config: Type[PdfalyzerConfig], _args: Namespace | None) -> N
 
     if args.no_default_yara_rules and not any(getattr(args, opt.dest) for opt in rules._group_actions):
         print_fatal_error_and_exit("--no-default-yara-rules requires at least one YARA rule argument")
-
-    # File export options
-    args.extract_quoteds = args.extract_quoteds or []
-    args._export_basename = f"{args.file_prefix}{args.file_to_scan_path.name}"
-    env_output_dir = PdfalyzerConfig.get_env_value('OUTPUT_DIR', Path)
-
-    if env_output_dir and (not args.output_dir or args.output_dir == Path.cwd()):
-        log.info(f"Using --output-dir '{env_output_dir}' from env PDFALYZER_OUTPUT_DIR...")
-        args.output_dir = env_output_dir
 
     return args
 
@@ -183,14 +187,3 @@ def ask_to_proceed(msg: str | Text | None = None) -> None:
     if not Confirm.ask(msg):
         log_console.print('Exiting...', style='dim')
         sys.exit()
-
-
-def _debug_parser_args(_parser: ArgumentParser | None = None):
-    """Debug method to look at argparse internals."""
-    for i, action in  enumerate((_parser or parser)._actions):
-        if not action.option_strings:
-            continue
-
-        keys = [k for k, v in vars(action).items() if k not in ['deprecated', 'help', 'option_strings'] and v is not None]
-        log_console.print(f"\n{i}: {action.option_strings}", style='cyan', highlight=False)
-        log_console.print(props_string_indented(action, keys))

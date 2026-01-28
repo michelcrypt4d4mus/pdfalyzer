@@ -6,8 +6,8 @@ from yaralyzer.util.helpers.string_helper import comma_join
 from yaralyzer.util.logging import log
 
 from pdfalyzer.decorators.pdf_tree_node import PdfTreeNode
-from pdfalyzer.helpers.string_helper import all_strings_are_same_ignoring_numbers, has_a_common_substring
 from pdfalyzer.util.adobe_strings import *
+from pdfalyzer.util.helpers.string_helper import all_strings_are_same_ignoring_numbers, has_a_common_substring
 
 
 @dataclass
@@ -44,8 +44,7 @@ class IndeterminateNode:
         elif self.node.type == COLOR_SPACE:
             log.info(f"  Color space node found; placing under node w/most descendants: {parent_str}")
         elif set(self.node.unique_labels_of_referring_nodes()) == set(PAGE_AND_PAGES):
-            # Handle an edge case seen in the wild involving a PDF that doesn't conform to the PDF spec
-            # in a particular way.
+            # Handle edge case seen in the wild where PDF doesn't conform to the PDF spec in a particular way.
             log.warning(f"{self.node} seems to be a loose {PAGE}. Linking to first {PAGES}")
             pages_nodes = [n for n in self.node.nodes_with_here_references() if self.node.type == PAGES]
             self.node.set_parent(self.find_node_with_most_descendants(pages_nodes))

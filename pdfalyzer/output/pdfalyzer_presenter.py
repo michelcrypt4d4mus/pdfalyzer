@@ -26,14 +26,14 @@ from pdfalyzer.binary.binary_scanner import BinaryScanner
 from pdfalyzer.config import PdfalyzerConfig
 from pdfalyzer.decorators.pdf_tree_node import DECODE_FAILURE_LEN, PdfTreeNode
 from pdfalyzer.detection.yaralyzer_helper import get_bytes_yaralyzer, get_file_yaralyzer
-from pdfalyzer.helpers.string_helper import root_address
 from pdfalyzer.output.layout import (print_fatal_error_panel, print_section_header, print_section_subheader,
      print_section_sub_subheader)
-from pdfalyzer.output.styles.node_colors import get_label_style
 from pdfalyzer.output.tables.decoding_stats_table import build_decoding_stats_table
+from pdfalyzer.output.theme import get_label_style
 from pdfalyzer.pdfalyzer import Pdfalyzer
 from pdfalyzer.util.adobe_strings import DANGEROUS_PDF_KEYS, FALSE, TRUE
-from pdfalyzer.util.logging import log, log_highlighter
+from pdfalyzer.util.helpers.string_helper import root_address
+from pdfalyzer.util.logging import highlight, log
 
 SymlinkRepresentation = namedtuple('SymlinkRepresentation', ['text', 'style'])
 
@@ -188,15 +188,17 @@ class PdfalyzerPresenter:
 
     def _analyze_tree(self) -> dict:
         """Generate a dict with some basic data points about the PDF tree"""
-        pdf_object_types = defaultdict(int)
-        node_labels = defaultdict(int)
         keys_encountered = defaultdict(int)
         node_count = 0
+        node_labels = defaultdict(int)
+        node_types = defaultdict(int)
+        pdf_object_types = defaultdict(int)
 
         for node in self.pdfalyzer.node_iterator():
-            pdf_object_types[type(node.obj).__name__] += 1
-            node_labels[node.label] += 1
             node_count += 1
+            node_labels[node.label] += 1
+            node_types[node.type] += 1
+            pdf_object_types[type(node.obj).__name__] += 1
 
             if isinstance(node.obj, dict):
                 for k in node.obj.keys():
@@ -206,6 +208,7 @@ class PdfalyzerPresenter:
             'keys_encountered': keys_encountered,
             'node_count': node_count,
             'node_labels': node_labels,
+            'node_types': node_types,
             'pdf_object_types': pdf_object_types,
         }
 
@@ -271,7 +274,7 @@ class PdfalyzerPresenter:
 
         if (metadata := self.pdfalyzer.pdf_reader.metadata or {}):
             for k, v in metadata.items():
-                v = log_highlighter(str(v)) if isinstance(v, str) and any(hif in v for hif in HIGHLIGHT_IF) else str(v)
+                v = highlight(str(v)) if isinstance(v, str) and any(hif in v for hif in HIGHLIGHT_IF) else str(v)
                 table.add_row(Text(k, style='wheat4'), v)
         else:
             table.add_row('', Text('(no formal metadata found in file)'), style='dim italic')
@@ -280,7 +283,7 @@ class PdfalyzerPresenter:
             row_label = count_txt(count_type)
 
             try:
-                table.add_row(row_label, log_highlighter(f"{count_fxn():,}"))
+                table.add_row(row_label, highlight(f"{count_fxn():,}"))
             except Exception as e:
                 fail_msg = failed_count_msg(count_type)
                 log.error(f"{fail_msg} {e}")

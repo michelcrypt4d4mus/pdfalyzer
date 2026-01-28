@@ -18,7 +18,7 @@ from yaralyzer.util.exceptions import print_fatal_error_and_exit
 from yaralyzer.util.helpers.file_helper import files_in_dir
 from yaralyzer.util.logging import log, log_console
 
-from pdfalyzer.helpers.filesystem_helper import (do_all_files_exist, extract_page_number, is_pdf,
+from pdfalyzer.util.helpers.filesystem_helper import (do_all_files_exist, extract_page_number, is_pdf,
      with_pdf_extension)
 from pdfalyzer.util.argument_parser import ask_to_proceed
 from pdfalyzer.util.page_range import PageRangeArgumentValidator

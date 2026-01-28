@@ -9,8 +9,8 @@ from rich.console import Console
 from rich.markup import escape
 from yaralyzer.output.console import console_width
 
-from pdfalyzer.helpers.pdf_object_helper import describe_obj, pypdf_class_name
-from pdfalyzer.helpers.string_helper import pp, INDENT_DEPTH
+from pdfalyzer.util.helpers.pdf_object_helper import describe_obj, pypdf_class_name
+from pdfalyzer.util.helpers.string_helper import pp, INDENT_DEPTH
 
 INDENT_SPACES = ' ' * INDENT_DEPTH
 INDENT_JOIN = "\n" + INDENT_SPACES

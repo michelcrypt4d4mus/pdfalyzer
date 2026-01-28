@@ -1,4 +1,4 @@
-from pdfalyzer.helpers.rich_text_helper import quoted_text
+from pdfalyzer.util.helpers.rich_text_helper import quoted_text
 
 
 def test_quoted_text():

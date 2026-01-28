@@ -43,12 +43,19 @@ def indent_padding(indent: int) -> tuple[int, int, int, int]:
 
 
 def mild_warning(msg: str) -> None:
-    console.print(indented_bullet(Text(msg, style='mild_warning')))
+    console.print(indented_bullet(Text(msg, style='color(228) dim')))
 
 
 def number_and_pct(_number: int, total: int, digits: int = 1) -> Text:
     """Return e.g. '8 (80%)'."""
     return Text(str(_number), style='bright_white').append_text(pct_txt(_number, total, digits))
+
+
+def vertically_padded_panel(title, **kwargs) -> Padding:
+    # kwargs['expand'] = False if kwargs.get('expand') is None else kwargs['expand']
+    kwargs['style'] = kwargs.get('style', 'reverse')
+    kwargs['width'] = kwargs.get('width', 70)
+    return Padding(Panel(title, **kwargs), (2, 0, 1, 0))
 
 
 def pct_txt(_number: int, total: int, digits: int = 1) -> Text:

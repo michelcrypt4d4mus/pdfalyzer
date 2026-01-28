@@ -13,10 +13,10 @@ from yaralyzer.output.console import console
 from yaralyzer.util.helpers.rich_helper import DEFAULT_TABLE_OPTIONS
 from yaralyzer.util.logging import log as yaralyzer_log
 
-from pdfalyzer.helpers.filesystem_helper import create_dir_if_it_does_not_exist, insert_suffix_before_extension
-from pdfalyzer.helpers.image_helper import ocr_text
-from pdfalyzer.helpers.rich_text_helper import attention_getting_panel, error_text, mild_warning
-from pdfalyzer.helpers.string_helper import exception_str
+from pdfalyzer.util.helpers.filesystem_helper import create_dir_if_it_does_not_exist, insert_suffix_before_extension
+from pdfalyzer.util.helpers.image_helper import ocr_text
+from pdfalyzer.util.helpers.rich_text_helper import attention_getting_panel, error_text, mild_warning
+from pdfalyzer.util.helpers.string_helper import exception_str
 from pdfalyzer.util.logging import log_console
 from pdfalyzer.util.page_range import PageRange
 

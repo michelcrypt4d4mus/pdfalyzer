@@ -3,7 +3,7 @@ from pypdf.errors import FileNotDecryptedError
 
 from pdfalyzer.pdfalyzer import Pdfalyzer
 
-from tests.conftest import FIXTURES_DIR
+from ..conftest import FIXTURES_DIR
 
 
 # Has unplaced empty nodes, formerly unplaced nodes, and /AA /JavaScript nodes

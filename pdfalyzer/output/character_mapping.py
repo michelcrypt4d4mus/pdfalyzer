@@ -4,14 +4,14 @@ Output formatting for font character mappings.
 from rich.columns import Columns
 from rich.padding import Padding
 from rich.text import Text
-from yaralyzer.util.helpers.bytes_helper import print_bytes
 from yaralyzer.output.console import console
+from yaralyzer.util.helpers.bytes_helper import print_bytes
 from yaralyzer.util.logging import log
 
 # from pdfalyzer.font_info import FontInfo  # Causes circular import
-from pdfalyzer.helpers.rich_text_helper import quoted_text
-from pdfalyzer.helpers.string_helper import pp
 from pdfalyzer.output.layout import print_headline_panel, subheading_width
+from pdfalyzer.util.helpers.rich_text_helper import quoted_text
+from pdfalyzer.util.helpers.string_helper import pp
 
 CHARMAP_TITLE = 'Embedded Character Mapping (As Extracted By PyPDF)'
 PREPARED_CHARMAP_TITLE = 'Embedded Adobe PostScript charmap prepared by PyPDF'

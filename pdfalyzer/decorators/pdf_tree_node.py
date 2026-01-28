@@ -15,13 +15,13 @@ from yaralyzer.output.theme import GREY_ADDRESS
 from yaralyzer.util.helpers.rich_helper import DEFAULT_TABLE_OPTIONS
 
 from pdfalyzer.decorators.pdf_object_properties import PdfObjectProperties
-from pdfalyzer.helpers.pdf_object_helper import pypdf_class_name
-from pdfalyzer.helpers.string_helper import is_prefixed_by_any, numbered_list
-from pdfalyzer.output.styles.node_colors import get_label_style, get_class_style_italic
 from pdfalyzer.output.tables.pdf_node_rich_table import get_stream_preview_rows
+from pdfalyzer.output.theme import get_class_style_italic
 from pdfalyzer.pdf_object_relationship import PdfObjectRelationship
 from pdfalyzer.util.adobe_strings import *
 from pdfalyzer.util.exceptions import PdfWalkError
+from pdfalyzer.util.helpers.pdf_object_helper import pypdf_class_name
+from pdfalyzer.util.helpers.string_helper import is_prefixed_by_any, numbered_list
 from pdfalyzer.util.logging import log, log_console
 
 DEFAULT_MAX_ADDRESS_LENGTH = 90
@@ -274,7 +274,7 @@ class PdfTreeNode(NodeMixin):
             table_style = ''
 
         table = Table(title, address, pypdf_class_name(self.obj), style=table_style, **DEFAULT_TABLE_OPTIONS)
-        table.columns[0].header_style = f'reverse {get_label_style(self.label)}'
+        table.columns[0].header_style = f'reverse {self.pdf_object.label_style}'
         table.columns[1].header_style = 'dim'
         table.columns[1].overflow = 'fold'
         table.columns[2].header_style = get_class_style_italic(self.obj)

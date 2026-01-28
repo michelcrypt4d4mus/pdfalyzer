@@ -10,12 +10,12 @@ from rich.text import Text
 from yaralyzer.bytes_match import BytesMatch
 from yaralyzer.decoding.bytes_decoder import BytesDecoder
 from yaralyzer.encoding_detection.character_encodings import BOMS
-from yaralyzer.util.helpers.bytes_helper import hex_string, print_bytes
-from yaralyzer.util.helpers.string_helper import escape_yara_pattern
 from yaralyzer.output.regex_match_metrics import RegexMatchMetrics
 from yaralyzer.output.console import console, console_width
 from yaralyzer.output.theme import BYTES_NO_DIM
+from yaralyzer.util.helpers.bytes_helper import hex_string, print_bytes
 from yaralyzer.util.helpers.rich_helper import DEFAULT_TABLE_OPTIONS
+from yaralyzer.util.helpers.string_helper import escape_yara_pattern
 from yaralyzer.util.logging import log
 from yaralyzer.yara.yara_rule_builder import HEX, REGEX, safe_label
 from yaralyzer.yaralyzer import Yaralyzer
@@ -24,9 +24,9 @@ from pdfalyzer.config import PdfalyzerConfig
 from pdfalyzer.decorators.pdf_tree_node import PdfTreeNode
 from pdfalyzer.detection.constants.binary_regexes import (BACKTICK, DANGEROUS_PDF_KEYS_TO_HUNT_ONLY_IN_FONTS,
      DANGEROUS_STRINGS, FRONTSLASH, GUILLEMET, QUOTE_PATTERNS)
-from pdfalyzer.helpers.string_helper import generate_hyphen_line
 from pdfalyzer.output.layout import print_headline_panel, print_section_sub_subheader
 from pdfalyzer.util.adobe_strings import CONTENTS, CURRENTFILE_EEXEC, FONT_FILE_KEYS
+from pdfalyzer.util.helpers.string_helper import generate_hyphen_line
 
 
 @dataclass

@@ -12,12 +12,12 @@ from yaralyzer.util.logging import log
 
 from pdfalyzer.binary.binary_scanner import BinaryScanner
 from pdfalyzer.decorators.pdf_tree_node import PdfTreeNode
-from pdfalyzer.helpers.collections_helper import without_falsey
 from pdfalyzer.output.character_mapping import print_character_mapping, print_prepared_charmap
 from pdfalyzer.output.layout import print_section_subheader, subheading_width
-from pdfalyzer.output.styles.node_colors import get_class_style, get_label_style
-from pdfalyzer.util.adobe_strings import (DESCENDANT_FONTS, FONT, FONT_DESCRIPTOR, FONT_FILE, FONT_LENGTHS,
-     RESOURCES, SUBTYPE, TO_UNICODE, W, WIDTHS)
+from pdfalyzer.output.theme import get_class_style, get_label_style
+from pdfalyzer.util.adobe_strings import (FONT, FONT_DESCRIPTOR, FONT_FILE, FONT_LENGTHS, RESOURCES,
+     SUBTYPE, TO_UNICODE, TYPE, W, WIDTHS)
+from pdfalyzer.util.helpers.collections_helper import without_falsey
 
 FONT_SECTION_PREVIEW_LEN = 30
 MAX_REPR_STR_LEN = 20

@@ -6,103 +6,30 @@ import logging
 import re
 
 import pypdf   # noqa: F401  # Trigger log setup?
-from rich.highlighter import ReprHighlighter
 from rich.logging import RichHandler
+from rich.panel import Panel
+from rich.text import Text
 from rich.theme import Theme
-from yaralyzer.output.console import console
-from yaralyzer.output.theme import YARALYZER_THEME_DICT
 # Other files could import yaralyzer's log directly but they do it from here to trigger logging setup
 from yaralyzer.util.logging import DEFAULT_LOG_HANDLER_KWARGS, log, log_console, log_trace
 
-from pdfalyzer.helpers.collections_helper import prefix_keys
-from pdfalyzer.helpers.string_helper import regex_to_highlight_pattern
-from pdfalyzer.output.styles.node_colors import LABEL_STYLES, NODE_COLOR_THEME_DICT, PARENT_STYLE, PDF_OBJ_TYPE_STYLES
-from pdfalyzer.output.styles.rich_theme import PDF_ARRAY_STYLE, PDF_DICTIONARY_STYLE
+from pdfalyzer.util.helpers.string_helper import regex_to_highlight_pattern
+from pdfalyzer.output.highlighter import PYPDF_LOG_PFX_PATTERN, LogHighlighter, PdfHighlighter
+from pdfalyzer.output.theme import COMPLETE_THEME_DICT, NODE_STYLES_REGEX_DICT, PDF_OBJ_TYPE_STYLES
 
-LONG_ENOUGH_LABEL_STYLES = {k: v for k, v in LABEL_STYLES.items() if len(k.pattern) > 4}
-PYPDF_LOG_PFX_PATTERN = r"\(pypdf\)"
 PYPDF_LOG_PFX = PYPDF_LOG_PFX_PATTERN.replace("\\", '')
 
-LOG_THEME_DICT = prefix_keys(
-    ReprHighlighter.base_style,
-    {
-        "array_obj": f"{PDF_ARRAY_STYLE} italic",
-        "child": "orange3 bold",
-        "dictionary_obj": f"{PDF_DICTIONARY_STYLE} italic",
-        "indeterminate": 'bright_black',
-        "indirect_object": 'light_coral',
-        "node_type": 'honeydew2',
-        "parent": PARENT_STYLE,
-        "pypdf_line": "dim",
-        "pypdf_prefix": "light_slate_gray",
-        "relationship": 'light_pink4',
-        "stream_object": 'light_slate_blue bold',
-        # Overload default theme
-        'call': 'magenta',
-        'ipv4': 'cyan',
-        'ipv6': 'cyan',
-        **NODE_COLOR_THEME_DICT,
-    }
+
+LogHighlighter.add_highlight_patterns(
+    [regex_to_highlight_pattern(re.compile(cs[0].__name__)) for cs in PDF_OBJ_TYPE_STYLES] # TODO: never applied because prefix is pdfobj not 'repr'
 )
 
-LOG_THEME = Theme(LOG_THEME_DICT)
-
-# Copied from https://rich.readthedocs.io/en/latest/_modules/rich/highlighter.html#Highlighter
-DEFAULT_REPR_HIGHLIGHTER_PATTERNS = [
-    r"(?P<tag_start><)(?P<tag_name>[-\w.:|]*)(?P<tag_contents>[\w\W]*)(?P<tag_end>>)",
-    r'(?P<attrib_name>[\w_]{1,50})=(?P<attrib_value>"?[\w_]+"?)?',
-    r"(?P<brace>[][{}()])",
-    "|".join([
-        r"(?P<ipv4>[0-9]{1,3}\.[0-9]{1,3}\.[0-9]{1,3}\.[0-9]{1,3})",
-        r"(?P<ipv6>([A-Fa-f0-9]{1,4}::?){1,7}[A-Fa-f0-9]{1,4})",
-        r"(?P<eui64>(?:[0-9A-Fa-f]{1,2}-){7}[0-9A-Fa-f]{1,2}|(?:[0-9A-Fa-f]{1,2}:){7}[0-9A-Fa-f]{1,2}|(?:[0-9A-Fa-f]{4}\.){3}[0-9A-Fa-f]{4})",
-        r"(?P<eui48>(?:[0-9A-Fa-f]{1,2}-){5}[0-9A-Fa-f]{1,2}|(?:[0-9A-Fa-f]{1,2}:){5}[0-9A-Fa-f]{1,2}|(?:[0-9A-Fa-f]{4}\.){2}[0-9A-Fa-f]{4})",
-        r"(?P<uuid>[a-fA-F0-9]{8}-[a-fA-F0-9]{4}-[a-fA-F0-9]{4}-[a-fA-F0-9]{4}-[a-fA-F0-9]{12})",
-        r"(?P<call>[\w.]*?)\(",
-        r"\b(?P<bool_true>True)\b|\b(?P<bool_false>False)\b|\b(?P<none>None)\b",
-        r"(?P<ellipsis>\.\.\.)",
-        r"(?P<number_complex>(?<!\w)(?:\-?[0-9]+\.?[0-9]*(?:e[-+]?\d+?)?)(?:[-+](?:[0-9]+\.?[0-9]*(?:e[-+]?\d+)?))?j)",
-        r"(?P<number>(?<!\w)\-?[0-9]+\.?[0-9]*(e[-+]?\d+?)?\b|0x[0-9a-fA-F]*)",
-        # r"(?P<path>\B(/[-\w._+]+)*\/)(?P<filename>[-\w._+]*)?",
-        r"(?<![\\\w])(?P<str>b?'''.*?(?<!\\)'''|b?'.*?(?<!\\)'|b?\"\"\".*?(?<!\\)\"\"\"|b?\".*?(?<!\\)\")",
-        r"(?P<url>(file|https|http|ws|wss)://[-0-9a-zA-Z$_+!`(),.?/;:&=%#~@]*)",
-    ]),
-]
-
-HIGHLIGHT_PATTERNS = DEFAULT_REPR_HIGHLIGHTER_PATTERNS + [
-    r"(?P<array_obj>Array(Object)?)",
-    r"(?P<child>[cC]hild(ren)?|/?Kids)",
-    r"(?P<dictionary_obj>Dictionary(Object)?)",
-    r"(?P<indeterminate>[Ii]ndeterminate( ?[nN]odes?)?)",
-    r"(?P<indirect_object>IndirectObject)",
-    r"(?P<node_type>/(Subt|T)ype\b)",
-    r"(?P<parent>/?(Struct)?[pP]arents?)",
-    fr"(?P<pypdf_line>{PYPDF_LOG_PFX_PATTERN} .*)",
-    fr"(?P<pypdf_prefix>{PYPDF_LOG_PFX_PATTERN})",
-    r"(?P<relationship>Relationship( of)?)",
-    r"(?P<relationship>via symlink|parent/child|child/parent)",
-    r"(?P<stream_object>((De|En)coded)?Stream(Object)?)",
-    *[regex_to_highlight_pattern(style_regex) for style_regex in LONG_ENOUGH_LABEL_STYLES.keys()],
-    *[regex_to_highlight_pattern(re.compile(cs[0].__name__)) for cs in PDF_OBJ_TYPE_STYLES],
-]
-
-assert all('(?P<' in pattern for pattern in HIGHLIGHT_PATTERNS)
-
-
-# Augment the standard log highlighter
-class LogHighlighter(ReprHighlighter):
-    highlights: list[re.Pattern] = [re.compile(pattern) for pattern in HIGHLIGHT_PATTERNS]
-
-    def get_style(self, for_str: str) -> str:
-        """Return the first style that matches the 'for_str'."""
-        for highlight in self.highlights:
-            if (match := highlight.search(for_str)):
-                return self.base_style + next(k for k in match.groupdict().keys())
-
-        return ''
-
+PdfHighlighter.add_highlight_patterns(
+    [regex_to_highlight_pattern(style_regex) for style_regex in NODE_STYLES_REGEX_DICT.keys()]
+)
 
 log_highlighter = LogHighlighter()
+pdf_highlighter = PdfHighlighter()
 log_handler_kwargs = {'highlighter': log_highlighter, **DEFAULT_LOG_HANDLER_KWARGS}
 
 # Redirect pypdf logs
@@ -112,19 +39,11 @@ pypdf_log_handler.formatter = logging.Formatter(PYPDF_LOG_PFX + ' %(message)s')
 logging.getLogger("pypdf").addHandler(pypdf_log_handler)
 
 # pdfalyzer log highlighting
-pdfalyzer_log_handler = RichHandler(**log_handler_kwargs)
-log.handlers = [pdfalyzer_log_handler]
+log.handlers = [RichHandler(**log_handler_kwargs)]
 
 # pdfalyzer output highlighting
-console.push_theme(Theme({**YARALYZER_THEME_DICT, **LOG_THEME_DICT}))
-log_console.push_theme(LOG_THEME)
+log_console.push_theme(Theme(COMPLETE_THEME_DICT))
 
-# print("\n\n *** PATTERNS ***\n")
 
-# for pattern in LogHighlighter.highlights:
-#     log_console.print(f"   - '{pattern}'")
-
-# print("\n\n *** STYLES ***\n")
-
-# for k, v in LOG_THEME_DICT.items():
-#     log_console.print(f"    '{k}':   '{v}'")
+def highlight(text: str | Text) -> Text:
+    return pdf_highlighter(log_highlighter(text))

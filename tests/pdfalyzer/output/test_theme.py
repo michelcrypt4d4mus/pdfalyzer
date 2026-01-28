@@ -1,4 +1,4 @@
-from pdfalyzer.output.styles.node_colors import get_class_style, get_label_style
+from pdfalyzer.output.theme import get_class_style, get_label_style
 
 
 def test_get_class_style():

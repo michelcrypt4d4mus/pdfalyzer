@@ -1,6 +1,6 @@
 from pathlib import Path
 
-from pdfalyzer.helpers.filesystem_helper import file_sizes_in_dir
+from pdfalyzer.util.helpers.filesystem_helper import file_sizes_in_dir
 from pdfalyzer.util.pdf_parser_manager import PdfParserManager
 
 OBJ_SIZES = {

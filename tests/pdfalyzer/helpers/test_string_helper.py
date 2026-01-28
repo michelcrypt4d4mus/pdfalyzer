@@ -1,6 +1,6 @@
 import re
 
-from pdfalyzer.helpers.string_helper import *
+from pdfalyzer.util.helpers.string_helper import *
 
 TEST_TITLE = "Jacques and Carl's Excellent Adventure"
 OBJ_REGEX = re.compile(r'^(JavaScript|JS|OpenAction)')
@@ -36,4 +36,6 @@ def test_regex_to_capture_group_label():
 
 
 def test_regex_to_highlight_pattern():
-    assert regex_to_highlight_pattern(OBJ_REGEX) == r"(?P<JavaScript_JS_OpenAction>[\b/](JavaScript|JS|OpenAction)\b)"
+    assert regex_to_highlight_pattern(OBJ_REGEX) == r"(?P<JavaScript_JS_OpenAction>^(JavaScript|JS|OpenAction)\b)"
+    assert regex_to_highlight_pattern(OBJ_REGEX.pattern[1:]) == r"(?P<JavaScript_JS_OpenAction>[\b/](JavaScript|JS|OpenAction)\b)"
+    assert regex_to_highlight_pattern(re.compile('/W')) == r"(?P<W>^/W$)"

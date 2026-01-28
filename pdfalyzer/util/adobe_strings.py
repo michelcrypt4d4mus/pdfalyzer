@@ -4,7 +4,7 @@ String constants specified in the Adobe specs for PDFs, fonts, etc.
 from pypdf.constants import (CatalogDictionary, ImageAttributes, PageAttributes,
      PagesAttributes, Resources)
 
-from pdfalyzer.helpers.string_helper import is_prefixed_by_any
+from pdfalyzer.util.helpers.string_helper import is_prefixed_by_any
 
 # Fake PDF instructions used to create more explanatory tables/trees/addresses/etc.
 ARRAY_ELEMENT = '/ArrayElement'
@@ -31,8 +31,9 @@ FONT_FILE       = '/FontFile'
 FONT_FILE2      = FONT_FILE + '2'
 FONT_FILE3      = FONT_FILE + '3'
 FONT_DESCRIPTOR = '/FontDescriptor'
-GO_TO_E         = '/GoTo'  # Remote go-to action
-GO_TO_R         = '/GoTo'  # Remote go-to action
+GO_TO           = '/GoTo'
+GO_TO_E         = '/GoToE'  # Go to a destination in an embedded file
+GO_TO_R         = '/GoToR'  # Go to a destination in another document.
 GROUP           = '/Group'
 IMPORT_DATA     = '/ImportData'
 JAVASCRIPT      = '/JavaScript'
@@ -56,6 +57,7 @@ PAGE            = '/Page'
 PAGES           = '/Pages'
 PARENT          = PagesAttributes.PARENT
 PARENT_TREE     = '/ParentTree'
+PARENT_TREE_NEXT_KEY = '/ParentTreeNextKey'
 PG              = '/Pg'  # Page ref for OBJR
 PREV            = '/Prev'
 RENDITION       = '/Rendition'
@@ -63,6 +65,7 @@ RESOURCES       = PageAttributes.RESOURCES
 S               = '/S'  # Equivalent of /Subtype for /StructElem
 SIZE            = '/Size'
 STRUCT_ELEM     = '/StructElem'
+STRUCT_PARENT   = '/StructParent'
 STRUCT_TREE_ROOT = '/StructTreeRoot'
 SUBMIT_FORM     = '/SubmitForm'
 SUBTYPE         = ImageAttributes.SUBTYPE
