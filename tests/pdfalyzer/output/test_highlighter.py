@@ -1,6 +1,7 @@
 from rich.highlighter import ReprHighlighter
 
-from pdfalyzer.output.highlighter import CUSTOM_LOG_HIGHLIGHTS, HIGHLIGHT_PATTERNS
+from pdfalyzer.output.theme import CUSTOM_LOG_HIGHLIGHTS
+from pdfalyzer.output.highlighter import HIGHLIGHT_PATTERNS
 
 
 def test_highlighter_patterns():

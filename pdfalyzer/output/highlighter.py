@@ -2,9 +2,6 @@ import re
 
 from rich.highlighter import ReprHighlighter
 
-from pdfalyzer.helpers.collections_helper import prefix_keys
-from pdfalyzer.output.theme import NODE_COLOR_THEME_DICT, PARENT_STYLE, PDF_ARRAY_STYLE, PDF_DICTIONARY_STYLE
-
 PYPDF_LOG_PFX_PATTERN = r"\(pypdf\)"
 PYPDF_LOG_PFX = PYPDF_LOG_PFX_PATTERN.replace("\\", '')
 
@@ -46,29 +43,6 @@ HIGHLIGHT_PATTERNS = DEFAULT_REPR_HIGHLIGHTER_PATTERNS + [
     r"(?P<relationship>via symlink|parent/child|child/parent)",
     r"(?P<stream_object>((De|En)coded)?Stream(Object)?)",
 ]
-
-CUSTOM_LOG_HIGHLIGHTS = {
-    "array_obj": f"{PDF_ARRAY_STYLE} italic",
-    "child": "orange3 bold",
-    "dictionary_obj": f"{PDF_DICTIONARY_STYLE} italic",
-    "indeterminate": 'bright_black',
-    "indirect_object": 'light_coral',
-    "node_type": 'honeydew2',
-    "parent": PARENT_STYLE,
-    "pypdf_line": "dim",
-    "pypdf_prefix": "light_slate_gray",
-    "relationship": 'light_pink4',
-    "stream_object": 'light_slate_blue bold',
-    # Overload default theme
-    'call': 'magenta',
-    'ipv4': 'cyan',
-    'ipv6': 'cyan',
-}
-
-LOG_THEME_DICT = prefix_keys(
-    ReprHighlighter.base_style,
-    {**CUSTOM_LOG_HIGHLIGHTS, **NODE_COLOR_THEME_DICT},
-)
 
 
 # Augment the standard ReprHighlighter

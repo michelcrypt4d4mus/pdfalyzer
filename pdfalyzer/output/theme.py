@@ -10,13 +10,16 @@ from numbers import Number
 from types import NoneType
 from typing import Any
 
-from pdfalyzer.helpers.string_helper import regex_to_capture_group_label
-from pdfalyzer.util import adobe_strings
 from pypdf.generic import (ArrayObject, ByteStringObject, EncodedStreamObject, IndirectObject,
      NullObject, StreamObject, TextStringObject)
+from rich.highlighter import ReprHighlighter
 from rich.theme import Theme
 from yaralyzer.output.console import console
 from yaralyzer.output.theme import YARALYZER_THEME_DICT
+
+from pdfalyzer.helpers.collections_helper import prefix_keys
+from pdfalyzer.helpers.string_helper import regex_to_capture_group_label
+from pdfalyzer.util import adobe_strings
 
 ClassStyle = namedtuple('ClassStyle', ['cls', 'style'])
 
@@ -133,6 +136,29 @@ NODE_COLOR_THEME_DICT = {
     **{regex_to_capture_group_label(re.compile(cs[0].__name__)): cs[1] for cs in PDF_OBJ_TYPE_STYLES},
 }
 
+CUSTOM_LOG_HIGHLIGHTS = {
+    "array_obj": f"{PDF_ARRAY_STYLE} italic",
+    "child": "orange3 bold",
+    "dictionary_obj": f"{PDF_DICTIONARY_STYLE} italic",
+    "indeterminate": 'bright_black',
+    "indirect_object": 'light_coral',
+    "node_type": 'honeydew2',
+    "parent": PARENT_STYLE,
+    "pypdf_line": "dim",
+    "pypdf_prefix": "light_slate_gray",
+    "relationship": 'light_pink4',
+    "stream_object": 'light_slate_blue bold',
+    # Overload default theme
+    'call': 'magenta',
+    'ipv4': 'cyan',
+    'ipv6': 'cyan',
+}
+
+LOG_THEME_DICT = prefix_keys(
+    ReprHighlighter.base_style,
+    {**CUSTOM_LOG_HIGHLIGHTS, **NODE_COLOR_THEME_DICT},
+)
+
 
 def get_class_style(obj: Any) -> str:
     """Style for various types of data (e.g. DictionaryObject)"""
@@ -185,4 +211,15 @@ for cls_style in PDF_OBJ_TYPE_STYLES:
 
 
 # Override whatever theme The Yaralyzer has configured.
-console.push_theme(Theme(PDFALYZER_THEME_DICT))
+console.push_theme(Theme({**PDFALYZER_THEME_DICT, **LOG_THEME_DICT}))
+
+
+# print("\n\n *** PATTERNS ***\n")
+
+# for pattern in LogHighlighter.highlights:
+#     log_console.print(f"   - '{pattern}'")
+
+# print("\n\n *** STYLES ***\n")
+
+# for k, v in LOG_THEME_DICT.items():
+#     log_console.print(f"    '{k}':   '{v}'")
