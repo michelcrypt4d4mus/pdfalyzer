@@ -6,11 +6,13 @@ import re
 
 from rich.markup import escape
 from rich.panel import Panel
+from rich.text import Text
 from rich.highlighter import ReprHighlighter
 from yaralyzer.util.logging import log_console
 
 from pdfalyzer.util.helpers.rich_text_helper import vertically_padded_panel
 
+PDF_OBJ_STYLE_PREFIX = 'pdf.'
 PYPDF_LOG_PFX_PATTERN = r"\(pypdf\)"
 
 # Copied from https://rich.readthedocs.io/en/latest/_modules/rich/highlighter.html#Highlighter
@@ -37,12 +39,12 @@ DEFAULT_REPR_HIGHLIGHTER_PATTERNS = [
 # Our custom log highlight patterns
 HIGHLIGHT_PATTERNS = DEFAULT_REPR_HIGHLIGHTER_PATTERNS + [
     r"(?P<array_obj>Array(Object)?)",
-    r"(?P<child>[cC]hild(ren)?|/?Kids)",
+    r"(?P<child>[cC]hild(ren)?)",
     r"(?P<dictionary_obj>Dictionary(Object)?)",
     r"(?P<indeterminate>[Ii]ndeterminate( ?[nN]odes?)?)",
     r"(?P<indirect_object>IndirectObject)",
     r"(?P<node_type>/(Subt|T)ype\b)",
-    r"(?P<parent>/?(Struct)?[pP]arents?)",
+    r"(?P<parent>[pP]arents?)",
     fr"(?P<pypdf_line>{PYPDF_LOG_PFX_PATTERN} .*)",
     fr"(?P<pypdf_prefix>{PYPDF_LOG_PFX_PATTERN})",
     r"(?P<relationship>Relationship( of)?)",
@@ -56,6 +58,14 @@ class LogHighlighter(ReprHighlighter):
     highlights: list[re.Pattern]
 
     @classmethod
+    def add_highlight_patterns(cls, patterns: list[str]) -> None:
+        """Appends new patterns to HIGHLIGHT_PATTERNS."""
+        cls.highlights = [
+            re.compile(pattern)
+            for pattern in (patterns + HIGHLIGHT_PATTERNS)
+        ]
+
+    @classmethod
     def get_style(cls, for_str: str) -> str:
         """Return the first style that matches the 'for_str'."""
         for highlight in cls.highlights:
@@ -65,15 +75,21 @@ class LogHighlighter(ReprHighlighter):
         return ''
 
     @classmethod
-    def add_highlight_patterns(cls, patterns: list[str]) -> None:
-        cls.highlights = [
-            re.compile(pattern)
-            for pattern in (patterns + HIGHLIGHT_PATTERNS)
-        ]
-
-    @classmethod
     def debug_highlight_patterns(cls):
-        log_console.print(vertically_padded_panel(f"{cls.__name__}.highlights Patterns"))
+        log_console.print(vertically_padded_panel(f"{cls.__name__}.highlights Patterns (base_style: '{cls.base_style}')"))
 
         for pattern in cls.highlights:
             log_console.print(f"   - '{escape(str(pattern))}'")
+
+    @classmethod
+    def prefixed_style(cls, style: str) -> str:
+        return cls.base_style + style
+
+
+class PdfHighlighter(LogHighlighter):
+    base_style = PDF_OBJ_STYLE_PREFIX
+
+    @classmethod
+    def add_highlight_patterns(cls, patterns: list[str]) -> None:
+        """Does not append HIGHLIGHT_PATTERNS."""
+        cls.highlights = [re.compile(pattern) for pattern in patterns]

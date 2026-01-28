@@ -5,12 +5,14 @@ from pypdf.errors import PdfReadError
 from pypdf.generic import DictionaryObject, IndirectObject, NullObject, NumberObject, PdfObject
 from rich.text import Text
 
-from pdfalyzer.output.theme import COMPLETE_THEME_DICT, DEFAULT_LABEL_STYLE, NODE_STYLE_PFX, get_class_style, get_class_style_dim, get_class_style_italic, get_label_style
+from pdfalyzer.output.highlighter import PdfHighlighter
+from pdfalyzer.output.theme import (COMPLETE_THEME_DICT, DEFAULT_LABEL_STYLE, get_class_style,
+     get_class_style_dim, get_class_style_italic)
 from pdfalyzer.util.adobe_strings import *
 from pdfalyzer.util.helpers.pdf_object_helper import pypdf_class_name
 from pdfalyzer.util.helpers.rich_text_helper import comma_join_txt
 from pdfalyzer.util.helpers.string_helper import coerce_address, is_array_idx, props_string_indented, root_address
-from pdfalyzer.util.logging import log, log_console, log_highlighter, log_trace
+from pdfalyzer.util.logging import highlight, log, log_console, log_highlighter, log_trace, pdf_highlighter
 
 
 @dataclass
@@ -49,7 +51,7 @@ class PdfObjectProperties:
         if sub_type.startswith(GO_TO_R) or sub_type.startswith(GO_TO_E):
             return COMPLETE_THEME_DICT[GO_TO_R]
 
-        return COMPLETE_THEME_DICT.get(f"{NODE_STYLE_PFX}{type_no_slash}", DEFAULT_LABEL_STYLE)
+        return COMPLETE_THEME_DICT.get(PdfHighlighter.prefixed_style(type_no_slash), DEFAULT_LABEL_STYLE)
 
     @type.setter
     def type(self, _type: str | None):
@@ -107,7 +109,7 @@ class PdfObjectProperties:
             if isinstance(reference_key, int):
                 key_style = 'grey'
             else:
-                key_style = log_highlighter.get_style(reference_key)
+                key_style = pdf_highlighter.get_style(reference_key) or log_highlighter.get_style(reference_key)
 
         with_resolved_refs = self._resolve_references(reference_key, row_obj, pdfalyzer)
         value_style = key_style if isinstance(row_obj, str) else get_class_style(row_obj)
@@ -163,7 +165,7 @@ class PdfObjectProperties:
             return cls.__rich_without_underline__(obj)
         elif isinstance(obj, str):
             if 'http' in obj or obj.startswith('/'):
-                return log_highlighter(obj)
+                return highlight(obj)
             else:
                 return Text(obj)
         else:

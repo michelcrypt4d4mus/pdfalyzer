@@ -33,7 +33,7 @@ from pdfalyzer.output.theme import get_label_style
 from pdfalyzer.pdfalyzer import Pdfalyzer
 from pdfalyzer.util.adobe_strings import DANGEROUS_PDF_KEYS, FALSE, TRUE
 from pdfalyzer.util.helpers.string_helper import root_address
-from pdfalyzer.util.logging import log, log_highlighter
+from pdfalyzer.util.logging import highlight, log
 
 SymlinkRepresentation = namedtuple('SymlinkRepresentation', ['text', 'style'])
 
@@ -274,7 +274,7 @@ class PdfalyzerPresenter:
 
         if (metadata := self.pdfalyzer.pdf_reader.metadata or {}):
             for k, v in metadata.items():
-                v = log_highlighter(str(v)) if isinstance(v, str) and any(hif in v for hif in HIGHLIGHT_IF) else str(v)
+                v = highlight(str(v)) if isinstance(v, str) and any(hif in v for hif in HIGHLIGHT_IF) else str(v)
                 table.add_row(Text(k, style='wheat4'), v)
         else:
             table.add_row('', Text('(no formal metadata found in file)'), style='dim italic')
@@ -283,7 +283,7 @@ class PdfalyzerPresenter:
             row_label = count_txt(count_type)
 
             try:
-                table.add_row(row_label, log_highlighter(f"{count_fxn():,}"))
+                table.add_row(row_label, highlight(f"{count_fxn():,}"))
             except Exception as e:
                 fail_msg = failed_count_msg(count_type)
                 log.error(f"{fail_msg} {e}")

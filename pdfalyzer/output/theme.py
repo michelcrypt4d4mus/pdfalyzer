@@ -20,6 +20,7 @@ from yaralyzer.output.console import console
 from yaralyzer.output.theme import BYTES_NO_DIM, YARALYZER_THEME_DICT
 from yaralyzer.util.logging import log_console
 
+from pdfalyzer.output.highlighter import PdfHighlighter
 from pdfalyzer.util import adobe_strings
 from pdfalyzer.util.helpers.collections_helper import prefix_keys, safe_json
 from pdfalyzer.util.helpers.rich_text_helper import vertically_padded_panel
@@ -28,10 +29,10 @@ from pdfalyzer.util.helpers.string_helper import regex_to_capture_group_label
 ClassStyle = namedtuple('ClassStyle', ['cls', 'style'])
 
 # For highlighting / naming styles
-NODE_STYLE_PFX = 'pdf.'
 PDF_OBJ_STYLE_PFX = 'pdfobj.'
 
 # Colors / PDF object styles
+CHILD_STYLE = "orange3 bold"
 DEFAULT_LABEL_STYLE = 'yellow'
 DEFAULT_OBJ_TYPE_STYLE = 'bright_yellow'
 FONT_FILE_BLUE = 'steel_blue1'
@@ -88,13 +89,13 @@ OBJ_TYPE_STYLES = PDF_OBJ_TYPE_STYLES + [
 ]
 
 # Add styles for all NON_TREE_REFERENCES first because /OpenAction is one such action
-LABEL_STYLES_BASE = {
+NODE_STYLES_BASE_DICT = {
     key: PDF_NON_TREE_REF_STYLE
     for key in (adobe_strings.NON_TREE_REFERENCES + adobe_strings.LINK_NODE_KEYS + [adobe_strings.FIRST])
 }
 
 # Order matters - first match will be the style
-LABEL_STYLES_BASE.update({
+NODE_STYLES_BASE_DICT.update({
     '/AA':                                                      RED_ALERT_BASE_STYLE,
     adobe_strings.JAVASCRIPT:                                   RED_ALERT_BASE_STYLE,
     adobe_strings.JS:                                           RED_ALERT_BASE_STYLE,
@@ -141,25 +142,31 @@ LABEL_STYLES_BASE.update({
     adobe_strings.PG:                                          PAGE_OBJ_STYLE,
     adobe_strings.COLOR_SPACE:                                 'medium_orchid1',
     # Parents
+    adobe_strings.KIDS:                                        CHILD_STYLE,
     adobe_strings.PARENT:                                      PARENT_STYLE,
     adobe_strings.PARENT_TREE:                                 PARENT_STYLE,
     adobe_strings.PARENT_TREE_NEXT_KEY:                        PARENT_STYLE,
+    adobe_strings.STRUCT_PARENT:                               PARENT_STYLE,
     # Booleans
     adobe_strings.FALSE:                                       'bright_red',
     adobe_strings.TRUE:                                        'green bold',
 })
 
+NODE_STYLES_THEME_DICT = prefix_keys(
+    PdfHighlighter.base_style,
+    {regex_to_capture_group_label(k): v for k, v in NODE_STYLES_BASE_DICT.items()}
+)
+
 # Compile regexes as keys
-LABEL_STYLES = {re.compile(k): v for k, v in LABEL_STYLES_BASE.items()}
+NODE_STYLES_REGEX_DICT = {re.compile(k): v for k, v in NODE_STYLES_BASE_DICT.items()}
+# TODO: these are not currently used because they have the PDF_OBJ_STYLE_PFX prefix, here for --show-colors only
+NODE_CLASSES_STYLES_DICT = {f"{cls_style.cls.__name__}": cls_style.style for cls_style in PDF_OBJ_TYPE_STYLES}
+NODE_STYLES_THEME_DICT.update(prefix_keys(PDF_OBJ_STYLE_PFX, NODE_CLASSES_STYLES_DICT))
 
-NODE_COLOR_THEME_DICT = {
-    **{regex_to_capture_group_label(k): v for k, v in LABEL_STYLES.items()},
-    **{regex_to_capture_group_label(re.compile(cs[0].__name__)): cs[1] for cs in PDF_OBJ_TYPE_STYLES},
-}
-
-CUSTOM_LOG_HIGHLIGHTS = {
+# Logger highlights
+LOG_THEME_BASE_DICT = {
     "array_obj": f"{PDF_ARRAY_STYLE} italic",
-    "child": "orange3 bold",
+    "child": CHILD_STYLE,
     "dictionary_obj": f"{PDF_DICTIONARY_STYLE} italic",
     "indeterminate": 'bright_black',
     "indirect_object": 'light_coral',
@@ -175,10 +182,7 @@ CUSTOM_LOG_HIGHLIGHTS = {
     'ipv6': 'cyan',
 }
 
-LOG_THEME_DICT = prefix_keys(
-    ReprHighlighter.base_style,
-    {**CUSTOM_LOG_HIGHLIGHTS, **NODE_COLOR_THEME_DICT},
-)
+LOG_THEME_DICT = prefix_keys(ReprHighlighter.base_style, LOG_THEME_BASE_DICT)
 
 
 def get_class_style(obj: Any) -> str:
@@ -215,24 +219,12 @@ def get_class_style_italic(obj: Any) -> str:
 
 def get_label_style(label: str) -> str:
     """Lookup a style based on the node's label string (either its type or first address)."""
-    return next((v for k, v in LABEL_STYLES.items() if k.match(label)), DEFAULT_LABEL_STYLE)
-
-
-# TODO: Right now NODE_COLOR_THEME_DICT is the real action. These need to be integrated into the main theme.
-THEME_COLORS_FOR_SHOW_ONLY_DICT = {}
-
-for style_regex in LABEL_STYLES.keys():
-    patterns = [regex_to_capture_group_label(p) for p in style_regex.pattern.strip().split('|')]
-
-    for obj_type in patterns:
-        THEME_COLORS_FOR_SHOW_ONLY_DICT[f"{NODE_STYLE_PFX}{obj_type}"] = LABEL_STYLES[style_regex]
-
-for cls_style in PDF_OBJ_TYPE_STYLES:
-    THEME_COLORS_FOR_SHOW_ONLY_DICT[f"{PDF_OBJ_STYLE_PFX}{cls_style.cls.__name__}"] = cls_style.style
+    return next((v for k, v in NODE_STYLES_REGEX_DICT.items() if k.match(label)), DEFAULT_LABEL_STYLE)
 
 
 # Override whatever theme The Yaralyzer has configured.
-COMPLETE_THEME_DICT = {**PDFALYZER_THEME_DICT, **LOG_THEME_DICT, **THEME_COLORS_FOR_SHOW_ONLY_DICT}
+COMPLETE_THEME_DICT = {**PDFALYZER_THEME_DICT, **LOG_THEME_DICT, **NODE_STYLES_THEME_DICT}
+
 console.push_theme(Theme(COMPLETE_THEME_DICT))
 
 
@@ -240,7 +232,7 @@ def theme_json() -> str:
     theme_dicts = {
         'PDFALYZER_THEME_DICT': PDFALYZER_THEME_DICT,
         'LOG_THEME_DICT': LOG_THEME_DICT,
-        'THEME_COLORS_FOR_SHOW_ONLY_DICT': THEME_COLORS_FOR_SHOW_ONLY_DICT,
+        'NODE_STYLES_THEME_DICT': NODE_STYLES_THEME_DICT,
         'COMPLETE_THEME_DICT': COMPLETE_THEME_DICT,
     }
 
