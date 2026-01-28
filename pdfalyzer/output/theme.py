@@ -123,6 +123,11 @@ LABEL_STYLES = {
     for k, v in LABEL_STYLES_BASE.items()
 }
 
+LONG_ENOUGH_LABEL_STYLES = {
+    k: v
+    for k, v in LABEL_STYLES.items() if len(k.pattern) > 4
+}
+
 NODE_COLOR_THEME_DICT = {
     **{regex_to_capture_group_label(k): v for k, v in LABEL_STYLES.items()},
     **{regex_to_capture_group_label(re.compile(cs[0].__name__)): cs[1] for cs in PDF_OBJ_TYPE_STYLES},
