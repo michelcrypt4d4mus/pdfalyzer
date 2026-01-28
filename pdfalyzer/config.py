@@ -12,9 +12,9 @@ from yaralyzer.util.constants import MAX_FILENAME_LENGTH
 from yaralyzer.util.logging import log
 
 from pdfalyzer.detection.yaralyzer_helper import YARA_RULES_FILES
-from pdfalyzer.helpers.filesystem_helper import DEFAULT_PDF_PARSER_PATH, PDF_PARSER_PATH_ENV_VAR
 from pdfalyzer.output.theme import PDFALYZER_THEME_DICT, THEME_COLORS_FOR_SHOW_ONLY_DICT
 from pdfalyzer.util.constants import PDFALYZE, PDFALYZER_UPPER
+from pdfalyzer.util.helpers.filesystem_helper import DEFAULT_PDF_PARSER_PATH, PDF_PARSER_PATH_ENV_VAR
 from pdfalyzer.util.output_section import ALL_STREAMS
 
 T = TypeVar('T')

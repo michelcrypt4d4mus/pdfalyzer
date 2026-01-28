@@ -8,7 +8,7 @@ from yaralyzer.util.helpers.shell_helper import ShellResult
 from yaralyzer.util.logging import log, log_and_print, log_console
 
 from pdfalyzer.config import PdfalyzerConfig
-from pdfalyzer.helpers.filesystem_helper import (DEFAULT_PDF_PARSER_PATH, PDF_PARSER_PATH_ENV_VAR,
+from pdfalyzer.util.helpers.filesystem_helper import (DEFAULT_PDF_PARSER_PATH, PDF_PARSER_PATH_ENV_VAR,
      PDF_PARSER_PY, PROJECT_ROOT, SCRIPTS_DIR, dir_str)
 from pdfalyzer.util.exceptions import PdfParserError
 

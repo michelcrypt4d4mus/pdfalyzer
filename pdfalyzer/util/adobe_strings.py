@@ -4,7 +4,7 @@ String constants specified in the Adobe specs for PDFs, fonts, etc.
 from pypdf.constants import (CatalogDictionary, ImageAttributes, PageAttributes,
      PagesAttributes, Resources)
 
-from pdfalyzer.helpers.string_helper import is_prefixed_by_any
+from pdfalyzer.util.helpers.string_helper import is_prefixed_by_any
 
 # Fake PDF instructions used to create more explanatory tables/trees/addresses/etc.
 ARRAY_ELEMENT = '/ArrayElement'

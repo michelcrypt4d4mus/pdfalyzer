@@ -12,22 +12,18 @@ from yaralyzer.util.logging import invocation_txt, log_console, log_current_conf
 
 from pdfalyzer.config import PdfalyzerConfig
 from pdfalyzer.decorators.pdf_file import PdfFile
-from pdfalyzer.helpers.filesystem_helper import file_size_in_mb, set_max_open_files
 from pdfalyzer.output.pdfalyzer_presenter import PdfalyzerPresenter
 from pdfalyzer.pdfalyzer import Pdfalyzer
 from pdfalyzer.util.argument_parser import ask_to_proceed, parse_arguments, parser
 from pdfalyzer.util.cli_tools_argument_parser import (MAX_QUALITY, parse_combine_pdfs_args,
      parse_pdf_page_extraction_args, parse_text_extraction_args)
 from pdfalyzer.util.exceptions import PdfParserError
+from pdfalyzer.util.helpers.filesystem_helper import file_size_in_mb, set_max_open_files
 from pdfalyzer.util.logging import log  # noqa: F401  # Trigger log setup
 from pdfalyzer.util.output_section import OutputSection
 from pdfalyzer.util.pdf_parser_manager import PdfParserManager
 
 PdfalyzerConfig.init(parser, parse_arguments)
-
-# from pdfalyzer.output.theme import YARALYZER_THEME_DICT, PDFALYZER_THEME_DICT
-# from pdfalyzer.helpers.collections_helper import compare_dicts
-# compare_dicts(YARALYZER_THEME_DICT, PDFALYZER_THEME_DICT)
 
 
 def pdfalyze():

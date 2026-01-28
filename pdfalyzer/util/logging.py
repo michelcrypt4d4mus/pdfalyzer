@@ -11,7 +11,7 @@ from rich.theme import Theme
 # Other files could import yaralyzer's log directly but they do it from here to trigger logging setup
 from yaralyzer.util.logging import DEFAULT_LOG_HANDLER_KWARGS, log, log_console, log_trace
 
-from pdfalyzer.helpers.string_helper import regex_to_highlight_pattern
+from pdfalyzer.util.helpers.string_helper import regex_to_highlight_pattern
 from pdfalyzer.output.highlighter import PYPDF_LOG_PFX, LogHighlighter
 from pdfalyzer.output.theme import LOG_THEME_DICT, LONG_ENOUGH_LABEL_STYLES, PDF_OBJ_TYPE_STYLES
 

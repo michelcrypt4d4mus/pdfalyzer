@@ -6,9 +6,9 @@ from subprocess import check_output
 import pytest
 from yaralyzer.util.helpers.file_helper import files_in_dir
 
-from pdfalyzer.helpers.filesystem_helper import file_size_in_mb
+from pdfalyzer.util.helpers.filesystem_helper import file_size_in_mb
 
-from tests.conftest import FIXTURES_DIR
+from ..conftest import FIXTURES_DIR
 
 COMBINE_PDFS = 'combine_pdfs'
 

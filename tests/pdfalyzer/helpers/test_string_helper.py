@@ -1,6 +1,6 @@
 import re
 
-from pdfalyzer.helpers.string_helper import *
+from pdfalyzer.util.helpers.string_helper import *
 
 TEST_TITLE = "Jacques and Carl's Excellent Adventure"
 OBJ_REGEX = re.compile(r'^(JavaScript|JS|OpenAction)')

@@ -5,11 +5,11 @@ from pypdf.errors import PdfReadError
 from pypdf.generic import DictionaryObject, IndirectObject, NullObject, NumberObject, PdfObject
 from rich.text import Text
 
-from pdfalyzer.helpers.pdf_object_helper import pypdf_class_name
-from pdfalyzer.helpers.rich_text_helper import comma_join_txt
-from pdfalyzer.helpers.string_helper import coerce_address, is_array_idx, props_string_indented, root_address
 from pdfalyzer.output.theme import get_class_style, get_class_style_dim, get_class_style_italic, get_label_style
 from pdfalyzer.util.adobe_strings import *
+from pdfalyzer.util.helpers.pdf_object_helper import pypdf_class_name
+from pdfalyzer.util.helpers.rich_text_helper import comma_join_txt
+from pdfalyzer.util.helpers.string_helper import coerce_address, is_array_idx, props_string_indented, root_address
 from pdfalyzer.util.logging import log, log_console, log_highlighter, log_trace
 
 

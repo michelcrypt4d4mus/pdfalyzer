@@ -6,8 +6,8 @@ from yaralyzer.util.helpers.string_helper import comma_join
 from yaralyzer.util.logging import log
 
 from pdfalyzer.decorators.pdf_tree_node import PdfTreeNode
-from pdfalyzer.helpers.string_helper import all_strings_are_same_ignoring_numbers, has_a_common_substring
 from pdfalyzer.util.adobe_strings import *
+from pdfalyzer.util.helpers.string_helper import all_strings_are_same_ignoring_numbers, has_a_common_substring
 
 
 @dataclass

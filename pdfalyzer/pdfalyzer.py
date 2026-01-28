@@ -25,7 +25,7 @@ from pdfalyzer.decorators.indeterminate_node import IndeterminateNode
 from pdfalyzer.decorators.pdf_tree_node import PdfTreeNode
 from pdfalyzer.decorators.pdf_tree_verifier import PdfTreeVerifier
 from pdfalyzer.font_info import FontInfo
-from pdfalyzer.helpers.pdf_object_helper import RefAndObj, describe_obj
+from pdfalyzer.util.helpers.pdf_object_helper import RefAndObj, describe_obj
 from pdfalyzer.pdf_object_relationship import PdfObjectRelationship
 from pdfalyzer.util.adobe_strings import *
 from pdfalyzer.util.argument_parser import is_pdfalyze_script

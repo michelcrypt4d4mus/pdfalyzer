@@ -17,9 +17,9 @@ from rich.theme import Theme
 from yaralyzer.output.console import console
 from yaralyzer.output.theme import BYTES_NO_DIM, YARALYZER_THEME_DICT
 
-from pdfalyzer.helpers.collections_helper import prefix_keys
-from pdfalyzer.helpers.string_helper import regex_to_capture_group_label
 from pdfalyzer.util import adobe_strings
+from pdfalyzer.util.helpers.collections_helper import prefix_keys
+from pdfalyzer.util.helpers.string_helper import regex_to_capture_group_label
 
 ClassStyle = namedtuple('ClassStyle', ['cls', 'style'])
 
