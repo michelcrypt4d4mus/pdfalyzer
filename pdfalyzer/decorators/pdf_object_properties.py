@@ -41,7 +41,7 @@ class PdfObjectProperties:
 
     @property
     def type(self) -> str | None:
-        return self._type
+        return self._type or '???'
 
     @property
     def label_style(self) -> str:
