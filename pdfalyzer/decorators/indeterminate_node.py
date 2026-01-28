@@ -78,7 +78,7 @@ class IndeterminateNode:
         return reference_keys_or_nodes_are_same
 
     def _check_for_common_ancestor(self) -> bool:
-        common_ancestor = self._find_common_ancestor_among_nodes(self.node.nodes_with_here_references())
+        common_ancestor = _find_common_ancestor_among_nodes(self.node.nodes_with_here_references())
 
         if common_ancestor is not None:
             log.info(f"  Found common ancestor: {common_ancestor}")
@@ -86,19 +86,6 @@ class IndeterminateNode:
             return True
         else:
             return False
-
-    # TODO could be static method
-    def _find_common_ancestor_among_nodes(self, nodes: list[PdfTreeNode]) -> PdfTreeNode | None:
-        """If any of 'nodes' is a common ancestor of the rest of the 'nodes', return it."""
-        for possible_ancestor in nodes:
-            log.debug(f"  Checking possible common ancestor: {possible_ancestor}")
-            other_nodes = [n for n in nodes if n != possible_ancestor]
-
-            # Look for a common ancestor; if there is one choose it as the parent.
-            if all(possible_ancestor in node.ancestors for node in other_nodes):
-                other_nodes_str = comma_join([str(node) for node in other_nodes])
-                log.info(f"{possible_ancestor} is the common ancestor of {other_nodes_str}")
-                return possible_ancestor
 
     def _check_single_relation_rules(self) -> bool:
         """Check various ways of narrowing down the list of potential parents to one node."""
@@ -121,6 +108,19 @@ class IndeterminateNode:
             return True
         else:
             return False
+
+
+def _find_common_ancestor_among_nodes(nodes: list[PdfTreeNode]) -> PdfTreeNode | None:
+    """If any of 'nodes' is a common ancestor of the rest of the 'nodes', return it."""
+    for possible_ancestor in nodes:
+        log.debug(f"  Checking possible common ancestor: {possible_ancestor}")
+        other_nodes = [n for n in nodes if n != possible_ancestor]
+
+        # Look for a common ancestor; if there is one choose it as the parent.
+        if all(possible_ancestor in node.ancestors for node in other_nodes):
+            other_nodes_str = comma_join([str(node) for node in other_nodes])
+            log.info(f"{possible_ancestor} is the common ancestor of {other_nodes_str}")
+            return possible_ancestor
 
 
 def _node_with_lowest_id(list_of_nodes: list[PdfTreeNode]) -> PdfTreeNode:
