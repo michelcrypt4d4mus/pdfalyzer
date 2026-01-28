@@ -2,6 +2,7 @@
 Helper methods for dealing with lists and dicts.
 """
 import json
+
 from pypdf.generic import DictionaryObject
 from yaralyzer.util.logging import log
 
