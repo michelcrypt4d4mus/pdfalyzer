@@ -116,9 +116,11 @@ def get_class_style_dim(obj: Any) -> str:
     if isinstance(obj, str):
         return 'color(244)'
     elif isinstance(obj, Number):
-        return 'cyan dim'
+        cls_style = get_class_style(obj).replace('bold', '').strip()
     else:
-        return f"{get_class_style(obj)} dim"
+        cls_style = get_class_style(obj)
+
+    return f"{cls_style} dim"
 
 
 def get_class_style_italic(obj: Any) -> str:
