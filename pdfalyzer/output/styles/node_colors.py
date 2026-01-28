@@ -49,41 +49,41 @@ OBJ_TYPE_STYLES = PDF_OBJ_TYPE_STYLES + [
 ]
 
 LABEL_STYLES = [
-    [re.compile(r'^(AA|JavaScript|JS|OpenAction)', re.I | re.M), 'blink bold red'],
-    [re.compile(fr'^{adobe_strings.FONT_DESCRIPTOR}'),    'cornflower_blue'],
-    [re.compile(fr'^{adobe_strings.FONT_FILE}\d?'),       'steel_blue1'],
-    [re.compile(f'^/(Font(Name)?|BaseFont)'),             FONT_OBJ_BLUE],
-    [re.compile(f'^/DescendantFonts'),                    f"{FONT_OBJ_BLUE} dim"],
+    [re.compile(r'(AA|JavaScript|JS|OpenAction)', re.I | re.M), 'blink bold red'],
+    [re.compile(fr'{adobe_strings.FONT_DESCRIPTOR}'),    'cornflower_blue'],
+    [re.compile(fr'{adobe_strings.FONT_FILE}\d?'),       'steel_blue1'],
+    [re.compile(f'/(Font(Name)?|BaseFont)'),             FONT_OBJ_BLUE],
+    [re.compile(f'/DescendantFonts'),                    f"{FONT_OBJ_BLUE} dim"],
     [re.compile(f'/CharProc'),                            'dark_cyan'],
-    [re.compile(fr'^{adobe_strings.TO_UNICODE}'),         'grey30'],
-    [re.compile(fr'^{adobe_strings.ENCODING}'),            YARALYZER_THEME_DICT['encoding.header']],
-    [re.compile(fr'^{adobe_strings.WIDTHS}'),             'color(67)'],
-    [re.compile(fr'^{adobe_strings.W}'),                  'color(67)'],
-    [re.compile(fr'^{adobe_strings.RESOURCES}'),          'magenta'],
+    [re.compile(fr'{adobe_strings.TO_UNICODE}'),         'grey30'],
+    [re.compile(fr'{adobe_strings.ENCODING}'),            YARALYZER_THEME_DICT['encoding.header']],
+    [re.compile(fr'{adobe_strings.WIDTHS}'),             'color(67)'],
+    [re.compile(fr'{adobe_strings.W}'),                  'color(67)'],
+    [re.compile(fr'{adobe_strings.RESOURCES}'),          'magenta'],
     [re.compile(r'/(Trailer|Root|Info|Outlines)'),        'bright_green'],
     [re.compile(r'/Catalog'),                             'color(47)'],
     [re.compile('/(Metadata|ViewerPreferences)'),         'color(35)'],
-    [re.compile(fr"^{adobe_strings.OBJ_STM}"),            YARALYZER_THEME_DICT['bytes']],
-    [re.compile(fr"^{adobe_strings.NUMS}"),               'grey23'],
-    [re.compile('^/Contents'),                            'medium_purple1'],
-    [re.compile('^/Action'),                              'dark_red'],
-    [re.compile('^/Annots'),                              'deep_sky_blue4'],
-    [re.compile('^/Annot'),                               'color(24)'],
-    [re.compile('^/Pages'),                               'dark_orange3'],
-    [re.compile('^/(Page|Pg)'),                           'light_salmon3'],
-    [re.compile('^/ColorSpace'),                          'medium_orchid1'],
-    [re.compile('^/(URI|Names)'),                         'white'],
-    [re.compile(fr'^{adobe_strings.XOBJECT}'),            'grey37'],
-    [re.compile(fr'^{adobe_strings.UNLABELED}'),          'grey35 reverse'],
-    [re.compile(fr'^{adobe_strings.XREF}'),               'color(148)'],
-    [re.compile(fr'^/Parent(Tree(NextKey)?)?'),            PARENT_STYLE],
+    [re.compile(fr"{adobe_strings.OBJ_STM}"),            YARALYZER_THEME_DICT['bytes']],
+    [re.compile(fr"{adobe_strings.NUMS}"),               'grey23'],
+    [re.compile('/Contents'),                            'medium_purple1'],
+    [re.compile('/Action'),                              'dark_red'],
+    [re.compile('/Annots'),                              'deep_sky_blue4'],
+    [re.compile('/Annot'),                               'color(24)'],
+    [re.compile('/Pages'),                               'dark_orange3'],
+    [re.compile('/(Page|Pg)'),                           'light_salmon3'],
+    [re.compile('/ColorSpace'),                          'medium_orchid1'],
+    [re.compile('/(URI|Names)'),                         'white'],
+    [re.compile(fr'{adobe_strings.XOBJECT}'),            'grey37'],
+    [re.compile(fr'{adobe_strings.UNLABELED}'),          'grey35 reverse'],
+    [re.compile(fr'{adobe_strings.XREF}'),               'color(148)'],
+    [re.compile(fr'/Parent(Tree(NextKey)?)?'),            PARENT_STYLE],
     [re.compile(adobe_strings.FALSE),                     'bright_red'],
     [re.compile(adobe_strings.TRUE),                      'green bold'],
 ]
 
 # Add styles for all NON_TREE_REFERENCES
 LABEL_STYLES += [
-    [re.compile(f'^{key}'), PDF_NON_TREE_REF]
+    [re.compile(f'{key}'), PDF_NON_TREE_REF]
     for key in adobe_strings.NON_TREE_REFERENCES
 ]
 
@@ -106,8 +106,6 @@ def get_class_style(obj: Any) -> str:
         #log_console.print(f"Style FAIL: {type(obj).__name__} style resolved as {cls_style}", style=cls_style)
         pass
 
-    if isinstance(obj, type):
-        import pdb;pdb.set_trace()
     return cls_style
 
 
@@ -129,7 +127,7 @@ def get_class_style_italic(obj: Any) -> str:
 
 def get_label_style(label: str) -> str:
     """Lookup a style based on the node's label string (either its type or first address)."""
-    return next((ls[1] for ls in LABEL_STYLES if ls[0].search(label)), DEFAULT_LABEL_STYLE)
+    return next((ls[1] for ls in LABEL_STYLES if ls[0].match(label)), DEFAULT_LABEL_STYLE)
 
 
 # TODO: Right now NODE_COLOR_THEME_DICT is the real action. These need to be integrated into the main theme.
