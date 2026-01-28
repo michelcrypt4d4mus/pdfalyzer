@@ -26,7 +26,7 @@ from pdfalyzer.decorators.pdf_tree_verifier import PdfTreeVerifier
 from pdfalyzer.font_info import FontInfo
 from pdfalyzer.util.helpers.pdf_object_helper import RefAndObj, describe_obj
 from pdfalyzer.pdf_object_relationship import PdfObjectRelationship
-from pdfalyzer.util.adobe_strings import *
+from pdfalyzer.util import adobe_strings
 from pdfalyzer.util.argument_parser import is_pdfalyze_script
 from pdfalyzer.util.exceptions import PdfParserError, PdfWalkError
 from pdfalyzer.util.logging import log, log_trace  # Triggers log setup
@@ -117,9 +117,9 @@ class Pdfalyzer:
         # Bootstrap the root of the tree with the trailer. PDFs are always read trailer first.
         # Technically the trailer has no PDF Object ID but we set it to the /Size of the PDF.
         trailer = self.pdf_reader.trailer
-        self.num_nodes = trailer.get(SIZE)
+        self.num_nodes = trailer.get(adobe_strings.SIZE)
         trailer_id = self.num_nodes if self.num_nodes is not None else TRAILER_FALLBACK_ID
-        self.pdf_tree = PdfTreeNode.from_obj(trailer, TRAILER, trailer_id)
+        self.pdf_tree = PdfTreeNode.from_obj(trailer, adobe_strings.TRAILER, trailer_id)
         self.nodes_encountered[self.pdf_tree.idnum] = self.pdf_tree
 
         if not self.num_nodes:
@@ -205,7 +205,7 @@ class Pdfalyzer:
         # Fall back to all IDs between 0 and self.num_nodes
         if not all_object_ids:
             if self.num_nodes is None:
-                log.error(f"no pdf-parser.py and {SIZE} not found in PDF trailer; cannot verify all nodes are in tree")
+                log.error(f"no pdf-parser.py and {adobe_strings.SIZE} not found in PDF trailer; cannot verify all nodes are in tree")
                 return []
 
             all_object_ids = [i for i in range(1, self.num_nodes)]
@@ -314,13 +314,13 @@ class Pdfalyzer:
             from_node.add_child(to_node)
 
         # /StructElems in a /StructTreeRoot hierarchy sometimes have no /Type so we set it manually
-        if to_node.type == K and STRUCT_TREE_ROOT in to_node.tree_address():
-            to_node.pdf_object.type = STRUCT_ELEM
+        if to_node.type == adobe_strings.K and adobe_strings.STRUCT_TREE_ROOT in to_node.tree_address():
+            to_node.pdf_object.type = adobe_strings.STRUCT_ELEM
 
         return to_node
 
     def _catalog_node(self) -> PdfTreeNode | None:
-        return self.find_node_with_attr('type', CATALOG)
+        return self.find_node_with_attr('type', adobe_strings.CATALOG)
 
     def _handle_fatal_error(self, msg: str, e: Exception) -> None:
         self.close()
@@ -333,7 +333,7 @@ class Pdfalyzer:
             raise e
 
     def _info_node(self) -> PdfTreeNode | None:
-        return self.find_node_with_attr('type', INFO)
+        return self.find_node_with_attr('type', adobe_strings.INFO)
 
     def _resolve_indeterminate_nodes(self) -> None:
         """Place indeterminate nodes in the tree."""
@@ -367,30 +367,30 @@ class Pdfalyzer:
                 continue
 
             # Handle special Linearization info nodes
-            if obj.get(TYPE) is None and '/Linearized' in obj:
+            if obj.get(adobe_strings.TYPE) is None and '/Linearized' in obj:
                 log.warning(f"Placing special /Linearized node {describe_obj(ref_and_obj)} as child of root")
                 self.pdf_tree.add_child(self._build_or_find_node(ref, '/Linearized'))
-            elif obj.get(TYPE) == OBJ_STM:
+            elif obj.get(adobe_strings.TYPE) == adobe_strings.OBJ_STM:
                 log.warning(f"Forcing homeless {describe_obj(ref_and_obj)} to appear as child of root node")
-                self.pdf_tree.add_child(self._build_or_find_node(ref, OBJ_STM))
-            elif obj.get(TYPE) == XOBJECT and obj.get(SUBTYPE) == '/Form':
-                if (form := self.find_node_with_attr('type', ACRO_FORM)):
-                    log.warning(f"Forcing homeless {describe_obj(ref_and_obj)} to be child of {ACRO_FORM}")
-                    form.add_child(self._build_or_find_node(ref, XOBJECT))
+                self.pdf_tree.add_child(self._build_or_find_node(ref, adobe_strings.OBJ_STM))
+            elif obj.get(adobe_strings.TYPE) == adobe_strings.XOBJECT and obj.get(adobe_strings.SUBTYPE) == '/Form':
+                if (form := self.find_node_with_attr('type', adobe_strings.ACRO_FORM)):
+                    log.warning(f"Forcing homeless {describe_obj(ref_and_obj)} to be child of {adobe_strings.ACRO_FORM}")
+                    form.add_child(self._build_or_find_node(ref, adobe_strings.XOBJECT))
 
         # Force /Pages to be children of /Catalog
         for node in self.nodes_without_parents():
-            if node.type == PAGES and (catalog_node := self._catalog_node()):
-                log.warning(f"Forcing orphaned {PAGES} node {node} to be child of {catalog_node}")
+            if node.type == adobe_strings.PAGES and (catalog_node := self._catalog_node()):
+                log.warning(f"Forcing orphaned {adobe_strings.PAGES} node {node} to be child of {catalog_node}")
                 node.set_parent(catalog_node)
 
     def _extract_font_infos(self) -> None:
         """Extract information about fonts in the tree and place it in `self.font_infos`."""
         for node in self.node_iterator():
-            if not (isinstance(node.obj, dict) and RESOURCES in node.obj):
+            if not (isinstance(node.obj, dict) and adobe_strings.RESOURCES in node.obj):
                 continue
 
-            log.debug(f"Extracting fonts from node with '{RESOURCES}' key: {node}...")
+            log.debug(f"Extracting fonts from node with '{adobe_strings.RESOURCES}' key: {node}...")
             known_font_ids = [fi.idnum for fi in self.font_infos]
 
             try:

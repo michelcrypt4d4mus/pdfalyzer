@@ -9,8 +9,7 @@ from pypdf.generic import (ArrayObject, BooleanObject, DictionaryObject, Indirec
 from rich.markup import escape
 from yaralyzer.util.logging import log
 
-from pdfalyzer.decorators.pdf_tree_node import PdfTreeNode
-from pdfalyzer.util.adobe_strings import *
+from pdfalyzer.util.adobe_strings import PREV, SIZE, TYPE, XREF, XREF_STREAM
 from pdfalyzer.util.helpers.pdf_object_helper import describe_obj
 
 OK_UNPLACED_TYPES = (BooleanObject, NameObject, NoneType, NullObject, NumberObject)

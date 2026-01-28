@@ -7,8 +7,6 @@ from yaralyzer.util.helpers.bytes_helper import NEWLINE_BYTE, clean_byte_string,
 from yaralyzer.util.helpers.rich_helper import size_text
 from yaralyzer.util.logging import log
 
-from pdfalyzer.util.adobe_strings import *
-
 HEX = 'Hex'
 STREAM = 'Stream'
 STREAM_PREVIEW_LENGTH_IN_TABLE = 500
