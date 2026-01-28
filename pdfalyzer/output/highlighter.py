@@ -48,29 +48,28 @@ HIGHLIGHT_PATTERNS = DEFAULT_REPR_HIGHLIGHTER_PATTERNS + [
     r"(?P<stream_object>((De|En)coded)?Stream(Object)?)",
 ]
 
+CUSTOM_LOG_HIGHLIGHTS = {
+    "array_obj": f"{PDF_ARRAY_STYLE} italic",
+    "child": "orange3 bold",
+    "dictionary_obj": f"{PDF_DICTIONARY_STYLE} italic",
+    "indeterminate": 'bright_black',
+    "indirect_object": 'light_coral',
+    "node_type": 'honeydew2',
+    "parent": PARENT_STYLE,
+    "pypdf_line": "dim",
+    "pypdf_prefix": "light_slate_gray",
+    "relationship": 'light_pink4',
+    "stream_object": 'light_slate_blue bold',
+    # Overload default theme
+    'call': 'magenta',
+    'ipv4': 'cyan',
+    'ipv6': 'cyan',
+}
+
 LOG_THEME_DICT = prefix_keys(
     ReprHighlighter.base_style,
-    {
-        "array_obj": f"{PDF_ARRAY_STYLE} italic",
-        "child": "orange3 bold",
-        "dictionary_obj": f"{PDF_DICTIONARY_STYLE} italic",
-        "indeterminate": 'bright_black',
-        "indirect_object": 'light_coral',
-        "node_type": 'honeydew2',
-        "parent": PARENT_STYLE,
-        "pypdf_line": "dim",
-        "pypdf_prefix": "light_slate_gray",
-        "relationship": 'light_pink4',
-        "stream_object": 'light_slate_blue bold',
-        # Overload default theme
-        'call': 'magenta',
-        'ipv4': 'cyan',
-        'ipv6': 'cyan',
-        **NODE_COLOR_THEME_DICT,
-    }
+    {**CUSTOM_LOG_HIGHLIGHTS, **NODE_COLOR_THEME_DICT},
 )
-
-assert all('(?P<' in pattern for pattern in HIGHLIGHT_PATTERNS)
 
 
 # Augment the standard ReprHighlighter
@@ -91,3 +90,12 @@ class LogHighlighter(ReprHighlighter):
             re.compile(pattern)
             for pattern in (patterns + HIGHLIGHT_PATTERNS)
         ]
+
+
+assert all('(?P<' in pattern for pattern in HIGHLIGHT_PATTERNS)
+
+for capture_group_label in CUSTOM_LOG_HIGHLIGHTS.keys():
+    label = f"<{capture_group_label.removeprefix(ReprHighlighter.base_style)}>"
+    print(f" label: {label}")
+    #import pdb;pdb.set_trace()
+    assert any(label in pattern for pattern in HIGHLIGHT_PATTERNS), f"Capture group {label} not found!"
