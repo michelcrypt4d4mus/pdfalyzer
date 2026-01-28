@@ -14,34 +14,37 @@ from yaralyzer.output.theme import YARALYZER_THEME_DICT
 # Other files could import yaralyzer's log directly but they do it from here to trigger logging setup
 from yaralyzer.util.logging import DEFAULT_LOG_HANDLER_KWARGS, log, log_console, log_trace
 
+from pdfalyzer.helpers.collections_helper import prefix_keys
 from pdfalyzer.helpers.string_helper import regex_to_highlight_pattern
 from pdfalyzer.output.styles.node_colors import LABEL_STYLES, NODE_COLOR_THEME_DICT, PARENT_STYLE, PDF_OBJ_TYPE_STYLES
 from pdfalyzer.output.styles.rich_theme import PDF_ARRAY_STYLE, PDF_DICTIONARY_STYLE
 
 LONG_ENOUGH_LABEL_STYLES = [ls for ls in LABEL_STYLES if len(ls[0].pattern) > 4]
-
-LOG_THEME_DICT = {
-    "array_obj": f"{PDF_ARRAY_STYLE} italic",
-    "child": "orange3 bold",
-    "dictionary_obj": f"{PDF_DICTIONARY_STYLE} italic",
-    "indeterminate": 'bright_black',
-    "indirect_object": 'light_coral',
-    "node_type": 'honeydew2',
-    "parent": PARENT_STYLE,
-    "pypdf_line": "dim",
-    "pypdf_prefix": "light_slate_gray",
-    "relationship": 'light_pink4',
-    "stream_object": 'light_slate_blue bold',
-    # Overload default theme
-    'call': 'magenta',
-    'ipv4': 'cyan',
-    'ipv6': 'cyan',
-    **NODE_COLOR_THEME_DICT,
-}
-
 PYPDF_LOG_PFX_PATTERN = r"\(pypdf\)"
 PYPDF_LOG_PFX = PYPDF_LOG_PFX_PATTERN.replace("\\", '')
-LOG_THEME_DICT = {f"{ReprHighlighter.base_style}{k}": v for k, v in LOG_THEME_DICT.items()}
+
+LOG_THEME_DICT = prefix_keys(
+    ReprHighlighter.base_style,
+    {
+        "array_obj": f"{PDF_ARRAY_STYLE} italic",
+        "child": "orange3 bold",
+        "dictionary_obj": f"{PDF_DICTIONARY_STYLE} italic",
+        "indeterminate": 'bright_black',
+        "indirect_object": 'light_coral',
+        "node_type": 'honeydew2',
+        "parent": PARENT_STYLE,
+        "pypdf_line": "dim",
+        "pypdf_prefix": "light_slate_gray",
+        "relationship": 'light_pink4',
+        "stream_object": 'light_slate_blue bold',
+        # Overload default theme
+        'call': 'magenta',
+        'ipv4': 'cyan',
+        'ipv6': 'cyan',
+        **NODE_COLOR_THEME_DICT,
+    }
+)
+
 LOG_THEME = Theme(LOG_THEME_DICT)
 
 # Copied from https://rich.readthedocs.io/en/latest/_modules/rich/highlighter.html#Highlighter

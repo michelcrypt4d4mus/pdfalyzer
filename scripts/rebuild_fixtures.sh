@@ -12,6 +12,7 @@ elif [[ ! -d $PDFALYZER_RENDERED_FIXTURES_DIR ]]; then
     exit 1
 fi
 
+# Clear fixtures unless there are command line arguments to pass to pytest.
 if [ $# -eq 0 ]; then
     echo_status "\nDeleting existing fixtures rendered fixtures from $PDFALYZER_RENDERED_FIXTURES_DIR..."
     set +e
