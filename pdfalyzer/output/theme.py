@@ -15,7 +15,7 @@ from pypdf.generic import (ArrayObject, ByteStringObject, EncodedStreamObject, I
 from rich.highlighter import ReprHighlighter
 from rich.theme import Theme
 from yaralyzer.output.console import console
-from yaralyzer.output.theme import YARALYZER_THEME_DICT
+from yaralyzer.output.theme import BYTES_NO_DIM, YARALYZER_THEME_DICT
 
 from pdfalyzer.helpers.collections_helper import prefix_keys
 from pdfalyzer.helpers.string_helper import regex_to_capture_group_label
@@ -56,15 +56,14 @@ PDFALYZER_THEME_DICT.update({
     # warn log events
     'warn': 'bright_yellow',
     # error log events
-    'mild_warning': 'color(228) dim',
     'red_alert': 'blink bold red reverse on white',
 })
 
 PDF_OBJ_TYPE_STYLES = [
     ClassStyle(IndirectObject, 'color(225)'),
-    ClassStyle(ByteStringObject, YARALYZER_THEME_DICT['bytes']),
+    ClassStyle(ByteStringObject, YARALYZER_THEME_DICT['bytes.title']),
     ClassStyle(EncodedStreamObject, YARALYZER_THEME_DICT['bytes']),
-    ClassStyle(StreamObject, YARALYZER_THEME_DICT['bytes.title']),
+    ClassStyle(StreamObject, BYTES_NO_DIM),
     ClassStyle(TextStringObject, YARALYZER_THEME_DICT['grey.light']),
     ClassStyle(ArrayObject, PDF_ARRAY_STYLE),
     ClassStyle(NullObject, NULL_STYLE),

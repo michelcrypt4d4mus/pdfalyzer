@@ -43,7 +43,7 @@ def indent_padding(indent: int) -> tuple[int, int, int, int]:
 
 
 def mild_warning(msg: str) -> None:
-    console.print(indented_bullet(Text(msg, style='mild_warning')))
+    console.print(indented_bullet(Text(msg, style='color(228) dim')))
 
 
 def number_and_pct(_number: int, total: int, digits: int = 1) -> Text:
