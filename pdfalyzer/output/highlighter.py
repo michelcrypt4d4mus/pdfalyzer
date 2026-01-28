@@ -7,7 +7,6 @@ import re
 from rich.highlighter import ReprHighlighter
 
 PYPDF_LOG_PFX_PATTERN = r"\(pypdf\)"
-PYPDF_LOG_PFX = PYPDF_LOG_PFX_PATTERN.replace("\\", '')
 
 # Copied from https://rich.readthedocs.io/en/latest/_modules/rich/highlighter.html#Highlighter
 # so we can get rid of a couple of the patterns.
