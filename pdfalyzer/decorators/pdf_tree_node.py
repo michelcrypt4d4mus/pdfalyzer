@@ -17,8 +17,8 @@ from yaralyzer.util.helpers.rich_helper import DEFAULT_TABLE_OPTIONS
 from pdfalyzer.decorators.pdf_object_properties import PdfObjectProperties
 from pdfalyzer.helpers.pdf_object_helper import pypdf_class_name
 from pdfalyzer.helpers.string_helper import is_prefixed_by_any, numbered_list
-from pdfalyzer.output.styles.node_colors import get_label_style, get_class_style_italic
 from pdfalyzer.output.tables.pdf_node_rich_table import get_stream_preview_rows
+from pdfalyzer.output.theme import get_label_style, get_class_style_italic
 from pdfalyzer.pdf_object_relationship import PdfObjectRelationship
 from pdfalyzer.util.adobe_strings import *
 from pdfalyzer.util.exceptions import PdfWalkError
