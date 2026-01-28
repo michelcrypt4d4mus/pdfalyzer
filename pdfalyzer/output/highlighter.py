@@ -1,3 +1,7 @@
+"""
+Regex patterns and a LogHighlighter that work with the rich.Highlighter approach of coloring
+text output.
+"""
 import re
 
 from rich.highlighter import ReprHighlighter
