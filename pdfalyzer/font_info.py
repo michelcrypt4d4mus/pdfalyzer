@@ -182,7 +182,7 @@ class FontInfo:
                     'char widths',
                     Text(
                         f"{self.widths[0]} (single value repeated {len(self.widths)} times)",
-                        style=get_class_style(list)
+                        style=get_class_style([])
                     )
                 )
             else:

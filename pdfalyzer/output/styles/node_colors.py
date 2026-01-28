@@ -4,6 +4,7 @@ Configurations and methods to help with consistent styling of PDF trees, nodes, 
 import re
 from collections import namedtuple
 from numbers import Number
+from types import NoneType
 from typing import Any
 
 from pypdf.generic import (ArrayObject, ByteStringObject, EncodedStreamObject, IndirectObject,
@@ -18,7 +19,9 @@ from pdfalyzer.util import adobe_strings
 ClassStyle = namedtuple('ClassStyle', ['cls', 'style'])
 
 DEFAULT_LABEL_STYLE = 'yellow'
+DEFAULT_OBJ_TYPE_STYLE = 'bright_yellow'
 FONT_OBJ_BLUE = 'deep_sky_blue4 bold'
+NULL_STYLE = 'grey23'
 PDF_NON_TREE_REF = 'color(243)'
 PARENT_STYLE = 'violet'
 
@@ -32,14 +35,16 @@ PDF_OBJ_TYPE_STYLES = [
     ClassStyle(StreamObject, YARALYZER_THEME_DICT['bytes.title']),
     ClassStyle(TextStringObject, YARALYZER_THEME_DICT['grey.light']),
     ClassStyle(ArrayObject, PDF_ARRAY_STYLE),
-    ClassStyle(NullObject, 'grey23'),
+    ClassStyle(NullObject, NULL_STYLE),
+    ClassStyle(NoneType, NULL_STYLE),
 ]
 
 # Subclasses of the key type will be styled with the value string
 OBJ_TYPE_STYLES = PDF_OBJ_TYPE_STYLES + [
     ClassStyle(Number, 'cyan bold'),
     ClassStyle(dict, 'color(64)'),
-    ClassStyle(list, 'color(143)'),
+    ClassStyle(list, PDF_ARRAY_STYLE),
+    ClassStyle(tuple, PDF_ARRAY_STYLE),
     ClassStyle(str, 'bright_white bold'),
 ]
 
@@ -95,9 +100,14 @@ def get_class_style(obj: Any) -> str:
     elif obj is False:
         cls_style = 'bright_red bold'
     else:
-        cls_style = next((cs.style for cs in OBJ_TYPE_STYLES if isinstance(obj, cs.cls)), '')
+        cls_style = next((cs.style for cs in OBJ_TYPE_STYLES if isinstance(obj, cs.cls)), DEFAULT_OBJ_TYPE_STYLE)
 
-    # log_console.print(f"{type(obj).__name__} style resolved as {cls_style}", style=cls_style)
+    if cls_style == DEFAULT_OBJ_TYPE_STYLE:
+        #log_console.print(f"Style FAIL: {type(obj).__name__} style resolved as {cls_style}", style=cls_style)
+        pass
+
+    if isinstance(obj, type):
+        import pdb;pdb.set_trace()
     return cls_style
 
 

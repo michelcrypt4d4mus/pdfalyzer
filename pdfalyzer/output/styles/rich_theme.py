@@ -36,4 +36,5 @@ PDFALYZER_THEME_DICT.update({
 
 
 # Override whatever theme The Yaralyzer has configured.
+# console.print('\n\n. RICH THEME push_theme()\n\n', style='cyan bold')
 console.push_theme(Theme(PDFALYZER_THEME_DICT))
