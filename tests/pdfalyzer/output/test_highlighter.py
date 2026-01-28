@@ -1,7 +1,7 @@
 from rich.highlighter import ReprHighlighter
 
 from pdfalyzer.output.theme import CUSTOM_LOG_HIGHLIGHTS
-from pdfalyzer.output.highlighter import HIGHLIGHT_PATTERNS
+from pdfalyzer.output.highlighter import HIGHLIGHT_PATTERNS, LogHighlighter
 
 
 def test_highlighter_patterns():
@@ -10,3 +10,7 @@ def test_highlighter_patterns():
     for capture_group_label in CUSTOM_LOG_HIGHLIGHTS.keys():
         label = f"<{capture_group_label.removeprefix(ReprHighlighter.base_style)}>"
         assert any(label in pattern for pattern in HIGHLIGHT_PATTERNS), f"Capture group {label} not found!"
+
+
+def test_get_styles():
+    assert LogHighlighter.get_style('children') == 'repr.child'

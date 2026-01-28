@@ -13,12 +13,16 @@ from typing import Any
 from pypdf.generic import (ArrayObject, ByteStringObject, EncodedStreamObject, IndirectObject,
      NullObject, StreamObject, TextStringObject)
 from rich.highlighter import ReprHighlighter
+from rich.panel import Panel
+from rich.padding import Padding
 from rich.theme import Theme
 from yaralyzer.output.console import console
 from yaralyzer.output.theme import BYTES_NO_DIM, YARALYZER_THEME_DICT
+from yaralyzer.util.logging import log_console
 
 from pdfalyzer.util import adobe_strings
-from pdfalyzer.util.helpers.collections_helper import prefix_keys
+from pdfalyzer.util.helpers.collections_helper import prefix_keys, safe_json
+from pdfalyzer.util.helpers.rich_text_helper import vertically_padded_panel
 from pdfalyzer.util.helpers.string_helper import regex_to_capture_group_label
 
 ClassStyle = namedtuple('ClassStyle', ['cls', 'style'])
@@ -30,18 +34,20 @@ PDF_OBJ_STYLE_PFX = 'pdfobj.'
 # Colors / PDF object styles
 DEFAULT_LABEL_STYLE = 'yellow'
 DEFAULT_OBJ_TYPE_STYLE = 'bright_yellow'
+FONT_FILE_BLUE = 'steel_blue1'
 FONT_OBJ_BLUE = 'deep_sky_blue4 bold'
 NULL_STYLE = 'grey23'
+PAGE_OBJ_STYLE = 'light_salmon3'
 PARENT_STYLE = 'violet'
 PDF_ARRAY_STYLE = 'color(143)'  # color(120)
 PDF_DICTIONARY_STYLE = 'color(64)'
 PDF_NON_TREE_REF_STYLE = 'color(243)'
 PDFALYZER_THEME_DICT = YARALYZER_THEME_DICT.copy()
+RED_ALERT_BASE_STYLE = 'blink bold red'
+TRAILER_OBJ_STYLE = 'bright_green'
 
 PDFALYZER_THEME_DICT.update({
     'BOM': 'bright_green',
-    # PDF objects
-    'pdf.array': PDF_ARRAY_STYLE,
     # fonts
     'font.property': 'color(135)',
     'font.title': 'reverse dark_blue on color(253)',
@@ -56,7 +62,7 @@ PDFALYZER_THEME_DICT.update({
     # warn log events
     'warn': 'bright_yellow',
     # error log events
-    'red_alert': 'blink bold red reverse on white',
+    'red_alert': f'{RED_ALERT_BASE_STYLE} reverse on white',
 })
 
 PDF_OBJ_TYPE_STYLES = [
@@ -80,35 +86,56 @@ OBJ_TYPE_STYLES = PDF_OBJ_TYPE_STYLES + [
 ]
 
 # Order matters - first match will be the style
-LABEL_STYLES_BASE = {
-    re.compile(r'(AA|JavaScript|JS|OpenAction)', re.I | re.M): 'blink bold red',
+LABEL_STYLES_BASE: dict[str, str] = {
+    '/AA':                                                      RED_ALERT_BASE_STYLE,
+    adobe_strings.JAVASCRIPT:                                   RED_ALERT_BASE_STYLE,
+    adobe_strings.JS:                                           RED_ALERT_BASE_STYLE,
+    adobe_strings.OPEN_ACTION:                                  RED_ALERT_BASE_STYLE,
+    '/Action':                                                 'dark_red',
+    # Fonts
     adobe_strings.FONT_DESCRIPTOR:                             'cornflower_blue',
-    fr'{adobe_strings.FONT_FILE}\d?':                          'steel_blue1',
-    r'/(Font(Name)?|BaseFont)':                                FONT_OBJ_BLUE,
+    f'{adobe_strings.FONT_FILE}':                              FONT_FILE_BLUE,
+    f'{adobe_strings.FONT_FILE}2':                             FONT_FILE_BLUE,
+    f'{adobe_strings.FONT_FILE}3':                             FONT_FILE_BLUE,
+    '/FontName':                                               FONT_OBJ_BLUE,
+    adobe_strings.FONT:                                        FONT_OBJ_BLUE,  # After other /Font styles so it matches after
+    '/BaseFont':                                               FONT_OBJ_BLUE,
     adobe_strings.DESCENDANT_FONTS:                            f"{FONT_OBJ_BLUE} dim",
-    r'/CharProc':                                              'dark_cyan',
+    '/CharProc':                                               'dark_cyan',
     adobe_strings.TO_UNICODE:                                  'grey30',
     adobe_strings.ENCODING:                                    YARALYZER_THEME_DICT['encoding.header'],
     adobe_strings.WIDTHS:                                      'color(67)',
     adobe_strings.W:                                           'color(67)',
     adobe_strings.RESOURCES:                                   'magenta',
-    r'/(Trailer|Root|Info|Outlines)':                          'bright_green',
-    r'/Catalog':                                               'color(47)',
-    r'/(Metadata|ViewerPreferences)':                          'color(35)',
-    adobe_strings.OBJ_STM:                                     YARALYZER_THEME_DICT['bytes'],
-    adobe_strings.NUMS:                                        'grey23',
+    # Doc info
+    '/Catalog':                                                'color(47)',
     adobe_strings.CONTENTS:                                    'medium_purple1',
-    r'/Action':                                                'dark_red',
+    adobe_strings.TRAILER:                                     TRAILER_OBJ_STYLE,
+    '/Root':                                                   TRAILER_OBJ_STYLE,
+    '/Info':                                                   TRAILER_OBJ_STYLE,
+    '/Outlines':                                               TRAILER_OBJ_STYLE,
+    '/Metadata':                                              'color(35)',
+    '/ViewerPreferences':                                     'color(35)',
+    adobe_strings.OBJ_STM:                                     YARALYZER_THEME_DICT['bytes'],
+    # Data nodes
     adobe_strings.ANNOTS:                                      'deep_sky_blue4',
     adobe_strings.ANNOT:                                       'color(24)',
-    adobe_strings.PAGES:                                       'dark_orange3',
-    r'/(Page|Pg)':                                             'light_salmon3',
-    adobe_strings.COLOR_SPACE:                                 'medium_orchid1',
-    r'/(URI|Names)':                                           'white',
-    adobe_strings.XOBJECT:                                     'grey37',
+    adobe_strings.NAMES:                                       'white',
+    adobe_strings.NUMS:                                        'grey23',
     adobe_strings.UNLABELED:                                   'grey35 reverse',
+    adobe_strings.XOBJECT:                                     'grey37',
     adobe_strings.XREF:                                        'color(148)',
-    r'/Parent(Tree(NextKey)?)?':                               PARENT_STYLE,
+    '/URI':                                                    'white',
+    # Pages
+    adobe_strings.PAGES:                                       'dark_orange3',
+    adobe_strings.PAGE:                                        PAGE_OBJ_STYLE,
+    adobe_strings.PG:                                          PAGE_OBJ_STYLE,
+    adobe_strings.COLOR_SPACE:                                 'medium_orchid1',
+    # Parents
+    adobe_strings.PARENT:                                      PARENT_STYLE,
+    adobe_strings.PARENT_TREE:                                 PARENT_STYLE,
+    adobe_strings.PARENT_TREE_NEXT_KEY:                        PARENT_STYLE,
+    # Booleans
     adobe_strings.FALSE:                                       'bright_red',
     adobe_strings.TRUE:                                        'green bold',
 }
@@ -120,15 +147,7 @@ LABEL_STYLES_BASE.update({
 })
 
 # Compile regexes as keys
-LABEL_STYLES = {
-    (k if isinstance(k, re.Pattern) else re.compile(k)): v
-    for k, v in LABEL_STYLES_BASE.items()
-}
-
-LONG_ENOUGH_LABEL_STYLES = {
-    k: v
-    for k, v in LABEL_STYLES.items() if len(k.pattern) > 4
-}
+LABEL_STYLES = {re.compile(k): v for k, v in LABEL_STYLES_BASE.items()}
 
 NODE_COLOR_THEME_DICT = {
     **{regex_to_capture_group_label(k): v for k, v in LABEL_STYLES.items()},
@@ -210,15 +229,21 @@ for cls_style in PDF_OBJ_TYPE_STYLES:
 
 
 # Override whatever theme The Yaralyzer has configured.
-console.push_theme(Theme({**PDFALYZER_THEME_DICT, **LOG_THEME_DICT}))
+COMPLETE_THEME_DICT = {**PDFALYZER_THEME_DICT, **LOG_THEME_DICT, **THEME_COLORS_FOR_SHOW_ONLY_DICT}
+console.push_theme(Theme(COMPLETE_THEME_DICT))
 
 
-# print("\n\n *** PATTERNS ***\n")
+def theme_json() -> str:
+    theme_dicts = {
+        'PDFALYZER_THEME_DICT': PDFALYZER_THEME_DICT,
+        'LOG_THEME_DICT': LOG_THEME_DICT,
+        'THEME_COLORS_FOR_SHOW_ONLY_DICT': THEME_COLORS_FOR_SHOW_ONLY_DICT,
+        'COMPLETE_THEME_DICT': COMPLETE_THEME_DICT,
+    }
 
-# for pattern in LogHighlighter.highlights:
-#     log_console.print(f"   - '{pattern}'")
+    return safe_json(theme_dicts)
 
-# print("\n\n *** STYLES ***\n")
 
-# for k, v in LOG_THEME_DICT.items():
-#     log_console.print(f"    '{k}':   '{v}'")
+def debug_themes() -> None:
+    log_console.print(vertically_padded_panel('All Theme Dicts'))
+    log_console.print_json(theme_json(), indent=4, sort_keys=True)

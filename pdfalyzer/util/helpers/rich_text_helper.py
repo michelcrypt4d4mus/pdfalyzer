@@ -51,6 +51,13 @@ def number_and_pct(_number: int, total: int, digits: int = 1) -> Text:
     return Text(str(_number), style='bright_white').append_text(pct_txt(_number, total, digits))
 
 
+def vertically_padded_panel(title, **kwargs) -> Padding:
+    # kwargs['expand'] = False if kwargs.get('expand') is None else kwargs['expand']
+    kwargs['style'] = kwargs.get('style', 'reverse')
+    kwargs['width'] = kwargs.get('width', 70)
+    return Padding(Panel(title, **kwargs), (2, 0, 1, 0))
+
+
 def pct_txt(_number: int, total: int, digits: int = 1) -> Text:
     """Return nicely formatted percentage, e.g. '(80%)'."""
     pct = (100 * float(_number) / float(total)).__round__(digits)

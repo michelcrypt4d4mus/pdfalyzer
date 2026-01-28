@@ -274,7 +274,7 @@ class PdfTreeNode(NodeMixin):
             table_style = ''
 
         table = Table(title, address, pypdf_class_name(self.obj), style=table_style, **DEFAULT_TABLE_OPTIONS)
-        table.columns[0].header_style = f'reverse {get_label_style(self.label)}'
+        table.columns[0].header_style = f'reverse {self.pdf_object.label_style}'
         table.columns[1].header_style = 'dim'
         table.columns[1].overflow = 'fold'
         table.columns[2].header_style = get_class_style_italic(self.obj)

@@ -56,6 +56,7 @@ PAGE            = '/Page'
 PAGES           = '/Pages'
 PARENT          = PagesAttributes.PARENT
 PARENT_TREE     = '/ParentTree'
+PARENT_TREE_NEXT_KEY = '/ParentTreeNextKey'
 PG              = '/Pg'  # Page ref for OBJR
 PREV            = '/Prev'
 RENDITION       = '/Rendition'

@@ -118,12 +118,20 @@ def regex_to_capture_group_label(pattern: re.Pattern | str) -> str:
     return NON_WORD_CHAR_REGEX.sub('', pattern.replace('|', '_'))
 
 
-def regex_to_highlight_pattern(regex: re.Pattern) -> str:
-    """(?P<stream_object>((De|En)coded)?StreamObject)"""
-    pattern = regex.pattern.replace('^', '')
-    pattern = pattern[1:] if pattern[0] == '/' else pattern
+def regex_to_highlight_pattern(regex: re.Pattern | str) -> str:
+    """(?P<stream_object>((De|En)coded)?StreamObject)."""
+    pattern = regex.pattern if isinstance(regex, re.Pattern) else regex
     label = regex_to_capture_group_label(regex)
-    return fr"(?P<{label}>[\b/]{pattern}\b)"
+
+    if len(pattern) <= 2:
+        pattern = fr"^{pattern}$"
+    else:
+        pattern = fr"{pattern}\b".removeprefix('/')
+
+        if not pattern.startswith('^'):
+            pattern = fr"[\b/]{pattern}"
+
+    return fr"(?P<{label}>{pattern})"
 
 
 def replace_digits(string_with_digits: str) -> str:

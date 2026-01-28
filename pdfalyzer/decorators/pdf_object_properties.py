@@ -5,7 +5,7 @@ from pypdf.errors import PdfReadError
 from pypdf.generic import DictionaryObject, IndirectObject, NullObject, NumberObject, PdfObject
 from rich.text import Text
 
-from pdfalyzer.output.theme import get_class_style, get_class_style_dim, get_class_style_italic, get_label_style
+from pdfalyzer.output.theme import COMPLETE_THEME_DICT, DEFAULT_LABEL_STYLE, NODE_STYLE_PFX, get_class_style, get_class_style_dim, get_class_style_italic, get_label_style
 from pdfalyzer.util.adobe_strings import *
 from pdfalyzer.util.helpers.pdf_object_helper import pypdf_class_name
 from pdfalyzer.util.helpers.rich_text_helper import comma_join_txt
@@ -40,6 +40,11 @@ class PdfObjectProperties:
     @property
     def type(self) -> str | None:
         return self._type
+
+    @property
+    def label_style(self) -> str:
+        type_no_slash = (self.type or '').removeprefix('/')
+        return COMPLETE_THEME_DICT.get(f"{NODE_STYLE_PFX}{type_no_slash}", DEFAULT_LABEL_STYLE)
 
     @type.setter
     def type(self, _type: str | None):
@@ -112,7 +117,7 @@ class PdfObjectProperties:
         text = Text('<', style='white')
         text.append(f'{self.idnum}', style='bright_white')
         text.append(':', style='white')
-        text.append(self.label[1:], style=f"{get_label_style(self.label)} {'underline' if underline else ''} bold")
+        text.append(self.label[1:], style=f"bold {self.label_style} {'underline' if underline else ''}")
         text.append('(', style='white')
         text.append(pypdf_class_name(self.obj), style=get_class_style_italic(self.obj))
         text.append(')', style='white')

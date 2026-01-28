@@ -41,6 +41,7 @@ NO_COLOR='\033[0m'
 echo_debug() { echo -e "$1" >&2; }
 echo_error() { echo -e "${RED}ERROR: ${1}${NO_COLOR}" >&2; }
 echo_status() { echo -e "${CYAN}${1}${NO_COLOR}" >&2; }
+echo_warning() { echo -e "${YELLOW}${1}${NO_COLOR}" >&2; }
 
 
 git_current_branch() {
