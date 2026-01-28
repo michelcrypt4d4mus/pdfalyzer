@@ -113,8 +113,9 @@ def props_strings(obj: object, keys: list[str] | None = None) -> list[str]:
     return props
 
 
-def regex_to_capture_group_label(regex: re.Pattern) -> str:
-    return NON_WORD_CHAR_REGEX.sub('', regex.pattern.replace('|', '_'))
+def regex_to_capture_group_label(pattern: re.Pattern | str) -> str:
+    pattern = pattern.pattern if isinstance(pattern, re.Pattern) else pattern
+    return NON_WORD_CHAR_REGEX.sub('', pattern.replace('|', '_'))
 
 
 def regex_to_highlight_pattern(regex: re.Pattern) -> str:

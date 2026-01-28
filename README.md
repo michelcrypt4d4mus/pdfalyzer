@@ -18,11 +18,11 @@ A PDF analysis tool for [visualizing](#example-output) the inner tree-like data 
 You can use `pip` but `pipx` is a cleaner way to install for normal users. Developers should probably use `poetry`.
 
 ```sh
-# If you want to open encrypted PDFs or use the tools that ship with Pdfalyzer (e.g. extract_pdf_text):
-pipx install pdfalyzer[extract]
-
-# Or if you don't care about extracting text, encrypted PDFs, images, etc. just do this:
+# If you don't care about extracting text, encrypted PDFs, images, etc. just do this:
 pipx install pdfalyzer
+
+# Or if you want to open encrypted PDFs or use the tools that ship with Pdfalyzer (e.g. extract_pdf_text):
+pipx install pdfalyzer[extract]
 
 # Then pdfalyze to your hearts content:
 pdfalyze martin_heidegger-being_illmatic.pdf
@@ -169,12 +169,14 @@ for backtick_quoted_string in font.binary_scanner.extract_backtick_quoted_bytes(
 -------------
 
 # Example Output
-The Pdfalyzer can export visualizations to HTML, ANSI colored text, and both PNG and SVG images using the file export functionality that comes with [Rich](https://github.com/Textualize/rich). SVGs can be turned into `png` format images with a tool like Inkscape or `cairosvg` (Inkscape works a lot better in our experience). See `pdfalyze --help` for the specifics.
+The Pdfalyzer can export visualizations to HTML, ANSI colored text, and both PNG and SVG vector images using the file export functionality that comes with [Rich](https://github.com/Textualize/rich).
 
-If you want to export .png images directly from Pdfalyzer you'll need to do one of these things:
+If you want to export `.png` images like the ones below directly from Pdfalyzer you'll need to do one of these things:
 
 1. Install [Inkscape](https://inkscape.org/) (homebrew users can install it with `brew install --cask inkscape`)
-2. Ask for the `img` extra when installing Pdfalyzer which will install [`cairosvg`](https://pypi.org/project/CairoSVG/): `pipx install pdfalyzer[img]`
+1. Ask for the `img` extra when installing Pdfalyzer which will install [`cairosvg`](https://pypi.org/project/CairoSVG/): `pipx install pdfalyzer[img]`. You'll also have to install the CairoSVG executable manually in different ways depending on your operating system, see [the CairoSVG docs](https://cairosvg.org/documentation/#installation) for the specifics.
+
+In our experience Inkscape and CairoSVG both work though we've seen some glitchiness in the rendered output (along with straight up crashes) using CairoSVG on the SVGs rendered by Pdfalyzer so Inkscape is recommended.
 
 
 ## Basic Tree View

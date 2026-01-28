@@ -11,6 +11,7 @@ from rich.markup import escape
 from rich.table import Table
 from rich.text import Text
 from yaralyzer.output.console import console
+from yaralyzer.output.theme import GREY_ADDRESS
 from yaralyzer.util.helpers.rich_helper import DEFAULT_TABLE_OPTIONS
 
 from pdfalyzer.decorators.pdf_object_properties import PdfObjectProperties
@@ -287,7 +288,7 @@ class PdfTreeNode(NodeMixin):
 
                 # Make dangerous stuff look dangerous
                 if (k in DANGEROUS_PDF_KEYS) or (self.label == FONT and k == SUBTYPE and v == TYPE1_FONT):
-                    table.add_row(*[col.plain for col in row], style='fail')
+                    table.add_row(*[col.plain for col in row], style='bold reverse red')
                 else:
                     table.add_row(*row)
         elif isinstance(self.obj, list):
@@ -302,17 +303,17 @@ class PdfTreeNode(NodeMixin):
 
         return table
 
+    def _colored_address(self, max_length: int = DEFAULT_MAX_ADDRESS_LENGTH) -> Text:
+        """Rich text version of tree_address()."""
+        text = Text('@', style='bright_white')
+        return text.append(self.tree_address(max_length), style=GREY_ADDRESS)
+
     def _write_non_tree_relationships(self, write_method: Callable) -> None:
         """Use write_method() to write self.non_tree_relationships."""
         write_method(f"{escape(str(self))} parent from candidates:")
 
         for i, r in enumerate(self.non_tree_relationships):
             write_method(f"  {i + 1}. {escape(str(r))}, Descendant Count: {r.from_node.descendants_count()}")
-
-    def _colored_address(self, max_length: int | None = None) -> Text:
-        """Rich text version of tree_address()."""
-        text = Text('@', style='bright_white')
-        return text.append(self.tree_address(max_length), style='address')
 
     def __repr__(self) -> str:
         return self.__str__()

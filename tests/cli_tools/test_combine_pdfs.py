@@ -32,8 +32,8 @@ def combined_pdf_path(tmp_dir):
 
 
 def test_combine_pdfs(combined_pdf_path, one_page_pdfs, script_cmd_prefix):
-    assert len(one_page_pdfs) == 3
     assert not combined_pdf_path.exists()
+    assert len(one_page_pdfs) == 3
     check_output(script_cmd_prefix + [COMBINE_PDFS, '-o', combined_pdf_path, *one_page_pdfs], env=environ).decode()
     assert combined_pdf_path.exists()
     assert file_size_in_mb(combined_pdf_path) == 0.18
@@ -42,6 +42,7 @@ def test_combine_pdfs(combined_pdf_path, one_page_pdfs, script_cmd_prefix):
 @pytest.mark.slow
 def test_combine_pdfs_image_quality(combined_pdf_path, one_page_pdfs, script_cmd_prefix):
     assert not combined_pdf_path.exists()
-    check_output(script_cmd_prefix + [COMBINE_PDFS, '-o', combined_pdf_path, '-iq', '1', *one_page_pdfs], env=environ).decode()
+    cmd = script_cmd_prefix + [COMBINE_PDFS, '-o', combined_pdf_path, '-iq', '1', *one_page_pdfs]
+    check_output(cmd, env=environ).decode()
     assert combined_pdf_path.exists()
     assert file_size_in_mb(combined_pdf_path) == 0.09

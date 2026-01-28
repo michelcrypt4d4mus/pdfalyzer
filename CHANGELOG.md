@@ -1,4 +1,6 @@
 # NEXT RELEASE
+
+### 1.19.2
 * Use `pdf-parser.py` to verify object IDs instead of checking all IDs from 0 to `num_nodes`
 
 ### 1.19.1

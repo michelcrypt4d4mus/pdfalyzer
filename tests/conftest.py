@@ -4,9 +4,16 @@ from pathlib import Path
 from typing import Callable, Sequence
 
 PYTESTS_DIR = Path(__file__).parent
-TMP_DIR = PYTESTS_DIR.joinpath('tmp')
 PROJECT_DIR = PYTESTS_DIR.parent
 LOG_DIR = PROJECT_DIR.joinpath('log').resolve()
+# Fixtures dirs
+FIXTURES_DIR = PYTESTS_DIR.joinpath('fixtures')
+RENDERED_FIXTURES_DIR = FIXTURES_DIR.joinpath('rendered')
+TMP_DIR = PYTESTS_DIR.joinpath('tmp')
+# /doc subdirs
+DOCUMENTATION_DIR = PROJECT_DIR.joinpath('doc')
+SVG_DIR = DOCUMENTATION_DIR.joinpath('svgs')
+RENDERED_IMAGES_DIR = SVG_DIR.joinpath('rendered_images')
 
 for required_dir in [LOG_DIR, TMP_DIR]:
     if not required_dir.exists():
@@ -28,11 +35,7 @@ from pdfalyzer.util.logging import log
 # TODO: importlib doesn't play nice with running tests via GitHub actions
 # import importlib.resources
 # PROJECT_DIR = path.join(str(importlib.resources.files('pdfalyzer')), pardir)
-DOCUMENTATION_DIR = PROJECT_DIR.joinpath('doc')
-SVG_DIR = DOCUMENTATION_DIR.joinpath('svgs')
-RENDERED_IMAGES_DIR = SVG_DIR.joinpath('rendered_images')
-FIXTURES_DIR = PYTESTS_DIR.joinpath('fixtures')
-RENDERED_FIXTURES_DIR = FIXTURES_DIR.joinpath('rendered')
+
 PDFALYZE_BASE_CMD = [PDFALYZE, ECHO_COMMAND_OPTION, '--allow-missed-nodes', NO_TIMESTAMPS_OPTION]
 
 # TODO: use env_helpers

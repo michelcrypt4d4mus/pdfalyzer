@@ -25,5 +25,11 @@ def compare_dicts(d1: DictionaryObject, d2: DictionaryObject, already_compared_k
         compare_dicts(d2, d1, already_compared_keys)
 
 
+def prefix_keys(prefix: str, _dict: dict[str, str]) -> dict[str, str]:
+    """Add `prefix` to the front of all the keys in `_dict`."""
+    return {f"{prefix}{k}": v for k, v in _dict.items()}
+
+
 def without_falsey(_list: list) -> list:
+    """Return `_list` without falsey elements (None, empty string, empty dict/list)."""
     return [e for e in _list if e]
