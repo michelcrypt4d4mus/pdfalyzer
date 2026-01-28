@@ -55,6 +55,7 @@ keywords = [
     "yara"
 ]
 
+# TODO: what is this / is it necessary?
 packages = [
     { include = "pdfalyzer" }
 ]
