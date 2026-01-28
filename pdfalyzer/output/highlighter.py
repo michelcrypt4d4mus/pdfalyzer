@@ -5,7 +5,6 @@ from rich.highlighter import ReprHighlighter
 from pdfalyzer.helpers.collections_helper import prefix_keys
 from pdfalyzer.output.theme import NODE_COLOR_THEME_DICT, PARENT_STYLE, PDF_ARRAY_STYLE, PDF_DICTIONARY_STYLE
 
-
 PYPDF_LOG_PFX_PATTERN = r"\(pypdf\)"
 PYPDF_LOG_PFX = PYPDF_LOG_PFX_PATTERN.replace("\\", '')
 
@@ -90,12 +89,3 @@ class LogHighlighter(ReprHighlighter):
             re.compile(pattern)
             for pattern in (patterns + HIGHLIGHT_PATTERNS)
         ]
-
-
-assert all('(?P<' in pattern for pattern in HIGHLIGHT_PATTERNS)
-
-for capture_group_label in CUSTOM_LOG_HIGHLIGHTS.keys():
-    label = f"<{capture_group_label.removeprefix(ReprHighlighter.base_style)}>"
-    print(f" label: {label}")
-    #import pdb;pdb.set_trace()
-    assert any(label in pattern for pattern in HIGHLIGHT_PATTERNS), f"Capture group {label} not found!"
