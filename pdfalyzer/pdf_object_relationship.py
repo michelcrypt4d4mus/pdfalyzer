@@ -4,7 +4,7 @@ Simple container class for information about a link between two PDF objects.
 from dataclasses import dataclass, field
 from typing import Any, Self
 
-from pypdf.generic import IndirectObject, PdfObject
+from pypdf.generic import BooleanObject, IndirectObject, NullObject, PdfObject
 from yaralyzer.util.logging import log
 
 from pdfalyzer.helpers.pdf_object_helper import coerce_nums_array_to_dict
@@ -87,9 +87,8 @@ class PdfObjectRelationship:
                     val = coerce_nums_array_to_dict(val)
 
                 references += cls.build_node_references(from_node, val, ref_key or key, _build_address(key, address))
-        else:
-            pass
-            # log.debug(f"Adding no references for PdfObject reference '{ref_key}' -> '{from_obj}'")
+        elif not isinstance(from_obj, (float, int, str, BooleanObject, NullObject)):
+            log.debug(f"Adding no references for PdfObject reference '{ref_key}' -> '{from_obj}'")
 
         # Set all returned relationships to originate from top level from_obj before returning
         for ref in references:
