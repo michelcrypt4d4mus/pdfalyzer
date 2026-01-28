@@ -188,15 +188,17 @@ class PdfalyzerPresenter:
 
     def _analyze_tree(self) -> dict:
         """Generate a dict with some basic data points about the PDF tree"""
-        pdf_object_types = defaultdict(int)
-        node_labels = defaultdict(int)
         keys_encountered = defaultdict(int)
         node_count = 0
+        node_labels = defaultdict(int)
+        node_types = defaultdict(int)
+        pdf_object_types = defaultdict(int)
 
         for node in self.pdfalyzer.node_iterator():
-            pdf_object_types[type(node.obj).__name__] += 1
-            node_labels[node.label] += 1
             node_count += 1
+            node_labels[node.label] += 1
+            node_types[node.type] += 1
+            pdf_object_types[type(node.obj).__name__] += 1
 
             if isinstance(node.obj, dict):
                 for k in node.obj.keys():
@@ -206,6 +208,7 @@ class PdfalyzerPresenter:
             'keys_encountered': keys_encountered,
             'node_count': node_count,
             'node_labels': node_labels,
+            'node_types': node_types,
             'pdf_object_types': pdf_object_types,
         }
 
