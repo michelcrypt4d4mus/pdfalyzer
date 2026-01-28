@@ -91,7 +91,7 @@ class PdfObjectProperties:
     def get_table_row(
         self,
         reference_key: str | int | None,
-        pdfalyzer: 'Pdfalyzer',
+        pdfalyzer: 'Pdfalyzer',  # noqa: F821
         empty_3rd_col: bool = False
     ) -> tuple[Text, Text, Text]:
         """Extract property at `reference_key` and build a formatted 3-tuple for use in Rich tables."""
@@ -131,7 +131,7 @@ class PdfObjectProperties:
         text.append('>')
         return text
 
-    def _resolve_references(self, reference_key: str | int, obj: PdfObject, pdfalyzer: 'Pdfalyzer') -> Any:
+    def _resolve_references(self, reference_key: str | int, obj: PdfObject, pdfalyzer: 'Pdfalyzer') -> Any:  # noqa: F821
         """Recursively build the same data structure except IndirectObjects are resolved to nodes."""
         if isinstance(obj, NumberObject):
             return obj.as_numeric()

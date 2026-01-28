@@ -23,7 +23,7 @@ class PdfTreeVerifier:
     Attributes:
         pdfalyzer (Pdfalyzer): The Pdfalyzer instance being verified
     """
-    pdfalyzer: 'Pdfalyzer'
+    pdfalyzer: 'Pdfalyzer'  # noqa: F821
 
     def __post_init__(self):
         self._verify_unencountered_are_untraversable()
