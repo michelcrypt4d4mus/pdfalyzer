@@ -320,7 +320,7 @@ class Pdfalyzer:
         return to_node
 
     def _catalog_node(self) -> PdfTreeNode | None:
-        return self.find_node_with_attr('type', '/Catalog')
+        return self.find_node_with_attr('type', CATALOG)
 
     def _handle_fatal_error(self, msg: str, e: Exception) -> None:
         self.close()
@@ -333,7 +333,7 @@ class Pdfalyzer:
             raise e
 
     def _info_node(self) -> PdfTreeNode | None:
-        return self.find_node_with_attr('type', '/Info')
+        return self.find_node_with_attr('type', INFO)
 
     def _resolve_indeterminate_nodes(self) -> None:
         """Place indeterminate nodes in the tree."""
