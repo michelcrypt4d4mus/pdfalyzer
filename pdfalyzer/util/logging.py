@@ -19,7 +19,7 @@ from pdfalyzer.helpers.string_helper import regex_to_highlight_pattern
 from pdfalyzer.output.styles.node_colors import LABEL_STYLES, NODE_COLOR_THEME_DICT, PARENT_STYLE, PDF_OBJ_TYPE_STYLES
 from pdfalyzer.output.styles.rich_theme import PDF_ARRAY_STYLE, PDF_DICTIONARY_STYLE
 
-LONG_ENOUGH_LABEL_STYLES = [ls for ls in LABEL_STYLES if len(ls[0].pattern) > 4]
+LONG_ENOUGH_LABEL_STYLES = {k: v for k, v in LABEL_STYLES.items() if len(k.pattern) > 4}
 PYPDF_LOG_PFX_PATTERN = r"\(pypdf\)"
 PYPDF_LOG_PFX = PYPDF_LOG_PFX_PATTERN.replace("\\", '')
 
@@ -82,7 +82,7 @@ HIGHLIGHT_PATTERNS = DEFAULT_REPR_HIGHLIGHTER_PATTERNS + [
     r"(?P<relationship>Relationship( of)?)",
     r"(?P<relationship>via symlink|parent/child|child/parent)",
     r"(?P<stream_object>((De|En)coded)?Stream(Object)?)",
-    *[regex_to_highlight_pattern(label_style[0]) for label_style in LONG_ENOUGH_LABEL_STYLES],
+    *[regex_to_highlight_pattern(style_regex) for style_regex in LONG_ENOUGH_LABEL_STYLES.keys()],
     *[regex_to_highlight_pattern(re.compile(cs[0].__name__)) for cs in PDF_OBJ_TYPE_STYLES],
 ]
 

@@ -48,47 +48,54 @@ OBJ_TYPE_STYLES = PDF_OBJ_TYPE_STYLES + [
     ClassStyle(str, 'bright_white bold'),
 ]
 
-LABEL_STYLES = [
-    [re.compile(r'(AA|JavaScript|JS|OpenAction)', re.I | re.M), 'blink bold red'],
-    [re.compile(adobe_strings.FONT_DESCRIPTOR),    'cornflower_blue'],
-    [re.compile(fr'{adobe_strings.FONT_FILE}\d?'),       'steel_blue1'],
-    [re.compile(f'/(Font(Name)?|BaseFont)'),             FONT_OBJ_BLUE],
-    [re.compile(adobe_strings.DESCENDANT_FONTS),                    f"{FONT_OBJ_BLUE} dim"],
-    [re.compile(f'/CharProc'),                            'dark_cyan'],
-    [re.compile(adobe_strings.TO_UNICODE),         'grey30'],
-    [re.compile(adobe_strings.ENCODING),            YARALYZER_THEME_DICT['encoding.header']],
-    [re.compile(adobe_strings.WIDTHS),             'color(67)'],
-    [re.compile(adobe_strings.W),                  'color(67)'],
-    [re.compile(adobe_strings.RESOURCES),          'magenta'],
-    [re.compile(r'/(Trailer|Root|Info|Outlines)'),        'bright_green'],
-    [re.compile(r'/Catalog'),                             'color(47)'],
-    [re.compile('/(Metadata|ViewerPreferences)'),         'color(35)'],
-    [re.compile(adobe_strings.OBJ_STM),            YARALYZER_THEME_DICT['bytes']],
-    [re.compile(adobe_strings.NUMS),               'grey23'],
-    [re.compile(adobe_strings.CONTENTS),                            'medium_purple1'],
-    [re.compile('/Action'),                              'dark_red'],
-    [re.compile(adobe_strings.ANNOTS),                              'deep_sky_blue4'],
-    [re.compile(adobe_strings.ANNOT),                               'color(24)'],
-    [re.compile(adobe_strings.PAGES),                               'dark_orange3'],
-    [re.compile('/(Page|Pg)'),                           'light_salmon3'],
-    [re.compile(adobe_strings.COLOR_SPACE),                          'medium_orchid1'],
-    [re.compile('/(URI|Names)'),                         'white'],
-    [re.compile(adobe_strings.XOBJECT),            'grey37'],
-    [re.compile(adobe_strings.UNLABELED),          'grey35 reverse'],
-    [re.compile(adobe_strings.XREF),               'color(148)'],
-    [re.compile(fr'/Parent(Tree(NextKey)?)?'),            PARENT_STYLE],
-    [re.compile(adobe_strings.FALSE),                     'bright_red'],
-    [re.compile(adobe_strings.TRUE),                      'green bold'],
-]
+# Order matters - first match will be the style
+LABEL_STYLES_BASE = {
+    re.compile(r'(AA|JavaScript|JS|OpenAction)', re.I | re.M): 'blink bold red',
+    adobe_strings.FONT_DESCRIPTOR:    'cornflower_blue',
+    fr'{adobe_strings.FONT_FILE}\d?':       'steel_blue1',
+    f'/(Font(Name)?|BaseFont)':             FONT_OBJ_BLUE,
+    adobe_strings.DESCENDANT_FONTS:                    f"{FONT_OBJ_BLUE} dim",
+    f'/CharProc':                            'dark_cyan',
+    adobe_strings.TO_UNICODE:         'grey30',
+    adobe_strings.ENCODING:            YARALYZER_THEME_DICT['encoding.header'],
+    adobe_strings.WIDTHS:             'color(67)',
+    adobe_strings.W:                  'color(67)',
+    adobe_strings.RESOURCES:          'magenta',
+    r'/(Trailer|Root|Info|Outlines)':        'bright_green',
+    r'/Catalog':                             'color(47)',
+    '/(Metadata|ViewerPreferences)':         'color(35)',
+    adobe_strings.OBJ_STM:            YARALYZER_THEME_DICT['bytes'],
+    adobe_strings.NUMS:               'grey23',
+    adobe_strings.CONTENTS:                            'medium_purple1',
+    '/Action':                              'dark_red',
+    adobe_strings.ANNOTS:                              'deep_sky_blue4',
+    adobe_strings.ANNOT:                               'color(24)',
+    adobe_strings.PAGES:                               'dark_orange3',
+    '/(Page|Pg)':                           'light_salmon3',
+    adobe_strings.COLOR_SPACE:                          'medium_orchid1',
+    '/(URI|Names)':                         'white',
+    adobe_strings.XOBJECT:            'grey37',
+    adobe_strings.UNLABELED:          'grey35 reverse',
+    adobe_strings.XREF:               'color(148)',
+    fr'/Parent(Tree(NextKey)?)?':            PARENT_STYLE,
+    adobe_strings.FALSE:                     'bright_red',
+    adobe_strings.TRUE:                      'green bold',
+}
 
 # Add styles for all NON_TREE_REFERENCES
-LABEL_STYLES += [
-    [re.compile(f'{key}'), PDF_NON_TREE_REF]
+LABEL_STYLES_BASE.update({
+    key: PDF_NON_TREE_REF
     for key in adobe_strings.NON_TREE_REFERENCES
-]
+})
+
+# Compile regexes as keys
+LABEL_STYLES = {
+    (k if isinstance(k, re.Pattern) else re.compile(k)): v
+    for k, v in LABEL_STYLES_BASE.items()
+}
 
 NODE_COLOR_THEME_DICT = {
-    **{regex_to_capture_group_label(label_style[0]): label_style[1] for label_style in LABEL_STYLES},
+    **{regex_to_capture_group_label(k): v for k, v in LABEL_STYLES.items()},
     **{regex_to_capture_group_label(re.compile(cs[0].__name__)): cs[1] for cs in PDF_OBJ_TYPE_STYLES},
 }
 
@@ -127,17 +134,17 @@ def get_class_style_italic(obj: Any) -> str:
 
 def get_label_style(label: str) -> str:
     """Lookup a style based on the node's label string (either its type or first address)."""
-    return next((ls[1] for ls in LABEL_STYLES if ls[0].match(label)), DEFAULT_LABEL_STYLE)
+    return next((v for k, v in LABEL_STYLES.items() if k.match(label)), DEFAULT_LABEL_STYLE)
 
 
 # TODO: Right now NODE_COLOR_THEME_DICT is the real action. These need to be integrated into the main theme.
 THEME_COLORS_FOR_SHOW_ONLY_DICT = {}
 
-for label_style in LABEL_STYLES:
-    patterns = [regex_to_capture_group_label(p) for p in label_style[0].pattern.strip().split('|')]
+for style_regex in LABEL_STYLES.keys():
+    patterns = [regex_to_capture_group_label(p) for p in style_regex.pattern.strip().split('|')]
 
     for obj_type in patterns:
-        THEME_COLORS_FOR_SHOW_ONLY_DICT[f"{NODE_STYLE_PFX}{obj_type}"] = label_style[1]
+        THEME_COLORS_FOR_SHOW_ONLY_DICT[f"{NODE_STYLE_PFX}{obj_type}"] = LABEL_STYLES[style_regex]
 
 for cls_style in PDF_OBJ_TYPE_STYLES:
     THEME_COLORS_FOR_SHOW_ONLY_DICT[f"{PDF_OBJ_STYLE_PFX}{cls_style.cls.__name__}"] = cls_style.style
