@@ -194,7 +194,7 @@ class FontInfo:
                         RAW_CHAR_WIDTHS,
                         Text(
                             f"{self.raw_widths[0]} (single value repeated {len(self.raw_widths)} times)",
-                            style=get_class_style(list)
+                            style=get_class_style([])
                         )
                     )
                 else:

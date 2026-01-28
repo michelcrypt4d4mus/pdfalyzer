@@ -5,6 +5,7 @@ description = "Analyze PDFs with colors (and YARA). Visualize a PDF's inner tree
 authors = ["Michel de Cryptadamus <michel@cryptadamus.com>"]
 license = "GPL-3.0-or-later"
 readme = "README.md"
+
 documentation = "https://github.com/michelcrypt4d4mus/pdfalyzer"
 homepage = "https://github.com/michelcrypt4d4mus/pdfalyzer"
 repository = "https://github.com/michelcrypt4d4mus/pdfalyzer"
@@ -55,9 +56,13 @@ keywords = [
     "yara"
 ]
 
+# TODO: what is this / is it necessary?
 packages = [
     { include = "pdfalyzer" }
 ]
+
+[tool.poetry.urls]
+Changelog = "https://github.com/michelcrypt4d4mus/pdfalyzer/blob/master/CHANGELOG.md"
 
 
 #####################
@@ -111,13 +116,6 @@ combine_pdfs = 'pdfalyzer:combine_pdfs'
 extract_pdf_pages = 'pdfalyzer:extract_pdf_pages'
 extract_pdf_text = 'pdfalyzer:extract_pdf_text'
 pdfalyze = 'pdfalyzer:pdfalyze'
-
-
-#####################
-#     PyPi URLs     #
-#####################
-[tool.poetry.urls]
-Changelog = "https://github.com/michelcrypt4d4mus/pdfalyzer/blob/master/CHANGELOG.md"
 
 
 ###############################
