@@ -21,7 +21,7 @@ FONT_OBJ_BLUE = 'deep_sky_blue4 bold'
 PDF_NON_TREE_REF = 'color(243)'
 PARENT_STYLE = 'violet'
 
-NODE_STYLE_PFX = 'pdfnode.'
+NODE_STYLE_PFX = 'pdf.'
 PDF_OBJ_STYLE_PFX = 'pdfobj.'
 
 PDF_OBJ_TYPE_STYLES = [
