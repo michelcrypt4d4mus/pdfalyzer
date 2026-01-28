@@ -4,7 +4,7 @@ TODO: interesting colors # row_styles[0] = 'reverse bold on color(144)' <-
 """
 from rich.theme import Theme
 from yaralyzer.output.console import console
-from yaralyzer.output.theme import GREY_ADDRESS, YARALYZER_THEME_DICT
+from yaralyzer.output.theme import YARALYZER_THEME_DICT
 
 # Colors / PDF object styles
 PDF_ARRAY_STYLE = 'color(143)'  # color(120)

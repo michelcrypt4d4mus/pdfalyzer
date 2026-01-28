@@ -303,17 +303,17 @@ class PdfTreeNode(NodeMixin):
 
         return table
 
+    def _colored_address(self, max_length: int = DEFAULT_MAX_ADDRESS_LENGTH) -> Text:
+        """Rich text version of tree_address()."""
+        text = Text('@', style='bright_white')
+        return text.append(self.tree_address(max_length), style=GREY_ADDRESS)
+
     def _write_non_tree_relationships(self, write_method: Callable) -> None:
         """Use write_method() to write self.non_tree_relationships."""
         write_method(f"{escape(str(self))} parent from candidates:")
 
         for i, r in enumerate(self.non_tree_relationships):
             write_method(f"  {i + 1}. {escape(str(r))}, Descendant Count: {r.from_node.descendants_count()}")
-
-    def _colored_address(self, max_length: int = DEFAULT_MAX_ADDRESS_LENGTH) -> Text:
-        """Rich text version of tree_address()."""
-        text = Text('@', style='bright_white')
-        return text.append(self.tree_address(max_length), style=GREY_ADDRESS)
 
     def __repr__(self) -> str:
         return self.__str__()
