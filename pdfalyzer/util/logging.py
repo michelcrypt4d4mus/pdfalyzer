@@ -17,7 +17,7 @@ from yaralyzer.util.logging import DEFAULT_LOG_HANDLER_KWARGS, log, log_console,
 from pdfalyzer.helpers.collections_helper import prefix_keys
 from pdfalyzer.helpers.string_helper import regex_to_highlight_pattern
 from pdfalyzer.output.styles.node_colors import LABEL_STYLES, NODE_COLOR_THEME_DICT, PARENT_STYLE, PDF_OBJ_TYPE_STYLES
-from pdfalyzer.output.styles.rich_theme import PDF_ARRAY_STYLE, PDF_DICTIONARY_STYLE
+from pdfalyzer.output.theme import PDF_ARRAY_STYLE, PDF_DICTIONARY_STYLE
 
 LONG_ENOUGH_LABEL_STYLES = {k: v for k, v in LABEL_STYLES.items() if len(k.pattern) > 4}
 PYPDF_LOG_PFX_PATTERN = r"\(pypdf\)"

@@ -13,7 +13,7 @@ from yaralyzer.output.theme import YARALYZER_THEME_DICT
 from yaralyzer.util.logging import log_console
 
 from pdfalyzer.helpers.string_helper import regex_to_capture_group_label
-from pdfalyzer.output.styles.rich_theme import PDF_ARRAY_STYLE
+from pdfalyzer.output.theme import PDF_ARRAY_STYLE
 from pdfalyzer.util import adobe_strings
 
 ClassStyle = namedtuple('ClassStyle', ['cls', 'style'])
