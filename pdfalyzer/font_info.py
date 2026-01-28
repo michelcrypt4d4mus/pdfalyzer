@@ -15,7 +15,7 @@ from pdfalyzer.decorators.pdf_tree_node import PdfTreeNode
 from pdfalyzer.output.character_mapping import print_character_mapping, print_prepared_charmap
 from pdfalyzer.output.layout import print_section_subheader, subheading_width
 from pdfalyzer.output.theme import get_class_style, get_label_style
-from pdfalyzer.util.adobe_strings import (FONT, FONT_DESCRIPTOR, FONT_FILE, FONT_LENGTHS, RESOURCES,
+from pdfalyzer.util.adobe_strings import (DESCENDANT_FONTS, FONT, FONT_DESCRIPTOR, FONT_FILE, FONT_LENGTHS, RESOURCES,
      SUBTYPE, TO_UNICODE, TYPE, W, WIDTHS)
 from pdfalyzer.util.helpers.collections_helper import without_falsey
 
@@ -47,7 +47,7 @@ class FontInfo:
     binary_scanner: BinaryScanner | None = None
     descendant_fonts_subtype: str | None = None
     display_title: str = field(init=False)
-    font_descriptor_dict: DictionaryObject = field(init=False)
+    font_descriptor_dict: DictionaryObject | None = None
     font_dict: DictionaryObject = field(init=False)
     font_obj: Font = field(init=False)
     idnum: int = field(init=False)
@@ -79,7 +79,6 @@ class FontInfo:
             self._extract_font_file_props()
         except Exception as e:
             log.warning(f"Failed to extract data from /FontDescriptor or /FontFile\n{self.font_descriptor_dict}, Error: {e}")
-            self.font_descriptor_dict = None # TODO: should be a default maybe?
 
         if isinstance(self.raw_widths, IndirectObject):
             self.raw_widths = self.raw_widths.get_object()
@@ -122,7 +121,7 @@ class FontInfo:
             self.font_descriptor_dict = cast(DictionaryObject, self.font_dict[FONT_DESCRIPTOR].get_object())
 
         # pypdf FontDescriptor fills in defaults for these props so we have to extract from source
-        if 'font_descriptor_dict' in dir(self) and self.font_descriptor_dict:
+        if self.font_descriptor_dict:
             self.bounding_box = self.font_descriptor_dict.get('/FontBBox')
             self.flags = int(self.font_descriptor_dict.get('/Flags'))
         else:
