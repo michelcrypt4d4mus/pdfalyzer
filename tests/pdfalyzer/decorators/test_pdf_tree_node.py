@@ -1,3 +1,11 @@
+import pytest
+
+
+@pytest.fixture(scope="session")
+def pages_node(analyzing_malicious_pdfalyzer):
+    return analyzing_malicious_pdfalyzer.find_node_by_idnum(2)
+
+
 def test_pdf_node_address(analyzing_malicious_pdfalyzer):
     node41 = analyzing_malicious_pdfalyzer.find_node_by_idnum(41)
     assert node41.tree_address() == '/Root/StructTreeRoot/K[0]/K[24]/K[1]/K[3]/K[0]/K[0]/K[1]/K[0]/Obj'
