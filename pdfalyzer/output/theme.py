@@ -44,7 +44,7 @@ TRAILER_OBJ_STYLE = 'chartreuse2'
 
 PDFALYZER_THEME_DICT = {
     **YARALYZER_THEME_DICT,
-    'BOM': 'bright_green',
+    'bytes.BOM': 'bright_green',
     # charmap
     'charmap.title': 'color(25)',
     'charmap.prepared_title': 'color(23)',
