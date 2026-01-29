@@ -8,7 +8,7 @@ from rich.markup import escape
 from rich.highlighter import ReprHighlighter
 from yaralyzer.util.logging import log_console
 
-from pdfalyzer.util.helpers.rich_text_helper import vertically_padded_panel
+from pdfalyzer.util.helpers.rich_helper import vertically_padded_panel
 
 PDF_OBJ_STYLE_PREFIX = 'pdf.'
 PYPDF_LOG_PFX_PATTERN = r"\(pypdf\)"

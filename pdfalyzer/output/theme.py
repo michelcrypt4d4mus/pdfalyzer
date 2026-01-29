@@ -23,7 +23,7 @@ from yaralyzer.util.logging import log_console
 from pdfalyzer.output.highlighter import PdfHighlighter
 from pdfalyzer.util import adobe_strings
 from pdfalyzer.util.helpers.collections_helper import prefix_keys, safe_json
-from pdfalyzer.util.helpers.rich_text_helper import vertically_padded_panel
+from pdfalyzer.util.helpers.rich_helper import vertically_padded_panel
 from pdfalyzer.util.helpers.string_helper import regex_to_capture_group_label
 
 ClassStyle = namedtuple('ClassStyle', ['cls', 'style'])

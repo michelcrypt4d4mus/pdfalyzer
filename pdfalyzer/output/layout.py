@@ -1,5 +1,5 @@
 """
-Methods to help with the formatting of the output tables, headers, panels, etc.
+Methods to help with the formatting of the output tables, headers, panels, etc. via Rich.
 """
 from rich.padding import Padding
 from rich.panel import Panel
@@ -7,7 +7,7 @@ from rich.table import Table
 from yaralyzer.output.console import console, console_width
 from yaralyzer.util.helpers.rich_helper import DEFAULT_TABLE_OPTIONS
 
-from pdfalyzer.util.helpers.rich_text_helper import indent_padding
+from pdfalyzer.util.helpers.rich_helper import indent_padding
 
 DEFAULT_SUBTABLE_COL_STYLES = ['white', 'bright_white']
 HEADER_PADDING = (1, 1)
