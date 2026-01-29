@@ -109,6 +109,8 @@ class FontInfo:
             return
 
         # CID or composite fonts have a 1 element array in /DescendantFonts that has the /FontDescriptor
+        # TODO: analyzing-malicious rich tree is dereferencing 15./DescendantFonts node when it shouldn't.
+        # it was ok ca. b08d03d99b5342df60265010dcdcf1a9782c52f7
         if DESCENDANT_FONTS in self.font_dict:
             descendant_font = self.font_dict[DESCENDANT_FONTS][0].get_object()
 
