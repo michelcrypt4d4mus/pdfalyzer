@@ -75,15 +75,15 @@ class LogHighlighter(ReprHighlighter):
         return ''
 
     @classmethod
-    def debug_highlight_patterns(cls):
-        log_console.print(vertically_padded_panel(f"{cls.__name__}.highlights Patterns (base_style: '{cls.base_style}')"))
+    def prefixed_style(cls, style: str) -> str:
+        return cls.base_style + style
+
+    @classmethod
+    def _debug_highlight_patterns(cls):
+        log_console.print(vertically_padded_panel(f"{cls.__name__}.highlights Patterns (base: '{cls.base_style}')"))
 
         for pattern in cls.highlights:
             log_console.print(f"   - '{escape(str(pattern))}'")
-
-    @classmethod
-    def prefixed_style(cls, style: str) -> str:
-        return cls.base_style + style
 
 
 class PdfHighlighter(LogHighlighter):

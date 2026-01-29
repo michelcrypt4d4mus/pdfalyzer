@@ -153,8 +153,8 @@ def parse_arguments(config: Type[PdfalyzerConfig], _args: Namespace | None) -> N
     # Let Yaralyzer's parse_arguments() handle args like --env-vars (it will exit afterwards)
     if should_exit_early:
         if '--show-colors' in sys.argv and '--debug' in sys.argv:
-            LogHighlighter.debug_highlight_patterns()
-            PdfHighlighter.debug_highlight_patterns()
+            LogHighlighter._debug_highlight_patterns()
+            PdfHighlighter._debug_highlight_patterns()
             debug_themes()
 
         parse_yaralyzer_args(PdfalyzerConfig)

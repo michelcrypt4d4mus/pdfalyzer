@@ -96,9 +96,6 @@ When you run `pdfalyze` on some PDF the tool will check for a file called `.pdfa
 
 If it finds a `.pdfalyzer` file in either such place it will load configuration options from it. Documentation on the options that can be configured with these files lives in [`.pdfalyzer.example`](.pdfalyzer.example) which doubles as an example file you can copy into place and edit to your needs. Handy if you find yourself typing the same command line options over and over again.
 
-#### Environment Variables
-Even if you don't configure your own `.pdfalyzer` file you may still glean some insight from reading the descriptions of the various variables in [`.pdfalyzer.example`](.pdfalyzer.example); there's a little more exposition there than in the output of `pdfalyze -h`.
-
 ### Guarantees
 If any PDF object ID between 1 and the `/Size` reported by the PDF itself could not be successfully placed in the tree warnings will be printed and the `pdfalyze` command will return an error code (1, specifically) to the shell. If you do not get any warnings and/or `pdfalyze` returns success then all[^2] of the inner PDF objects should be seen in the output.
 
