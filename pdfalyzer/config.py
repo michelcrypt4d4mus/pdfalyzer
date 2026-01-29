@@ -2,6 +2,8 @@
 PdfalyzerConfig object holds the unification of configuration options parsed from the command line
 as well as those set by environment variables and/or a .pdfalyzer file.
 """
+import sys
+from argparse import Namespace
 from os import path
 from pathlib import Path
 from typing import Callable, TypeVar
@@ -9,10 +11,12 @@ from typing import Callable, TypeVar
 from yaralyzer.config import YaralyzerConfig
 from yaralyzer.util.argument_parser import rules, tuning
 from yaralyzer.util.constants import MAX_FILENAME_LENGTH
+from yaralyzer.util.exceptions import print_fatal_error, print_fatal_error_and_exit
 from yaralyzer.util.logging import log
 
 from pdfalyzer.detection.yaralyzer_helper import YARA_RULES_FILES
-from pdfalyzer.output.theme import COMPLETE_THEME_DICT
+from pdfalyzer.output.highlighter import LogHighlighter, PdfHighlighter
+from pdfalyzer.output.theme import COMPLETE_THEME_DICT, _debug_themes
 from pdfalyzer.util.constants import PDFALYZE, PDFALYZER_UPPER
 from pdfalyzer.util.helpers.filesystem_helper import DEFAULT_PDF_PARSER_PATH, PDF_PARSER_PATH_ENV_VAR
 from pdfalyzer.util.output_section import ALL_STREAMS
@@ -69,6 +73,30 @@ class PdfalyzerConfig(YaralyzerConfig):
 
         max_filename_length = MAX_FILENAME_LENGTH - len(str(cls.args.output_dir.resolve()))
         return path.join(cls.args.output_dir, export_basename[:max_filename_length])
+
+    @classmethod
+    def _parse_arguments(cls) -> Namespace:
+        """Overloads/extends YaralyzerConfig method of the same name."""
+        if '--show-colors' in sys.argv and '--debug' in sys.argv:
+            LogHighlighter._debug_highlight_patterns()
+            PdfHighlighter._debug_highlight_patterns()
+            _debug_themes()
+
+        args = super()._parse_arguments()
+        args.extract_quoteds = args.extract_quoteds or []
+        args._yaralyzer_standalone_mode = False  # TODO: this sucks
+        args._export_basename = f"{args.file_prefix}{args.file_to_scan_path.name}"
+
+        if not args.streams:
+            if args.extract_quoteds:
+                log.warning("--extract-quoted does nothing if --streams is not selected")
+            if args.suppress_boms:
+                log.warning("--suppress-boms has nothing to suppress if --streams is not selected")
+
+        if args.no_default_yara_rules and not any(getattr(args, opt.dest) for opt in rules._group_actions):
+            print_fatal_error_and_exit("--no-default-yara-rules requires at least one YARA rule argument")
+
+        return args
 
     @classmethod
     def prefixed_env_var(cls, var: str) -> str:

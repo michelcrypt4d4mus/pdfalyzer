@@ -132,7 +132,7 @@ NODE_STYLES_BASE_DICT.update({
     adobe_strings.UNLABELED:                                   'grey35 reverse',
     adobe_strings.XOBJECT:                                     'grey37',
     adobe_strings.XREF:                                        'color(148)',
-    '/URI':                                                    'white',
+    '/URI':                                                    'white',  # TODO: use YARALYZER_THEME_DICT['grey.light']
     # Pages
     adobe_strings.PAGES:                                       'dark_orange3',
     adobe_strings.PAGE:                                        PAGE_OBJ_STYLE,

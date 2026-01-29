@@ -16,10 +16,5 @@ if [[ ! -z $local_yaralyzer_branch ]]; then
 fi
 
 update_pyproject_toml $YARALYZER "$LOCAL_YARALYZER_REQ"
-
-if ! poetry lock; then
-    echo_warning "Poetry lock failed, trying with --no-cache option..."
-    poetry lock --no-cache
-fi
-
+poetry lock
 poetry install --all-extras

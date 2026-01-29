@@ -14,7 +14,7 @@ from pdfalyzer.config import PdfalyzerConfig
 from pdfalyzer.decorators.pdf_file import PdfFile
 from pdfalyzer.output.pdfalyzer_presenter import PdfalyzerPresenter
 from pdfalyzer.pdfalyzer import Pdfalyzer
-from pdfalyzer.util.argument_parser import ask_to_proceed, parse_arguments, parser
+from pdfalyzer.util.argument_parser import ask_to_proceed, parser
 from pdfalyzer.util.cli_tools_argument_parsers import (MAX_QUALITY, parse_combine_pdfs_args,
      parse_pdf_page_extraction_args, parse_text_extraction_args)
 from pdfalyzer.util.exceptions import PdfParserError
@@ -23,7 +23,7 @@ from pdfalyzer.util.logging import log  # Trigger log setup
 from pdfalyzer.util.output_section import OutputSection
 from pdfalyzer.util.pdf_parser_manager import PdfParserManager
 
-PdfalyzerConfig.init(parser, parse_arguments)
+PdfalyzerConfig.init(parser)
 
 
 def pdfalyze():

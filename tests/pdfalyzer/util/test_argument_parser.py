@@ -1,1 +1,0 @@
-from pdfalyzer.util.argument_parser import parse_arguments

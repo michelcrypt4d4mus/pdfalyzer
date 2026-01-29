@@ -3,7 +3,6 @@ from yaralyzer.util.helpers.env_helper import temporary_argv
 
 from pdfalyzer.config import PdfalyzerConfig
 from pdfalyzer.output.pdfalyzer_presenter import PdfalyzerPresenter
-from pdfalyzer.util.argument_parser import parse_arguments
 from pdfalyzer.util.constants import PDFALYZER_UPPER
 from pdfalyzer.util.logging import log
 
