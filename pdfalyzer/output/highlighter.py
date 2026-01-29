@@ -107,6 +107,11 @@ class LogHighlighter(ReprHighlighter):
 class PdfHighlighter(LogHighlighter):
     base_style = PDF_OBJ_STYLE_PREFIX
 
+    @classmethod
+    def prefixed_style(cls, style: str) -> str:
+        """Prepend this highlighter's `base_style` to `style` string, removing first slash."""
+        return cls.base_style + style.removeprefix('/')
+
 
 # Instantiate highlighters
 log_highlighter = LogHighlighter()
