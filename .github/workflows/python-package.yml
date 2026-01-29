@@ -32,7 +32,7 @@ jobs:
       - name: Install dependencies and PDF tools
         run: |
           poetry install --all-extras
-          PDFALYZER_QUIET_INSTALL=True poetry run pdfalyzer_install_pdf_parser
+          poetry run pdfalyzer_install_pdf_parser
       - name: Test with pytest
         run: |
           poetry run pytest -vv --slow
