@@ -8,8 +8,8 @@ from yaralyzer.util.helpers.shell_helper import ShellResult
 from yaralyzer.util.logging import log, log_and_print, log_console
 
 from pdfalyzer.config import PdfalyzerConfig
-from pdfalyzer.util.helpers.filesystem_helper import (DEFAULT_PDF_PARSER_PATH, PDF_PARSER_PATH_ENV_VAR,
-     PDF_PARSER_PY, PROJECT_ROOT, SCRIPTS_DIR, dir_str)
+from pdfalyzer.util.helpers.filesystem_helper import (PDF_PARSER_PATH_ENV_VAR, PDF_PARSER_PY,
+     PROJECT_ROOT, SCRIPTS_DIR, dir_str)
 from pdfalyzer.util.exceptions import PdfParserError
 
 # PDF Internal Data Regexes
@@ -19,11 +19,10 @@ PDF_OBJECT_START_REGEX = re.compile('^obj (\\d+) \\d+$')
 # Install info
 DIDIER_STEVENS_RAW_GITHUB_URL = 'https://raw.githubusercontent.com/DidierStevens/DidierStevensSuite/master/'
 PDF_PARSER_GITHUB_URL = DIDIER_STEVENS_RAW_GITHUB_URL + PDF_PARSER_PY
-PDF_PARSER_TOOL_PATH = DEFAULT_PDF_PARSER_PATH.relative_to(PROJECT_ROOT)
 INSTALL_SCRIPT_PATH = SCRIPTS_DIR.joinpath('install_didier_stevens_pdf_tools.py').relative_to(PROJECT_ROOT)
 PDF_PARSER_INSTALL_MSG = f"If you need to install {PDF_PARSER_PY} it's a single .py file that can be " \
                          f"found at {PDF_PARSER_GITHUB_URL}. There's a script in the Pdfalyzer repo that " \
-                         f"will install it to {PDF_PARSER_TOOL_PATH} for you at {INSTALL_SCRIPT_PATH}."
+                         f"will install it for you at {INSTALL_SCRIPT_PATH}."
 
 
 @dataclass
