@@ -45,6 +45,7 @@ K               = '/K'  # Equivalent of /Kids for /StructElem
 KIDS            = PagesAttributes.KIDS
 LAST            = '/Last'
 LAUNCH          = '/Launch'
+METADATA        = CatalogDictionary.METADATA
 NAME            = '/Name'
 NAMED           = '/Named'
 NAMES           = '/Names'
@@ -55,6 +56,7 @@ OBJ_STM         = '/ObjStm'
 # TODO: /Pg refs could be the parents of /OBJR?
 OBJR            = '/OBJR'  # Object reference to "an entire PDF object"
 OPEN_ACTION     = CatalogDictionary.OPEN_ACTION
+OUTLINES        = CatalogDictionary.OUTLINES
 P               = '/P'  # Equivalent of /Parent for /StructElem
 PAGE            = '/Page'
 PAGES           = '/Pages'

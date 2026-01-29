@@ -36,6 +36,7 @@ FONT_FILE_BLUE = 'steel_blue1'
 FONT_OBJ_BLUE = 'deep_sky_blue4 bold'
 INFO_OBJ_STYLE = 'yellow4'
 LINK_OBJ_STYLE = 'grey46'
+METADATA_STYLE = 'color(35)'
 NULL_STYLE = 'grey23'
 PAGE_OBJ_STYLE = 'light_salmon3'
 PDF_NON_TREE_REF_STYLE = 'color(243)'  # grey46?
@@ -120,9 +121,9 @@ NODE_STYLES_BASE_DICT.update({
     adobe_strings.CONTENTS:                                    'medium_purple1',
     adobe_strings.TRAILER:                                     TRAILER_OBJ_STYLE,
     adobe_strings.INFO:                                        INFO_OBJ_STYLE,
-    '/Outlines':                                               INFO_OBJ_STYLE,
-    '/Metadata':                                               'color(35)',
-    '/ViewerPreferences':                                      'color(35)',
+    adobe_strings.OUTLINES:                                    INFO_OBJ_STYLE,
+    adobe_strings.METADATA:                                    METADATA_STYLE,
+    '/ViewerPreferences':                                      METADATA_STYLE,
     adobe_strings.OBJ_STM:                                     YARALYZER_THEME_DICT['bytes'],
     # Data nodes
     adobe_strings.ANNOTS:                                      'deep_sky_blue4',
