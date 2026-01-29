@@ -40,7 +40,7 @@
 * `/Annots` and other indeterminate nodes now have `/Subtype` integrated into their labeling (e.g. `/Annots:Link` instead of just `/Annots`)
 * Fancier table for PDF metadata that also contains the number of pages, images, and revisions (if possible)
 * Test suite now checks results against pre-recorded fixture output
-* Python 3.10 no longer officially supported even if it probably still works
+* Python 3.10 no longer supported
 * Color highlighting for logs
 
 ### 1.18.1
