@@ -36,6 +36,7 @@ class PdfParserManager:
 
     @classmethod
     def from_args(cls, args: Namespace) -> Self:
+        """Alternate constructor that takes the result of an `ArgumentParser.`"""
         return cls(args.file_to_scan_path, args.output_dir)
 
     def __post_init__(self):
