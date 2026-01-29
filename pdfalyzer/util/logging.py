@@ -10,7 +10,7 @@ from rich.text import Text
 # Other files could import yaralyzer's log directly but they do it from here to trigger logging setup
 from yaralyzer.util.logging import DEFAULT_LOG_HANDLER_KWARGS, log, log_console, log_trace
 
-from pdfalyzer.output.highlighter import PYPDF_LOG_PFX_PATTERN, LogHighlighter, PdfHighlighter
+from pdfalyzer.output.highlighter import PYPDF_LOG_PFX_PATTERN, log_highlighter, pdf_highlighter
 
 PYPDF_LOG_PFX = PYPDF_LOG_PFX_PATTERN.replace("\\", '')
 
@@ -19,9 +19,10 @@ def highlight(text: str | Text) -> Text:
     return pdf_highlighter(log_highlighter(text))
 
 
-log_highlighter = LogHighlighter()
-pdf_highlighter = PdfHighlighter()
-log_handler_kwargs = {'highlighter': log_highlighter, **DEFAULT_LOG_HANDLER_KWARGS}
+log_handler_kwargs = {
+    'highlighter': log_highlighter,
+    **DEFAULT_LOG_HANDLER_KWARGS
+}
 
 # Redirect pypdf logs
 pypdf_log_handler = RichHandler(**log_handler_kwargs)

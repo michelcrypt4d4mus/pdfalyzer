@@ -12,8 +12,6 @@ from typing import Any
 
 from pypdf.generic import (ArrayObject, ByteStringObject, EncodedStreamObject, IndirectObject,
      NullObject, StreamObject, TextStringObject)
-from rich.panel import Panel
-from rich.padding import Padding
 from rich.theme import Theme
 from yaralyzer.output.console import console
 from yaralyzer.output.theme import BYTES_NO_DIM, YARALYZER_THEME_DICT

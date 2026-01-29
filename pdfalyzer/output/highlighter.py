@@ -90,3 +90,8 @@ class LogHighlighter(ReprHighlighter):
 
 class PdfHighlighter(LogHighlighter):
     base_style = PDF_OBJ_STYLE_PREFIX
+
+
+# Instantiate highlighters
+log_highlighter = LogHighlighter()
+pdf_highlighter = PdfHighlighter()
