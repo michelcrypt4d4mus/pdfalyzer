@@ -82,11 +82,11 @@ class BinaryScanner:
 
     def check_for_boms(self) -> None:
         """Check the binary data for BOMs."""
-        print_section_sub_subheader("Scanning Binary for any BOMs...", style='BOM')
+        print_section_sub_subheader("Scanning Binary for any BOMs...", style='bytes.BOM')
 
         for bom_bytes, bom_name in BOMS.items():
             yaralyzer = self._pattern_yaralyzer(hex_string(bom_bytes), HEX, bom_name)
-            yaralyzer.highlight_style = 'BOM'
+            yaralyzer.highlight_style = 'bytes.BOM'
             self.process_yara_matches(yaralyzer, bom_name, force=True)
 
     def force_decode_quoted_bytes(self) -> None:

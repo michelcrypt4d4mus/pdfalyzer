@@ -1,17 +1,15 @@
 """
 Parse command line arguments for `pdfalyze` and construct the `PdfalyzerConfig` object.
 """
-import json
 import sys
 from argparse import ArgumentParser, Namespace
-from pathlib import Path
 from typing import Type
 
 from rich_argparse_plus import RichHelpFormatterPlus
 from rich.prompt import Confirm
 from rich.text import Text
 from yaralyzer.util.argument_parser import (debug, epilog, export, parser as yaralyzer_parser,
-     parse_arguments as parse_yaralyzer_args, rules, rules, should_exit_early, tuning, yaras)
+     rules, rules, tuning, yaras)
 from yaralyzer.util.constants import YARALYZER_UPPER
 from yaralyzer.util.exceptions import print_fatal_error_and_exit
 from yaralyzer.util.logging import log, log_console
@@ -19,7 +17,7 @@ from yaralyzer.util.logging import log, log_console
 from pdfalyzer.config import PdfalyzerConfig
 from pdfalyzer.detection.constants.binary_regexes import QUOTE_PATTERNS
 from pdfalyzer.output.highlighter import LogHighlighter, PdfHighlighter
-from pdfalyzer.output.theme import debug_themes
+from pdfalyzer.output.theme import _debug_themes
 from pdfalyzer.util.constants import PDFALYZE
 from pdfalyzer.util.output_section import ALL_STREAMS
 
@@ -142,38 +140,6 @@ select.add_argument('--preview-stream-length',
 # Make sure the selection section is at the top
 parser._action_groups = parser._action_groups[:2] + [parser._action_groups[-1]] + parser._action_groups[2:-1]
 is_pdfalyze_script = parser.prog.startswith(PDFALYZE)  # startswith() bc on Windows we end up with 'pdfalyze.cmd'?
-
-
-################################
-# Main argument parsing begins #
-################################
-
-def parse_arguments(config: Type[PdfalyzerConfig], _args: Namespace | None) -> Namespace:
-    """Parse command line args. Most args can also be communicated to the app by setting env vars."""
-    # Let Yaralyzer's parse_arguments() handle args like --env-vars (it will exit afterwards)
-    if should_exit_early:
-        if '--show-colors' in sys.argv and '--debug' in sys.argv:
-            LogHighlighter.debug_highlight_patterns()
-            PdfHighlighter.debug_highlight_patterns()
-            debug_themes()
-
-        parse_yaralyzer_args(PdfalyzerConfig)
-
-    args = parser.parse_args()
-    args = parse_yaralyzer_args(PdfalyzerConfig, args)
-    args.extract_quoteds = args.extract_quoteds or []
-    args._export_basename = f"{args.file_prefix}{args.file_to_scan_path.name}"
-
-    if not args.streams:
-        if args.extract_quoteds:
-            log.warning("--extract-quoted does nothing if --streams is not selected")
-        if args.suppress_boms:
-            log.warning("--suppress-boms has nothing to suppress if --streams is not selected")
-
-    if args.no_default_yara_rules and not any(getattr(args, opt.dest) for opt in rules._group_actions):
-        print_fatal_error_and_exit("--no-default-yara-rules requires at least one YARA rule argument")
-
-    return args
 
 
 #############

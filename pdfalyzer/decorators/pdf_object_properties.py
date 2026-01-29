@@ -8,9 +8,9 @@ from rich.text import Text
 from pdfalyzer.output.highlighter import PdfHighlighter
 from pdfalyzer.output.theme import (COMPLETE_THEME_DICT, DEFAULT_LABEL_STYLE, get_class_style,
      get_class_style_dim, get_class_style_italic)
-from pdfalyzer.util.adobe_strings import GO_TO_E, GO_TO_R, S, SUBTYPE, TYPE, UNLABELED
+from pdfalyzer.util.adobe_strings import GO_TO_E, GO_TO_R, S, SUBTYPE, TYPE, UNLABELED, XOBJECT
 from pdfalyzer.util.helpers.pdf_object_helper import pypdf_class_name
-from pdfalyzer.util.helpers.rich_text_helper import comma_join_txt
+from pdfalyzer.util.helpers.rich_helper import comma_join_txt
 from pdfalyzer.util.helpers.string_helper import coerce_address, is_array_idx, props_string_indented, root_address
 from pdfalyzer.util.logging import highlight, log, log_console, log_highlighter, log_trace, pdf_highlighter
 
@@ -40,16 +40,19 @@ class PdfObjectProperties:
     _type: str | None = None
 
     @property
-    def type(self) -> str | None:
+    def type(self) -> str:
         return self._type or '???'
 
     @property
     def label_style(self) -> str:
-        type_no_slash = (self.type or '').removeprefix('/')
+        type_no_slash = self.type.removeprefix('/')
         sub_type = self.sub_type or ''
 
         if sub_type.startswith(GO_TO_R) or sub_type.startswith(GO_TO_E):
             return COMPLETE_THEME_DICT[GO_TO_R]
+        # TODO: enable this
+        # elif self.type == XOBJECT and sub_type == '/Image':
+        #     return 'medium_violet_red'
 
         return COMPLETE_THEME_DICT.get(PdfHighlighter.prefixed_style(type_no_slash), DEFAULT_LABEL_STYLE)
 
@@ -91,7 +94,7 @@ class PdfObjectProperties:
     def get_table_row(
         self,
         reference_key: str | int | None,
-        pdfalyzer: 'Pdfalyzer',
+        pdfalyzer: 'Pdfalyzer',  # noqa: F821
         empty_3rd_col: bool = False
     ) -> tuple[Text, Text, Text]:
         """Extract property at `reference_key` and build a formatted 3-tuple for use in Rich tables."""
@@ -131,7 +134,7 @@ class PdfObjectProperties:
         text.append('>')
         return text
 
-    def _resolve_references(self, reference_key: str | int, obj: PdfObject, pdfalyzer: 'Pdfalyzer') -> Any:
+    def _resolve_references(self, reference_key: str | int, obj: PdfObject, pdfalyzer: 'Pdfalyzer') -> Any:  # noqa: F821
         """Recursively build the same data structure except IndirectObjects are resolved to nodes."""
         if isinstance(obj, NumberObject):
             return obj.as_numeric()

@@ -109,8 +109,11 @@ class FontInfo:
             return
 
         # CID or composite fonts have a 1 element array in /DescendantFonts that has the /FontDescriptor
+        # TODO: rich tree for analyzing-malicious-document-files.pdf.rich_table_tree.txt is expanding
+        # descendent '15./DescendantFonts' instead of showing indirect '<16:Font:CIDFontType2(Dictionary)>'
+        # but it used to be right ca. 00dfcd70659baf536592a09dc964ac06986e3668 (maybe earlier commit)
         if DESCENDANT_FONTS in self.font_dict:
-            descendant_font = self.font_dict[DESCENDANT_FONTS][0].get_object()
+            descendant_font = self.font_dict.get(DESCENDANT_FONTS)[0].get_object()
 
             if FONT_DESCRIPTOR in descendant_font:
                 self.font_descriptor_dict = descendant_font[FONT_DESCRIPTOR].get_object()

@@ -5,18 +5,24 @@ text output.
 import re
 
 from rich.markup import escape
-from rich.panel import Panel
-from rich.text import Text
 from rich.highlighter import ReprHighlighter
 from yaralyzer.util.logging import log_console
 
-from pdfalyzer.util.helpers.rich_text_helper import vertically_padded_panel
+from pdfalyzer.util.helpers.collections_helper import prefix_keys
+from pdfalyzer.util.helpers.rich_helper import vertically_padded_panel
 
 PDF_OBJ_STYLE_PREFIX = 'pdf.'
 PYPDF_LOG_PFX_PATTERN = r"\(pypdf\)"
 
+# Styles
+CHILD_STYLE = 'orange3 bold'
+INDIRECT_OBJ_STYLE = 'light_coral'  # Formerly 'color(225)'
+PARENT_STYLE = 'violet'
+PDF_ARRAY_STYLE = 'color(143)'  # color(120)
+PDF_DICTIONARY_STYLE = 'color(64)'
+
 # Copied from https://rich.readthedocs.io/en/latest/_modules/rich/highlighter.html#Highlighter
-# so we can get rid of a couple of the patterns.
+# so we can get rid of a couple of the patterns we don't want.
 DEFAULT_REPR_HIGHLIGHTER_PATTERNS = [
     r"(?P<tag_start><)(?P<tag_name>[-\w.:|]*)(?P<tag_contents>[\w\W]*)(?P<tag_end>>)",
     r'(?P<attrib_name>[\w_]{1,50})=(?P<attrib_value>"?[\w_]+"?)?',
@@ -37,20 +43,29 @@ DEFAULT_REPR_HIGHLIGHTER_PATTERNS = [
 ]
 
 # Our custom log highlight patterns
-HIGHLIGHT_PATTERNS = DEFAULT_REPR_HIGHLIGHTER_PATTERNS + [
-    r"(?P<array_obj>Array(Object)?)",
+LOG_HIGHLIGHT_PATTERNS = DEFAULT_REPR_HIGHLIGHTER_PATTERNS + [
     r"(?P<child>[cC]hild(ren)?)",
-    r"(?P<dictionary_obj>Dictionary(Object)?)",
     r"(?P<indeterminate>[Ii]ndeterminate( ?[nN]odes?)?)",
-    r"(?P<indirect_object>IndirectObject)",
-    r"(?P<node_type>/(Subt|T)ype\b)",
     r"(?P<parent>[pP]arents?)",
     fr"(?P<pypdf_line>{PYPDF_LOG_PFX_PATTERN} .*)",
     fr"(?P<pypdf_prefix>{PYPDF_LOG_PFX_PATTERN})",
     r"(?P<relationship>Relationship( of)?)",
     r"(?P<relationship>via symlink|parent/child|child/parent)",
-    r"(?P<stream_object>((De|En)coded)?Stream(Object)?)",
 ]
+
+# Logger highlights
+LOG_HIGHLIGHT_STYLES = {
+    "child": CHILD_STYLE,
+    "indeterminate": 'bright_black',
+    "parent": PARENT_STYLE,
+    "pypdf_line": "dim",
+    "pypdf_prefix": "light_slate_gray",
+    "relationship": 'light_pink4',
+    # Overload default ReprHighlighter theme elements
+    'call': 'magenta',
+    'ipv4': 'cyan',
+    'ipv6': 'cyan',
+}
 
 
 # Augment the standard ReprHighlighter
@@ -58,12 +73,9 @@ class LogHighlighter(ReprHighlighter):
     highlights: list[re.Pattern]
 
     @classmethod
-    def add_highlight_patterns(cls, patterns: list[str]) -> None:
-        """Appends new patterns to HIGHLIGHT_PATTERNS."""
-        cls.highlights = [
-            re.compile(pattern)
-            for pattern in (patterns + HIGHLIGHT_PATTERNS)
-        ]
+    def set_highlights(cls, patterns: list[str]) -> None:
+        """Compile strings to regexes."""
+        cls.highlights = [re.compile(p) for p in (patterns)]
 
     @classmethod
     def get_style(cls, for_str: str) -> str:
@@ -75,21 +87,27 @@ class LogHighlighter(ReprHighlighter):
         return ''
 
     @classmethod
-    def debug_highlight_patterns(cls):
-        log_console.print(vertically_padded_panel(f"{cls.__name__}.highlights Patterns (base_style: '{cls.base_style}')"))
-
-        for pattern in cls.highlights:
-            log_console.print(f"   - '{escape(str(pattern))}'")
+    def prefix_styles(cls, styles: dict[str, str]) -> dict[str, str]:
+        """Prepend this highlighter's `base_style` to all keys in the `styles` dict."""
+        return prefix_keys(cls.base_style, styles)
 
     @classmethod
     def prefixed_style(cls, style: str) -> str:
+        """Prepend this highlighter's `base_style` to `style` string."""
         return cls.base_style + style
+
+    @classmethod
+    def _debug_highlight_patterns(cls):
+        log_console.print(vertically_padded_panel(f"{cls.__name__}.highlights Patterns (base: '{cls.base_style}')"))
+
+        for pattern in cls.highlights:
+            log_console.print(f"   - '{escape(str(pattern))}'")
 
 
 class PdfHighlighter(LogHighlighter):
     base_style = PDF_OBJ_STYLE_PREFIX
 
-    @classmethod
-    def add_highlight_patterns(cls, patterns: list[str]) -> None:
-        """Does not append HIGHLIGHT_PATTERNS."""
-        cls.highlights = [re.compile(pattern) for pattern in patterns]
+
+# Instantiate highlighters
+log_highlighter = LogHighlighter()
+pdf_highlighter = PdfHighlighter()
