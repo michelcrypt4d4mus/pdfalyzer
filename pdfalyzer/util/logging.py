@@ -15,7 +15,7 @@ from yaralyzer.util.logging import DEFAULT_LOG_HANDLER_KWARGS, log, log_console,
 
 from pdfalyzer.util.helpers.string_helper import regex_to_highlight_pattern
 from pdfalyzer.output.highlighter import HIGHLIGHT_PATTERNS, PYPDF_LOG_PFX_PATTERN, LogHighlighter, PdfHighlighter
-from pdfalyzer.output.theme import COMPLETE_THEME_DICT, NODE_STYLES_REGEX_DICT, PDF_OBJ_TYPE_STYLES
+from pdfalyzer.output.theme import COMPLETE_THEME_DICT, NODE_STYLE_REGEXES, PDF_OBJ_TYPE_STYLES
 
 PYPDF_LOG_PFX = PYPDF_LOG_PFX_PATTERN.replace("\\", '')
 
@@ -31,7 +31,7 @@ LogHighlighter.add_highlight_patterns(
 )
 
 PdfHighlighter.add_highlight_patterns(
-    [regex_to_highlight_pattern(style_regex) for style_regex in NODE_STYLES_REGEX_DICT.keys()]
+    [regex_to_highlight_pattern(style_regex) for style_regex in NODE_STYLE_REGEXES.keys()]
 )
 
 log_highlighter = LogHighlighter()

@@ -170,7 +170,7 @@ LOG_THEME_BASE_DICT = {
 }
 
 # Compile regexes as keys
-NODE_STYLES_REGEX_DICT = {re.compile(k): v for k, v in NODE_STYLES_BASE_DICT.items()}
+NODE_STYLE_REGEXES = {re.compile(k): v for k, v in NODE_STYLES_BASE_DICT.items()}
 NODE_STYLES_THEME_DICT = PdfHighlighter.prefix_styles({k.removeprefix('/'): v for k, v in NODE_STYLES_BASE_DICT.items()})
 
 # TODO: these are not currently used because they have the PDF_OBJ_STYLE_PFX prefix, here for --show-colors only
@@ -214,7 +214,7 @@ def get_class_style_italic(obj: Any) -> str:
 
 def get_label_style(label: str) -> str:
     """Lookup a style based on the node's label string (either its type or first address)."""
-    return next((v for k, v in NODE_STYLES_REGEX_DICT.items() if k.match(label)), DEFAULT_LABEL_STYLE)
+    return next((v for k, v in NODE_STYLE_REGEXES.items() if k.match(label)), DEFAULT_LABEL_STYLE)
 
 
 def theme_json() -> str:
