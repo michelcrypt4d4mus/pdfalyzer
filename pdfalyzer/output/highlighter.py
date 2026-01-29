@@ -5,8 +5,6 @@ text output.
 import re
 
 from rich.markup import escape
-from rich.panel import Panel
-from rich.text import Text
 from rich.highlighter import ReprHighlighter
 from yaralyzer.util.logging import log_console
 
