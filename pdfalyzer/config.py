@@ -59,8 +59,8 @@ class PdfalyzerConfig(YaralyzerConfig):
                 export_basename += '_noBOMs'
 
         # YARA rules suffixes
-        if cls._custom_yara_rules_file_basenames():
-            export_basename += f"__scannedby_" + ','.join(cls._custom_yara_rules_file_basenames())
+        if cls.args.yara_rules_files:
+            export_basename += f"__scannedby_" + ','.join(sorted([f.name for f in cls.args.yara_rules_files]))
 
             if cls.args.no_default_yara_rules:
                 export_basename += '_customrulesonly'
@@ -100,15 +100,6 @@ class PdfalyzerConfig(YaralyzerConfig):
         """Turns 'LOG_DIR' into 'PDFALYZER_LOG_DIR' etc. Overloads superclass method."""
         prefix = super().ENV_VAR_PREFIX if var in YARALYZER_SPECIFIC_OPTIONS else cls.ENV_VAR_PREFIX
         return (var if var.startswith(prefix) else f"{prefix}_{var}").upper()
-
-    @classmethod
-    def _custom_yara_rules_file_basenames(cls) -> list[str]:
-        """Returns yara rules files requested by -Y option only (excludes included `YARA_RULES_FILES`)."""
-        # TODO: YaralyzerConfig is updating the same ._args this class uses when _build-yaralyzer() is called (i think)
-        # so this class's ._args.yara_rules_files ends up with all the defaults PDF yara rules.
-        yara_rules_files = cls.args.yara_rules_files or []
-        yara_rules_basenames =  [Path(f).name for f in yara_rules_files if not Path(f).name in YARA_RULES_FILES]
-        return sorted(yara_rules_basenames)
 
     @classmethod
     def _set_class_vars_from_env(cls) -> None:
