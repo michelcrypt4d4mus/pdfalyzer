@@ -5,4 +5,5 @@ SCRIPT_PATH=$(dirname -- "$(readlink -f -- "$0";)";)
 set -e
 
 
-egrep --color -r --text "$1" "$PYPDF_RESOURCES_DIR" "$PYPDF_SAMPLES_DIR"
+# awk inserts a newline after each change in the filename
+grep -E --color -r --text "$1" "$PYPDF_RESOURCES_DIR" "$PYPDF_SAMPLES_DIR" | awk -F: '{if(f!=$1)print ""; f=$1; print $0;}'

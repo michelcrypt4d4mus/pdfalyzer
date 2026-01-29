@@ -8,17 +8,21 @@ from os import path
 from pathlib import Path
 from typing import Callable, TypeVar
 
+from rich.text import Text
 from yaralyzer.config import YaralyzerConfig
 from yaralyzer.util.argument_parser import rules, tuning
-from yaralyzer.util.constants import MAX_FILENAME_LENGTH
+from yaralyzer.util.classproperty import classproperty
+from yaralyzer.util.constants import MAX_FILENAME_LENGTH, dotfile_name
 from yaralyzer.util.exceptions import print_fatal_error_and_exit
-from yaralyzer.util.logging import log
+from yaralyzer.util.helpers.env_helper import is_env_var_set_and_not_false
+from yaralyzer.util.logging import log, log_console
 
 from pdfalyzer.output.theme import COMPLETE_THEME_DICT, _debug_themes
-from pdfalyzer.util.constants import PDFALYZE, PDFALYZER_UPPER
-from pdfalyzer.util.helpers.filesystem_helper import DEFAULT_PDF_PARSER_PATH, PDF_PARSER_PATH_ENV_VAR
+from pdfalyzer.util.constants import PDF_PARSER_NOT_FOUND_MSG, PDFALYZE, PDFALYZER_UPPER
+from pdfalyzer.util.helpers.filesystem_helper import DEFAULT_PDF_PARSER_PATH
 from pdfalyzer.util.output_section import ALL_STREAMS
 
+PDF_PARSER_PATH_ENV_VAR = 'PDF_PARSER_PY_PATH'  # Github workflow depends on this value!
 T = TypeVar('T')
 
 # These options will be read from env vars prefixed with YARALYZER, not PDFALYZER
@@ -39,6 +43,12 @@ class PdfalyzerConfig(YaralyzerConfig):
     ONLY_CLI_ARGS = YaralyzerConfig.ONLY_CLI_ARGS + ['extract_binary_streams']
 
     pdf_parser_path: Path | None = None
+
+    # TODO: remove once yaralyzer is upgraded
+    @classproperty
+    def dotfile_name(cls) -> str:
+        """Returns '.pdfalyzer'."""
+        return dotfile_name(cls.app_name)
 
     @classmethod
     def get_export_basepath(cls, export_method: Callable) -> str:
@@ -107,5 +117,9 @@ class PdfalyzerConfig(YaralyzerConfig):
         cls.pdf_parser_path = cls.get_env_value(PDF_PARSER_PATH_ENV_VAR, Path) or DEFAULT_PDF_PARSER_PATH
 
         if not cls.pdf_parser_path.exists():
-            log.warning(f"Configured PDF_PARSER_PATH is '{cls.pdf_parser_path}' but that file doesn't exist!")
+            if is_env_var_set_and_not_false(PDF_PARSER_PATH_ENV_VAR):
+                log.warning(f"Configured PDF_PARSER_PATH is '{cls.pdf_parser_path}' but that file doesn't exist!")
+            else:
+                log_console.print(PDF_PARSER_NOT_FOUND_MSG, style='dim')  # TODO: use startup_notification() when yaralyzer bump
+
             cls.pdf_parser_path = None

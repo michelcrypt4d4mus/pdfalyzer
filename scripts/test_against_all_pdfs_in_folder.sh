@@ -3,15 +3,18 @@
 SCRIPT_PATH=$(dirname -- "$(readlink -f -- "$0";)";)
 source "$SCRIPT_PATH/lib/project_paths.sh"
 
-# Exporting makes these available to the 'find -exec bash -c' invocation
-export PDFALYZE
-export SUCCESS_LOG=log/successfully_parsed.txt
-export FAILURE_LOG=log/failed_to_parse.txt
+
+DIR_TO_SCAN="$1"
+
+if [[ ! -d "$DIR_TO_SCAN" ]]; then
+    echo_error "'$DIR_TO_SCAN' is not a valid directory."
+    exit 1
+fi
 
 
 pdfalyze_doc() {
-    pdf_full_path="$(readlink -f "$1")"
-    pdf_basename=`basename "$pdf_full_path"`
+    local pdf_full_path="$(readlink -f "$DIR_TO_SCAN")"
+    local pdf_basename=`basename "$pdf_full_path"`
 
     if [[ $pdf_basename =~ postgresql.* ]]; then
         echo "Skipping '$pdf_basename'..."  # Postgres PDF takes forever to process
@@ -30,13 +33,12 @@ pdfalyze_doc() {
     fi
 }
 
+
+# Exporting makes these available to the 'find -exec bash -c' invocation
 export -f pdfalyze_doc
-
-
-if [[ -z "$1" ]]; then
-    echo_error "No directory argument provided."
-    exit 1
-fi
+export PDFALYZE
+export SUCCESS_LOG=log/successfully_parsed.txt
+export FAILURE_LOG=log/failed_to_parse.txt
 
 rm "$SUCCESS_LOG" 2>/dev/null
 rm "$FAILURE_LOG" 2>/dev/null

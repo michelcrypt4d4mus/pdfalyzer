@@ -1,16 +1,12 @@
 """
 Parse command line arguments for `pdfalyze` and construct the `PdfalyzerConfig` object.
 """
-import sys
 from argparse import ArgumentParser
 
 from rich_argparse_plus import RichHelpFormatterPlus
-from rich.prompt import Confirm
-from rich.text import Text
 from yaralyzer.util.argument_parser import (debug, epilog, export, parser as yaralyzer_parser,
      rules, rules, tuning, yaras)
 from yaralyzer.util.constants import YARALYZER_UPPER
-from yaralyzer.util.logging import log, log_console
 
 from pdfalyzer.config import PdfalyzerConfig
 from pdfalyzer.detection.constants.binary_regexes import QUOTE_PATTERNS
