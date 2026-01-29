@@ -19,10 +19,8 @@ def highlight(text: str | Text) -> Text:
     return pdf_highlighter(log_highlighter(text))
 
 
-log_handler_kwargs = {
-    'highlighter': log_highlighter,
-    **DEFAULT_LOG_HANDLER_KWARGS
-}
+# Common RichHandler kwargs
+log_handler_kwargs = {'highlighter': log_highlighter, **DEFAULT_LOG_HANDLER_KWARGS}
 
 # Redirect pypdf logs
 pypdf_log_handler = RichHandler(**log_handler_kwargs)
