@@ -20,7 +20,7 @@ from yaralyzer.util.logging import log_console
 from pdfalyzer.output.highlighter import (CHILD_STYLE, INDIRECT_OBJ_STYLE, LOG_HIGHLIGHT_PATTERNS,
      LOG_HIGHLIGHT_STYLES, PARENT_STYLE, PDF_ARRAY_STYLE, PDF_DICTIONARY_STYLE, LogHighlighter, PdfHighlighter)
 from pdfalyzer.util import adobe_strings
-from pdfalyzer.util.helpers.collections_helper import prefix_keys, safe_json
+from pdfalyzer.util.helpers.collections_helper import safe_json
 from pdfalyzer.util.helpers.rich_helper import vertically_padded_panel
 from pdfalyzer.util.helpers.string_helper import highlight_pattern
 
@@ -41,6 +41,7 @@ PAGE_OBJ_STYLE = 'light_salmon3'
 PDF_NON_TREE_REF_STYLE = 'color(243)'  # grey46?
 RED_ALERT_BASE_STYLE = 'blink bold red'
 TRAILER_OBJ_STYLE = 'chartreuse2'
+TYPE_KEY_STYLE = 'honeydew2'
 
 PDFALYZER_THEME_DICT = {
     **YARALYZER_THEME_DICT,
@@ -146,6 +147,9 @@ NODE_STYLES_BASE_DICT.update({
     # Booleans
     adobe_strings.FALSE:                                       'bright_red',
     adobe_strings.TRUE:                                        'green bold',
+    # /Type fields
+    adobe_strings.SUBTYPE:                                     TYPE_KEY_STYLE,
+    adobe_strings.TYPE:                                        TYPE_KEY_STYLE,
 })
 
 # Compile regexes as keys

@@ -22,7 +22,7 @@ PDF_ARRAY_STYLE = 'color(143)'  # color(120)
 PDF_DICTIONARY_STYLE = 'color(64)'
 
 # Copied from https://rich.readthedocs.io/en/latest/_modules/rich/highlighter.html#Highlighter
-# so we can get rid of a couple of the patterns.
+# so we can get rid of a couple of the patterns we don't want.
 DEFAULT_REPR_HIGHLIGHTER_PATTERNS = [
     r"(?P<tag_start><)(?P<tag_name>[-\w.:|]*)(?P<tag_contents>[\w\W]*)(?P<tag_end>>)",
     r'(?P<attrib_name>[\w_]{1,50})=(?P<attrib_value>"?[\w_]+"?)?',
@@ -44,33 +44,23 @@ DEFAULT_REPR_HIGHLIGHTER_PATTERNS = [
 
 # Our custom log highlight patterns
 LOG_HIGHLIGHT_PATTERNS = DEFAULT_REPR_HIGHLIGHTER_PATTERNS + [
-    r"(?P<array_obj>Array(Object)?)",
     r"(?P<child>[cC]hild(ren)?)",
-    r"(?P<dictionary_obj>Dictionary(Object)?)",
     r"(?P<indeterminate>[Ii]ndeterminate( ?[nN]odes?)?)",
-    r"(?P<indirect_object>IndirectObject)",
-    r"(?P<node_type>/(Subt|T)ype\b)",
     r"(?P<parent>[pP]arents?)",
     fr"(?P<pypdf_line>{PYPDF_LOG_PFX_PATTERN} .*)",
     fr"(?P<pypdf_prefix>{PYPDF_LOG_PFX_PATTERN})",
     r"(?P<relationship>Relationship( of)?)",
     r"(?P<relationship>via symlink|parent/child|child/parent)",
-    r"(?P<stream_object>((De|En)coded)?Stream(Object)?)",
 ]
 
 # Logger highlights
 LOG_HIGHLIGHT_STYLES = {
-    "array_obj": f"{PDF_ARRAY_STYLE} italic",
     "child": CHILD_STYLE,
-    "dictionary_obj": f"{PDF_DICTIONARY_STYLE} italic",
     "indeterminate": 'bright_black',
-    "indirect_object": INDIRECT_OBJ_STYLE,
-    "node_type": 'honeydew2',
     "parent": PARENT_STYLE,
     "pypdf_line": "dim",
     "pypdf_prefix": "light_slate_gray",
     "relationship": 'light_pink4',
-    "stream_object": 'light_slate_blue bold',
     # Overload default 'repr.' prefix theme elements
     'call': 'magenta',
     'ipv4': 'cyan',
