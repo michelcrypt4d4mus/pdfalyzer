@@ -8,6 +8,7 @@ from rich.markup import escape
 from rich.highlighter import ReprHighlighter
 from yaralyzer.util.logging import log_console
 
+from pdfalyzer.util.helpers.collections_helper import prefix_keys
 from pdfalyzer.util.helpers.rich_helper import vertically_padded_panel
 
 PDF_OBJ_STYLE_PREFIX = 'pdf.'
@@ -57,7 +58,7 @@ class LogHighlighter(ReprHighlighter):
 
     @classmethod
     def add_highlight_patterns(cls, patterns: list[str]) -> None:
-        """Compile strings to regex object."""
+        """Compile strings to regexes."""
         cls.highlights = [re.compile(p) for p in (patterns)]
 
     @classmethod
@@ -70,7 +71,13 @@ class LogHighlighter(ReprHighlighter):
         return ''
 
     @classmethod
+    def prefix_styles(cls, styles: dict[str, str]) -> dict[str, str]:
+        """Prepend this highlighter's `base_style` to all keys in the `styles` dict."""
+        return prefix_keys(cls.base_style, styles)
+
+    @classmethod
     def prefixed_style(cls, style: str) -> str:
+        """Prepend this highlighter's `base_style` to `style` string."""
         return cls.base_style + style
 
     @classmethod

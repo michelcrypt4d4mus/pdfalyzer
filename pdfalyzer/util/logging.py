@@ -5,7 +5,7 @@ Log formatting and redirection. This file yields a lot of pypdf warnings:
 import logging
 import re
 
-import pypdf   # noqa: F401  # Trigger log setup?
+import pypdf   # noqa: F401  # needed to trigger pypdf logger setup?
 from rich.logging import RichHandler
 from rich.panel import Panel
 from rich.text import Text
@@ -20,9 +20,14 @@ from pdfalyzer.output.theme import COMPLETE_THEME_DICT, NODE_STYLES_REGEX_DICT, 
 PYPDF_LOG_PFX = PYPDF_LOG_PFX_PATTERN.replace("\\", '')
 
 
+def highlight(text: str | Text) -> Text:
+    return pdf_highlighter(log_highlighter(text))
+
+
 LogHighlighter.add_highlight_patterns(
     HIGHLIGHT_PATTERNS +
-    [regex_to_highlight_pattern(re.compile(cs[0].__name__)) for cs in PDF_OBJ_TYPE_STYLES] # TODO: never applied because prefix is pdfobj not 'repr'
+    # TODO: never applied because prefix is pdfobj not 'repr'
+    [regex_to_highlight_pattern(re.compile(cs[0].__name__)) for cs in PDF_OBJ_TYPE_STYLES]
 )
 
 PdfHighlighter.add_highlight_patterns(
@@ -44,7 +49,3 @@ log.handlers = [RichHandler(**log_handler_kwargs)]
 
 # pdfalyzer output highlighting
 log_console.push_theme(Theme(COMPLETE_THEME_DICT))
-
-
-def highlight(text: str | Text) -> Text:
-    return pdf_highlighter(log_highlighter(text))

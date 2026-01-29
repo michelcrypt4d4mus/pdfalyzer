@@ -12,7 +12,6 @@ from typing import Any
 
 from pypdf.generic import (ArrayObject, ByteStringObject, EncodedStreamObject, IndirectObject,
      NullObject, StreamObject, TextStringObject)
-from rich.highlighter import ReprHighlighter
 from rich.panel import Panel
 from rich.padding import Padding
 from rich.theme import Theme
@@ -20,11 +19,10 @@ from yaralyzer.output.console import console
 from yaralyzer.output.theme import BYTES_NO_DIM, YARALYZER_THEME_DICT
 from yaralyzer.util.logging import log_console
 
-from pdfalyzer.output.highlighter import PdfHighlighter
+from pdfalyzer.output.highlighter import LogHighlighter, PdfHighlighter
 from pdfalyzer.util import adobe_strings
 from pdfalyzer.util.helpers.collections_helper import prefix_keys, safe_json
 from pdfalyzer.util.helpers.rich_helper import vertically_padded_panel
-from pdfalyzer.util.helpers.string_helper import regex_to_capture_group_label
 
 ClassStyle = namedtuple('ClassStyle', ['cls', 'style'])
 
@@ -152,18 +150,6 @@ NODE_STYLES_BASE_DICT.update({
     adobe_strings.TRUE:                                        'green bold',
 })
 
-NODE_STYLES_THEME_DICT = prefix_keys(
-    PdfHighlighter.base_style,
-    {regex_to_capture_group_label(k): v for k, v in NODE_STYLES_BASE_DICT.items()}
-)
-
-# Compile regexes as keys
-NODE_STYLES_REGEX_DICT = {re.compile(k): v for k, v in NODE_STYLES_BASE_DICT.items()}
-
-# TODO: these are not currently used because they have the PDF_OBJ_STYLE_PFX prefix, here for --show-colors only
-NODE_CLASSES_STYLES_DICT = {f"{cls_style.cls.__name__}": cls_style.style for cls_style in PDF_OBJ_TYPE_STYLES}
-NODE_STYLES_THEME_DICT.update(prefix_keys(PDF_OBJ_STYLE_PFX, NODE_CLASSES_STYLES_DICT))
-
 # Logger highlights
 LOG_THEME_BASE_DICT = {
     "array_obj": f"{PDF_ARRAY_STYLE} italic",
@@ -183,7 +169,19 @@ LOG_THEME_BASE_DICT = {
     'ipv6': 'cyan',
 }
 
-LOG_THEME_DICT = prefix_keys(ReprHighlighter.base_style, LOG_THEME_BASE_DICT)
+# Compile regexes as keys
+NODE_STYLES_REGEX_DICT = {re.compile(k): v for k, v in NODE_STYLES_BASE_DICT.items()}
+NODE_STYLES_THEME_DICT = PdfHighlighter.prefix_styles({k.removeprefix('/'): v for k, v in NODE_STYLES_BASE_DICT.items()})
+
+# TODO: these are not currently used because they have the PDF_OBJ_STYLE_PFX prefix, here for --show-colors only
+NODE_CLASSES_STYLES_DICT = {f"{cls_style.cls.__name__}": cls_style.style for cls_style in PDF_OBJ_TYPE_STYLES}
+NODE_STYLES_THEME_DICT.update(prefix_keys(PDF_OBJ_STYLE_PFX, NODE_CLASSES_STYLES_DICT))
+
+LOG_THEME_DICT = LogHighlighter.prefix_styles(LOG_THEME_BASE_DICT)
+COMPLETE_THEME_DICT = {**PDFALYZER_THEME_DICT, **LOG_THEME_DICT, **NODE_STYLES_THEME_DICT}
+
+# Override whatever theme The Yaralyzer has configured.
+console.push_theme(Theme(COMPLETE_THEME_DICT))
 
 
 def get_class_style(obj: Any) -> str:
@@ -217,12 +215,6 @@ def get_class_style_italic(obj: Any) -> str:
 def get_label_style(label: str) -> str:
     """Lookup a style based on the node's label string (either its type or first address)."""
     return next((v for k, v in NODE_STYLES_REGEX_DICT.items() if k.match(label)), DEFAULT_LABEL_STYLE)
-
-
-# Override whatever theme The Yaralyzer has configured.
-COMPLETE_THEME_DICT = {**PDFALYZER_THEME_DICT, **LOG_THEME_DICT, **NODE_STYLES_THEME_DICT}
-
-console.push_theme(Theme(COMPLETE_THEME_DICT))
 
 
 def theme_json() -> str:
