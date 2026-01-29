@@ -14,6 +14,12 @@ from pdfalyzer.util.helpers.rich_helper import vertically_padded_panel
 PDF_OBJ_STYLE_PREFIX = 'pdf.'
 PYPDF_LOG_PFX_PATTERN = r"\(pypdf\)"
 
+# Styles
+CHILD_STYLE = "orange3 bold"
+PARENT_STYLE = 'violet'
+PDF_ARRAY_STYLE = 'color(143)'  # color(120)
+PDF_DICTIONARY_STYLE = 'color(64)'
+
 # Copied from https://rich.readthedocs.io/en/latest/_modules/rich/highlighter.html#Highlighter
 # so we can get rid of a couple of the patterns.
 DEFAULT_REPR_HIGHLIGHTER_PATTERNS = [
@@ -50,6 +56,25 @@ HIGHLIGHT_PATTERNS = DEFAULT_REPR_HIGHLIGHTER_PATTERNS + [
     r"(?P<relationship>via symlink|parent/child|child/parent)",
     r"(?P<stream_object>((De|En)coded)?Stream(Object)?)",
 ]
+
+# Logger highlights
+LOG_HIGHLIGHT_STYLES = {
+    "array_obj": f"{PDF_ARRAY_STYLE} italic",
+    "child": CHILD_STYLE,
+    "dictionary_obj": f"{PDF_DICTIONARY_STYLE} italic",
+    "indeterminate": 'bright_black',
+    "indirect_object": 'light_coral',
+    "node_type": 'honeydew2',
+    "parent": PARENT_STYLE,
+    "pypdf_line": "dim",
+    "pypdf_prefix": "light_slate_gray",
+    "relationship": 'light_pink4',
+    "stream_object": 'light_slate_blue bold',
+    # Overload default theme
+    'call': 'magenta',
+    'ipv4': 'cyan',
+    'ipv6': 'cyan',
+}
 
 
 # Augment the standard ReprHighlighter

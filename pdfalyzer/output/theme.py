@@ -10,14 +10,15 @@ from numbers import Number
 from types import NoneType
 from typing import Any
 
-from pypdf.generic import (ArrayObject, ByteStringObject, EncodedStreamObject, IndirectObject,
-     NullObject, StreamObject, TextStringObject)
+from pypdf.generic import (ArrayObject, ByteStringObject, EncodedStreamObject, IndirectObject, NullObject,
+     StreamObject, TextStringObject)
 from rich.theme import Theme
 from yaralyzer.output.console import console
 from yaralyzer.output.theme import BYTES_NO_DIM, YARALYZER_THEME_DICT
 from yaralyzer.util.logging import log_console
 
-from pdfalyzer.output.highlighter import HIGHLIGHT_PATTERNS, LogHighlighter, PdfHighlighter
+from pdfalyzer.output.highlighter import (CHILD_STYLE, HIGHLIGHT_PATTERNS, LOG_HIGHLIGHT_STYLES, PARENT_STYLE,
+     PDF_ARRAY_STYLE, PDF_DICTIONARY_STYLE, LogHighlighter, PdfHighlighter)
 from pdfalyzer.util import adobe_strings
 from pdfalyzer.util.helpers.collections_helper import prefix_keys, safe_json
 from pdfalyzer.util.helpers.rich_helper import vertically_padded_panel
@@ -29,7 +30,6 @@ ClassStyle = namedtuple('ClassStyle', ['cls', 'style'])
 PDF_OBJ_STYLE_PFX = 'pdfobj.'
 
 # Colors / PDF object styles
-CHILD_STYLE = "orange3 bold"
 DEFAULT_LABEL_STYLE = 'yellow'
 DEFAULT_OBJ_TYPE_STYLE = 'bright_yellow'
 FONT_FILE_BLUE = 'steel_blue1'
@@ -38,15 +38,12 @@ INFO_OBJ_STYLE = 'yellow4'
 LINK_OBJ_STYLE = 'grey46'
 NULL_STYLE = 'grey23'
 PAGE_OBJ_STYLE = 'light_salmon3'
-PARENT_STYLE = 'violet'
-PDF_ARRAY_STYLE = 'color(143)'  # color(120)
-PDF_DICTIONARY_STYLE = 'color(64)'
 PDF_NON_TREE_REF_STYLE = 'color(243)'  # grey46?
-PDFALYZER_THEME_DICT = YARALYZER_THEME_DICT.copy()
 RED_ALERT_BASE_STYLE = 'blink bold red'
 TRAILER_OBJ_STYLE = 'chartreuse2'
 
-PDFALYZER_THEME_DICT.update({
+PDFALYZER_THEME_DICT = {
+    **YARALYZER_THEME_DICT,
     'BOM': 'bright_green',
     # charmap
     'charmap.title': 'color(25)',
@@ -63,7 +60,7 @@ PDFALYZER_THEME_DICT.update({
     'warn': 'bright_yellow',
     # error log events
     'red_alert': f'{RED_ALERT_BASE_STYLE} reverse on white',
-})
+}
 
 PDF_OBJ_TYPE_STYLES = [
     ClassStyle(IndirectObject, 'color(225)'),
@@ -79,7 +76,7 @@ PDF_OBJ_TYPE_STYLES = [
 # Subclasses of the key type will be styled with the value string
 OBJ_TYPE_STYLES = PDF_OBJ_TYPE_STYLES + [
     ClassStyle(Number, 'cyan bold'),
-    ClassStyle(dict, 'color(64)'),
+    ClassStyle(dict, PDF_DICTIONARY_STYLE),
     ClassStyle(list, PDF_ARRAY_STYLE),
     ClassStyle(tuple, PDF_ARRAY_STYLE),
     ClassStyle(str, 'bright_white bold'),
@@ -149,25 +146,6 @@ NODE_STYLES_BASE_DICT.update({
     adobe_strings.TRUE:                                        'green bold',
 })
 
-# Logger highlights
-LOG_THEME_BASE_DICT = {
-    "array_obj": f"{PDF_ARRAY_STYLE} italic",
-    "child": CHILD_STYLE,
-    "dictionary_obj": f"{PDF_DICTIONARY_STYLE} italic",
-    "indeterminate": 'bright_black',
-    "indirect_object": 'light_coral',
-    "node_type": 'honeydew2',
-    "parent": PARENT_STYLE,
-    "pypdf_line": "dim",
-    "pypdf_prefix": "light_slate_gray",
-    "relationship": 'light_pink4',
-    "stream_object": 'light_slate_blue bold',
-    # Overload default theme
-    'call': 'magenta',
-    'ipv4': 'cyan',
-    'ipv6': 'cyan',
-}
-
 # Compile regexes as keys
 NODE_STYLE_REGEXES = {re.compile(k): v for k, v in NODE_STYLES_BASE_DICT.items()}
 NODE_STYLES_THEME_DICT = PdfHighlighter.prefix_styles({k.removeprefix('/'): v for k, v in NODE_STYLES_BASE_DICT.items()})
@@ -176,7 +154,7 @@ NODE_STYLES_THEME_DICT = PdfHighlighter.prefix_styles({k.removeprefix('/'): v fo
 NODE_CLASSES_STYLES_DICT = {f"{cls_style.cls.__name__}": cls_style.style for cls_style in PDF_OBJ_TYPE_STYLES}
 NODE_STYLES_THEME_DICT.update(prefix_keys(PDF_OBJ_STYLE_PFX, NODE_CLASSES_STYLES_DICT))
 
-LOG_THEME_DICT = LogHighlighter.prefix_styles(LOG_THEME_BASE_DICT)
+LOG_THEME_DICT = LogHighlighter.prefix_styles(LOG_HIGHLIGHT_STYLES)
 COMPLETE_THEME_DICT = {**PDFALYZER_THEME_DICT, **LOG_THEME_DICT, **NODE_STYLES_THEME_DICT}
 
 
