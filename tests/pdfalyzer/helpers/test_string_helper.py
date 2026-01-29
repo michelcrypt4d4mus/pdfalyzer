@@ -1,6 +1,8 @@
 import re
 
-from pdfalyzer.util.helpers.string_helper import *
+from pdfalyzer.util.helpers.string_helper import (all_strings_are_same_ignoring_numbers, has_a_common_substring,
+     highlight_pattern, is_prefixed_by_any, is_substring_of_longer_strings_in_list, regex_to_capture_group_label,
+     replace_digits)
 
 TEST_TITLE = "Jacques and Carl's Excellent Adventure"
 OBJ_REGEX = re.compile(r'^(JavaScript|JS|OpenAction)')
