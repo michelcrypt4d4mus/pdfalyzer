@@ -228,6 +228,6 @@ def theme_json() -> str:
     return safe_json(theme_dicts)
 
 
-def debug_themes() -> None:
+def _debug_themes() -> None:
     log_console.print(vertically_padded_panel('All Theme Dicts'))
     log_console.print_json(theme_json(), indent=4, sort_keys=True)

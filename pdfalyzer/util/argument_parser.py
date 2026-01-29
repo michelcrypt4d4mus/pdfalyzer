@@ -19,7 +19,7 @@ from yaralyzer.util.logging import log, log_console
 from pdfalyzer.config import PdfalyzerConfig
 from pdfalyzer.detection.constants.binary_regexes import QUOTE_PATTERNS
 from pdfalyzer.output.highlighter import LogHighlighter, PdfHighlighter
-from pdfalyzer.output.theme import debug_themes
+from pdfalyzer.output.theme import _debug_themes
 from pdfalyzer.util.constants import PDFALYZE
 from pdfalyzer.util.output_section import ALL_STREAMS
 
@@ -155,7 +155,7 @@ def parse_arguments(config: Type[PdfalyzerConfig], _args: Namespace | None) -> N
         if '--show-colors' in sys.argv and '--debug' in sys.argv:
             LogHighlighter._debug_highlight_patterns()
             PdfHighlighter._debug_highlight_patterns()
-            debug_themes()
+            _debug_themes()
 
         parse_yaralyzer_args(PdfalyzerConfig)
 
