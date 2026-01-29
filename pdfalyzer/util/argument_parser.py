@@ -1,10 +1,8 @@
 """
 Parse command line arguments for `pdfalyze` and construct the `PdfalyzerConfig` object.
 """
-import json
 import sys
 from argparse import ArgumentParser, Namespace
-from pathlib import Path
 from typing import Type
 
 from rich_argparse_plus import RichHelpFormatterPlus
