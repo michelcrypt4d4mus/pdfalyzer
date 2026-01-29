@@ -22,7 +22,7 @@ from pdfalyzer.output.highlighter import (CHILD_STYLE, LOG_HIGHLIGHT_PATTERNS, L
 from pdfalyzer.util import adobe_strings
 from pdfalyzer.util.helpers.collections_helper import prefix_keys, safe_json
 from pdfalyzer.util.helpers.rich_helper import vertically_padded_panel
-from pdfalyzer.util.helpers.string_helper import regex_to_highlight_pattern
+from pdfalyzer.util.helpers.string_helper import highlight_pattern
 
 ClassStyle = namedtuple('ClassStyle', ['cls', 'style'])
 
@@ -72,6 +72,8 @@ PDF_OBJ_TYPE_STYLES = [
     ClassStyle(NullObject, NULL_STYLE),
     ClassStyle(NoneType, NULL_STYLE),
 ]
+
+PDF_OBJ_TYPE_STYLE_DICT = {f"{cs.cls.__name__}": cs.style for cs in PDF_OBJ_TYPE_STYLES}
 
 # Subclasses of the key type will be styled with the value string
 OBJ_TYPE_STYLES = PDF_OBJ_TYPE_STYLES + [
@@ -146,28 +148,22 @@ NODE_STYLES_BASE_DICT.update({
     adobe_strings.TRUE:                                        'green bold',
 })
 
-NODE_STYLES_THEME_DICT = {
-    **PdfHighlighter.prefix_styles({k.removeprefix('/'): v for k, v in NODE_STYLES_BASE_DICT.items()}),
-    **PdfHighlighter.prefix_styles({f"{cs.cls.__name__}": cs.style for cs in PDF_OBJ_TYPE_STYLES})
-}
-
-LOG_THEME_DICT = LogHighlighter.prefix_styles(LOG_HIGHLIGHT_STYLES)
-COMPLETE_THEME_DICT = {**PDFALYZER_THEME_DICT, **LOG_THEME_DICT, **NODE_STYLES_THEME_DICT}
-
 # Compile regexes as keys
 NODE_STYLE_REGEXES = {re.compile(k): v for k, v in NODE_STYLES_BASE_DICT.items()}
 
+# Unite class styles for things like ArrayObject with node styles for things like /Parent
+NODE_STYLES_THEME_DICT = {
+    **PdfHighlighter.prefix_styles({k.removeprefix('/'): v for k, v in NODE_STYLES_BASE_DICT.items()}),
+    **PdfHighlighter.prefix_styles(PDF_OBJ_TYPE_STYLE_DICT)
+}
+
+# Merge all the theme dicts
+LOG_THEME_DICT = LogHighlighter.prefix_styles(LOG_HIGHLIGHT_STYLES)
+COMPLETE_THEME_DICT = {**PDFALYZER_THEME_DICT, **LOG_THEME_DICT, **NODE_STYLES_THEME_DICT}
 
 # Add patterns to highlighters
-LogHighlighter.set_highlights(
-    LOG_HIGHLIGHT_PATTERNS +
-    [regex_to_highlight_pattern(cs.cls.__name__) for cs in PDF_OBJ_TYPE_STYLES]
-)
-
-PdfHighlighter.set_highlights(
-    [regex_to_highlight_pattern(r) for r in NODE_STYLE_REGEXES.keys()]
-)
-
+LogHighlighter.set_highlights(LOG_HIGHLIGHT_PATTERNS + [highlight_pattern(k) for k in PDF_OBJ_TYPE_STYLE_DICT.keys()])
+PdfHighlighter.set_highlights([highlight_pattern(r) for r in NODE_STYLE_REGEXES.keys()])
 
 # Push themes into the console objects that manage stdout.
 console.push_theme(Theme(COMPLETE_THEME_DICT))
