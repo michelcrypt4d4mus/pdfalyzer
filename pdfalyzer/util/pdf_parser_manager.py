@@ -8,22 +8,21 @@ from yaralyzer.util.helpers.shell_helper import ShellResult
 from yaralyzer.util.logging import log, log_and_print, log_console
 
 from pdfalyzer.config import PdfalyzerConfig
-from pdfalyzer.util.helpers.filesystem_helper import (DEFAULT_PDF_PARSER_PATH, PDF_PARSER_PATH_ENV_VAR,
-     PDF_PARSER_PY, PROJECT_ROOT, SCRIPTS_DIR, dir_str)
+from pdfalyzer.util.helpers.filesystem_helper import (PDF_PARSER_PATH_ENV_VAR, PDF_PARSER_PY,
+     PROJECT_ROOT, SCRIPTS_DIR, dir_str)
 from pdfalyzer.util.exceptions import PdfParserError
 
 # PDF Internal Data Regexes
-CONTAINS_STREAM_REGEX = re.compile('\\s+Contains stream$')
-PDF_OBJECT_START_REGEX = re.compile('^obj (\\d+) \\d+$')
+CONTAINS_STREAM_REGEX = re.compile(r'\s+Contains stream$')
+PDF_OBJECT_START_REGEX = re.compile(r'^obj (\d+) \d+$')
 
 # Install info
 DIDIER_STEVENS_RAW_GITHUB_URL = 'https://raw.githubusercontent.com/DidierStevens/DidierStevensSuite/master/'
-INSTALL_SCRIPT_PATH = SCRIPTS_DIR.joinpath('install_didier_stevens_pdf_tools.py').relative_to(PROJECT_ROOT)
-PDF_PARSER_TOOL_PATH = DEFAULT_PDF_PARSER_PATH.relative_to(PROJECT_ROOT)
 PDF_PARSER_GITHUB_URL = DIDIER_STEVENS_RAW_GITHUB_URL + PDF_PARSER_PY
+INSTALL_SCRIPT_PATH = SCRIPTS_DIR.joinpath('install_didier_stevens_pdf_tools.py').relative_to(PROJECT_ROOT)
 PDF_PARSER_INSTALL_MSG = f"If you need to install {PDF_PARSER_PY} it's a single .py file that can be " \
                          f"found at {PDF_PARSER_GITHUB_URL}. There's a script in the Pdfalyzer repo that " \
-                         f"will install it to {PDF_PARSER_TOOL_PATH} for you at {INSTALL_SCRIPT_PATH}."
+                         f"will install it for you at {INSTALL_SCRIPT_PATH}."
 
 
 @dataclass
@@ -37,6 +36,7 @@ class PdfParserManager:
 
     @classmethod
     def from_args(cls, args: Namespace) -> Self:
+        """Alternate constructor that takes the result of an `ArgumentParser.`"""
         return cls(args.file_to_scan_path, args.output_dir)
 
     def __post_init__(self):
@@ -88,7 +88,7 @@ class PdfParserManager:
             except Exception as e:
                 log.error(f"Failed to extract object ID {object_id}!")
 
-        log_and_print(f"{len(files_written)} binary streams extracted written to {output_dir_str}.")
+        log_and_print(f"{len(files_written)} extracted binary streams were written to {output_dir_str}.")
         num_failures = len(self.object_ids_containing_stream_data) - len(files_written)
 
         if num_failures > 0:

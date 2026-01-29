@@ -8,8 +8,8 @@ from rich.text import Text
 from yaralyzer.util.helpers.rich_helper import DEFAULT_TABLE_OPTIONS, na_txt, prefix_with_style
 
 from pdfalyzer.binary.binary_scanner import BinaryScanner
-from pdfalyzer.util.helpers.rich_helper import pct_txt
 from pdfalyzer.output.layout import generate_subtable, half_width, pad_header
+from pdfalyzer.util.helpers.rich_helper import pct_txt
 
 # Start rainbow colors here
 CHAR_ENCODING_1ST_COLOR_NUMBER = 203

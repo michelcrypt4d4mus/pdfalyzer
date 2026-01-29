@@ -11,10 +11,9 @@ from typing import Callable, TypeVar
 from yaralyzer.config import YaralyzerConfig
 from yaralyzer.util.argument_parser import rules, tuning
 from yaralyzer.util.constants import MAX_FILENAME_LENGTH
-from yaralyzer.util.exceptions import print_fatal_error, print_fatal_error_and_exit
+from yaralyzer.util.exceptions import print_fatal_error_and_exit
 from yaralyzer.util.logging import log
 
-from pdfalyzer.detection.yaralyzer_helper import YARA_RULES_FILES
 from pdfalyzer.output.theme import COMPLETE_THEME_DICT, _debug_themes
 from pdfalyzer.util.constants import PDFALYZE, PDFALYZER_UPPER
 from pdfalyzer.util.helpers.filesystem_helper import DEFAULT_PDF_PARSER_PATH, PDF_PARSER_PATH_ENV_VAR

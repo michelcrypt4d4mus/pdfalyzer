@@ -9,8 +9,12 @@ from yaralyzer.util.helpers.rich_helper import DEFAULT_TABLE_OPTIONS
 
 from pdfalyzer.util.helpers.rich_helper import indent_padding
 
-DEFAULT_SUBTABLE_COL_STYLES = ['white', 'bright_white']
 HEADER_PADDING = (1, 1)
+
+SUBTABLE_COL_STYLES = [
+    {'justify': 'left',  'style': 'white'},
+    {'justify': 'right', 'style': 'bright_white'},
+]
 
 
 def generate_subtable(cols: list[str], header_style: str = 'subtable') -> Table:
@@ -27,10 +31,7 @@ def generate_subtable(cols: list[str], header_style: str = 'subtable') -> Table:
     )
 
     for i, col in enumerate(cols):
-        if i == 0:
-            table.add_column(col, style=DEFAULT_SUBTABLE_COL_STYLES[0], justify='left')
-        else:
-            table.add_column(col, style='bright_white', justify='right')
+        table.add_column(col, **SUBTABLE_COL_STYLES[0 if i == 0 else 1])
 
     return table
 
