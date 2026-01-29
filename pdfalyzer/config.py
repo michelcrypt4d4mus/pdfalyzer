@@ -10,7 +10,8 @@ from typing import Callable, TypeVar
 
 from yaralyzer.config import YaralyzerConfig
 from yaralyzer.util.argument_parser import rules, tuning
-from yaralyzer.util.constants import MAX_FILENAME_LENGTH
+from yaralyzer.util.classproperty import classproperty
+from yaralyzer.util.constants import MAX_FILENAME_LENGTH, dotfile_name
 from yaralyzer.util.exceptions import print_fatal_error_and_exit
 from yaralyzer.util.helpers.env_helper import is_env_var_set_and_not_false
 from yaralyzer.util.logging import log
@@ -40,6 +41,12 @@ class PdfalyzerConfig(YaralyzerConfig):
     ONLY_CLI_ARGS = YaralyzerConfig.ONLY_CLI_ARGS + ['extract_binary_streams']
 
     pdf_parser_path: Path | None = None
+
+    # TODO: remove once yaralyzer is upgraded
+    @classproperty
+    def dotfile_name(cls) -> str:
+        """Returns '.pdfalyzer'."""
+        return dotfile_name(cls.app_name)
 
     @classmethod
     def get_export_basepath(cls, export_method: Callable) -> str:

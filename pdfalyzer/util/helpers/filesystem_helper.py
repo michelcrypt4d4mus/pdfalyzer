@@ -21,8 +21,8 @@ PDF_PARSER_PY = 'pdf-parser.py'
 PDF_PARSER_PATH_ENV_VAR = 'PDFALYZER_PDF_PARSER_PY_PATH'  # Github workflow depends on this value!
 PROJECT_ROOT = Path(str(importlib.resources.files(PDFALYZER))).parent
 SCRIPTS_DIR = PROJECT_ROOT.joinpath('scripts')
-TOOLS_DIR = PROJECT_ROOT.joinpath('tools')
-DEFAULT_PDF_PARSER_PATH = TOOLS_DIR.joinpath(PDF_PARSER_PY)
+DEFAULT_PDF_TOOLS_DIR = Path('pdf_tools')
+DEFAULT_PDF_PARSER_PATH = DEFAULT_PDF_TOOLS_DIR.joinpath(PDF_PARSER_PY)
 
 
 def create_dir_if_it_does_not_exist(dir: Path) -> None:

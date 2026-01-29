@@ -32,7 +32,7 @@ jobs:
       - name: Install dependencies and PDF tools
         run: |
           poetry install --all-extras
-          poetry run python scripts/install_didier_stevens_pdf_tools.py
+          PDFALYZER_QUIET_INSTALL=True poetry run pdfalyzer_install_pdf_parser
       - name: Test with pytest
         run: |
           poetry run pytest -vv --slow

@@ -7,15 +7,18 @@ from dataclasses import dataclass, field
 from pathlib import Path
 from typing import Self
 
-from rich.prompt import Prompt
+from rich.prompt import Confirm, Prompt
 from rich.text import Text
 from yaralyzer.util.exceptions import print_fatal_error_and_exit
+from yaralyzer.util.helpers.env_helper import is_env_var_set_and_not_false
 from yaralyzer.util.helpers.shell_helper import ShellResult
 from yaralyzer.util.logging import log, log_and_print, log_console
 
 from pdfalyzer.config import PdfalyzerConfig
+from pdfalyzer.util.constants import PDFALYZER
 from pdfalyzer.util.exceptions import PdfParserError
-from pdfalyzer.util.helpers.filesystem_helper import PDF_PARSER_PATH_ENV_VAR, PDF_PARSER_PY, dir_str
+from pdfalyzer.util.helpers.filesystem_helper import (DEFAULT_PDF_PARSER_PATH, DEFAULT_PDF_TOOLS_DIR,
+     PDF_PARSER_PATH_ENV_VAR, PDF_PARSER_PY, dir_str)
 from pdfalyzer.util.helpers.interaction_helper import ask_to_proceed
 
 # PDF Internal Data Regexes
@@ -23,21 +26,27 @@ CONTAINS_STREAM_REGEX = re.compile(r'\s+Contains stream$')
 PDF_OBJECT_START_REGEX = re.compile(r'^obj (\d+) \d+$')
 
 # Installation of pdf-parser.py info
-PDF_TOOLS_FILES = [PDF_PARSER_PY, 'pdfid.py', 'xorsearch.py']
 DIDIER_STEVENS_RAW_GITHUB_URL = 'https://raw.githubusercontent.com/DidierStevens/DidierStevensSuite/master/'
 PDF_PARSER_GITHUB_URL = DIDIER_STEVENS_RAW_GITHUB_URL + PDF_PARSER_PY
+PDF_TOOLS_FILES = [PDF_PARSER_PY, 'pdfid.py', 'xorsearch.py']
+QUIET_INSTALL_ENV_VAR = 'PDFALYZER_QUIET_INSTALL'
 
-DEFAULT_PDF_TOOLS_DIR = Path('pdf_tools')
 INSTALL_SCRIPT_NAME = 'install_didier_stevens_pdf_tools'
 INSTALL_STYLE = 'wheat4'
 INSTALL_STYLE_BOLD = f"{INSTALL_STYLE} bold"
 
 INSTALL_DEFAULT_TXT = Text("(default: ", style='dim').append(f"./{DEFAULT_PDF_TOOLS_DIR}", style='cyan').append(')')
-INSTALL_PROMPT = Text("\nWhere would you like to install Didier Stevens's PDF tools? ", style=INSTALL_STYLE_BOLD) + INSTALL_DEFAULT_TXT
+INSTALL_PROMPT = Text("\nWhere do you want to install PDF tools? ", style=INSTALL_STYLE_BOLD) + INSTALL_DEFAULT_TXT
 
 TOOLS_INSTALL_MSG = f"If you need to install {PDF_PARSER_PY} it's a single .py file that can be " \
                     f"found at {PDF_PARSER_GITHUB_URL}. There's also a script that comes with Pdfalyzer " \
                     f"that will install it for you if you run:\n\n    {INSTALL_SCRIPT_NAME}\n\n"
+
+POST_INSTALL_MSG = "\n\nDidier Stevens recommends always using the -O option with pdf-parser.py.\n" \
+        "This can be accomplished by setting the PDFPARSER_OPTIONS environment variable:\n\n" \
+        "         PDFPARSER_OPTIONS=-O\n\n" \
+        "You are encouraged to add that to your environment via your .bash_profile or similar.\n" \
+        "This has NOT been done automatically."
 
 
 @dataclass
@@ -112,35 +121,61 @@ class PdfParserManager:
     @staticmethod
     def install_didier_stevens_tools() -> None:
         """Get Didier Stevens's pdf-parser.py and pdfid.py from github."""
+        is_quiet = is_env_var_set_and_not_false(QUIET_INSTALL_ENV_VAR)
+
         try:
             import requests
         except ModuleNotFoundError:
             print_fatal_error_and_exit(f"Python 'requests' package not installed. Maybe try:\n\npip install pdaflyzer[extract]\n\n")
 
-        def log_status(msg, **kwargs) -> None:
-            log_console.print(f"  -> {msg}", style=INSTALL_STYLE, **kwargs)
+        # Skip confirmation if env var is set (used by Github workflows)
+        if is_quiet:
+            install_dir = DEFAULT_PDF_TOOLS_DIR
+        else:
+            install_dir = Prompt.ask(INSTALL_PROMPT, default=DEFAULT_PDF_TOOLS_DIR, show_default=False)
+            install_dir = Path(install_dir)
 
-        install_dir = Prompt.ask(INSTALL_PROMPT, default=str(DEFAULT_PDF_TOOLS_DIR), show_default=False)
-        install_dir = Path(install_dir)
+            if not install_dir.exists():
+                ask_to_proceed(Text(f"Directory {install_dir.resolve()} does not exist. Create?", style=INSTALL_STYLE))
 
         if not install_dir.exists():
-            ask_to_proceed(Text("Directory ", style=INSTALL_STYLE).append(str(install_dir), style='cyan').append(' does not exist. Create?'))
-            install_dir.mkdir(parents=True)
-            log_status(f"Created {install_dir.resolve()}")
+            install_dir.mkdir(exist_ok=True, parents=True)
+            log_install_step(f"Created {install_dir.resolve()}")
         else:
-            log_status(f"  -> Installing to: '{install_dir.resolve()}'\n", style='dim')
+            log_install_step(f"Installing to existing dir {install_dir.resolve()}")
 
         for tool in PDF_TOOLS_FILES:
             tool_path = install_dir.joinpath(tool)
             tool_url = f"{DIDIER_STEVENS_RAW_GITHUB_URL}{tool}"
-            log_status(f"Downloading '{tool}' from {tool_url}")
+            log_install_step(f"Downloading '{tool}' from {tool_url}")
             response = requests.get(tool_url)
             tool_path.write_text(response.text)
-            log_status(f"Making '{tool_path}' executable...")
+            log_install_step(f"Making '{tool_path}' executable...")
             tool_path.chmod(os.stat(tool_path).st_mode | stat.S_IEXEC)
 
-        log_console.print("\n\n\nDidier Stevens recommends always using the -O option with pdf-parser.py.")
-        log_console.print("This can be accomplished by setting the PDFPARSER_OPTIONS environment variable:\n")
-        log_console.print("         PDFPARSER_OPTIONS=-O\n")
-        log_console.print("You are encouraged to add that to your environment via your .bash_profile or similar.")
-        log_console.print("This has NOT been done automatically.")
+        installed_pdf_parser_path = install_dir.resolve().joinpath(PDF_PARSER_PY)
+        pdfalyzer_cfg_line = f'{PDF_PARSER_PATH_ENV_VAR}="{installed_pdf_parser_path}"'
+        dotfile_write_txt = Text(f"Write ", style=INSTALL_STYLE)
+        dotfile_write_txt.append(pdfalyzer_cfg_line, style='cyan').append(' to ')
+        dotfile_write_txt.append(PdfalyzerConfig.dotfile_name, style='cyan').append('?')
+
+        log_install_msg(
+            f"\nYou chose to install {PDF_PARSER_PY} to {installed_pdf_parser_path}.\n"
+            f"In order for {PDFALYZER} to use it to verify PDF objects you can write this location "
+            f"to a {PdfalyzerConfig.dotfile_name} file."
+        )
+
+        if not is_quiet and Confirm.ask(dotfile_write_txt):
+            with open(Path(PdfalyzerConfig.dotfile_name), 'at') as dotfile:
+                dotfile.write(f'\n{pdfalyzer_cfg_line}\n')
+
+        log_install_msg(POST_INSTALL_MSG)
+
+
+def log_install_step(msg, **kwargs) -> None:
+    log_install_msg(f"  -> {msg}", style='gray27', **kwargs)
+
+
+def log_install_msg(msg, **kwargs) -> None:
+    style = kwargs.pop('style') if 'style' in kwargs else INSTALL_STYLE
+    log_console.print(msg, style=style, **kwargs)
