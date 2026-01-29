@@ -16,7 +16,7 @@ PYPDF_LOG_PFX_PATTERN = r"\(pypdf\)"
 
 # Styles
 CHILD_STYLE = 'orange3 bold'
-INDIRECT_OBJ_STYLE = 'light_coral'
+INDIRECT_OBJ_STYLE = 'light_coral'  # Formerly 'color(225)'
 PARENT_STYLE = 'violet'
 PDF_ARRAY_STYLE = 'color(143)'  # color(120)
 PDF_DICTIONARY_STYLE = 'color(64)'
