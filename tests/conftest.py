@@ -26,7 +26,7 @@ environ['INVOKED_BY_PYTEST'] = 'True'
 import pytest  # noqa: E402
 from yaralyzer.util.constants import ECHO_COMMAND_OPTION, NO_TIMESTAMPS_OPTION
 from yaralyzer.util.helpers.env_helper import is_windows
-from yaralyzer.util.helpers.file_helper import files_in_dir, relative_path     # noqa: E402
+from yaralyzer.util.helpers.file_helper import files_in_dir, relative_path  # noqa: E402
 from yaralyzer.util.helpers.shell_helper import ShellResult, safe_args
 
 from pdfalyzer.util.constants import PDFALYZE
