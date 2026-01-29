@@ -82,7 +82,7 @@ class LogHighlighter(ReprHighlighter):
     highlights: list[re.Pattern]
 
     @classmethod
-    def add_highlight_patterns(cls, patterns: list[str]) -> None:
+    def set_highlights(cls, patterns: list[str]) -> None:
         """Compile strings to regexes."""
         cls.highlights = [re.compile(p) for p in (patterns)]
 

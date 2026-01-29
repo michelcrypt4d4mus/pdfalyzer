@@ -146,26 +146,26 @@ NODE_STYLES_BASE_DICT.update({
     adobe_strings.TRUE:                                        'green bold',
 })
 
-# Compile regexes as keys
-NODE_STYLE_REGEXES = {re.compile(k): v for k, v in NODE_STYLES_BASE_DICT.items()}
-NODE_STYLES_THEME_DICT = PdfHighlighter.prefix_styles({k.removeprefix('/'): v for k, v in NODE_STYLES_BASE_DICT.items()})
-
-# TODO: these are not currently used because they have the PDF_OBJ_STYLE_PFX prefix, here for --show-colors only
-NODE_CLASSES_STYLES_DICT = {f"{cls_style.cls.__name__}": cls_style.style for cls_style in PDF_OBJ_TYPE_STYLES}
-NODE_STYLES_THEME_DICT.update(prefix_keys(PDF_OBJ_STYLE_PFX, NODE_CLASSES_STYLES_DICT))
+NODE_STYLES_THEME_DICT = {
+    **PdfHighlighter.prefix_styles({k.removeprefix('/'): v for k, v in NODE_STYLES_BASE_DICT.items()}),
+    **PdfHighlighter.prefix_styles({f"{cs.cls.__name__}": cs.style for cs in PDF_OBJ_TYPE_STYLES})
+}
 
 LOG_THEME_DICT = LogHighlighter.prefix_styles(LOG_HIGHLIGHT_STYLES)
 COMPLETE_THEME_DICT = {**PDFALYZER_THEME_DICT, **LOG_THEME_DICT, **NODE_STYLES_THEME_DICT}
 
+# Compile regexes as keys
+NODE_STYLE_REGEXES = {re.compile(k): v for k, v in NODE_STYLES_BASE_DICT.items()}
+
 
 # Add patterns to highlighters
-LogHighlighter.add_highlight_patterns(
+LogHighlighter.set_highlights(
     LOG_HIGHLIGHT_PATTERNS +
-    [regex_to_highlight_pattern(cs.cls.__name__) for cs in PDF_OBJ_TYPE_STYLES]  # TODO: never applied because prefix is 'pdfobj'
+    [regex_to_highlight_pattern(cs.cls.__name__) for cs in PDF_OBJ_TYPE_STYLES]
 )
 
-PdfHighlighter.add_highlight_patterns(
-    [regex_to_highlight_pattern(regex) for regex in NODE_STYLE_REGEXES.keys()]
+PdfHighlighter.set_highlights(
+    [regex_to_highlight_pattern(r) for r in NODE_STYLE_REGEXES.keys()]
 )
 
 
