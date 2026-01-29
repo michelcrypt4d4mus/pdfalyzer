@@ -2,11 +2,11 @@
 # Installs the T1Utils suite for working with Adobe Type1 fonts.
 # Requires autoconf and automake on macOS.
 
-if cat /etc/*release | grep ^NAME | egrep 'CentOS|Red|Fedora'; then
+if cat /etc/*release | grep ^NAME | grep -E 'CentOS|Red|Fedora'; then
     echo "Installing t1utils with yum..."
     sudo yum install -y t1utils
     exit 0
-elif cat /etc/*release | grep ^NAME | egrep 'Ubuntu|Debian|Mint|Knoppix'; then
+elif cat /etc/*release | grep ^NAME | grep -E 'Ubuntu|Debian|Mint|Knoppix'; then
     echo "Installing t1utils with apt-get..."
     sudo apt-get install -y t1utils
     exit 0

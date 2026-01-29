@@ -984,10 +984,10 @@ yara-python = ">=4.5.4,<5.0.0"
 img = ["cairosvg (>=2.8.2,<3.0.0)"]
 
 [extras]
-extract = ["PyMuPDF", "cryptography", "pytesseract"]
+extract = ["PyMuPDF", "cryptography", "pytesseract", "requests"]
 img = ["cairosvg"]
 
 [metadata]
 lock-version = "2.0"
 python-versions = "^3.11"
-content-hash = "5e0cbce097a169f5fd92ede5f155416464e60eb5fad033670d6401518fdcde58"
+content-hash = "2572812bed506dfaa2545043b24909caf0e086a62b31772e58c16dd84c0bd150"

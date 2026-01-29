@@ -94,9 +94,10 @@ cairosvg = {version = "^2.8.2", optional = true}
 cryptography = {version = "^46.0.3", optional = true}
 PyMuPDF = {version = "^1.26.5", optional = true}
 pytesseract = {version = "^0.3.13", optional = true}
+requests = "^2"
 
 [tool.poetry.extras]
-extract = ["cryptography", "PyMuPDF", "pytesseract"]
+extract = ["cryptography", "PyMuPDF", "pytesseract", "requests"]
 img = ["cairosvg"]
 
 
@@ -115,6 +116,7 @@ requests = "^2.32.5"
 combine_pdfs = 'pdfalyzer:combine_pdfs'
 extract_pdf_pages = 'pdfalyzer:extract_pdf_pages'
 extract_pdf_text = 'pdfalyzer:extract_pdf_text'
+pdfalyzer_install_pdf_parser = 'pdfalyzer:pdfalyzer_install_pdf_parser'
 pdfalyze = 'pdfalyzer:pdfalyze'
 
 

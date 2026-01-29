@@ -1,7 +1,7 @@
 [flake8]
 extend-exclude =
     dist/,
-    tools/,
+    pdf_tools/,
     pdfalyzer/detection/constants/javascript_reserved_keywords.py,
     pdfalyzer/util/debugging.py
 

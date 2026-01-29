@@ -12,7 +12,7 @@ private_repo_scripts/*
 # Project subdirs
 dist/
 log/
-tools/
+pdf_tools/
 /tmp/
 output/export/
 tests/tmp/

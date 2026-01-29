@@ -28,6 +28,7 @@ from pdfalyzer.util.helpers.pdf_object_helper import RefAndObj, describe_obj
 from pdfalyzer.pdf_object_relationship import PdfObjectRelationship
 from pdfalyzer.util import adobe_strings
 from pdfalyzer.util.argument_parser import is_pdfalyze_script
+from pdfalyzer.util.constants import PDF_PARSER_INSTALL_SCRIPT
 from pdfalyzer.util.exceptions import PdfParserError, PdfWalkError
 from pdfalyzer.util.logging import log, log_trace  # Triggers log setup
 from pdfalyzer.util.pdf_parser_manager import PdfParserManager
