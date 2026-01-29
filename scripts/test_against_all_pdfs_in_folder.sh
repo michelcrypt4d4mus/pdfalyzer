@@ -1,4 +1,5 @@
 #!/bin/bash
+# Takes one argument, the folder to scan for PDFs (scans recursively with 'find')
 SCRIPT_PATH=$(dirname -- "$(readlink -f -- "$0";)";)
 source "$SCRIPT_PATH/lib/project_paths.sh"
 
@@ -31,6 +32,12 @@ pdfalyze_doc() {
 
 export -f pdfalyze_doc
 
+
+if [[ -z "$1" ]]; then
+    echo_error "No directory argument provided."
+    exit 1
+fi
+
 rm "$SUCCESS_LOG" 2>/dev/null
 rm "$FAILURE_LOG" 2>/dev/null
-find ~/Documents/ -iname "*.pdf" -type f -exec bash -c 'pdfalyze_doc "{}"' \;
+find "$1/" -iname "*.pdf" -type f -exec bash -c 'pdfalyze_doc "{}"' \;
