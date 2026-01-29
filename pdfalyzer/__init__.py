@@ -15,7 +15,7 @@ from pdfalyzer.decorators.pdf_file import PdfFile
 from pdfalyzer.output.pdfalyzer_presenter import PdfalyzerPresenter
 from pdfalyzer.pdfalyzer import Pdfalyzer
 from pdfalyzer.util.argument_parser import ask_to_proceed, parse_arguments, parser
-from pdfalyzer.util.cli_tools_argument_parser import (MAX_QUALITY, parse_combine_pdfs_args,
+from pdfalyzer.util.cli_tools_argument_parsers import (MAX_QUALITY, parse_combine_pdfs_args,
      parse_pdf_page_extraction_args, parse_text_extraction_args)
 from pdfalyzer.util.exceptions import PdfParserError
 from pdfalyzer.util.helpers.filesystem_helper import file_size_in_mb, set_max_open_files
