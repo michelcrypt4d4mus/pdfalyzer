@@ -97,7 +97,7 @@ NODE_STYLES_BASE_DICT.update({
     adobe_strings.JS:                                          RED_ALERT_BASE_STYLE,
     adobe_strings.OPEN_ACTION:                                 RED_ALERT_BASE_STYLE,
     adobe_strings.GO_TO_R:                                     RED_ALERT_BASE_STYLE,
-    '/Action':                                                 'dark_red',
+    '/Action':                                                 'red',
     # Fonts
     adobe_strings.FONT_DESCRIPTOR:                             'cornflower_blue',
     f'{adobe_strings.FONT_FILE}':                              FONT_FILE_BLUE,
@@ -113,11 +113,11 @@ NODE_STYLES_BASE_DICT.update({
     adobe_strings.WIDTHS:                                      'color(67)',
     adobe_strings.W:                                           'color(67)',
     adobe_strings.RESOURCES:                                   'magenta',
-    # Doc info
+    # Top level nodes
+    '/Root':                                                   TRAILER_OBJ_STYLE,
     adobe_strings.CATALOG:                                     'color(47)',
     adobe_strings.CONTENTS:                                    'medium_purple1',
     adobe_strings.TRAILER:                                     TRAILER_OBJ_STYLE,
-    '/Root':                                                   TRAILER_OBJ_STYLE,
     adobe_strings.INFO:                                        INFO_OBJ_STYLE,
     '/Outlines':                                               INFO_OBJ_STYLE,
     '/Metadata':                                               'color(35)',
