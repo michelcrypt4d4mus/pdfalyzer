@@ -161,6 +161,7 @@ NODE_STYLES_THEME_DICT = {
 LOG_THEME_DICT = LogHighlighter.prefix_styles(LOG_HIGHLIGHT_STYLES)
 COMPLETE_THEME_DICT = {**PDFALYZER_THEME_DICT, **LOG_THEME_DICT, **NODE_STYLES_THEME_DICT}
 
+
 # Add patterns to highlighters
 LogHighlighter.set_highlights(LOG_HIGHLIGHT_PATTERNS + [highlight_pattern(k) for k in PDF_OBJ_TYPE_STYLE_DICT.keys()])
 PdfHighlighter.set_highlights([highlight_pattern(r) for r in NODE_STYLE_REGEXES.keys()])
