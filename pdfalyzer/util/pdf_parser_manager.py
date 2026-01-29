@@ -88,7 +88,7 @@ class PdfParserManager:
             except Exception as e:
                 log.error(f"Failed to extract object ID {object_id}!")
 
-        log_and_print(f"{len(files_written)} binary streams extracted were written to {output_dir_str}.")
+        log_and_print(f"{len(files_written)} extracted binary streams were written to {output_dir_str}.")
         num_failures = len(self.object_ids_containing_stream_data) - len(files_written)
 
         if num_failures > 0:
