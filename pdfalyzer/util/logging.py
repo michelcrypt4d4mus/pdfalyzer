@@ -22,7 +22,7 @@ def highlight(text: str | Text) -> Text:
 # Common RichHandler kwargs
 log_handler_kwargs = {'highlighter': log_highlighter, **DEFAULT_LOG_HANDLER_KWARGS}
 
-# Redirect pypdf logs
+# Redirect pypdf logs and prefix them with '(pypdf)'
 pypdf_log_handler = RichHandler(**log_handler_kwargs)
 pypdf_log_handler.setLevel(logging.WARNING)
 pypdf_log_handler.formatter = logging.Formatter(PYPDF_LOG_PFX + ' %(message)s')
