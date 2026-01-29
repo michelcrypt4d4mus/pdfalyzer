@@ -15,7 +15,7 @@ PREVIEW_STYLES = {HEX: BYTES_NO_DIM, STREAM: 'bytes'}
 
 # TODO: this should be a method on the Objstm or other StreamNode extension to PdfTreeNode or PdfObjProps
 # branch: pypdf_6.6.0__local_pypdf_changes__objstm
-def get_stream_preview_rows(node: 'PdfTreeNode') -> list[list[Text]]:
+def get_stream_preview_rows(node: 'PdfTreeNode') -> list[list[Text]]:  # noqa: F821
     """Get rows that preview the stream data"""
     if node.stream_length == 0:
         return []

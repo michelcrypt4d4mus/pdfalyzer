@@ -10,7 +10,7 @@ from yaralyzer.util.logging import log
 
 # from pdfalyzer.font_info import FontInfo  # Causes circular import
 from pdfalyzer.output.layout import print_headline_panel, subheading_width
-from pdfalyzer.util.helpers.rich_text_helper import quoted_text
+from pdfalyzer.util.helpers.rich_helper import quoted_text
 from pdfalyzer.util.helpers.string_helper import pp
 
 CHARMAP_TITLE = 'Embedded Character Mapping (As Extracted By PyPDF)'

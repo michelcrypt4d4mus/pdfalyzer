@@ -70,6 +70,22 @@ def has_a_common_substring(strings: list[str]) -> bool:
     return all([is_substring_of_longer_strings_in_list(s, strings) for s in strings])
 
 
+def highlight_pattern(regex: re.Pattern | str) -> str:
+    """Build a rich.Highlighter style pattern, e.g. `(?P<stream_object>((De|En)coded)?StreamObject)`."""
+    pattern = regex.pattern if isinstance(regex, re.Pattern) else regex
+    label = regex_to_capture_group_label(regex)
+
+    if len(pattern) <= 2:
+        pattern = fr"^{pattern}$"
+    else:
+        pattern = fr"{pattern}\b".removeprefix('/')
+
+        if not pattern.startswith('^'):
+            pattern = fr"[\b/]{pattern}"
+
+    return fr"(?P<{label}>{pattern})"
+
+
 def is_array_idx(address: str) -> bool:
     """True if address looks like '[23]'."""
     return bool(ARRAY_IDX_REGEX.match(address))
@@ -116,22 +132,6 @@ def props_strings(obj: object, keys: list[str] | None = None) -> list[str]:
 def regex_to_capture_group_label(pattern: re.Pattern | str) -> str:
     pattern = pattern.pattern if isinstance(pattern, re.Pattern) else pattern
     return NON_WORD_CHAR_REGEX.sub('', pattern.replace('|', '_'))
-
-
-def regex_to_highlight_pattern(regex: re.Pattern | str) -> str:
-    """(?P<stream_object>((De|En)coded)?StreamObject)."""
-    pattern = regex.pattern if isinstance(regex, re.Pattern) else regex
-    label = regex_to_capture_group_label(regex)
-
-    if len(pattern) <= 2:
-        pattern = fr"^{pattern}$"
-    else:
-        pattern = fr"{pattern}\b".removeprefix('/')
-
-        if not pattern.startswith('^'):
-            pattern = fr"[\b/]{pattern}"
-
-    return fr"(?P<{label}>{pattern})"
 
 
 def replace_digits(string_with_digits: str) -> str:

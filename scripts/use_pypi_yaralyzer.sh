@@ -14,5 +14,10 @@ fi
 
 # git_check_master_branch
 update_pyproject_toml "$YARALYZER" "$yaralyzer_version"
-poetry lock
+
+if ! poetry lock; then
+    echo_warning "Poetry lock failed, trying with --no-cache option..."
+    poetry lock --no-cache
+fi
+
 poetry install --all-extras

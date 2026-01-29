@@ -113,7 +113,7 @@ class FontInfo:
         # it was ok ca. b08d03d99b5342df60265010dcdcf1a9782c52f7, broken ca. 00dfcd70659baf536592a09dc964ac06986e3668
         # Changes: gave self.font_descriptor_dict a default of None, but that doesn't seem to be the issue.
         if DESCENDANT_FONTS in self.font_dict:
-            descendant_font = self.font_dict[DESCENDANT_FONTS][0].get_object()
+            descendant_font = self.font_dict.get(DESCENDANT_FONTS)[0].get_object()
 
             if FONT_DESCRIPTOR in descendant_font:
                 self.font_descriptor_dict = descendant_font[FONT_DESCRIPTOR].get_object()

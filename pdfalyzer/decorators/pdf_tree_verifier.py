@@ -11,7 +11,7 @@ from rich.markup import escape
 from yaralyzer.util.logging import log
 
 from pdfalyzer.decorators.document_model_printer import highlighted_raw_pdf_obj_str
-from pdfalyzer.util.adobe_strings import TYPE
+from pdfalyzer.util.adobe_strings import PREV, SIZE, TYPE, XREF, XREF_STREAM
 from pdfalyzer.util.helpers.pdf_object_helper import describe_obj
 
 NUM_PREVIEW_BYTES = 1_024
@@ -26,7 +26,7 @@ class PdfTreeVerifier:
     Attributes:
         pdfalyzer (Pdfalyzer): The Pdfalyzer instance being verified
     """
-    pdfalyzer: 'Pdfalyzer'
+    pdfalyzer: 'Pdfalyzer'  # noqa: F821
     _last_missing_node_log_msg: str = ''  # Just to avoid logging unnecessary newlines in warnings
 
     def log_missing_node_warnings(self) -> None:

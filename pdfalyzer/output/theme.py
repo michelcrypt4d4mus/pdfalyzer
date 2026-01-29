@@ -10,21 +10,19 @@ from numbers import Number
 from types import NoneType
 from typing import Any
 
-from pypdf.generic import (ArrayObject, ByteStringObject, EncodedStreamObject, IndirectObject,
-     NullObject, StreamObject, TextStringObject)
-from rich.highlighter import ReprHighlighter
-from rich.panel import Panel
-from rich.padding import Padding
+from pypdf.generic import (ArrayObject, ByteStringObject, EncodedStreamObject, IndirectObject, NullObject,
+     StreamObject, TextStringObject)
 from rich.theme import Theme
 from yaralyzer.output.console import console
 from yaralyzer.output.theme import BYTES_NO_DIM, YARALYZER_THEME_DICT
 from yaralyzer.util.logging import log_console
 
-from pdfalyzer.output.highlighter import PdfHighlighter
+from pdfalyzer.output.highlighter import (CHILD_STYLE, INDIRECT_OBJ_STYLE, LOG_HIGHLIGHT_PATTERNS,
+     LOG_HIGHLIGHT_STYLES, PARENT_STYLE, PDF_ARRAY_STYLE, PDF_DICTIONARY_STYLE, LogHighlighter, PdfHighlighter)
 from pdfalyzer.util import adobe_strings
-from pdfalyzer.util.helpers.collections_helper import prefix_keys, safe_json
-from pdfalyzer.util.helpers.rich_text_helper import vertically_padded_panel
-from pdfalyzer.util.helpers.string_helper import regex_to_capture_group_label
+from pdfalyzer.util.helpers.collections_helper import safe_json
+from pdfalyzer.util.helpers.rich_helper import vertically_padded_panel
+from pdfalyzer.util.helpers.string_helper import highlight_pattern
 
 ClassStyle = namedtuple('ClassStyle', ['cls', 'style'])
 
@@ -32,7 +30,6 @@ ClassStyle = namedtuple('ClassStyle', ['cls', 'style'])
 PDF_OBJ_STYLE_PFX = 'pdfobj.'
 
 # Colors / PDF object styles
-CHILD_STYLE = "orange3 bold"
 DEFAULT_LABEL_STYLE = 'yellow'
 DEFAULT_OBJ_TYPE_STYLE = 'bright_yellow'
 FONT_FILE_BLUE = 'steel_blue1'
@@ -41,35 +38,33 @@ INFO_OBJ_STYLE = 'yellow4'
 LINK_OBJ_STYLE = 'grey46'
 NULL_STYLE = 'grey23'
 PAGE_OBJ_STYLE = 'light_salmon3'
-PARENT_STYLE = 'violet'
-PDF_ARRAY_STYLE = 'color(143)'  # color(120)
-PDF_DICTIONARY_STYLE = 'color(64)'
 PDF_NON_TREE_REF_STYLE = 'color(243)'  # grey46?
-PDFALYZER_THEME_DICT = YARALYZER_THEME_DICT.copy()
 RED_ALERT_BASE_STYLE = 'blink bold red'
 TRAILER_OBJ_STYLE = 'chartreuse2'
+TYPE_KEY_STYLE = 'honeydew2'
 
-PDFALYZER_THEME_DICT.update({
-    'BOM': 'bright_green',
-    # fonts
-    'font.property': 'color(135)',
-    'font.title': 'reverse dark_blue on color(253)',
+PDFALYZER_THEME_DICT = {
+    **YARALYZER_THEME_DICT,
+    'bytes.BOM': 'bright_green',
     # charmap
     'charmap.title': 'color(25)',
     'charmap.prepared_title': 'color(23)',
     'charmap.prepared': 'color(106) dim',
     'charmap.byte': 'color(58)',
     'charmap.char': 'color(120) bold',
+    # fonts
+    'font.property': 'color(135)',
+    'font.title': 'reverse dark_blue on color(253)',
     # design elements
     'subtable': 'color(8) on color(232)',
     # warn log events
     'warn': 'bright_yellow',
     # error log events
     'red_alert': f'{RED_ALERT_BASE_STYLE} reverse on white',
-})
+}
 
 PDF_OBJ_TYPE_STYLES = [
-    ClassStyle(IndirectObject, 'color(225)'),
+    ClassStyle(IndirectObject, INDIRECT_OBJ_STYLE),
     ClassStyle(ByteStringObject, YARALYZER_THEME_DICT['bytes.title']),
     ClassStyle(EncodedStreamObject, YARALYZER_THEME_DICT['bytes']),
     ClassStyle(StreamObject, BYTES_NO_DIM),
@@ -79,10 +74,12 @@ PDF_OBJ_TYPE_STYLES = [
     ClassStyle(NoneType, NULL_STYLE),
 ]
 
+PDF_OBJ_TYPE_STYLE_DICT = {f"{cs.cls.__name__}": cs.style for cs in PDF_OBJ_TYPE_STYLES}
+
 # Subclasses of the key type will be styled with the value string
 OBJ_TYPE_STYLES = PDF_OBJ_TYPE_STYLES + [
     ClassStyle(Number, 'cyan bold'),
-    ClassStyle(dict, 'color(64)'),
+    ClassStyle(dict, PDF_DICTIONARY_STYLE),
     ClassStyle(list, PDF_ARRAY_STYLE),
     ClassStyle(tuple, PDF_ARRAY_STYLE),
     ClassStyle(str, 'bright_white bold'),
@@ -96,12 +93,12 @@ NODE_STYLES_BASE_DICT = {
 
 # Order matters - first match will be the style
 NODE_STYLES_BASE_DICT.update({
-    '/AA':                                                      RED_ALERT_BASE_STYLE,
-    adobe_strings.JAVASCRIPT:                                   RED_ALERT_BASE_STYLE,
-    adobe_strings.JS:                                           RED_ALERT_BASE_STYLE,
-    adobe_strings.OPEN_ACTION:                                  RED_ALERT_BASE_STYLE,
-    adobe_strings.GO_TO_R:                                      RED_ALERT_BASE_STYLE,
-    '/Action':                                                 'dark_red',
+    adobe_strings.AA:                                          RED_ALERT_BASE_STYLE,
+    adobe_strings.JAVASCRIPT:                                  RED_ALERT_BASE_STYLE,
+    adobe_strings.JS:                                          RED_ALERT_BASE_STYLE,
+    adobe_strings.OPEN_ACTION:                                 RED_ALERT_BASE_STYLE,
+    adobe_strings.GO_TO_R:                                     RED_ALERT_BASE_STYLE,
+    '/Action':                                                 'red',
     # Fonts
     adobe_strings.FONT_DESCRIPTOR:                             'cornflower_blue',
     f'{adobe_strings.FONT_FILE}':                              FONT_FILE_BLUE,
@@ -117,15 +114,15 @@ NODE_STYLES_BASE_DICT.update({
     adobe_strings.WIDTHS:                                      'color(67)',
     adobe_strings.W:                                           'color(67)',
     adobe_strings.RESOURCES:                                   'magenta',
-    # Doc info
+    # Top level nodes
+    '/Root':                                                   TRAILER_OBJ_STYLE,
     adobe_strings.CATALOG:                                     'color(47)',
     adobe_strings.CONTENTS:                                    'medium_purple1',
     adobe_strings.TRAILER:                                     TRAILER_OBJ_STYLE,
-    '/Root':                                                   TRAILER_OBJ_STYLE,
     adobe_strings.INFO:                                        INFO_OBJ_STYLE,
     '/Outlines':                                               INFO_OBJ_STYLE,
-    '/Metadata':                                              'color(35)',
-    '/ViewerPreferences':                                     'color(35)',
+    '/Metadata':                                               'color(35)',
+    '/ViewerPreferences':                                      'color(35)',
     adobe_strings.OBJ_STM:                                     YARALYZER_THEME_DICT['bytes'],
     # Data nodes
     adobe_strings.ANNOTS:                                      'deep_sky_blue4',
@@ -135,7 +132,7 @@ NODE_STYLES_BASE_DICT.update({
     adobe_strings.UNLABELED:                                   'grey35 reverse',
     adobe_strings.XOBJECT:                                     'grey37',
     adobe_strings.XREF:                                        'color(148)',
-    '/URI':                                                    'white',
+    '/URI':                                                    'white',  # TODO: use YARALYZER_THEME_DICT['grey.light']
     # Pages
     adobe_strings.PAGES:                                       'dark_orange3',
     adobe_strings.PAGE:                                        PAGE_OBJ_STYLE,
@@ -150,39 +147,32 @@ NODE_STYLES_BASE_DICT.update({
     # Booleans
     adobe_strings.FALSE:                                       'bright_red',
     adobe_strings.TRUE:                                        'green bold',
+    # /Type fields
+    adobe_strings.SUBTYPE:                                     TYPE_KEY_STYLE,
+    adobe_strings.TYPE:                                        TYPE_KEY_STYLE,
 })
 
-NODE_STYLES_THEME_DICT = prefix_keys(
-    PdfHighlighter.base_style,
-    {regex_to_capture_group_label(k): v for k, v in NODE_STYLES_BASE_DICT.items()}
-)
-
 # Compile regexes as keys
-NODE_STYLES_REGEX_DICT = {re.compile(k): v for k, v in NODE_STYLES_BASE_DICT.items()}
-# TODO: these are not currently used because they have the PDF_OBJ_STYLE_PFX prefix, here for --show-colors only
-NODE_CLASSES_STYLES_DICT = {f"{cls_style.cls.__name__}": cls_style.style for cls_style in PDF_OBJ_TYPE_STYLES}
-NODE_STYLES_THEME_DICT.update(prefix_keys(PDF_OBJ_STYLE_PFX, NODE_CLASSES_STYLES_DICT))
+NODE_STYLE_REGEXES = {re.compile(k): v for k, v in NODE_STYLES_BASE_DICT.items()}
 
-# Logger highlights
-LOG_THEME_BASE_DICT = {
-    "array_obj": f"{PDF_ARRAY_STYLE} italic",
-    "child": CHILD_STYLE,
-    "dictionary_obj": f"{PDF_DICTIONARY_STYLE} italic",
-    "indeterminate": 'bright_black',
-    "indirect_object": 'light_coral',
-    "node_type": 'honeydew2',
-    "parent": PARENT_STYLE,
-    "pypdf_line": "dim",
-    "pypdf_prefix": "light_slate_gray",
-    "relationship": 'light_pink4',
-    "stream_object": 'light_slate_blue bold',
-    # Overload default theme
-    'call': 'magenta',
-    'ipv4': 'cyan',
-    'ipv6': 'cyan',
+# Unite class styles for things like ArrayObject with node styles for things like /Parent
+NODE_STYLES_THEME_DICT = {
+    **PdfHighlighter.prefix_styles({k.removeprefix('/'): v for k, v in NODE_STYLES_BASE_DICT.items()}),
+    **PdfHighlighter.prefix_styles(PDF_OBJ_TYPE_STYLE_DICT)
 }
 
-LOG_THEME_DICT = prefix_keys(ReprHighlighter.base_style, LOG_THEME_BASE_DICT)
+# Merge all the theme dicts
+LOG_THEME_DICT = LogHighlighter.prefix_styles(LOG_HIGHLIGHT_STYLES)
+COMPLETE_THEME_DICT = {**PDFALYZER_THEME_DICT, **LOG_THEME_DICT, **NODE_STYLES_THEME_DICT}
+
+
+# Add patterns to highlighters
+LogHighlighter.set_highlights(LOG_HIGHLIGHT_PATTERNS + [highlight_pattern(k) for k in PDF_OBJ_TYPE_STYLE_DICT.keys()])
+PdfHighlighter.set_highlights([highlight_pattern(r) for r in NODE_STYLE_REGEXES.keys()])
+
+# Push themes into the console objects that manage stdout.
+console.push_theme(Theme(COMPLETE_THEME_DICT))
+log_console.push_theme(Theme(COMPLETE_THEME_DICT))
 
 
 def get_class_style(obj: Any) -> str:
@@ -193,10 +183,6 @@ def get_class_style(obj: Any) -> str:
         cls_style = 'bright_red bold'
     else:
         cls_style = next((cs.style for cs in OBJ_TYPE_STYLES if isinstance(obj, cs.cls)), DEFAULT_OBJ_TYPE_STYLE)
-
-    if cls_style == DEFAULT_OBJ_TYPE_STYLE:
-        #log_console.print(f"Style FAIL: {type(obj).__name__} style resolved as {cls_style}", style=cls_style)
-        pass
 
     return cls_style
 
@@ -219,26 +205,20 @@ def get_class_style_italic(obj: Any) -> str:
 
 def get_label_style(label: str) -> str:
     """Lookup a style based on the node's label string (either its type or first address)."""
-    return next((v for k, v in NODE_STYLES_REGEX_DICT.items() if k.match(label)), DEFAULT_LABEL_STYLE)
-
-
-# Override whatever theme The Yaralyzer has configured.
-COMPLETE_THEME_DICT = {**PDFALYZER_THEME_DICT, **LOG_THEME_DICT, **NODE_STYLES_THEME_DICT}
-
-console.push_theme(Theme(COMPLETE_THEME_DICT))
+    return next((v for k, v in NODE_STYLE_REGEXES.items() if k.match(label)), DEFAULT_LABEL_STYLE)
 
 
 def theme_json() -> str:
     theme_dicts = {
-        'PDFALYZER_THEME_DICT': PDFALYZER_THEME_DICT,
+        'COMPLETE_THEME_DICT': COMPLETE_THEME_DICT,
         'LOG_THEME_DICT': LOG_THEME_DICT,
         'NODE_STYLES_THEME_DICT': NODE_STYLES_THEME_DICT,
-        'COMPLETE_THEME_DICT': COMPLETE_THEME_DICT,
+        'PDFALYZER_THEME_DICT': PDFALYZER_THEME_DICT,
     }
 
     return safe_json(theme_dicts)
 
 
-def debug_themes() -> None:
+def _debug_themes() -> None:
     log_console.print(vertically_padded_panel('All Theme Dicts'))
     log_console.print_json(theme_json(), indent=4, sort_keys=True)
