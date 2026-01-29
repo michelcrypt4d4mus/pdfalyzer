@@ -8,7 +8,7 @@ from rich.text import Text
 from yaralyzer.output.console import console
 from yaralyzer.output.file_export import invoke_rich_export
 from yaralyzer.util.exceptions import print_fatal_error
-from yaralyzer.util.logging import invocation_txt, log_console, log_current_config
+from yaralyzer.util.logging import invocation_txt, log_console
 
 from pdfalyzer.config import PdfalyzerConfig
 from pdfalyzer.decorators.pdf_file import PdfFile
@@ -29,7 +29,6 @@ PdfalyzerConfig.init(parser, parse_arguments)
 def pdfalyze():
     """Main entry point for The Pdfalyzer command line tool."""
     args = PdfalyzerConfig.parse_args()
-    log_current_config(PdfalyzerConfig)
     pdfalyzer = Pdfalyzer(args.file_to_scan_path, args.password)
     presenter = PdfalyzerPresenter(pdfalyzer)
 
