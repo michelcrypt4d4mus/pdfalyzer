@@ -20,7 +20,7 @@ from yaralyzer.util.logging import log, log_console
 
 from pdfalyzer.util.helpers.filesystem_helper import (do_all_files_exist, extract_page_number, is_pdf,
      with_pdf_extension)
-from pdfalyzer.util.argument_parser import ask_to_proceed
+from pdfalyzer.util.helpers.interaction_helper import ask_to_proceed
 from pdfalyzer.util.page_range import PageRangeArgumentValidator
 
 MAX_QUALITY = 10

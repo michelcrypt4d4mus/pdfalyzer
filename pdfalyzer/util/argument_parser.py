@@ -3,7 +3,6 @@ Parse command line arguments for `pdfalyze` and construct the `PdfalyzerConfig` 
 """
 import sys
 from argparse import ArgumentParser
-from typing import Type
 
 from rich_argparse_plus import RichHelpFormatterPlus
 from rich.prompt import Confirm
@@ -137,16 +136,3 @@ select.add_argument('--preview-stream-length',
 # Make sure the selection section is at the top
 parser._action_groups = parser._action_groups[:2] + [parser._action_groups[-1]] + parser._action_groups[2:-1]
 is_pdfalyze_script = parser.prog.startswith(PDFALYZE)  # startswith() bc on Windows we end up with 'pdfalyze.cmd'?
-
-
-#############
-#  Helpers  #
-#############
-
-def ask_to_proceed(msg: str | Text | None = None) -> None:
-    """Exit if user doesn't confirm they want to proceed."""
-    msg = msg if isinstance(msg, Text) else Text(msg or "Proceed anyway?")
-
-    if not Confirm.ask(msg):
-        log_console.print('Exiting...', style='dim')
-        sys.exit()
