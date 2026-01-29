@@ -42,7 +42,7 @@ DEFAULT_REPR_HIGHLIGHTER_PATTERNS = [
 ]
 
 # Our custom log highlight patterns
-HIGHLIGHT_PATTERNS = DEFAULT_REPR_HIGHLIGHTER_PATTERNS + [
+LOG_HIGHLIGHT_PATTERNS = DEFAULT_REPR_HIGHLIGHTER_PATTERNS + [
     r"(?P<array_obj>Array(Object)?)",
     r"(?P<child>[cC]hild(ren)?)",
     r"(?P<dictionary_obj>Dictionary(Object)?)",
@@ -70,7 +70,7 @@ LOG_HIGHLIGHT_STYLES = {
     "pypdf_prefix": "light_slate_gray",
     "relationship": 'light_pink4',
     "stream_object": 'light_slate_blue bold',
-    # Overload default theme
+    # Overload default 'repr.' prefix theme elements
     'call': 'magenta',
     'ipv4': 'cyan',
     'ipv6': 'cyan',

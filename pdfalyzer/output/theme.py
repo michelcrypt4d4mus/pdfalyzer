@@ -17,7 +17,7 @@ from yaralyzer.output.console import console
 from yaralyzer.output.theme import BYTES_NO_DIM, YARALYZER_THEME_DICT
 from yaralyzer.util.logging import log_console
 
-from pdfalyzer.output.highlighter import (CHILD_STYLE, HIGHLIGHT_PATTERNS, LOG_HIGHLIGHT_STYLES, PARENT_STYLE,
+from pdfalyzer.output.highlighter import (CHILD_STYLE, LOG_HIGHLIGHT_PATTERNS, LOG_HIGHLIGHT_STYLES, PARENT_STYLE,
      PDF_ARRAY_STYLE, PDF_DICTIONARY_STYLE, LogHighlighter, PdfHighlighter)
 from pdfalyzer.util import adobe_strings
 from pdfalyzer.util.helpers.collections_helper import prefix_keys, safe_json
@@ -160,11 +160,13 @@ COMPLETE_THEME_DICT = {**PDFALYZER_THEME_DICT, **LOG_THEME_DICT, **NODE_STYLES_T
 
 # Add patterns to highlighters
 LogHighlighter.add_highlight_patterns(
-    HIGHLIGHT_PATTERNS +
-    [regex_to_highlight_pattern(re.compile(cs[0].__name__)) for cs in PDF_OBJ_TYPE_STYLES]  # TODO: never applied because prefix is pdfobj not 'repr'
+    LOG_HIGHLIGHT_PATTERNS +
+    [regex_to_highlight_pattern(cs.cls.__name__) for cs in PDF_OBJ_TYPE_STYLES]  # TODO: never applied because prefix is 'pdfobj'
 )
 
-PdfHighlighter.add_highlight_patterns([regex_to_highlight_pattern(regex) for regex in NODE_STYLE_REGEXES.keys()])
+PdfHighlighter.add_highlight_patterns(
+    [regex_to_highlight_pattern(regex) for regex in NODE_STYLE_REGEXES.keys()]
+)
 
 
 # Push themes into the console objects that manage stdout.
