@@ -1,4 +1,6 @@
 # NEXT RELEASE
+
+### 1.19.3
 * `/AA:JavaScript` and `/GoToR` nodes get the red blinking alert treatment
 * Refactor overall theme / color / style situation for PDF nodes
 * Extra debug output for `--show-colors --debug` option combinattion
