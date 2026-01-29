@@ -61,7 +61,7 @@ LOG_HIGHLIGHT_STYLES = {
     "pypdf_line": "dim",
     "pypdf_prefix": "light_slate_gray",
     "relationship": 'light_pink4',
-    # Overload default 'repr.' prefix theme elements
+    # Overload default ReprHighlighter theme elements
     'call': 'magenta',
     'ipv4': 'cyan',
     'ipv6': 'cyan',
