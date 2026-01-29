@@ -9,8 +9,8 @@ from typing import Self
 
 from rich.prompt import Confirm, Prompt
 from rich.text import Text
+from yaralyzer.util.helpers.env_helper import is_github_workflow
 from yaralyzer.util.exceptions import print_fatal_error_and_exit
-from yaralyzer.util.helpers.env_helper import is_env_var_set_and_not_false
 from yaralyzer.util.helpers.shell_helper import ShellResult
 from yaralyzer.util.logging import log, log_and_print, log_console
 
@@ -29,7 +29,6 @@ DIDIER_STEVENS_RAW_GITHUB_URL = 'https://raw.githubusercontent.com/DidierStevens
 PDF_PARSER_GITHUB_URL = DIDIER_STEVENS_RAW_GITHUB_URL + PDF_PARSER_PY
 PDF_PARSER_PATH_ENV_VAR = PdfalyzerConfig.prefixed_env_var(CFG_PDF_PARSER_PATH_ENV_VAR)
 PDF_TOOLS_FILES = [PDF_PARSER_PY, 'pdfid.py', 'xorsearch.py']
-QUIET_INSTALL_ENV_VAR = 'PDFALYZER_QUIET_INSTALL'
 
 INSTALL_STYLE = 'light_cyan1'
 INSTALL_STYLE_BOLD = f"{INSTALL_STYLE} bold"
@@ -120,15 +119,13 @@ class PdfParserManager:
     @staticmethod
     def install_didier_stevens_tools() -> None:
         """Get Didier Stevens's pdf-parser.py and pdfid.py from github."""
-        is_quiet = is_env_var_set_and_not_false(QUIET_INSTALL_ENV_VAR)
-
         try:
             import requests
         except ModuleNotFoundError:
             print_fatal_error_and_exit(f"Python 'requests' package not installed. Maybe try:\n\npip install pdaflyzer[extract]\n\n")
 
         # Skip confirmation if env var is set (used by Github workflows)
-        if is_quiet:
+        if is_github_workflow():
             install_dir = DEFAULT_PDF_TOOLS_DIR
         else:
             install_dir = Prompt.ask(INSTALL_PROMPT, default=DEFAULT_PDF_TOOLS_DIR, show_default=False)
@@ -164,7 +161,7 @@ class PdfParserManager:
             f"to a {PdfalyzerConfig.dotfile_name} file.\n"
         )
 
-        if not is_quiet and Confirm.ask(dotfile_write_txt):
+        if not is_github_workflow() and Confirm.ask(dotfile_write_txt):
             dotfile_path = Path(PdfalyzerConfig.dotfile_name)
 
             with open(dotfile_path, 'at') as dotfile:
