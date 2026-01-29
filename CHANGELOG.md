@@ -1,5 +1,5 @@
 # NEXT RELEASE
-* `pdfalyzer_install_pdf_parser` script calls method in `PdfParserManager`.
+* `pdfalyzer_install_pdf_parser` script calls method in `PdfParserManager` and writes lines to `.pdfalyzer` file.
 
 ### 1.19.3
 * `/AA:JavaScript` and `/GoToR` nodes get the red blinking alert treatment
