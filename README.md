@@ -238,13 +238,13 @@ Things like, say, a hidden binary `/F` (PDF instruction meaning "URL") followed 
 ### Installing Didier Stevens's PDF Analysis Tools
 Stevens's tools provide comprehensive info about the contents of a PDF, are guaranteed not to trigger the rendering of any malicious content (especially `pdfid.py`), and have been battle tested for well over a decade. It would probably be a good idea to analyze your PDF with his tools before you start working with this one.
 
-If you're lazy and don't want to retrieve his tools yourself there's [a simple bash script](scripts/install_didier_stevens_pdf_tools.py) to download them from his github repo and place them in a `tools/` subdirectory off the project root. Just run this:
+If you're lazy and don't want to retrieve the tools yourself there's a script to download them that ships with Pdfalyzer. Just run this:
 
 ```sh
-python -m scripts/install_didier_stevens_pdf_tools.py
+pdfalyzer_install_pdf_parser
 ```
 
-If there is a discrepancy between the output of betweeen his tools and this one you should assume his tool is correct and The Pdfalyzer is wrong until you conclusively prove otherwise.
+If there is a discrepancy between the output of betweeen his tools and this one you should assume his tool is correct and Pdfalyzer is wrong until you conclusively prove otherwise.
 
 ### Installing The `t1utils` Font Suite
 `t1utils` is a suite of old but battle tested apps for manipulating old Adobe font formats.  You don't need it unless you're dealing with an older Type 1 or Type 2 font binary but given that those have been very popular exploit vectors in the past few years it can be extremely helpful. One of the tools in the suite, [`t1disasm`](https://www.lcdf.org/type/t1disasm.1.html), is particularly useful because it decrypts and decompiles Adobe Type 1 font binaries into a more human readable string representation.
