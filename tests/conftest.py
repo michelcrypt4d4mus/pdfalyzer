@@ -32,10 +32,6 @@ from yaralyzer.util.helpers.shell_helper import ShellResult, safe_args
 from pdfalyzer.util.constants import PDFALYZE
 from pdfalyzer.util.logging import log
 
-# TODO: importlib doesn't play nice with running tests via GitHub actions
-# import importlib.resources
-# PROJECT_DIR = path.join(str(importlib.resources.files('pdfalyzer')), pardir)
-
 PDFALYZE_BASE_CMD = [PDFALYZE, ECHO_COMMAND_OPTION, '--allow-missed-nodes', NO_TIMESTAMPS_OPTION]
 
 
