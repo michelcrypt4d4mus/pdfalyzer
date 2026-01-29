@@ -219,10 +219,10 @@ def get_label_style(label: str) -> str:
 
 def theme_json() -> str:
     theme_dicts = {
-        'PDFALYZER_THEME_DICT': PDFALYZER_THEME_DICT,
+        'COMPLETE_THEME_DICT': COMPLETE_THEME_DICT,
         'LOG_THEME_DICT': LOG_THEME_DICT,
         'NODE_STYLES_THEME_DICT': NODE_STYLES_THEME_DICT,
-        'COMPLETE_THEME_DICT': COMPLETE_THEME_DICT,
+        'PDFALYZER_THEME_DICT': PDFALYZER_THEME_DICT,
     }
 
     return safe_json(theme_dicts)
