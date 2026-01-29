@@ -17,8 +17,8 @@ from yaralyzer.output.console import console
 from yaralyzer.output.theme import BYTES_NO_DIM, YARALYZER_THEME_DICT
 from yaralyzer.util.logging import log_console
 
-from pdfalyzer.output.highlighter import (CHILD_STYLE, LOG_HIGHLIGHT_PATTERNS, LOG_HIGHLIGHT_STYLES, PARENT_STYLE,
-     PDF_ARRAY_STYLE, PDF_DICTIONARY_STYLE, LogHighlighter, PdfHighlighter)
+from pdfalyzer.output.highlighter import (CHILD_STYLE, INDIRECT_OBJ_STYLE, LOG_HIGHLIGHT_PATTERNS,
+     LOG_HIGHLIGHT_STYLES, PARENT_STYLE, PDF_ARRAY_STYLE, PDF_DICTIONARY_STYLE, LogHighlighter, PdfHighlighter)
 from pdfalyzer.util import adobe_strings
 from pdfalyzer.util.helpers.collections_helper import prefix_keys, safe_json
 from pdfalyzer.util.helpers.rich_helper import vertically_padded_panel
@@ -63,7 +63,7 @@ PDFALYZER_THEME_DICT = {
 }
 
 PDF_OBJ_TYPE_STYLES = [
-    ClassStyle(IndirectObject, 'color(225)'),
+    ClassStyle(IndirectObject, INDIRECT_OBJ_STYLE),
     ClassStyle(ByteStringObject, YARALYZER_THEME_DICT['bytes.title']),
     ClassStyle(EncodedStreamObject, YARALYZER_THEME_DICT['bytes']),
     ClassStyle(StreamObject, BYTES_NO_DIM),

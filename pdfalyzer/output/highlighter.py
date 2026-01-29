@@ -15,7 +15,8 @@ PDF_OBJ_STYLE_PREFIX = 'pdf.'
 PYPDF_LOG_PFX_PATTERN = r"\(pypdf\)"
 
 # Styles
-CHILD_STYLE = "orange3 bold"
+CHILD_STYLE = 'orange3 bold'
+INDIRECT_OBJ_STYLE = 'light_coral'
 PARENT_STYLE = 'violet'
 PDF_ARRAY_STYLE = 'color(143)'  # color(120)
 PDF_DICTIONARY_STYLE = 'color(64)'
@@ -63,7 +64,7 @@ LOG_HIGHLIGHT_STYLES = {
     "child": CHILD_STYLE,
     "dictionary_obj": f"{PDF_DICTIONARY_STYLE} italic",
     "indeterminate": 'bright_black',
-    "indirect_object": 'light_coral',
+    "indirect_object": INDIRECT_OBJ_STYLE,
     "node_type": 'honeydew2',
     "parent": PARENT_STYLE,
     "pypdf_line": "dim",
