@@ -15,7 +15,6 @@ from yaralyzer.util.exceptions import print_fatal_error, print_fatal_error_and_e
 from yaralyzer.util.logging import log
 
 from pdfalyzer.detection.yaralyzer_helper import YARA_RULES_FILES
-from pdfalyzer.output.highlighter import LogHighlighter, PdfHighlighter
 from pdfalyzer.output.theme import COMPLETE_THEME_DICT, _debug_themes
 from pdfalyzer.util.constants import PDFALYZE, PDFALYZER_UPPER
 from pdfalyzer.util.helpers.filesystem_helper import DEFAULT_PDF_PARSER_PATH, PDF_PARSER_PATH_ENV_VAR
@@ -78,8 +77,6 @@ class PdfalyzerConfig(YaralyzerConfig):
     def _parse_arguments(cls) -> Namespace:
         """Overloads/extends YaralyzerConfig method of the same name."""
         if '--show-colors' in sys.argv and '--debug' in sys.argv:
-            LogHighlighter._debug_highlight_patterns()
-            PdfHighlighter._debug_highlight_patterns()
             _debug_themes()
 
         args = super()._parse_arguments()

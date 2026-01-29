@@ -220,5 +220,7 @@ def theme_json() -> str:
 
 
 def _debug_themes() -> None:
+    LogHighlighter._debug_highlight_patterns()
+    PdfHighlighter._debug_highlight_patterns()
     log_console.print(vertically_padded_panel('All Theme Dicts'))
     log_console.print_json(theme_json(), indent=4, sort_keys=True)
