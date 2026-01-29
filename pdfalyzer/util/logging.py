@@ -14,13 +14,14 @@ from rich.theme import Theme
 from yaralyzer.util.logging import DEFAULT_LOG_HANDLER_KWARGS, log, log_console, log_trace
 
 from pdfalyzer.util.helpers.string_helper import regex_to_highlight_pattern
-from pdfalyzer.output.highlighter import PYPDF_LOG_PFX_PATTERN, LogHighlighter, PdfHighlighter
+from pdfalyzer.output.highlighter import HIGHLIGHT_PATTERNS, PYPDF_LOG_PFX_PATTERN, LogHighlighter, PdfHighlighter
 from pdfalyzer.output.theme import COMPLETE_THEME_DICT, NODE_STYLES_REGEX_DICT, PDF_OBJ_TYPE_STYLES
 
 PYPDF_LOG_PFX = PYPDF_LOG_PFX_PATTERN.replace("\\", '')
 
 
 LogHighlighter.add_highlight_patterns(
+    HIGHLIGHT_PATTERNS +
     [regex_to_highlight_pattern(re.compile(cs[0].__name__)) for cs in PDF_OBJ_TYPE_STYLES] # TODO: never applied because prefix is pdfobj not 'repr'
 )
 

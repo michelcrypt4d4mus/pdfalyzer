@@ -51,15 +51,15 @@ TRAILER_OBJ_STYLE = 'chartreuse2'
 
 PDFALYZER_THEME_DICT.update({
     'BOM': 'bright_green',
-    # fonts
-    'font.property': 'color(135)',
-    'font.title': 'reverse dark_blue on color(253)',
     # charmap
     'charmap.title': 'color(25)',
     'charmap.prepared_title': 'color(23)',
     'charmap.prepared': 'color(106) dim',
     'charmap.byte': 'color(58)',
     'charmap.char': 'color(120) bold',
+    # fonts
+    'font.property': 'color(135)',
+    'font.title': 'reverse dark_blue on color(253)',
     # design elements
     'subtable': 'color(8) on color(232)',
     # warn log events
@@ -96,11 +96,11 @@ NODE_STYLES_BASE_DICT = {
 
 # Order matters - first match will be the style
 NODE_STYLES_BASE_DICT.update({
-    '/AA':                                                      RED_ALERT_BASE_STYLE,
-    adobe_strings.JAVASCRIPT:                                   RED_ALERT_BASE_STYLE,
-    adobe_strings.JS:                                           RED_ALERT_BASE_STYLE,
-    adobe_strings.OPEN_ACTION:                                  RED_ALERT_BASE_STYLE,
-    adobe_strings.GO_TO_R:                                      RED_ALERT_BASE_STYLE,
+    adobe_strings.AA:                                          RED_ALERT_BASE_STYLE,
+    adobe_strings.JAVASCRIPT:                                  RED_ALERT_BASE_STYLE,
+    adobe_strings.JS:                                          RED_ALERT_BASE_STYLE,
+    adobe_strings.OPEN_ACTION:                                 RED_ALERT_BASE_STYLE,
+    adobe_strings.GO_TO_R:                                     RED_ALERT_BASE_STYLE,
     '/Action':                                                 'dark_red',
     # Fonts
     adobe_strings.FONT_DESCRIPTOR:                             'cornflower_blue',
@@ -124,8 +124,8 @@ NODE_STYLES_BASE_DICT.update({
     '/Root':                                                   TRAILER_OBJ_STYLE,
     adobe_strings.INFO:                                        INFO_OBJ_STYLE,
     '/Outlines':                                               INFO_OBJ_STYLE,
-    '/Metadata':                                              'color(35)',
-    '/ViewerPreferences':                                     'color(35)',
+    '/Metadata':                                               'color(35)',
+    '/ViewerPreferences':                                      'color(35)',
     adobe_strings.OBJ_STM:                                     YARALYZER_THEME_DICT['bytes'],
     # Data nodes
     adobe_strings.ANNOTS:                                      'deep_sky_blue4',
@@ -159,6 +159,7 @@ NODE_STYLES_THEME_DICT = prefix_keys(
 
 # Compile regexes as keys
 NODE_STYLES_REGEX_DICT = {re.compile(k): v for k, v in NODE_STYLES_BASE_DICT.items()}
+
 # TODO: these are not currently used because they have the PDF_OBJ_STYLE_PFX prefix, here for --show-colors only
 NODE_CLASSES_STYLES_DICT = {f"{cls_style.cls.__name__}": cls_style.style for cls_style in PDF_OBJ_TYPE_STYLES}
 NODE_STYLES_THEME_DICT.update(prefix_keys(PDF_OBJ_STYLE_PFX, NODE_CLASSES_STYLES_DICT))
@@ -193,10 +194,6 @@ def get_class_style(obj: Any) -> str:
         cls_style = 'bright_red bold'
     else:
         cls_style = next((cs.style for cs in OBJ_TYPE_STYLES if isinstance(obj, cs.cls)), DEFAULT_OBJ_TYPE_STYLE)
-
-    if cls_style == DEFAULT_OBJ_TYPE_STYLE:
-        #log_console.print(f"Style FAIL: {type(obj).__name__} style resolved as {cls_style}", style=cls_style)
-        pass
 
     return cls_style
 

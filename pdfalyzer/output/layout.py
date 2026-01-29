@@ -1,7 +1,6 @@
 """
 Methods to help with the formatting of the output tables, headers, panels, etc.
 """
-from rich import box
 from rich.padding import Padding
 from rich.panel import Panel
 from rich.table import Table

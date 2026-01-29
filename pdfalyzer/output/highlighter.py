@@ -57,11 +57,8 @@ class LogHighlighter(ReprHighlighter):
 
     @classmethod
     def add_highlight_patterns(cls, patterns: list[str]) -> None:
-        """Appends new patterns to HIGHLIGHT_PATTERNS."""
-        cls.highlights = [
-            re.compile(pattern)
-            for pattern in (patterns + HIGHLIGHT_PATTERNS)
-        ]
+        """Compile strings to regex object."""
+        cls.highlights = [re.compile(p) for p in (patterns)]
 
     @classmethod
     def get_style(cls, for_str: str) -> str:
@@ -86,8 +83,3 @@ class LogHighlighter(ReprHighlighter):
 
 class PdfHighlighter(LogHighlighter):
     base_style = PDF_OBJ_STYLE_PREFIX
-
-    @classmethod
-    def add_highlight_patterns(cls, patterns: list[str]) -> None:
-        """Does not append HIGHLIGHT_PATTERNS."""
-        cls.highlights = [re.compile(pattern) for pattern in patterns]
