@@ -34,11 +34,6 @@ def create_dir_if_it_does_not_exist(dir: Path) -> None:
     dir.mkdir(parents=True, exist_ok=True)
 
 
-def file_sizes_in_dir(dir: Path, with_extname: str | None = None) -> dict[Path, int]:
-    """Returns a dict keyed by file path, values are file sizes."""
-    return {Path(f): os.path.getsize(f) for f in sorted(files_in_dir(dir, with_extname))}
-
-
 def dir_str(dir: Path) -> str:
     """Turns 'log' into 'log/' etc."""
     relative_dir = relative_path(dir)
@@ -69,6 +64,11 @@ def file_size_in_mb(file_path: str | Path, decimal_places: int = 2) -> float:
     return round(Path(file_path).stat().st_size / 1024.0 / 1024.0, decimal_places)
 
 
+def file_sizes_in_dir(dir: Path, with_extname: str | None = None) -> dict[Path, int]:
+    """Returns a dict keyed by file path, values are file sizes."""
+    return {Path(f): os.path.getsize(f) for f in sorted(files_in_dir(dir, with_extname))}
+
+
 def insert_suffix_before_extension(file_path: Path, suffix: str, separator: str = '__') -> Path:
     """Inserting 'page 1' suffix in 'path/to/file.jpg' -> '/path/to/file__page_1.jpg'."""
     suffix = strip_bad_chars(suffix).replace(' ', '_')
@@ -83,15 +83,6 @@ def is_executable(file_path: Path) -> bool:
 def is_pdf(file_path: str | Path) -> bool:
     """Return True if 'file_path' ends with '.pdf'."""
     return str(file_path).endswith(PDF_EXT)
-
-
-# TODO: import from yaralyzer
-def relative_path(path: Path) -> Path:
-    """Get path relative to current working directory."""
-    try:
-        return path.relative_to(Path.cwd())
-    except ValueError:
-        return path
 
 
 def set_max_open_files(num_filehandles: int = DEFAULT_MAX_OPEN_FILES) -> tuple[int | None, int | None]:

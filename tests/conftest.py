@@ -25,6 +25,7 @@ environ['INVOKED_BY_PYTEST'] = 'True'
 
 import pytest  # noqa: E402
 from yaralyzer.util.constants import ECHO_COMMAND_OPTION, NO_TIMESTAMPS_OPTION
+from yaralyzer.util.helpers.env_helper import is_windows
 from yaralyzer.util.helpers.file_helper import files_in_dir, relative_path     # noqa: E402
 from yaralyzer.util.helpers.shell_helper import ShellResult, safe_args
 
@@ -36,9 +37,6 @@ from pdfalyzer.util.logging import log
 # PROJECT_DIR = path.join(str(importlib.resources.files('pdfalyzer')), pardir)
 
 PDFALYZE_BASE_CMD = [PDFALYZE, ECHO_COMMAND_OPTION, '--allow-missed-nodes', NO_TIMESTAMPS_OPTION]
-
-# TODO: use env_helpers
-is_windows = lambda: platform.system().lower() == 'windows'
 
 
 # Runs at start every time to clean up tmp_dir
