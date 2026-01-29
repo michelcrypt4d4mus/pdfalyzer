@@ -8,7 +8,7 @@ from rich.text import Text
 from pdfalyzer.output.highlighter import PdfHighlighter
 from pdfalyzer.output.theme import (COMPLETE_THEME_DICT, DEFAULT_LABEL_STYLE, get_class_style,
      get_class_style_dim, get_class_style_italic)
-from pdfalyzer.util.adobe_strings import GO_TO_E, GO_TO_R, S, SUBTYPE, TYPE, UNLABELED, XOBJECT
+from pdfalyzer.util.adobe_strings import GO_TO_E, GO_TO_R, IMAGE, S, SUBTYPE, TYPE, UNLABELED, XOBJECT
 from pdfalyzer.util.helpers.pdf_object_helper import pypdf_class_name
 from pdfalyzer.util.helpers.rich_helper import comma_join_txt
 from pdfalyzer.util.helpers.string_helper import coerce_address, is_array_idx, props_string_indented, root_address
@@ -49,10 +49,9 @@ class PdfObjectProperties:
         sub_type = self.sub_type or ''
 
         if sub_type.startswith(GO_TO_R) or sub_type.startswith(GO_TO_E):
-            return COMPLETE_THEME_DICT[GO_TO_R]
-        # TODO: enable this
-        # elif self.type == XOBJECT and sub_type == '/Image':
-        #     return 'medium_violet_red'
+            return COMPLETE_THEME_DICT[PdfHighlighter.prefixed_style(GO_TO_R)]
+        elif self.type == XOBJECT and sub_type == IMAGE:
+            return COMPLETE_THEME_DICT[PdfHighlighter.prefixed_style(IMAGE)]
 
         return COMPLETE_THEME_DICT.get(PdfHighlighter.prefixed_style(type_no_slash), DEFAULT_LABEL_STYLE)
 
