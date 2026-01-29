@@ -13,8 +13,8 @@ from pdfalyzer.util.helpers.filesystem_helper import (PDF_PARSER_PATH_ENV_VAR, P
 from pdfalyzer.util.exceptions import PdfParserError
 
 # PDF Internal Data Regexes
-CONTAINS_STREAM_REGEX = re.compile('\\s+Contains stream$')
-PDF_OBJECT_START_REGEX = re.compile('^obj (\\d+) \\d+$')
+CONTAINS_STREAM_REGEX = re.compile(r'\s+Contains stream$')
+PDF_OBJECT_START_REGEX = re.compile(r'^obj (\d+) \d+$')
 
 # Install info
 DIDIER_STEVENS_RAW_GITHUB_URL = 'https://raw.githubusercontent.com/DidierStevens/DidierStevensSuite/master/'
