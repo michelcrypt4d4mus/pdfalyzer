@@ -32,7 +32,7 @@ def get_bytes_yaralyzer(scannable: bytes, label: str) -> Yaralyzer:
     return _build_yaralyzer(scannable, label)
 
 
-def _build_yaralyzer(scannable: bytes | str | Path, label: str | None = None) -> Yaralyzer:
+def _build_yaralyzer(scannable: bytes | str | Path, label: str = '') -> Yaralyzer:
     """Build a yaralyzer for .yara rules files stored in the yara_rules/ dir in this package."""
     # TODO: ugh this sucks (handling to extract .yara files from a python pkg zip)
     with as_file(YARA_RULES_DIR.joinpath(YARA_RULES_FILES[0])) as yara0:
@@ -50,3 +50,4 @@ def _build_yaralyzer(scannable: bytes | str | Path, label: str | None = None) ->
                             return Yaralyzer.for_rules_files(rules_paths, scannable, label)
                         except FileNotFoundError as e:
                             print_fatal_error_and_exit(f"{YARA_RULES_NOT_FOUND_MSG}: {e}")
+                            raise e
