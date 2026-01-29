@@ -18,10 +18,11 @@ from yaralyzer.util.helpers.env_helper import is_env_var_set_and_not_false
 from yaralyzer.util.logging import log, log_console
 
 from pdfalyzer.output.theme import COMPLETE_THEME_DICT, _debug_themes
-from pdfalyzer.util.constants import PDF_PARSER_INSTALL_SCRIPT, PDFALYZE, PDFALYZER_UPPER
-from pdfalyzer.util.helpers.filesystem_helper import DEFAULT_PDF_PARSER_PATH, PDF_PARSER_PATH_ENV_VAR, PDF_PARSER_PY
+from pdfalyzer.util.constants import PDF_PARSER_NOT_FOUND_MSG, PDFALYZE, PDFALYZER_UPPER
+from pdfalyzer.util.helpers.filesystem_helper import DEFAULT_PDF_PARSER_PATH
 from pdfalyzer.util.output_section import ALL_STREAMS
 
+PDF_PARSER_PATH_ENV_VAR = 'PDF_PARSER_PY_PATH'  # Github workflow depends on this value!
 T = TypeVar('T')
 
 # These options will be read from env vars prefixed with YARALYZER, not PDFALYZER
@@ -119,11 +120,6 @@ class PdfalyzerConfig(YaralyzerConfig):
             if is_env_var_set_and_not_false(PDF_PARSER_PATH_ENV_VAR):
                 log.warning(f"Configured PDF_PARSER_PATH is '{cls.pdf_parser_path}' but that file doesn't exist!")
             else:
-                log_console.print(
-                    Text('').append(PDF_PARSER_PY, style='light_green') +
-                    Text(f" script not found, using dumb approach to verify PDF obj IDs. ") +
-                    Text(f"Consider running ").append(PDF_PARSER_INSTALL_SCRIPT, style='cyan').append(f" command."),
-                    style='dim'
-                )
+                log_console.print(PDF_PARSER_NOT_FOUND_MSG, style='dim')  # TODO: use startup_notification() when yaralyzer bump
 
             cls.pdf_parser_path = None

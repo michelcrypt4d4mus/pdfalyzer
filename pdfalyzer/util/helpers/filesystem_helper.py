@@ -9,7 +9,7 @@ from pathlib import Path
 from yaralyzer.util.helpers.file_helper import files_in_dir, relative_path
 from yaralyzer.util.logging import log, log_console
 
-from pdfalyzer.util.constants import PDFALYZER
+from pdfalyzer.util.constants import PDF_PARSER_PY, PDFALYZER
 
 NUMBERED_PAGE_REGEX = re.compile(r'.*_(\d+)\.\w{3,4}$')
 DEFAULT_MAX_OPEN_FILES = 256  # macOS default
@@ -17,8 +17,6 @@ OPEN_FILES_BUFFER = 30        # we might have some files open already so we need
 PDF_EXT = '.pdf'
 
 # 3rd party pdf-parser.py
-PDF_PARSER_PY = 'pdf-parser.py'
-PDF_PARSER_PATH_ENV_VAR = 'PDFALYZER_PDF_PARSER_PY_PATH'  # Github workflow depends on this value!
 PROJECT_ROOT = Path(str(importlib.resources.files(PDFALYZER))).parent
 SCRIPTS_DIR = PROJECT_ROOT.joinpath('scripts')
 DEFAULT_PDF_TOOLS_DIR = Path('pdf_tools')

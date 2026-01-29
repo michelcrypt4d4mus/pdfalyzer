@@ -14,11 +14,10 @@ from yaralyzer.util.helpers.env_helper import is_env_var_set_and_not_false
 from yaralyzer.util.helpers.shell_helper import ShellResult
 from yaralyzer.util.logging import log, log_and_print, log_console
 
-from pdfalyzer.config import PdfalyzerConfig
-from pdfalyzer.util.constants import PDF_PARSER_INSTALL_SCRIPT, PDFALYZER
+from pdfalyzer.config import PDF_PARSER_PATH_ENV_VAR as CFG_PDF_PARSER_PATH_ENV_VAR, PdfalyzerConfig
+from pdfalyzer.util.constants import PDF_PARSER_INSTALL_SCRIPT, PDF_PARSER_PY, PDFALYZER
 from pdfalyzer.util.exceptions import PdfParserError
-from pdfalyzer.util.helpers.filesystem_helper import (DEFAULT_PDF_PARSER_PATH, DEFAULT_PDF_TOOLS_DIR,
-     PDF_PARSER_PATH_ENV_VAR, PDF_PARSER_PY, dir_str)
+from pdfalyzer.util.helpers.filesystem_helper import DEFAULT_PDF_TOOLS_DIR, dir_str
 from pdfalyzer.util.helpers.interaction_helper import ask_to_proceed
 
 # PDF Internal Data Regexes
@@ -28,6 +27,7 @@ PDF_OBJECT_START_REGEX = re.compile(r'^obj (\d+) \d+$')
 # Installation of pdf-parser.py info
 DIDIER_STEVENS_RAW_GITHUB_URL = 'https://raw.githubusercontent.com/DidierStevens/DidierStevensSuite/master/'
 PDF_PARSER_GITHUB_URL = DIDIER_STEVENS_RAW_GITHUB_URL + PDF_PARSER_PY
+PDF_PARSER_PATH_ENV_VAR = PdfalyzerConfig.prefixed_env_var(CFG_PDF_PARSER_PATH_ENV_VAR)
 PDF_TOOLS_FILES = [PDF_PARSER_PY, 'pdfid.py', 'xorsearch.py']
 QUIET_INSTALL_ENV_VAR = 'PDFALYZER_QUIET_INSTALL'
 
