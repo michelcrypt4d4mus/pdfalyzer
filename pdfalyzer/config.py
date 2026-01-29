@@ -12,6 +12,7 @@ from yaralyzer.config import YaralyzerConfig
 from yaralyzer.util.argument_parser import rules, tuning
 from yaralyzer.util.constants import MAX_FILENAME_LENGTH
 from yaralyzer.util.exceptions import print_fatal_error_and_exit
+from yaralyzer.util.helpers.env_helper import is_env_var_set_and_not_false
 from yaralyzer.util.logging import log
 
 from pdfalyzer.output.theme import COMPLETE_THEME_DICT, _debug_themes
@@ -107,5 +108,7 @@ class PdfalyzerConfig(YaralyzerConfig):
         cls.pdf_parser_path = cls.get_env_value(PDF_PARSER_PATH_ENV_VAR, Path) or DEFAULT_PDF_PARSER_PATH
 
         if not cls.pdf_parser_path.exists():
-            log.warning(f"Configured PDF_PARSER_PATH is '{cls.pdf_parser_path}' but that file doesn't exist!")
+            if is_env_var_set_and_not_false(PDF_PARSER_PATH_ENV_VAR):
+                log.warning(f"Configured PDF_PARSER_PATH is '{cls.pdf_parser_path}' but that file doesn't exist!")
+
             cls.pdf_parser_path = None

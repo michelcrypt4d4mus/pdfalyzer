@@ -128,3 +128,7 @@ def extract_pdf_text() -> None:
     for file_path in args.files_to_process:
         PdfFile(file_path).print_extracted_text(args.page_range, args.print_as_parsed)
         console.line(2)
+
+
+def pdfalyzer_install_pdf_parser() -> None:
+    PdfParserManager.install_didier_stevens_tools()
