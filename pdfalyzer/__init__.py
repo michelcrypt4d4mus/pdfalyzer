@@ -30,8 +30,6 @@ PdfalyzerConfig.init(parser)
 def pdfalyze():
     """Main entry point for The Pdfalyzer command line tool."""
     args = PdfalyzerConfig.parse_args()
-    pdfalyzer = Pdfalyzer(args.file_to_scan_path, args.password)
-    presenter = PdfalyzerPresenter(pdfalyzer)
 
     # Binary stream extraction is a special case
     if args.extract_binary_streams:
@@ -41,6 +39,9 @@ def pdfalyze():
             print_fatal_error('Failed to extract binary streams!', e)
 
         sys.exit()
+
+    pdfalyzer = Pdfalyzer(args.file_to_scan_path, args.password)
+    presenter = PdfalyzerPresenter(pdfalyzer)
 
     # The method that gets called is related to the argument name. See 'possible_output_sections' list in
     # argument_parser.py. Analysis exports wrap themselves around the methods that actually generate the analyses.

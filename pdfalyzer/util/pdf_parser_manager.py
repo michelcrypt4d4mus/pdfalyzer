@@ -15,7 +15,7 @@ from yaralyzer.util.helpers.shell_helper import ShellResult
 from yaralyzer.util.logging import log, log_and_print, log_console
 
 from pdfalyzer.config import PdfalyzerConfig
-from pdfalyzer.util.constants import PDFALYZER
+from pdfalyzer.util.constants import PDF_PARSER_INSTALL_SCRIPT, PDFALYZER
 from pdfalyzer.util.exceptions import PdfParserError
 from pdfalyzer.util.helpers.filesystem_helper import (DEFAULT_PDF_PARSER_PATH, DEFAULT_PDF_TOOLS_DIR,
      PDF_PARSER_PATH_ENV_VAR, PDF_PARSER_PY, dir_str)
@@ -31,7 +31,6 @@ PDF_PARSER_GITHUB_URL = DIDIER_STEVENS_RAW_GITHUB_URL + PDF_PARSER_PY
 PDF_TOOLS_FILES = [PDF_PARSER_PY, 'pdfid.py', 'xorsearch.py']
 QUIET_INSTALL_ENV_VAR = 'PDFALYZER_QUIET_INSTALL'
 
-INSTALL_SCRIPT_NAME = 'install_didier_stevens_pdf_tools'
 INSTALL_STYLE = 'light_cyan1'
 INSTALL_STYLE_BOLD = f"{INSTALL_STYLE} bold"
 
@@ -39,8 +38,8 @@ INSTALL_DEFAULT_TXT = Text("(default: ", style='dim').append(f"./{DEFAULT_PDF_TO
 INSTALL_PROMPT = Text("\nWhere do you want to install PDF tools? ", style=INSTALL_STYLE_BOLD) + INSTALL_DEFAULT_TXT
 
 TOOLS_INSTALL_MSG = f"If you need to install {PDF_PARSER_PY} it's a single .py file that can be " \
-                    f"found at {PDF_PARSER_GITHUB_URL}. There's also a script that comes with Pdfalyzer " \
-                    f"that will install it for you if you run:\n\n    {INSTALL_SCRIPT_NAME}\n\n"
+                    f"found at: {PDF_PARSER_GITHUB_URL}\n\nThere's also a script that comes with Pdfalyzer " \
+                    f"that will install it for you if you run:\n\n    {PDF_PARSER_INSTALL_SCRIPT}\n\n"
 
 POST_INSTALL_MSG = "\n\nDidier Stevens recommends always using the -O option with pdf-parser.py.\n" \
         "This can be accomplished by setting the PDFPARSER_OPTIONS environment variable:\n\n" \
