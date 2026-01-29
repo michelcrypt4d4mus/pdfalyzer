@@ -32,7 +32,7 @@ PDF_TOOLS_FILES = [PDF_PARSER_PY, 'pdfid.py', 'xorsearch.py']
 QUIET_INSTALL_ENV_VAR = 'PDFALYZER_QUIET_INSTALL'
 
 INSTALL_SCRIPT_NAME = 'install_didier_stevens_pdf_tools'
-INSTALL_STYLE = 'wheat4'
+INSTALL_STYLE = 'light_cyan1'
 INSTALL_STYLE_BOLD = f"{INSTALL_STYLE} bold"
 
 INSTALL_DEFAULT_TXT = Text("(default: ", style='dim').append(f"./{DEFAULT_PDF_TOOLS_DIR}", style='cyan').append(')')
@@ -162,14 +162,18 @@ class PdfParserManager:
         log_install_msg(
             f"\nYou chose to install {PDF_PARSER_PY} to {installed_pdf_parser_path}.\n"
             f"In order for {PDFALYZER} to use it to verify PDF objects you can write this location "
-            f"to a {PdfalyzerConfig.dotfile_name} file."
+            f"to a {PdfalyzerConfig.dotfile_name} file.\n"
         )
 
         if not is_quiet and Confirm.ask(dotfile_write_txt):
-            with open(Path(PdfalyzerConfig.dotfile_name), 'at') as dotfile:
+            dotfile_path = Path(PdfalyzerConfig.dotfile_name)
+
+            with open(dotfile_path, 'at') as dotfile:
                 dotfile.write(f'\n{pdfalyzer_cfg_line}\n')
 
-        log_install_msg(POST_INSTALL_MSG)
+            log_install_step(f"Wrote line to {dotfile_path.resolve()}")
+
+        log_install_msg(POST_INSTALL_MSG, style='dim')
 
 
 def log_install_step(msg, **kwargs) -> None:
