@@ -31,8 +31,8 @@ MAX_QUALITY = 10
 ##################
 combine_pdfs_parser = ArgumentParser(
     description="Combine multiple PDFs into one.",
-    epilog="If all PDFs end in a number (e.g. 'xyz_1.pdf', 'xyz_2.pdf', etc. sort the files as if those were" +
-           " page numbers prior to merging.",
+    epilog="If all PDFs end in a number (e.g. 'xyz_1.pdf', 'xyz_2.pdf', etc. sort the files as if those were " +
+           "page numbers prior to merging.",
     formatter_class=RichHelpFormatterPlus)
 
 combine_pdfs_parser.add_argument('pdfs',
@@ -93,8 +93,8 @@ extract_pdf_parser.add_argument('pdf_file', metavar='PDF_FILE', help='PDF to ext
 extract_pdf_parser.add_argument('--debug', action='store_true', help='turn on debug level logging')
 
 extract_pdf_parser.add_argument('--page-range', '-r',
-                                type=page_range_validator,
                                 help=page_range_validator.HELP_MSG,
+                                type=page_range_validator,
                                 required=True)
 
 extract_pdf_parser.add_argument('--destination-dir', '-d',
@@ -129,8 +129,8 @@ extract_text_parser.add_argument('file_or_dir', nargs='+', metavar='FILE_OR_DIR'
 extract_text_parser.add_argument('--debug', action='store_true', help='turn on debug level logging')
 
 extract_text_parser.add_argument('--page-range', '-r',
-                                 type=page_range_validator,
-                                 help=f"[PDFs only] {page_range_validator.HELP_MSG}")
+                                 help=f"[PDFs only] {page_range_validator.HELP_MSG}",
+                                 type=page_range_validator)
 
 extract_text_parser.add_argument('--print-as-parsed', '-p',
                                  action='store_true',
