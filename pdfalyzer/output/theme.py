@@ -174,7 +174,7 @@ COMPLETE_THEME_DICT = {**PDFALYZER_THEME_DICT, **LOG_THEME_DICT, **NODE_STYLES_T
 
 
 # Add patterns to highlighters
-# TODO: currently using PdfHighlighter for log highlights
+# TODO: currently using PdfHighlighter for log highlights, LogHighlighter only for pypdf logs
 LogHighlighter.set_highlights(LOG_HIGHLIGHT_PATTERNS)
 PdfHighlighter.set_highlights([highlight_pattern(r) for r in PDF_HIGHLIGHT_PATTERNS])
 

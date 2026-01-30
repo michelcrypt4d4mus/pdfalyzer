@@ -3,7 +3,6 @@ PdfalyzerConfig object holds the unification of configuration options parsed fro
 as well as those set by environment variables and/or a .pdfalyzer file.
 """
 import logging
-import sys
 from argparse import Namespace
 from os import path
 from pathlib import Path
@@ -14,10 +13,9 @@ from yaralyzer.util.argument_parser import rules, tuning
 from yaralyzer.util.classproperty import classproperty
 from yaralyzer.util.constants import MAX_FILENAME_LENGTH, dotfile_name
 from yaralyzer.util.exceptions import print_fatal_error_and_exit
-from yaralyzer.util.helpers.env_helper import is_env_var_set_and_not_false
-from yaralyzer.util.logging import log_console
+from yaralyzer.util.helpers.env_helper import is_env_var_set_and_not_false, stderr_notification
 
-from pdfalyzer.output.theme import COMPLETE_THEME_DICT, _debug_themes
+from pdfalyzer.output.theme import COMPLETE_THEME_DICT
 from pdfalyzer.util.constants import PDF_PARSER_NOT_FOUND_MSG, PDFALYZE, PDFALYZER_UPPER
 from pdfalyzer.util.helpers.filesystem_helper import DEFAULT_PDF_PARSER_PATH
 from pdfalyzer.util.logging import log, log_handler_kwargs
@@ -46,15 +44,9 @@ class PdfalyzerConfig(YaralyzerConfig):
     pdf_parser_path: Path | None = None
     _log_handler_kwargs = dict(log_handler_kwargs)
 
-    # TODO: remove once yaralyzer is upgraded
-    @classproperty
-    def dotfile_name(cls) -> str:
-        """Returns '.pdfalyzer'."""
-        return dotfile_name(cls.app_name)
-
     @classproperty
     def loggers(cls) -> list[logging.Logger]:
-        """Returns the `Logger` for this app."""
+        """Returns both the `Logger` for Pdfalyzer as well as Yaralyzer."""
         return [cls.log, YaralyzerConfig.log]
 
     @classmethod
@@ -124,7 +116,6 @@ class PdfalyzerConfig(YaralyzerConfig):
             if is_env_var_set_and_not_false(PDF_PARSER_PATH_ENV_VAR):
                 log.warning(f"Configured PDF_PARSER_PATH is '{cls.pdf_parser_path}' but that file doesn't exist!")
             else:
-                # TODO: use startup_notification() when yaralyzer bump
-                log_console.print(PDF_PARSER_NOT_FOUND_MSG, style='dim')
+                stderr_notification(PDF_PARSER_NOT_FOUND_MSG)
 
             cls.pdf_parser_path = None
