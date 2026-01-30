@@ -11,7 +11,7 @@ from typing import Callable, TypeVar
 from yaralyzer.config import YaralyzerConfig
 from yaralyzer.util.argument_parser import rules, tuning
 from yaralyzer.util.classproperty import classproperty
-from yaralyzer.util.constants import MAX_FILENAME_LENGTH, dotfile_name
+from yaralyzer.util.constants import MAX_FILENAME_LENGTH
 from yaralyzer.util.exceptions import print_fatal_error_and_exit
 from yaralyzer.util.helpers.env_helper import is_env_var_set_and_not_false, stderr_notification
 
