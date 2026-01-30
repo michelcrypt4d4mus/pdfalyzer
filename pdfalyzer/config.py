@@ -114,7 +114,7 @@ class PdfalyzerConfig(YaralyzerConfig):
 
         if not cls.pdf_parser_path.exists():
             if is_env_var_set_and_not_false(PDF_PARSER_PATH_ENV_VAR):
-                log.warning(f"Configured PDF_PARSER_PATH is '{cls.pdf_parser_path}' but that file doesn't exist!")
+                log.warning(f"Configured {PDF_PARSER_PATH_ENV_VAR}='{cls.pdf_parser_path}' but no such file exists!")
             else:
                 stderr_notification(PDF_PARSER_NOT_FOUND_MSG)
 
