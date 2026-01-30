@@ -41,7 +41,7 @@ pdfalyzer()
 ### The Official TODO List
 1. Highlight decodes with a lot of Javascript keywords
 1. Check that `/ObjStm nodes are what they advertise themselves as
-1. Figure out a way to label nodes that have been forcibly placed based on heuristics and guesses instead of concrete PDF object references
+1. Figure out a way to differentiate nodes that have been forcibly placed based on heuristics and guesses instead of concrete PDF object references
 1. https://github.com/mandiant/flare-floss (https://github.com/mandiant/flare-floss/releases/download/v2.1.0/floss-v2.1.0-linux.zip)
 1. https://github.com/1Project/Scanr/blob/master/emulator/emulator.py
 

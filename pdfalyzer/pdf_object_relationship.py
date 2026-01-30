@@ -43,7 +43,7 @@ class PdfObjectRelationship:
             self.is_indeterminate = True
 
         self.is_link = self.reference_key in NON_TREE_KEYS or is_prefixed_by_any(self.from_node.label, LINK_NODE_KEYS)
-        self.is_parent = self.reference_key == PARENT or (self.from_node.type == STRUCT_ELEM and self.reference_key == P)
+        self.is_parent = self.reference_key == PARENT or (self.from_node.type == STRUCT_ELEM and self.reference_key == P)  # noqa: E501
 
         # TODO: there can be multiple OBJR refs to the same object... which wouldn't work w/this code
         if self.from_node.type == OBJR and self.reference_key == OBJ:
@@ -88,7 +88,9 @@ class PdfObjectRelationship:
 
                 references += cls.build_node_references(from_node, val, ref_key or key, _build_address(key, address))
         elif not isinstance(from_obj, (float, int, str, BooleanObject, NullObject)):
-            log.debug(f"Adding no references for PdfObject reference '{ref_key}' -> '{from_obj}' ({type(from_obj).__name__})")
+            log.debug(
+                f"Adding no references for PdfObject reference '{ref_key}' -> '{from_obj}' ({type(from_obj).__name__})"
+            )
 
         # Set all returned relationships to originate from top level from_obj before returning
         for ref in references:

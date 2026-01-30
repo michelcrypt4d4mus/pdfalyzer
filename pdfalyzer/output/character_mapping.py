@@ -6,7 +6,6 @@ from rich.padding import Padding
 from rich.text import Text
 from yaralyzer.output.console import console
 from yaralyzer.util.helpers.bytes_helper import print_bytes
-from yaralyzer.util.logging import log
 
 # from pdfalyzer.font_info import FontInfo  # Causes circular import
 from pdfalyzer.output.layout import print_headline_panel, subheading_width

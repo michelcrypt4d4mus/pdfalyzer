@@ -10,8 +10,8 @@ from numbers import Number
 from types import NoneType
 from typing import Any
 
-from pypdf.generic import (ArrayObject, ByteStringObject, DictionaryObject, EncodedStreamObject, IndirectObject, NullObject,
-     StreamObject, TextStringObject)
+from pypdf.generic import (ArrayObject, ByteStringObject, DictionaryObject, EncodedStreamObject,
+     IndirectObject, NullObject, StreamObject, TextStringObject)
 from rich.theme import Theme
 from yaralyzer.output.console import console
 from yaralyzer.output.theme import BYTES_NO_DIM, YARALYZER_THEME_DICT
@@ -107,7 +107,7 @@ NODE_STYLES_BASE_DICT.update({
     f'{adobe_strings.FONT_FILE}2':                             FONT_FILE_BLUE,
     f'{adobe_strings.FONT_FILE}3':                             FONT_FILE_BLUE,
     '/FontName':                                               FONT_OBJ_BLUE,
-    adobe_strings.FONT:                                        FONT_OBJ_BLUE,  # After other /Font styles so it matches after
+    adobe_strings.FONT:                                        FONT_OBJ_BLUE,  # After /Fontetc so it matches after
     '/BaseFont':                                               FONT_OBJ_BLUE,
     adobe_strings.DESCENDANT_FONTS:                            f"{FONT_OBJ_BLUE} dim",
     '/CharProc':                                               'dark_cyan',

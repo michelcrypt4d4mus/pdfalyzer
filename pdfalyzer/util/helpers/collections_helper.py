@@ -49,7 +49,7 @@ def stringify_props(obj: object) -> object:
     else:
         try:
             return json.dumps(obj)
-        except Exception as e:
+        except Exception:
             return str(obj)
 
 

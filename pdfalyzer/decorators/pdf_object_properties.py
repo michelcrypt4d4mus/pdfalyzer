@@ -1,4 +1,4 @@
-from dataclasses import dataclass, field
+from dataclasses import dataclass
 from typing import Any, Self
 
 from pypdf.errors import PdfReadError
@@ -133,7 +133,7 @@ class PdfObjectProperties:
         text.append('>')
         return text
 
-    def _resolve_references(self, reference_key: str | int, obj: PdfObject, pdfalyzer: 'Pdfalyzer') -> Any:  # noqa: F821
+    def _resolve_references(self, reference_key: str | int, obj: PdfObject, pdfalyzer: 'Pdfalyzer') -> Any:  # noqa: F821,E501
         """Recursively build the same data structure except IndirectObjects are resolved to nodes."""
         if isinstance(obj, NumberObject):
             return obj.as_numeric()

@@ -1,4 +1,3 @@
-import platform
 from os import environ, remove
 from pathlib import Path
 from typing import Callable, Sequence
@@ -86,7 +85,7 @@ def pdfalyze_cmd(script_cmd_prefix, _output_dir_args) -> Callable[[Sequence[str 
     def _shell_cmd(*args) -> list[str]:
         cmd = safe_args(script_cmd_prefix + PDFALYZE_BASE_CMD + _output_dir_args + [*args])
 
-        if True:# is_windows():
+        if is_windows():
             log.warning(f"current test: {environ.get('PYTEST_CURRENT_TEST')}\n         cmd: {cmd}")
 
         return cmd

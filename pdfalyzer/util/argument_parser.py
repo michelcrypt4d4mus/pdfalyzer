@@ -5,7 +5,7 @@ from argparse import ArgumentParser
 
 from rich_argparse_plus import RichHelpFormatterPlus
 from yaralyzer.util.argument_parser import (debug, epilog, export, parser as yaralyzer_parser,
-     rules, rules, tuning, yaras)
+     rules, tuning, yaras)
 from yaralyzer.util.constants import YARALYZER_UPPER
 
 from pdfalyzer.config import PdfalyzerConfig

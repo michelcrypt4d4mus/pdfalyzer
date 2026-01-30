@@ -8,7 +8,7 @@ import pypdf   # noqa: F401  # needed to trigger pypdf logger setup?
 from rich.logging import RichHandler
 from rich.text import Text
 # Other files could import yaralyzer's log directly but they do it from here to trigger logging setup
-from yaralyzer.util.logging import DEFAULT_LOG_HANDLER_KWARGS, log, log_console, log_trace
+from yaralyzer.util.logging import DEFAULT_LOG_HANDLER_KWARGS, log, log_console, log_trace  # noqa: F401
 
 from pdfalyzer.output.highlighter import PYPDF_LOG_PFX_PATTERN, log_highlighter, pdf_highlighter
 

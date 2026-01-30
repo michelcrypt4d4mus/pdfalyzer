@@ -20,7 +20,7 @@ from pdfalyzer.util.cli_tools.argument_parsers import (MAX_QUALITY, parse_combin
 from pdfalyzer.util.exceptions import PdfParserError
 from pdfalyzer.util.helpers.filesystem_helper import file_size_in_mb, set_max_open_files
 from pdfalyzer.util.helpers.interaction_helper import ask_to_proceed
-from pdfalyzer.util.logging import log  # Trigger log setup
+from pdfalyzer.util.logging import log  # noqa: F401  Trigger log setup
 from pdfalyzer.util.output_section import OutputSection
 from pdfalyzer.util.pdf_parser_manager import PdfParserManager
 

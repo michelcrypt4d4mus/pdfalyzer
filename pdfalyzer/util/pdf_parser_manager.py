@@ -1,7 +1,6 @@
 import os
 import re
 import stat
-import sys
 from argparse import Namespace
 from dataclasses import dataclass, field
 from pathlib import Path
@@ -15,7 +14,7 @@ from yaralyzer.util.helpers.shell_helper import ShellResult
 from yaralyzer.util.logging import log, log_and_print, log_console
 
 from pdfalyzer.config import PDF_PARSER_PATH_ENV_VAR as CFG_PDF_PARSER_PATH_ENV_VAR, PdfalyzerConfig
-from pdfalyzer.util.constants import PDF_PARSER_INSTALL_SCRIPT, PDF_PARSER_PY, PDFALYZER
+from pdfalyzer.util.constants import PDF_PARSER_INSTALL_SCRIPT, PDF_PARSER_PY, PDFALYZER, PIP_INSTALL_EXTRAS
 from pdfalyzer.util.exceptions import PdfParserError
 from pdfalyzer.util.helpers.filesystem_helper import DEFAULT_PDF_TOOLS_DIR, dir_str
 from pdfalyzer.util.helpers.interaction_helper import ask_to_proceed
@@ -108,7 +107,7 @@ class PdfParserManager:
                 ShellResult.from_cmd(shell_cmd, verify_success=True)
                 files_written.append(stream_dump_file)
             except Exception as e:
-                log.error(f"Failed to extract object ID {object_id}!")
+                log.error(f"Failed to extract object ID {object_id}! {e}")
 
         log_and_print(f"{len(files_written)} extracted binary streams were written to {output_dir_str}.")
         num_failures = len(self.object_ids_containing_stream_data) - len(files_written)
@@ -122,7 +121,7 @@ class PdfParserManager:
         try:
             import requests
         except ModuleNotFoundError:
-            print_fatal_error_and_exit(f"Python 'requests' package not installed. Maybe try:\n\npip install pdaflyzer[extract]\n\n")
+            print_fatal_error_and_exit(f"'requests' package not installed, maybe try:\n\n{PIP_INSTALL_EXTRAS}\n\n")
 
         # Skip confirmation if env var is set (used by Github workflows)
         if is_github_workflow():
