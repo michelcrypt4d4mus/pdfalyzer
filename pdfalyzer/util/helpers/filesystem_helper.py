@@ -6,8 +6,8 @@ import os
 import re
 from pathlib import Path
 
+from yaralyzer.util.helpers.env_helper import stderr_notification
 from yaralyzer.util.helpers.file_helper import files_in_dir, relative_path
-from yaralyzer.util.logging import log, log_console
 
 from pdfalyzer.util.constants import PDF_PARSER_PY, PDFALYZER
 
@@ -113,7 +113,7 @@ def set_max_open_files(num_filehandles: int = DEFAULT_MAX_OPEN_FILES) -> tuple[i
     if soft < num_filehandles:
         soft = num_filehandles
         hard = max(soft, hard)
-        log_console.print(f"Increasing max open files soft & hard 'ulimit -n {soft} {hard}'...")
+        stderr_notification(f"Increasing max open files soft & hard 'ulimit -n {soft} {hard}'...")
 
         try:
             resource.setrlimit(resource.RLIMIT_NOFILE, (soft, hard))
