@@ -65,7 +65,7 @@ LOG_HIGHLIGHT_STYLES = {
     # Overload default ReprHighlighter theme elements
     # 'call': 'magenta',
     'ipv4': 'cyan',
-    'ipv6': 'cyan',
+    # 'ipv6': 'cyan',
 }
 
 
