@@ -50,7 +50,7 @@ We love any and all PDF malware related YARA rules so send them our way.
 
 
 # Testing
-Test coverage is relatively spartan but should throw failures if you really mess something up. See [pytest's official docs](https://docs.pytest.org/en/7.1.x/how-to/usage.html) for other instantiation options.
+The `pytest` suite checks a lot of things, including that the colored output exactly matches various fixture files in the repo.
 
 ```bash
 # Run all tests (including the slow ones):
@@ -62,6 +62,10 @@ pytest
 # Run only the slow tests:
 pytest -m slow --slow:
 ```
+See [pytest's official docs](https://docs.pytest.org/en/7.1.x/how-to/usage.html) for other instantiation options.
+
+You must have `pdf-parser.py` installed to run a few of the tests. You can get it by running `pdfalyzer_install_pdf_parser` (or you can just [download it manually](https://raw.githubusercontent.com/DidierStevens/DidierStevensSuite/master/pdf-parser-py) and place it in a `pdfalyzer/pfd_tools/` directory).
+
 
 If you make changes to the output for a test fixture you may need to update the recorded fixture files in [`tests/fixtures/rendered/`](tests/fixtures/rendered/), which you can do like this:
 
