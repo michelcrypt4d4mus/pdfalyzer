@@ -49,7 +49,7 @@ log = PdfalyzerConfig.log
 
 @dataclass
 class PdfParserManager:
-    """Instances of this class manage external calls to Didier Stevens's pdf-parser.py for a given PDF."""
+    """Manage external calls to Didier Stevens's pdf-parser.py."""
     path_to_pdf: Path
     output_dir: Path
     base_shell_cmd: list[str | Path] = field(init=False)
