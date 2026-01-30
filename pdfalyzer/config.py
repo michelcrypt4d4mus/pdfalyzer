@@ -82,6 +82,12 @@ class PdfalyzerConfig(YaralyzerConfig):
         return path.join(cls.args.output_dir, export_basename[:max_filename_length])
 
     @classmethod
+    def prefixed_env_var(cls, var: str) -> str:
+        """Turns 'LOG_DIR' into 'PDFALYZER_LOG_DIR' etc. Overloads superclass method."""
+        prefix = super().ENV_VAR_PREFIX if var in YARALYZER_SPECIFIC_OPTIONS else cls.ENV_VAR_PREFIX
+        return (var if var.startswith(prefix) else f"{prefix}_{var}").upper()
+
+    @classmethod
     def _parse_arguments(cls, args: Namespace) -> Namespace:
         """Overloads/extends YaralyzerConfig method of the same name."""
         args = super()._parse_arguments(args)
@@ -99,12 +105,6 @@ class PdfalyzerConfig(YaralyzerConfig):
             print_fatal_error_and_exit("--no-default-yara-rules requires at least one YARA rule argument")
 
         return args
-
-    @classmethod
-    def prefixed_env_var(cls, var: str) -> str:
-        """Turns 'LOG_DIR' into 'PDFALYZER_LOG_DIR' etc. Overloads superclass method."""
-        prefix = super().ENV_VAR_PREFIX if var in YARALYZER_SPECIFIC_OPTIONS else cls.ENV_VAR_PREFIX
-        return (var if var.startswith(prefix) else f"{prefix}_{var}").upper()
 
     @classmethod
     def _set_class_vars_from_env(cls) -> None:
