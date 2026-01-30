@@ -6,6 +6,7 @@ import re
 
 from rich.markup import escape
 from rich.highlighter import ReprHighlighter
+from rich.text import Text
 from yaralyzer.util.logging import log_console
 
 from pdfalyzer.util.helpers.collections_helper import prefix_keys
@@ -28,7 +29,7 @@ DEFAULT_REPR_HIGHLIGHTER_PATTERNS = [
     r'(?P<attrib_name>[\w_]{1,50})=(?P<attrib_value>"?[\w_]+"?)?',
     r"(?P<brace>[][{}()])",
     r"(?P<ipv4>[0-9]{1,3}\.[0-9]{1,3}\.[0-9]{1,3}\.[0-9]{1,3})",
-    r"(?P<ipv6>([A-Fa-f0-9]{1,4}::?){1,7}[A-Fa-f0-9]{1,4})",
+    # r"(?P<ipv6>([A-Fa-f0-9]{1,4}::?){1,7}[A-Fa-f0-9]{1,4})",  # TODO: find a way to reenable this
     r"(?P<eui64>(?:[0-9A-Fa-f]{1,2}-){7}[0-9A-Fa-f]{1,2}|(?:[0-9A-Fa-f]{1,2}:){7}[0-9A-Fa-f]{1,2}|(?:[0-9A-Fa-f]{4}\.){3}[0-9A-Fa-f]{4})",
     r"(?P<eui48>(?:[0-9A-Fa-f]{1,2}-){5}[0-9A-Fa-f]{1,2}|(?:[0-9A-Fa-f]{1,2}:){5}[0-9A-Fa-f]{1,2}|(?:[0-9A-Fa-f]{4}\.){2}[0-9A-Fa-f]{4})",
     r"(?P<uuid>[a-fA-F0-9]{8}-[a-fA-F0-9]{4}-[a-fA-F0-9]{4}-[a-fA-F0-9]{4}-[a-fA-F0-9]{12})",
@@ -49,7 +50,7 @@ LOG_HIGHLIGHT_PATTERNS = DEFAULT_REPR_HIGHLIGHTER_PATTERNS + [
     r"(?P<parent>[pP]arents?)",
     fr"(?P<pypdf_line>{PYPDF_LOG_PFX_PATTERN} .*)",
     fr"(?P<pypdf_prefix>{PYPDF_LOG_PFX_PATTERN})",
-    r"(?P<relationship>Relationship( of)?)",
+    r"(?P<relationship>[Rr]elationship( of)?)",
     r"(?P<relationship>via symlink|parent/child|child/parent)",
 ]
 
@@ -64,7 +65,7 @@ LOG_HIGHLIGHT_STYLES = {
     # Overload default ReprHighlighter theme elements
     # 'call': 'magenta',
     'ipv4': 'cyan',
-    'ipv6': 'cyan',
+    # 'ipv6': 'cyan',
 }
 
 
@@ -111,6 +112,19 @@ class PdfHighlighter(LogHighlighter):
     def prefixed_style(cls, style: str) -> str:
         """Prepend this highlighter's `base_style` to `style` string, removing first slash."""
         return cls.base_style + style.removeprefix('/')
+
+    def highlight(self, text: Text) -> None:
+        """Highlight both with this class's `highlights` as well as those of `LogHighlighter`."""
+        highlight_regex = text.highlight_regex
+
+        for re_highlight in self.highlights:
+            highlight_regex(re_highlight, style_prefix=self.base_style)
+
+        for log_highlight in LogHighlighter.highlights:
+            highlight_regex(log_highlight, style_prefix=LogHighlighter.base_style)
+
+            # if (match := log_highlight.search(text.plain)):
+            #     print(f"matched highlight pattern: {log_highlight}, match={match}")
 
 
 # Instantiate highlighters
