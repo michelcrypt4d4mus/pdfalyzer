@@ -75,7 +75,7 @@ pypdf = "6.6.0"
 yaralyzer = "1.3.14"
 
 
-# The OCR lib pytesseract + others are kinda heavyweight and not required for basic pdfalyzing.
+# The OCR library pytesseract is kinda heavyweight and not required for basic pdfalyzing.
 # It's only needed if you want to use The Pdfalyzer's extra tools like extract_pdf_text().
 # Install the extra pkgs with one of the commands below depending on your package manager:
 #       * [poetry]  poetry add pdfalyzer[extract]
