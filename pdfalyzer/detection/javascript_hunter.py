@@ -16,5 +16,5 @@ class JavascriptHunter:
         return count_regex_matches_in_text(JS_KEYWORD_REGEX, text)
 
     @classmethod
-    def js_keyword_matches(cls, text: str) -> [str]:
+    def js_keyword_matches(cls, text: str) -> list[str | tuple]:
         return JS_KEYWORD_REGEX.findall(text)
