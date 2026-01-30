@@ -15,13 +15,14 @@ from pathlib import Path
 from rich_argparse_plus import RichHelpFormatterPlus
 from rich.text import Text
 from yaralyzer.util.exceptions import print_fatal_error_and_exit
+from yaralyzer.util.helpers.env_helper import stderr_notification
 from yaralyzer.util.helpers.file_helper import files_in_dir
-from yaralyzer.util.logging import log, log_console
 
 from pdfalyzer.util.cli_tools.page_range import PageRangeArgumentValidator
 from pdfalyzer.util.helpers.filesystem_helper import (do_all_files_exist, extract_page_number, is_pdf,
      with_pdf_extension)
 from pdfalyzer.util.helpers.interaction_helper import ask_to_proceed
+from pdfalyzer.util.logging import log
 
 MAX_QUALITY = 10
 
@@ -67,7 +68,7 @@ def parse_combine_pdfs_args() -> Namespace:
 
     if all(is_pdf(pdf) for pdf in args.pdfs):
         if all(extract_page_number(pdf) for pdf in args.pdfs):
-            log_console.print("PDFs appear to have page number suffixes so sorting numerically...")
+            stderr_notification("PDFs appear to have page number suffixes so sorting numerically...")
             args.pdfs.sort(key=lambda pdf: extract_page_number(pdf))
         else:
             log.warning("PDFs don't seem to end in page numbers so using provided order...")
@@ -75,7 +76,7 @@ def parse_combine_pdfs_args() -> Namespace:
         log.warning("At least one of the PDF args doesn't end in '.pdf'")
         ask_to_proceed()
 
-    log_console.print(f"\nMerging {args.number_of_pdfs} individual PDFs into '{args.output_file}'...")
+    stderr_notification(f"\nMerging {args.number_of_pdfs} individual PDFs into '{args.output_file}'...")
     return args
 
 

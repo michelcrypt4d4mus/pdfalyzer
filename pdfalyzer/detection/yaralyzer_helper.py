@@ -4,10 +4,10 @@ Functions to help with the pre-configured YARA rules in the /yara directory.
 from importlib.resources import as_file, files
 from pathlib import Path
 
-from yaralyzer.config import YaralyzerConfig
 from yaralyzer.util.exceptions import print_fatal_error_and_exit
 from yaralyzer.yaralyzer import Yaralyzer
 
+from pdfalyzer.config import PdfalyzerConfig
 from pdfalyzer.util.constants import PDFALYZER
 
 YARA_RULES_DIR = files(PDFALYZER).joinpath('yara_rules')
@@ -41,9 +41,9 @@ def _build_yaralyzer(scannable: bytes | str | Path, label: str = '') -> Yaralyze
                 with as_file(YARA_RULES_DIR.joinpath(YARA_RULES_FILES[3])) as yara3:
                     with as_file(YARA_RULES_DIR.joinpath(YARA_RULES_FILES[4])) as yara4:
                         # If there is a custom yara_rules arg, use that instead of the files in the yara_rules/ dir
-                        rules_paths = YaralyzerConfig.args.yara_rules_files or []
+                        rules_paths = PdfalyzerConfig.args.yara_rules_files or []
 
-                        if not YaralyzerConfig.args.no_default_yara_rules:
+                        if not PdfalyzerConfig.args.no_default_yara_rules:
                             rules_paths = rules_paths + [str(y) for y in [yara0, yara1, yara2, yara3, yara4]]
 
                         try:

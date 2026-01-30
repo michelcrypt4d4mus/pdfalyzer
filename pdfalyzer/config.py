@@ -2,7 +2,7 @@
 PdfalyzerConfig object holds the unification of configuration options parsed from the command line
 as well as those set by environment variables and/or a .pdfalyzer file.
 """
-import sys
+import logging
 from argparse import Namespace
 from os import path
 from pathlib import Path
@@ -11,14 +11,14 @@ from typing import Callable, TypeVar
 from yaralyzer.config import YaralyzerConfig
 from yaralyzer.util.argument_parser import rules, tuning
 from yaralyzer.util.classproperty import classproperty
-from yaralyzer.util.constants import MAX_FILENAME_LENGTH, dotfile_name
+from yaralyzer.util.constants import MAX_FILENAME_LENGTH
 from yaralyzer.util.exceptions import print_fatal_error_and_exit
-from yaralyzer.util.helpers.env_helper import is_env_var_set_and_not_false
-from yaralyzer.util.logging import log, log_console
+from yaralyzer.util.helpers.env_helper import is_env_var_set_and_not_false, stderr_notification
 
-from pdfalyzer.output.theme import COMPLETE_THEME_DICT, _debug_themes
+from pdfalyzer.output.theme import COMPLETE_THEME_DICT
 from pdfalyzer.util.constants import PDF_PARSER_NOT_FOUND_MSG, PDFALYZE, PDFALYZER_UPPER
 from pdfalyzer.util.helpers.filesystem_helper import DEFAULT_PDF_PARSER_PATH
+from pdfalyzer.util.logging import log, log_handler_kwargs
 from pdfalyzer.util.output_section import ALL_STREAMS
 
 PDF_PARSER_PATH_ENV_VAR = 'PDF_PARSER_PY_PATH'  # Github workflow depends on this value!
@@ -42,12 +42,12 @@ class PdfalyzerConfig(YaralyzerConfig):
     ONLY_CLI_ARGS = YaralyzerConfig.ONLY_CLI_ARGS + ['extract_binary_streams']
 
     pdf_parser_path: Path | None = None
+    _log_handler_kwargs = dict(log_handler_kwargs)
 
-    # TODO: remove once yaralyzer is upgraded
     @classproperty
-    def dotfile_name(cls) -> str:
-        """Returns '.pdfalyzer'."""
-        return dotfile_name(cls.app_name)
+    def loggers(cls) -> list[logging.Logger]:
+        """Returns both the `Logger` for Pdfalyzer as well as Yaralyzer."""
+        return [cls.log, YaralyzerConfig.log]
 
     @classmethod
     def get_export_basepath(cls, export_method: Callable) -> str:
@@ -82,12 +82,15 @@ class PdfalyzerConfig(YaralyzerConfig):
         return path.join(cls.args.output_dir, export_basename[:max_filename_length])
 
     @classmethod
-    def _parse_arguments(cls) -> Namespace:
-        """Overloads/extends YaralyzerConfig method of the same name."""
-        if '--show-colors' in sys.argv and '--debug' in sys.argv:
-            _debug_themes()
+    def prefixed_env_var(cls, var: str) -> str:
+        """Turns 'LOG_DIR' into 'PDFALYZER_LOG_DIR' etc. Overloads superclass method."""
+        prefix = super().ENV_VAR_PREFIX if var in YARALYZER_SPECIFIC_OPTIONS else cls.ENV_VAR_PREFIX
+        return (var if var.startswith(prefix) else f"{prefix}_{var}").upper()
 
-        args = super()._parse_arguments()
+    @classmethod
+    def _parse_arguments(cls, args: Namespace) -> Namespace:
+        """Overloads/extends YaralyzerConfig method of the same name."""
+        args = super()._parse_arguments(args)
         args.extract_quoteds = args.extract_quoteds or []
         args._yaralyzer_standalone_mode = False  # TODO: this sucks
         args._export_basename = f"{args.file_prefix}{args.file_to_scan_path.name}"
@@ -104,12 +107,6 @@ class PdfalyzerConfig(YaralyzerConfig):
         return args
 
     @classmethod
-    def prefixed_env_var(cls, var: str) -> str:
-        """Turns 'LOG_DIR' into 'PDFALYZER_LOG_DIR' etc. Overloads superclass method."""
-        prefix = super().ENV_VAR_PREFIX if var in YARALYZER_SPECIFIC_OPTIONS else cls.ENV_VAR_PREFIX
-        return (var if var.startswith(prefix) else f"{prefix}_{var}").upper()
-
-    @classmethod
     def _set_class_vars_from_env(cls) -> None:
         """Set log related class vars and find path to pdf-parser.py (if any)."""
         super()._set_class_vars_from_env()
@@ -117,9 +114,8 @@ class PdfalyzerConfig(YaralyzerConfig):
 
         if not cls.pdf_parser_path.exists():
             if is_env_var_set_and_not_false(PDF_PARSER_PATH_ENV_VAR):
-                log.warning(f"Configured PDF_PARSER_PATH is '{cls.pdf_parser_path}' but that file doesn't exist!")
+                log.warning(f"Configured {PDF_PARSER_PATH_ENV_VAR}='{cls.pdf_parser_path}' but no such file exists!")
             else:
-                # TODO: use startup_notification() when yaralyzer bump
-                log_console.print(PDF_PARSER_NOT_FOUND_MSG, style='dim')
+                stderr_notification(PDF_PARSER_NOT_FOUND_MSG)
 
             cls.pdf_parser_path = None

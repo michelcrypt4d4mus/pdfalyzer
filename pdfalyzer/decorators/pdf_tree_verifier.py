@@ -8,11 +8,11 @@ from typing import Callable, cast
 from pypdf.generic import (ArrayObject, BooleanObject, DictionaryObject, IndirectObject, NameObject, NullObject,
      NumberObject, PdfObject, StreamObject)
 from rich.markup import escape
-from yaralyzer.util.logging import log
 
 from pdfalyzer.decorators.document_model_printer import highlighted_raw_pdf_obj_str
 from pdfalyzer.util.adobe_strings import PREV, SIZE, TYPE, XREF, XREF_STREAM
 from pdfalyzer.util.helpers.pdf_object_helper import describe_obj
+from pdfalyzer.util.logging import log
 
 NUM_PREVIEW_BYTES = 1_024
 OK_UNPLACED_TYPES = (BooleanObject, NameObject, NoneType, NullObject, NumberObject)

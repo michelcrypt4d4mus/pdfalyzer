@@ -16,7 +16,6 @@ from yaralyzer.output.theme import BYTES_NO_DIM
 from yaralyzer.util.helpers.bytes_helper import hex_string, print_bytes
 from yaralyzer.util.helpers.rich_helper import DEFAULT_TABLE_OPTIONS
 from yaralyzer.util.helpers.string_helper import escape_yara_pattern
-from yaralyzer.util.logging import log
 from yaralyzer.yara.yara_rule_builder import HEX, REGEX, safe_label
 from yaralyzer.yaralyzer import Yaralyzer
 
@@ -27,6 +26,8 @@ from pdfalyzer.detection.constants.binary_regexes import (BACKTICK, DANGEROUS_PD
 from pdfalyzer.output.layout import print_headline_panel, print_section_sub_subheader
 from pdfalyzer.util.adobe_strings import CONTENTS, CURRENTFILE_EEXEC, FONT_FILE_KEYS
 from pdfalyzer.util.helpers.string_helper import generate_hyphen_line
+
+log = PdfalyzerConfig.log
 
 
 @dataclass
