@@ -5,12 +5,12 @@ from dataclasses import dataclass, field
 from typing import Any, Self
 
 from pypdf.generic import BooleanObject, IndirectObject, NullObject, PdfObject
-from pdfalyzer.util.logging import log
 
 from pdfalyzer.util.adobe_strings import *
 from pdfalyzer.util.exceptions import PdfWalkError
 from pdfalyzer.util.helpers.pdf_object_helper import coerce_nums_array_to_dict
 from pdfalyzer.util.helpers.string_helper import bracketed, coerce_address, is_prefixed_by_any
+from pdfalyzer.util.logging import log
 
 INCOMPARABLE_PROPS = ['from_obj', 'to_obj']
 

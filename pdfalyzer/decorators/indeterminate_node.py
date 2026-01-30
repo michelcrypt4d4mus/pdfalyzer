@@ -3,11 +3,11 @@ from typing import Callable
 
 from rich.markup import escape
 from yaralyzer.util.helpers.string_helper import comma_join
-from pdfalyzer.util.logging import log
 
 from pdfalyzer.decorators.pdf_tree_node import PdfTreeNode
 from pdfalyzer.util.adobe_strings import COLOR_SPACE, K, KIDS, NON_TREE_KEYS, PAGE, PAGES, PAGE_AND_PAGES
 from pdfalyzer.util.helpers.string_helper import all_strings_are_same_ignoring_numbers, has_a_common_substring
+from pdfalyzer.util.logging import log
 
 
 @dataclass

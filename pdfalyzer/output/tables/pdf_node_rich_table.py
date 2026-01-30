@@ -5,6 +5,7 @@ from rich.text import Text
 from yaralyzer.output.theme import BYTES_NO_DIM
 from yaralyzer.util.helpers.bytes_helper import NEWLINE_BYTE, clean_byte_string, hex_text
 from yaralyzer.util.helpers.rich_helper import size_text
+
 from pdfalyzer.util.logging import log
 
 HEX = 'Hex'

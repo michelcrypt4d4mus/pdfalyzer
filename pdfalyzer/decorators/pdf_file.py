@@ -12,7 +12,6 @@ from rich.text import Text
 from yaralyzer.output.console import console
 from yaralyzer.util.helpers.env_helper import log_console
 from yaralyzer.util.helpers.rich_helper import DEFAULT_TABLE_OPTIONS
-from pdfalyzer.util.logging import log as yaralyzer_log
 
 from pdfalyzer.util.cli_tools.page_range import PageRange
 from pdfalyzer.util.constants import PIP_INSTALL_EXTRAS
@@ -20,6 +19,7 @@ from pdfalyzer.util.helpers.filesystem_helper import create_dir_if_it_does_not_e
 from pdfalyzer.util.helpers.image_helper import ocr_text
 from pdfalyzer.util.helpers.rich_helper import attention_getting_panel, error_text, mild_warning
 from pdfalyzer.util.helpers.string_helper import exception_str
+from pdfalyzer.util.logging import log as _log
 
 DEPENDENCY_ERROR_MSG = f"Missing an optional dependency required to extract text. Try '{PIP_INSTALL_EXTRAS}'."
 DEFAULT_PDF_ERRORS_DIR = Path.cwd().joinpath('pdf_errors')
@@ -119,7 +119,7 @@ class PdfFile:
             str | None: The extracted text, or None if extraction failed.
         """
         from PIL import Image  # Imported here to avoid hard dependency if not using this method
-        log = logger or yaralyzer_log
+        log = logger or _log
         log.debug(f"Extracting text from '{self.file_path}'...")
         self._page_numbers_of_errors: list[int] = []
         extracted_pages = []
