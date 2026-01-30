@@ -8,7 +8,7 @@
 ### 1.19.3
 * `/AA:JavaScript` and `/GoToR` nodes get the red blinking alert treatment
 * Refactor overall theme / color / style situation for PDF nodes
-* Extra debug output for `--show-colors --debug` option combinattion
+* Extra debug output for `--show-colors --debug` option combination
 * Adjust green for `/Outlines` and `/Trailer`, make `/First` grey
 
 ### 1.19.2
