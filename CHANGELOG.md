@@ -1,4 +1,6 @@
 # NEXT RELEASE
+
+### 1.19.4
 * Log highlighting fixes/improvements
 * `pdfalyzer_install_pdf_parser` script calls method in `PdfParserManager` and writes lines to `.pdfalyzer` file.
 * Fix issue where streams were still getting scanned with default YARA rules even if `--no-default-yara-rules` was enabled
