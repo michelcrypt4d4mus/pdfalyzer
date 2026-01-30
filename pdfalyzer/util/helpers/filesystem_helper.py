@@ -8,6 +8,7 @@ from pathlib import Path
 
 from yaralyzer.util.helpers.env_helper import stderr_notification
 from yaralyzer.util.helpers.file_helper import files_in_dir, relative_path
+from yaralyzer.util.logging import log
 
 from pdfalyzer.util.constants import PDF_PARSER_PY, PDFALYZER
 
