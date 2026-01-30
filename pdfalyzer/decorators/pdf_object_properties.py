@@ -4,6 +4,8 @@ from typing import Any, Self
 from pypdf.errors import PdfReadError
 from pypdf.generic import DictionaryObject, IndirectObject, NullObject, NumberObject, PdfObject
 from rich.text import Text
+from yaralyzer.util.helpers.env_helper import log_console
+from yaralyzer.util.logging import log_trace
 
 from pdfalyzer.output.highlighter import PdfHighlighter
 from pdfalyzer.output.theme import (COMPLETE_THEME_DICT, DEFAULT_LABEL_STYLE, get_class_style,
@@ -12,7 +14,7 @@ from pdfalyzer.util.adobe_strings import GO_TO_E, GO_TO_R, IMAGE, S, SUBTYPE, TY
 from pdfalyzer.util.helpers.pdf_object_helper import pypdf_class_name
 from pdfalyzer.util.helpers.rich_helper import comma_join_txt
 from pdfalyzer.util.helpers.string_helper import coerce_address, is_array_idx, props_string_indented, root_address
-from pdfalyzer.util.logging import highlight, log, log_console, log_highlighter, log_trace, pdf_highlighter
+from pdfalyzer.util.logging import highlight, log, log_highlighter, pdf_highlighter
 
 
 @dataclass

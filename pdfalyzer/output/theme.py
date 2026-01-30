@@ -5,6 +5,7 @@ Rich colors: https://rich.readthedocs.io/en/stable/appendix/colors.html
 TODO: interesting colors # row_styles[0] = 'reverse bold on color(144)' <-
 """
 import re
+import sys
 from collections import namedtuple
 from numbers import Number
 from types import NoneType
@@ -173,7 +174,7 @@ COMPLETE_THEME_DICT = {**PDFALYZER_THEME_DICT, **LOG_THEME_DICT, **NODE_STYLES_T
 
 
 # Add patterns to highlighters
-# TODO: currently using PdfHighlighter for log highlights
+# TODO: currently using PdfHighlighter for log highlights, LogHighlighter only for pypdf logs
 LogHighlighter.set_highlights(LOG_HIGHLIGHT_PATTERNS)
 PdfHighlighter.set_highlights([highlight_pattern(r) for r in PDF_HIGHLIGHT_PATTERNS])
 
@@ -231,3 +232,7 @@ def _debug_themes() -> None:
     PdfHighlighter._debug_highlight_patterns()
     log_console.print(vertically_padded_panel('All Theme Dicts'))
     log_console.print_json(theme_json(), indent=4, sort_keys=True)
+
+
+if '--show-colors' in sys.argv and '--debug' in sys.argv:
+    _debug_themes()

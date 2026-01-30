@@ -12,6 +12,7 @@ from rich.table import Table
 from rich.text import Text
 from yaralyzer.output.console import console
 from yaralyzer.output.theme import GREY_ADDRESS
+from yaralyzer.util.helpers.env_helper import log_console
 from yaralyzer.util.helpers.rich_helper import DEFAULT_TABLE_OPTIONS
 
 from pdfalyzer.decorators.pdf_object_properties import PdfObjectProperties
@@ -22,7 +23,7 @@ from pdfalyzer.util.adobe_strings import *
 from pdfalyzer.util.exceptions import PdfWalkError
 from pdfalyzer.util.helpers.pdf_object_helper import pypdf_class_name
 from pdfalyzer.util.helpers.string_helper import is_prefixed_by_any, numbered_list
-from pdfalyzer.util.logging import log, log_console
+from pdfalyzer.util.logging import log
 
 DEFAULT_MAX_ADDRESS_LENGTH = 90
 DECODE_FAILURE_LEN = -1
