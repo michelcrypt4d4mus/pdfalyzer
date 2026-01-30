@@ -81,7 +81,7 @@ def highlight_pattern(regex: re.Pattern | str) -> str:
         pattern = fr"{pattern}\b".removeprefix('/')
 
         if not pattern.startswith('^'):
-            pattern = fr"[\b/]{pattern}"
+            pattern = fr"(\b|/){pattern}"
 
     return fr"(?P<{label}>{pattern})"
 

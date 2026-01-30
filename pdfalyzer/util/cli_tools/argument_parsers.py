@@ -18,10 +18,10 @@ from yaralyzer.util.exceptions import print_fatal_error_and_exit
 from yaralyzer.util.helpers.file_helper import files_in_dir
 from yaralyzer.util.logging import log, log_console
 
+from pdfalyzer.util.cli_tools.page_range import PageRangeArgumentValidator
 from pdfalyzer.util.helpers.filesystem_helper import (do_all_files_exist, extract_page_number, is_pdf,
      with_pdf_extension)
 from pdfalyzer.util.helpers.interaction_helper import ask_to_proceed
-from pdfalyzer.util.page_range import PageRangeArgumentValidator
 
 MAX_QUALITY = 10
 

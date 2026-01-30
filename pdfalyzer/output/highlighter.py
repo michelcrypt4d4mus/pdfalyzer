@@ -32,7 +32,7 @@ DEFAULT_REPR_HIGHLIGHTER_PATTERNS = [
     r"(?P<eui64>(?:[0-9A-Fa-f]{1,2}-){7}[0-9A-Fa-f]{1,2}|(?:[0-9A-Fa-f]{1,2}:){7}[0-9A-Fa-f]{1,2}|(?:[0-9A-Fa-f]{4}\.){3}[0-9A-Fa-f]{4})",
     r"(?P<eui48>(?:[0-9A-Fa-f]{1,2}-){5}[0-9A-Fa-f]{1,2}|(?:[0-9A-Fa-f]{1,2}:){5}[0-9A-Fa-f]{1,2}|(?:[0-9A-Fa-f]{4}\.){2}[0-9A-Fa-f]{4})",
     r"(?P<uuid>[a-fA-F0-9]{8}-[a-fA-F0-9]{4}-[a-fA-F0-9]{4}-[a-fA-F0-9]{4}-[a-fA-F0-9]{12})",
-    r"(?P<call>[\w.]*?)\(",
+    # r"(?P<call>[\w.]*?)\(",
     r"\b(?P<bool_true>True)\b|\b(?P<bool_false>False)\b|\b(?P<none>None)\b",
     r"(?P<ellipsis>\.\.\.)",
     r"(?P<number_complex>(?<!\w)(?:\-?[0-9]+\.?[0-9]*(?:e[-+]?\d+?)?)(?:[-+](?:[0-9]+\.?[0-9]*(?:e[-+]?\d+)?))?j)",
@@ -62,7 +62,7 @@ LOG_HIGHLIGHT_STYLES = {
     "pypdf_prefix": "light_slate_gray",
     "relationship": 'light_pink4',
     # Overload default ReprHighlighter theme elements
-    'call': 'magenta',
+    # 'call': 'magenta',
     'ipv4': 'cyan',
     'ipv6': 'cyan',
 }
@@ -71,11 +71,6 @@ LOG_HIGHLIGHT_STYLES = {
 # Augment the standard ReprHighlighter
 class LogHighlighter(ReprHighlighter):
     highlights: list[re.Pattern]
-
-    @classmethod
-    def set_highlights(cls, patterns: list[str]) -> None:
-        """Compile strings to regexes."""
-        cls.highlights = [re.compile(p) for p in (patterns)]
 
     @classmethod
     def get_style(cls, for_str: str) -> str:
@@ -95,6 +90,11 @@ class LogHighlighter(ReprHighlighter):
     def prefixed_style(cls, style: str) -> str:
         """Prepend this highlighter's `base_style` to `style` string."""
         return cls.base_style + style
+
+    @classmethod
+    def set_highlights(cls, patterns: list[str]) -> None:
+        """Compile strings to regexes."""
+        cls.highlights = [re.compile(p) for p in (patterns)]
 
     @classmethod
     def _debug_highlight_patterns(cls):
