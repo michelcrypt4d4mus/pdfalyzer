@@ -1,5 +1,5 @@
 from yaralyzer.output.console import console
-from yaralyzer.util.logging import log
+from pdfalyzer.util.logging import log
 
 
 def ocr_text(image: "Image.Image", image_name: str) -> str | None:  # noqa F821

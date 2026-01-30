@@ -12,7 +12,7 @@ from rich.table import Table
 from rich.text import Text
 from yaralyzer.output.console import console
 from yaralyzer.util.helpers.rich_helper import DEFAULT_TABLE_OPTIONS
-from yaralyzer.util.logging import log
+from pdfalyzer.util.logging import log
 
 from pdfalyzer.binary.binary_scanner import BinaryScanner
 from pdfalyzer.output.character_mapping import print_character_mapping, print_prepared_charmap

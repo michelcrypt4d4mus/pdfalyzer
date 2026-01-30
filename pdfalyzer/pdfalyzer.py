@@ -17,6 +17,7 @@ from rich.text import Text
 from yaralyzer.output.console import console
 from yaralyzer.output.file_hashes_table import BytesInfo
 from yaralyzer.util.exceptions import print_fatal_error, print_fatal_error_and_exit
+from yaralyzer.util.logging import log_trace
 
 from pdfalyzer.config import PdfalyzerConfig
 from pdfalyzer.decorators.document_model_printer import highlighted_raw_pdf_obj_str
@@ -29,7 +30,7 @@ from pdfalyzer.pdf_object_relationship import PdfObjectRelationship
 from pdfalyzer.util import adobe_strings
 from pdfalyzer.util.argument_parser import is_pdfalyze_script
 from pdfalyzer.util.exceptions import PdfWalkError
-from pdfalyzer.util.logging import log, log_trace  # Triggers log setup
+from pdfalyzer.util.logging import log  # Triggers log setup
 from pdfalyzer.util.pdf_parser_manager import PdfParserManager
 
 MISSING_NODE_WARN_THRESHOLD = 200

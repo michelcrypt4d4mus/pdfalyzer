@@ -7,7 +7,7 @@ from types import NoneType
 from pypdf.generic import (ArrayObject, BooleanObject, DictionaryObject, IndirectObject, NameObject,
      NullObject, NumberObject, PdfObject, StreamObject)
 from rich.markup import escape
-from yaralyzer.util.logging import log
+from pdfalyzer.util.logging import log
 
 from pdfalyzer.util.adobe_strings import PREV, SIZE, TYPE, XREF, XREF_STREAM
 from pdfalyzer.util.helpers.pdf_object_helper import describe_obj

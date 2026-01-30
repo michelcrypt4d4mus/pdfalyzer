@@ -5,7 +5,7 @@ from dataclasses import dataclass, field
 from typing import Any, Self
 
 from pypdf.generic import BooleanObject, IndirectObject, NullObject, PdfObject
-from yaralyzer.util.logging import log
+from pdfalyzer.util.logging import log
 
 from pdfalyzer.util.adobe_strings import *
 from pdfalyzer.util.exceptions import PdfWalkError

@@ -2,6 +2,7 @@
 PdfalyzerConfig object holds the unification of configuration options parsed from the command line
 as well as those set by environment variables and/or a .pdfalyzer file.
 """
+import logging
 import sys
 from argparse import Namespace
 from os import path
@@ -14,11 +15,12 @@ from yaralyzer.util.classproperty import classproperty
 from yaralyzer.util.constants import MAX_FILENAME_LENGTH, dotfile_name
 from yaralyzer.util.exceptions import print_fatal_error_and_exit
 from yaralyzer.util.helpers.env_helper import is_env_var_set_and_not_false
-from yaralyzer.util.logging import log, log_console
+from yaralyzer.util.logging import log_console
 
 from pdfalyzer.output.theme import COMPLETE_THEME_DICT, _debug_themes
 from pdfalyzer.util.constants import PDF_PARSER_NOT_FOUND_MSG, PDFALYZE, PDFALYZER_UPPER
 from pdfalyzer.util.helpers.filesystem_helper import DEFAULT_PDF_PARSER_PATH
+from pdfalyzer.util.logging import log, log_handler_kwargs
 from pdfalyzer.util.output_section import ALL_STREAMS
 
 PDF_PARSER_PATH_ENV_VAR = 'PDF_PARSER_PY_PATH'  # Github workflow depends on this value!
@@ -42,12 +44,18 @@ class PdfalyzerConfig(YaralyzerConfig):
     ONLY_CLI_ARGS = YaralyzerConfig.ONLY_CLI_ARGS + ['extract_binary_streams']
 
     pdf_parser_path: Path | None = None
+    _log_handler_kwargs = dict(log_handler_kwargs)
 
     # TODO: remove once yaralyzer is upgraded
     @classproperty
     def dotfile_name(cls) -> str:
         """Returns '.pdfalyzer'."""
         return dotfile_name(cls.app_name)
+
+    @classproperty
+    def loggers(cls) -> list[logging.Logger]:
+        """Returns the `Logger` for this app."""
+        return [cls.log, YaralyzerConfig.log]
 
     @classmethod
     def get_export_basepath(cls, export_method: Callable) -> str:
@@ -82,12 +90,9 @@ class PdfalyzerConfig(YaralyzerConfig):
         return path.join(cls.args.output_dir, export_basename[:max_filename_length])
 
     @classmethod
-    def _parse_arguments(cls) -> Namespace:
+    def _parse_arguments(cls, args: Namespace) -> Namespace:
         """Overloads/extends YaralyzerConfig method of the same name."""
-        if '--show-colors' in sys.argv and '--debug' in sys.argv:
-            _debug_themes()
-
-        args = super()._parse_arguments()
+        args = super()._parse_arguments(args)
         args.extract_quoteds = args.extract_quoteds or []
         args._yaralyzer_standalone_mode = False  # TODO: this sucks
         args._export_basename = f"{args.file_prefix}{args.file_to_scan_path.name}"

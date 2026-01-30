@@ -25,6 +25,6 @@ def test_get_export_basepath(pdfalyze_analyzing_malicious_shell_cmd, analyzing_m
 
 
 def test_env_var_for_command_line_option():
-    assert PdfalyzerConfig.env_var_for_command_line_option('min_decode_length') == 'YARALYZER_MIN_DECODE_LENGTH'
-    assert PdfalyzerConfig.env_var_for_command_line_option('maximize_width') == f"{PDFALYZER_UPPER}_MAXIMIZE_WIDTH"
-    assert PdfalyzerConfig.env_var_for_command_line_option('suppress_boms') == f"{PDFALYZER_UPPER}_SUPPRESS_BOMS"
+    assert PdfalyzerConfig.env_var_for_option_dest('min_decode_length') == 'YARALYZER_MIN_DECODE_LENGTH'
+    assert PdfalyzerConfig.env_var_for_option_dest('maximize_width') == f"{PDFALYZER_UPPER}_MAXIMIZE_WIDTH"
+    assert PdfalyzerConfig.env_var_for_option_dest('suppress_boms') == f"{PDFALYZER_UPPER}_SUPPRESS_BOMS"

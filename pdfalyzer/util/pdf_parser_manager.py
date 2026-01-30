@@ -8,10 +8,9 @@ from typing import Self
 
 from rich.prompt import Confirm, Prompt
 from rich.text import Text
-from yaralyzer.util.helpers.env_helper import is_github_workflow
+from yaralyzer.util.helpers.env_helper import is_github_workflow, log_console, stderr_notification
 from yaralyzer.util.exceptions import print_fatal_error_and_exit
 from yaralyzer.util.helpers.shell_helper import ShellResult
-from yaralyzer.util.logging import log, log_and_print, log_console
 
 from pdfalyzer.config import PDF_PARSER_PATH_ENV_VAR as CFG_PDF_PARSER_PATH_ENV_VAR, PdfalyzerConfig
 from pdfalyzer.util.constants import PDF_PARSER_INSTALL_SCRIPT, PDF_PARSER_PY, PDFALYZER, PIP_INSTALL_EXTRAS
@@ -44,6 +43,8 @@ POST_INSTALL_MSG = "\n\nDidier Stevens recommends always using the -O option wit
         "         PDFPARSER_OPTIONS=-O\n\n" \
         "You are encouraged to add that to your environment via your .bash_profile or similar.\n" \
         "This has NOT been done automatically."
+
+log = PdfalyzerConfig.log
 
 
 @dataclass
@@ -95,7 +96,7 @@ class PdfParserManager:
     def extract_all_streams(self) -> None:
         """Use pdf-parser.py to find binary data streams in the PDF and dump each of them to a separate file"""
         output_dir_str = dir_str(self.output_dir)
-        log_and_print(f"\nExtracting binary streams in '{self.path_to_pdf}' to files in '{output_dir_str}'...")
+        stderr_notification(f"\nExtracting binary streams in '{self.path_to_pdf}' to files in '{output_dir_str}'...")
         files_written = []
 
         for object_id in self.object_ids_containing_stream_data:
@@ -109,7 +110,7 @@ class PdfParserManager:
             except Exception as e:
                 log.error(f"Failed to extract object ID {object_id}! {e}")
 
-        log_and_print(f"{len(files_written)} extracted binary streams were written to {output_dir_str}.")
+        stderr_notification(f"{len(files_written)} extracted binary streams were written to {output_dir_str}.")
         num_failures = len(self.object_ids_containing_stream_data) - len(files_written)
 
         if num_failures > 0:
