@@ -1,4 +1,3 @@
-import os
 from os import environ
 from pathlib import Path
 from subprocess import check_output

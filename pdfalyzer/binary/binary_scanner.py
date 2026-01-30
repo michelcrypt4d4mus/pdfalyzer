@@ -3,7 +3,7 @@
 """
 from collections import defaultdict
 from dataclasses import dataclass, field
-from typing import Iterator, Tuple
+from typing import Iterator
 
 from rich.panel import Panel
 from rich.text import Text

@@ -14,14 +14,14 @@ from yaralyzer.util.helpers.rich_helper import DEFAULT_TABLE_OPTIONS
 from yaralyzer.util.logging import log as yaralyzer_log
 
 from pdfalyzer.util.cli_tools.page_range import PageRange
+from pdfalyzer.util.constants import PIP_INSTALL_EXTRAS
 from pdfalyzer.util.helpers.filesystem_helper import create_dir_if_it_does_not_exist, insert_suffix_before_extension
 from pdfalyzer.util.helpers.image_helper import ocr_text
 from pdfalyzer.util.helpers.rich_helper import attention_getting_panel, error_text, mild_warning
 from pdfalyzer.util.helpers.string_helper import exception_str
 from pdfalyzer.util.logging import log_console
 
-DEPENDENCY_ERROR_MSG = "Pdfalyzer is missing an optional dependency required to extract text. " + \
-                       "Try 'pip install pdfalyzer[extract]'"
+DEPENDENCY_ERROR_MSG = f"Missing an optional dependency required to extract text. Try '{PIP_INSTALL_EXTRAS}'."
 DEFAULT_PDF_ERRORS_DIR = Path.cwd().joinpath('pdf_errors')
 MIN_PDF_SIZE_TO_LOG_PROGRESS_TO_STDERR = 1024 * 1024 * 20
 

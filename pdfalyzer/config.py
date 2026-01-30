@@ -8,7 +8,6 @@ from os import path
 from pathlib import Path
 from typing import Callable, TypeVar
 
-from rich.text import Text
 from yaralyzer.config import YaralyzerConfig
 from yaralyzer.util.argument_parser import rules, tuning
 from yaralyzer.util.classproperty import classproperty
@@ -120,6 +119,7 @@ class PdfalyzerConfig(YaralyzerConfig):
             if is_env_var_set_and_not_false(PDF_PARSER_PATH_ENV_VAR):
                 log.warning(f"Configured PDF_PARSER_PATH is '{cls.pdf_parser_path}' but that file doesn't exist!")
             else:
-                log_console.print(PDF_PARSER_NOT_FOUND_MSG, style='dim')  # TODO: use startup_notification() when yaralyzer bump
+                # TODO: use startup_notification() when yaralyzer bump
+                log_console.print(PDF_PARSER_NOT_FOUND_MSG, style='dim')
 
             cls.pdf_parser_path = None

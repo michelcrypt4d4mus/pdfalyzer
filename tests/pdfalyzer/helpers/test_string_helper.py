@@ -38,6 +38,7 @@ def test_regex_to_capture_group_label():
 
 
 def test_regex_to_highlight_pattern():
-    assert highlight_pattern(OBJ_REGEX) == r"(?P<JavaScript_JS_OpenAction>^(JavaScript|JS|OpenAction)\b)"
-    assert highlight_pattern(OBJ_REGEX.pattern[1:]) == r"(?P<JavaScript_JS_OpenAction>(\b|/)(JavaScript|JS|OpenAction)\b)"
     assert highlight_pattern(re.compile('/W')) == r"(?P<W>^/W$)"
+    assert highlight_pattern(OBJ_REGEX) == r"(?P<JavaScript_JS_OpenAction>^(JavaScript|JS|OpenAction)\b)"
+    assert highlight_pattern(OBJ_REGEX.pattern[1:]) == \
+        r"(?P<JavaScript_JS_OpenAction>(\b|/)(JavaScript|JS|OpenAction)\b)"

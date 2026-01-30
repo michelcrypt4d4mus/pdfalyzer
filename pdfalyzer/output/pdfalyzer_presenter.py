@@ -156,7 +156,7 @@ class PdfalyzerPresenter:
         """Scan the main PDF and each individual binary stream in it with yara_rules/*.yara files."""
         try:
             print_section_header(f"YARA Scan of PDF rules for '{self.pdfalyzer.pdf_basename}'")
-            YaralyzerConfig.args._yaralyzer_standalone_mode = True  # TODO: using 'standalone mode' like this kind of sucks
+            YaralyzerConfig.args._yaralyzer_standalone_mode = True  # TODO: 'standalone mode' like this kind of sucks
             self.yaralyzer.yaralyze()
         except yara.Error as e:
             console.print_exception()

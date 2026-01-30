@@ -8,7 +8,8 @@ from typing import Pattern
 from pypdf.generic import IndirectObject
 
 from yaralyzer.output.console import console_width
-from yaralyzer.util.helpers.string_helper import INDENT_DEPTH, INDENT_SPACES, INDENTED_JOINER, NON_WORD_CHAR_REGEX, indented
+from yaralyzer.util.helpers.string_helper import (INDENT_DEPTH, INDENT_SPACES, INDENTED_JOINER,
+     NON_WORD_CHAR_REGEX, indented)
 
 ARRAY_IDX_REGEX = re.compile(r"\[\d+\]")
 PRETTY_PRINT_WIDTH = 60

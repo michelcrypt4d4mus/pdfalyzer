@@ -81,13 +81,13 @@ def subheading_width() -> int:
 
 
 def _print_header_panel(
-        headline: str,
-        style: str,
-        expand: bool,
-        width: int,
-        internal_padding: tuple | None = None,
-        indent: int = 0
-    ) -> None:
+    headline: str,
+    style: str,
+    expand: bool,
+    width: int,
+    internal_padding: tuple | None = None,
+    indent: int = 0
+) -> None:
     """Helper to print a rich `Panel` with the given style, width, and padding."""
     panel = Panel(
         headline,
