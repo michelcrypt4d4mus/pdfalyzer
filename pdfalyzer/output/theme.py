@@ -10,7 +10,7 @@ from numbers import Number
 from types import NoneType
 from typing import Any
 
-from pypdf.generic import (ArrayObject, ByteStringObject, EncodedStreamObject, IndirectObject, NullObject,
+from pypdf.generic import (ArrayObject, ByteStringObject, DictionaryObject, EncodedStreamObject, IndirectObject, NullObject,
      StreamObject, TextStringObject)
 from rich.theme import Theme
 from yaralyzer.output.console import console
@@ -71,6 +71,7 @@ PDF_OBJ_TYPE_STYLES = [
     ClassStyle(StreamObject, BYTES_NO_DIM),
     ClassStyle(TextStringObject, YARALYZER_THEME_DICT['grey.light']),
     ClassStyle(ArrayObject, PDF_ARRAY_STYLE),
+    ClassStyle(DictionaryObject, PDF_DICTIONARY_STYLE),
     ClassStyle(NullObject, NULL_STYLE),
     ClassStyle(NoneType, NULL_STYLE),
 ]
@@ -157,6 +158,8 @@ NODE_STYLES_BASE_DICT.update({
 
 # Compile regexes as keys
 NODE_STYLE_REGEXES = {re.compile(k): v for k, v in NODE_STYLES_BASE_DICT.items()}
+# Collect regexes for both PDF types (DictionaryObject) as well as nodes (/Trailer)
+PDF_HIGHLIGHT_PATTERNS = [pattern for pattern in {**NODE_STYLE_REGEXES, **PDF_OBJ_TYPE_STYLE_DICT}.keys()]
 
 # Unite class styles for things like ArrayObject with node styles for things like /Parent
 NODE_STYLES_THEME_DICT = {
@@ -170,8 +173,9 @@ COMPLETE_THEME_DICT = {**PDFALYZER_THEME_DICT, **LOG_THEME_DICT, **NODE_STYLES_T
 
 
 # Add patterns to highlighters
-LogHighlighter.set_highlights(LOG_HIGHLIGHT_PATTERNS + [highlight_pattern(k) for k in PDF_OBJ_TYPE_STYLE_DICT.keys()])
-PdfHighlighter.set_highlights([highlight_pattern(r) for r in NODE_STYLE_REGEXES.keys()])
+# TODO: currently using PdfHighlighter for log highlights
+LogHighlighter.set_highlights(LOG_HIGHLIGHT_PATTERNS)
+PdfHighlighter.set_highlights([highlight_pattern(r) for r in PDF_HIGHLIGHT_PATTERNS])
 
 # Push themes into the console objects that manage stdout.
 console.push_theme(Theme(COMPLETE_THEME_DICT))
