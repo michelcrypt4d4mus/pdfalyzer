@@ -1,5 +1,6 @@
 # NEXT RELEASE
-* New `--output-dir` and `--no-page-number-panels` options for `extract_pdf_text` tool to enable bulk extraction of many PDFs to `.txt` files
+* New `--output-dir`, `--no-page-number-panels`, and `--recurse` options for `extract_pdf_text` tool to enable bulk extraction of many PDFs to `.txt` files
+* Ask user if they want to create an `--output-dir` that doesn't exist, import `ask_to_proceed()` from Pdfalyzer
 
 ### 1.19.4
 * Log highlighting fixes/improvements
