@@ -14,14 +14,15 @@ from pathlib import Path
 
 from rich_argparse_plus import RichHelpFormatterPlus
 from rich.text import Text
+from yaralyzer.util.cli_option_validators import DirValidator
 from yaralyzer.util.exceptions import print_fatal_error_and_exit
 from yaralyzer.util.helpers.env_helper import stderr_notification
 from yaralyzer.util.helpers.file_helper import files_in_dir
+from yaralyzer.util.helpers.interaction_helper import ask_to_proceed
 
 from pdfalyzer.util.cli_tools.page_range import PageRangeArgumentValidator
 from pdfalyzer.util.helpers.filesystem_helper import (do_all_files_exist, extract_page_number, is_pdf,
      with_pdf_extension)
-from pdfalyzer.util.helpers.interaction_helper import ask_to_proceed
 from pdfalyzer.util.logging import log
 
 MAX_QUALITY = 10
@@ -129,13 +130,23 @@ extract_text_parser = ArgumentParser(
 extract_text_parser.add_argument('file_or_dir', nargs='+', metavar='FILE_OR_DIR')
 extract_text_parser.add_argument('--debug', action='store_true', help='turn on debug level logging')
 
-extract_text_parser.add_argument('--page-range', '-r',
+extract_text_parser.add_argument('--output-dir', '-out',
+                                 help='write extracted text to .txt files of the same name as the PDF in this directory',
+                                 type=DirValidator(allow_create=True))
+
+extract_text_parser.add_argument('--no-page-number-panels', '-n', action='store_true',
+                                 help="don't print the PAGE 1, PAGE 2, etc. panels")
+
+extract_text_parser.add_argument('--page-range', '-pr',
                                  help=f"[PDFs only] {page_range_validator.HELP_MSG}",
                                  type=page_range_validator)
 
 extract_text_parser.add_argument('--print-as-parsed', '-p',
                                  action='store_true',
                                  help='print pages as they are parsed instead of waiting until parsing complete')
+
+extract_text_parser.add_argument('--recurse', '-r', action='store_true',
+                                 help=f"recursively traverse directory for .pdf files")
 
 
 def parse_text_extraction_args() -> Namespace:
@@ -149,7 +160,13 @@ def parse_text_extraction_args() -> Namespace:
             log.error(f"'{file_path}' is not a valid file or directory.")
             sys.exit(-1)
         elif file_path.is_dir():
-            args.files_to_process.extend(files_in_dir(file_path, 'pdf'))
+            if args.recurse:
+                pdf_files_in_dir = [f for f in file_path.glob('**/*.pdf')]
+                log.warning(f"Collected {len(pdf_files_in_dir)} PDF files via recursive traverse of {file_path}...")
+            else:
+                pdf_files_in_dir = files_in_dir(file_path, 'pdf')
+
+            args.files_to_process.extend(pdf_files_in_dir)
         else:
             args.files_to_process.append(file_path)
 

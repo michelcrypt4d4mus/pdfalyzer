@@ -8,6 +8,7 @@ from pypdf.errors import DependencyError, EmptyFileError, PdfStreamError
 from rich.console import Console
 from rich.markup import escape
 from rich.panel import Panel
+from rich.padding import Padding
 from rich.text import Text
 from yaralyzer.output.console import console
 from yaralyzer.util.helpers.env_helper import log_console
@@ -104,7 +105,8 @@ class PdfFile:
         self,
         page_range: PageRange | None = None,
         logger: Logger | None = None,
-        print_as_parsed: bool = False
+        print_as_parsed: bool = False,
+        with_page_number_panels: bool = True
     ) -> str | None:
         """
         Use PyPDF to extract text page by page and use Tesseract to OCR any embedded images.
@@ -113,7 +115,9 @@ class PdfFile:
             page_range (PageRange | None, optional): If provided, only extract text from pages in this range.
                 Page numbers are 1-indexed. If not provided, extract text from all pages.
             log (Logger | None, optional): If provided, log progress to this logger. Otherwise use default logger.
-            print_as_parsed (bool): If True, print each page's text to STDOUT as it is parsed.
+            print_as_parsed (bool, optional): If True, print each page's text to STDOUT as it is parsed.
+            output_dir (Path, optional): Write the extracted text to a file in this directory.
+            with_page_number_panels (bool, optional): If True include PAGE 1, PAGE 2, etc. panels in output.
 
         Returns:
             str | None: The extracted text, or None if extraction failed.
@@ -136,7 +140,11 @@ class PdfFile:
 
                 self._log_to_stderr(f"Parsing page {page_number}...")
                 page_buffer = Console(file=io.StringIO())
-                page_buffer.print(Panel(f"PAGE {page_number}", padding=(0, 15), expand=False, **DEFAULT_TABLE_OPTIONS))
+
+                if with_page_number_panels:
+                    page_panel = Panel(f"PAGE {page_number}", padding=(0, 15), expand=False, **DEFAULT_TABLE_OPTIONS)
+                    page_buffer.print(page_panel)
+
                 page_buffer.print(escape(page.extract_text().strip()))
                 image_number = 1
 
@@ -144,11 +152,22 @@ class PdfFile:
                 try:
                     for image_number, image in enumerate(page.images, start=1):
                         image_name = f"Page {page_number}, Image {image_number}"
+                        image_number_panel = Panel(image_name, expand=False, **DEFAULT_TABLE_OPTIONS)
                         self._log_to_stderr(f"   OCRing {image_name}...", "dim")
-                        page_buffer.print(Panel(image_name, expand=False, **DEFAULT_TABLE_OPTIONS))
+
+                        if with_page_number_panels:
+                            page_buffer.print('\n', image_number_panel)
+                        else:
+                            page_buffer.line()
+                            page_buffer.print(Padding(f"[[{image_name}]]", (1, 0)))
+
                         image_obj = Image.open(io.BytesIO(image.data))
-                        image_text = ocr_text(image_obj, f"{self.file_path} ({image_name})")
-                        page_buffer.print(escape(image_text or '').strip())
+                        image_text = (ocr_text(image_obj, f"{self.file_path} ({image_name})") or '').strip()
+
+                        if image_text:
+                            page_buffer.print(escape(image_text).strip())
+                        else:
+                            page_buffer.print(f'(no text found in image)')
                 except (OSError, NotImplementedError, TypeError, ValueError) as e:
                     error_str = exception_str(e)
                     msg = f"{error_str} while parsing embedded image {image_number} on page {page_number}..."
@@ -178,13 +197,24 @@ class PdfFile:
 
         return "\n\n".join(extracted_pages).strip()
 
-    def print_extracted_text(self, page_range: PageRange | None = None, print_as_parsed: bool = False) -> None:
+    def print_extracted_text(
+        self, page_range: PageRange | None = None,
+        print_as_parsed: bool = False,
+        with_page_number_panels: bool = True
+    ) -> None:
         """Fancy wrapper for printing the extracted text to the screen."""
         console.print(Panel(str(self.file_path), expand=False, style='bright_white reverse', **DEFAULT_TABLE_OPTIONS))
-        txt = self.extract_text(page_range=page_range, print_as_parsed=print_as_parsed)
+
+        text = self.extract_text(
+            page_range=page_range,
+            print_as_parsed=print_as_parsed,
+            with_page_number_panels=with_page_number_panels
+        )
 
         if not print_as_parsed:
-            console.print(txt)
+            console.print(text)
+
+        console.line(2)
 
     def _handle_extraction_error(self, page_number: int, error_msg: str) -> None:
         """Rip the offending page to a new file and suggest that user report bug to PyPDF."""

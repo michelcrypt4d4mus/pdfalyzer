@@ -10,13 +10,13 @@ from rich.prompt import Confirm, Prompt
 from rich.text import Text
 from yaralyzer.util.helpers.env_helper import is_github_workflow, log_console, stderr_notification
 from yaralyzer.util.exceptions import print_fatal_error_and_exit
+from yaralyzer.util.helpers.interaction_helper import ask_to_proceed
 from yaralyzer.util.helpers.shell_helper import ShellResult
 
 from pdfalyzer.config import PDF_PARSER_PATH_ENV_VAR as CFG_PDF_PARSER_PATH_ENV_VAR, PdfalyzerConfig
 from pdfalyzer.util.constants import PDF_PARSER_INSTALL_SCRIPT, PDF_PARSER_PY, PDFALYZER, PIP_INSTALL_EXTRAS
 from pdfalyzer.util.exceptions import PdfParserError
 from pdfalyzer.util.helpers.filesystem_helper import DEFAULT_PDF_TOOLS_DIR, dir_str
-from pdfalyzer.util.helpers.interaction_helper import ask_to_proceed
 
 # PDF Internal Data Regexes
 CONTAINS_STREAM_REGEX = re.compile(r'\s+Contains stream$')
