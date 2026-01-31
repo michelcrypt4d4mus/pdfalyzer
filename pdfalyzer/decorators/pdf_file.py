@@ -113,7 +113,8 @@ class PdfFile:
             page_range (PageRange | None, optional): If provided, only extract text from pages in this range.
                 Page numbers are 1-indexed. If not provided, extract text from all pages.
             log (Logger | None, optional): If provided, log progress to this logger. Otherwise use default logger.
-            print_as_parsed (bool): If True, print each page's text to STDOUT as it is parsed.
+            print_as_parsed (bool, optional): If True, print each page's text to STDOUT as it is parsed.
+            output_dir (Path, optional): Write the extracted text to a file in this directory.
 
         Returns:
             str | None: The extracted text, or None if extraction failed.

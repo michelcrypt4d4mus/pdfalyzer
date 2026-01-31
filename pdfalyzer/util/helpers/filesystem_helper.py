@@ -84,6 +84,12 @@ def is_pdf(file_path: str | Path) -> bool:
     return str(file_path).endswith(PDF_EXT)
 
 
+def replace_extension(file_path: Path | str, extension: str) -> Path:
+    file_path = Path(file_path)
+    extension = extension if extension.startswith('.') else f".{extension}"
+    return file_path.parent.joinpath(file_path.stem + extension)
+
+
 def set_max_open_files(num_filehandles: int = DEFAULT_MAX_OPEN_FILES) -> tuple[int | None, int | None]:
     """
     Sets the OS level max open files to at least 'num_filehandles'. Current value can be seen with 'ulimit -a'.

@@ -18,7 +18,7 @@ from pdfalyzer.util.argument_parser import parser
 from pdfalyzer.util.cli_tools.argument_parsers import (MAX_QUALITY, parse_combine_pdfs_args,
      parse_pdf_page_extraction_args, parse_text_extraction_args)
 from pdfalyzer.util.exceptions import PdfParserError
-from pdfalyzer.util.helpers.filesystem_helper import file_size_in_mb, set_max_open_files
+from pdfalyzer.util.helpers.filesystem_helper import file_size_in_mb, replace_extension, set_max_open_files
 from pdfalyzer.util.helpers.interaction_helper import ask_to_proceed
 from pdfalyzer.util.logging import log  # noqa: F401  Trigger log setup
 from pdfalyzer.util.output_section import OutputSection
@@ -127,8 +127,21 @@ def extract_pdf_text() -> None:
     console.line()
 
     for file_path in args.files_to_process:
-        PdfFile(file_path).print_extracted_text(args.page_range, args.print_as_parsed)
-        console.line(2)
+        pdf_file = PdfFile(file_path)
+
+        if args.output_dir:
+            txt_file_basename = replace_extension(file_path, 'txt').name
+            txt_file_path = args.output_dir.joinpath(txt_file_basename)
+            log.warning(f"Extracting '{file_path}'\n        to: '{txt_file_path}'")
+
+            with open(txt_file_path, 'wt') as txt_file:
+                if (extracted_text := pdf_file.extract_text()):
+                    txt_file.write(extracted_text + "\n")
+                else:
+                    log.warning(f"No text extracted from '{file_path}'...")
+        else:
+            pdf_file.print_extracted_text(args.page_range, args.print_as_parsed)
+            console.line(2)
 
 
 def pdfalyzer_install_pdf_parser() -> None:

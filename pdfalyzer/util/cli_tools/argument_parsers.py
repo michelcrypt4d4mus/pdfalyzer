@@ -17,6 +17,7 @@ from rich.text import Text
 from yaralyzer.util.exceptions import print_fatal_error_and_exit
 from yaralyzer.util.helpers.env_helper import stderr_notification
 from yaralyzer.util.helpers.file_helper import files_in_dir
+from yaralyzer.util.cli_option_validators import DirValidator
 
 from pdfalyzer.util.cli_tools.page_range import PageRangeArgumentValidator
 from pdfalyzer.util.helpers.filesystem_helper import (do_all_files_exist, extract_page_number, is_pdf,
@@ -128,6 +129,10 @@ extract_text_parser = ArgumentParser(
 
 extract_text_parser.add_argument('file_or_dir', nargs='+', metavar='FILE_OR_DIR')
 extract_text_parser.add_argument('--debug', action='store_true', help='turn on debug level logging')
+
+extract_text_parser.add_argument('--output-dir',
+                                 help='write extracted text to .txt files with the same name in this directory',
+                                 type=DirValidator())
 
 extract_text_parser.add_argument('--page-range', '-r',
                                  help=f"[PDFs only] {page_range_validator.HELP_MSG}",
