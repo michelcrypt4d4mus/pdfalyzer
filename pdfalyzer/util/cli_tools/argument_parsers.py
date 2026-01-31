@@ -134,12 +134,17 @@ extract_text_parser.add_argument('--output-dir', '-out',
                                  help='write extracted text to .txt files of the same name as the PDF in this directory',
                                  type=DirValidator(allow_create=True))
 
-extract_text_parser.add_argument('--no-page-number-panels', '-n', action='store_true',
-                                 help="don't print the PAGE 1, PAGE 2, etc. panels")
+extract_text_parser.add_argument('--no-page-number-panels', '-n',
+                                 help="don't print the PAGE 1, PAGE 2, etc. panels",
+                                 action='store_false',
+                                 dest='with_page_number_panels')
 
 extract_text_parser.add_argument('--page-range', '-pr',
                                  help=f"[PDFs only] {page_range_validator.HELP_MSG}",
                                  type=page_range_validator)
+
+extract_text_parser.add_argument('--panelize-image-text', '-pit', action='store_true',
+                                 help="enclose text OCRed from embedded images in a panel")
 
 extract_text_parser.add_argument('--print-as-parsed', '-p',
                                  action='store_true',

@@ -1,4 +1,5 @@
 # NEXT RELEASE
+* Add `--panelize-image-text` option to `extract_pdf_text`
 
 ### 1.19.5
 * New `--output-dir`, `--no-page-number-panels`, and `--recurse` options for `extract_pdf_text` tool to enable bulk extraction of many PDFs to `.txt` files

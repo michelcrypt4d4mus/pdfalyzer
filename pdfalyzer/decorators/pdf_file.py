@@ -1,11 +1,13 @@
 import io
+from argparse import Namespace
 from logging import Logger
 from os import path
 from pathlib import Path
 
 from pypdf import PdfReader, PdfWriter
 from pypdf.errors import DependencyError, EmptyFileError, PdfStreamError
-from rich.console import Console
+from rich import box
+from rich.console import Console, Group
 from rich.markup import escape
 from rich.panel import Panel
 from rich.padding import Padding
@@ -20,11 +22,13 @@ from pdfalyzer.util.helpers.filesystem_helper import create_dir_if_it_does_not_e
 from pdfalyzer.util.helpers.image_helper import ocr_text
 from pdfalyzer.util.helpers.rich_helper import attention_getting_panel, error_text, mild_warning
 from pdfalyzer.util.helpers.string_helper import exception_str
-from pdfalyzer.util.logging import log as _log
+from pdfalyzer.util.logging import log
 
 DEPENDENCY_ERROR_MSG = f"Missing an optional dependency required to extract text. Try '{PIP_INSTALL_EXTRAS}'."
 DEFAULT_PDF_ERRORS_DIR = Path.cwd().joinpath('pdf_errors')
 MIN_PDF_SIZE_TO_LOG_PROGRESS_TO_STDERR = 1024 * 1024 * 20
+NO_TEXT_MSG = '(no text found in image)'
+PANEL_OPTIONS = {'box': box.SQUARE}
 
 
 class PdfFile:
@@ -101,29 +105,23 @@ class PdfFile:
         console.print(f"Extracted pages to new PDF: '{extracted_pages_pdf_path}'.")
         return extracted_pages_pdf_path
 
-    def extract_text(
-        self,
-        page_range: PageRange | None = None,
-        logger: Logger | None = None,
-        print_as_parsed: bool = False,
-        with_page_number_panels: bool = True
-    ) -> str | None:
+    def extract_text(self, args: Namespace) -> str | None:
         """
         Use PyPDF to extract text page by page and use Tesseract to OCR any embedded images.
 
         Args:
             page_range (PageRange | None, optional): If provided, only extract text from pages in this range.
                 Page numbers are 1-indexed. If not provided, extract text from all pages.
-            log (Logger | None, optional): If provided, log progress to this logger. Otherwise use default logger.
             print_as_parsed (bool, optional): If True, print each page's text to STDOUT as it is parsed.
-            output_dir (Path, optional): Write the extracted text to a file in this directory.
             with_page_number_panels (bool, optional): If True include PAGE 1, PAGE 2, etc. panels in output.
 
         Returns:
             str | None: The extracted text, or None if extraction failed.
         """
         from PIL import Image  # Imported here to avoid hard dependency if not using this method
-        log = logger or _log
+        page_range = args.page_range
+        print_as_parsed = args.print_as_parsed
+        panelize_image_text = args.panelize_image_text
         log.debug(f"Extracting text from '{self.file_path}'...")
         self._page_numbers_of_errors: list[int] = []
         extracted_pages = []
@@ -141,8 +139,8 @@ class PdfFile:
                 self._log_to_stderr(f"Parsing page {page_number}...")
                 page_buffer = Console(file=io.StringIO())
 
-                if with_page_number_panels:
-                    page_panel = Panel(f"PAGE {page_number}", padding=(0, 15), expand=False, **DEFAULT_TABLE_OPTIONS)
+                if args.with_page_number_panels:
+                    page_panel = Panel(f"PAGE {page_number}", padding=(0, 15), expand=False, **PANEL_OPTIONS)
                     page_buffer.print(page_panel)
 
                 page_buffer.print(escape(page.extract_text().strip()))
@@ -152,22 +150,15 @@ class PdfFile:
                 try:
                     for image_number, image in enumerate(page.images, start=1):
                         image_name = f"Page {page_number}, Image {image_number}"
-                        image_number_panel = Panel(image_name, expand=False, **DEFAULT_TABLE_OPTIONS)
                         self._log_to_stderr(f"   OCRing {image_name}...", "dim")
-
-                        if with_page_number_panels:
-                            page_buffer.print('\n', image_number_panel)
-                        else:
-                            page_buffer.line()
-                            page_buffer.print(Padding(f"[[{image_name}]]", (1, 0)))
-
                         image_obj = Image.open(io.BytesIO(image.data))
-                        image_text = (ocr_text(image_obj, f"{self.file_path} ({image_name})") or '').strip()
 
-                        if image_text:
-                            page_buffer.print(escape(image_text).strip())
-                        else:
-                            page_buffer.print(f'(no text found in image)')
+                        self._print_image_text(
+                            page_buffer,
+                            image_name,
+                            ocr_text(image_obj, f"{self.file_path} ({image_name})"),
+                            args
+                        )
                 except (OSError, NotImplementedError, TypeError, ValueError) as e:
                     error_str = exception_str(e)
                     msg = f"{error_str} while parsing embedded image {image_number} on page {page_number}..."
@@ -197,21 +188,12 @@ class PdfFile:
 
         return "\n\n".join(extracted_pages).strip()
 
-    def print_extracted_text(
-        self, page_range: PageRange | None = None,
-        print_as_parsed: bool = False,
-        with_page_number_panels: bool = True
-    ) -> None:
+    def print_extracted_text(self, args: Namespace) -> None:
         """Fancy wrapper for printing the extracted text to the screen."""
-        console.print(Panel(str(self.file_path), expand=False, style='bright_white reverse', **DEFAULT_TABLE_OPTIONS))
+        console.print(Panel(str(self.file_path), expand=False, style='bright_white reverse', **PANEL_OPTIONS))
+        text = self.extract_text(args)
 
-        text = self.extract_text(
-            page_range=page_range,
-            print_as_parsed=print_as_parsed,
-            with_page_number_panels=with_page_number_panels
-        )
-
-        if not print_as_parsed:
+        if not args.print_as_parsed:
             console.print(text)
 
         console.line(2)
@@ -248,3 +230,17 @@ class PdfFile:
             return
 
         log_console.print(msg, style=style)
+
+    def _print_image_text(self, buffer: Console, image_name: str, image_text: str | None, args: Namespace) -> None:
+        """Print a representation of text extracted from an image into `buffer`."""
+        image_text = ((image_text or '').strip()) or NO_TEXT_MSG
+
+        if args.panelize_image_text:
+            renderables = [Panel(escape(image_text).strip(), expand=False, title=image_name)]
+        else:
+            if args.with_page_number_panels:
+                renderables = [Panel(image_name, expand=False, **PANEL_OPTIONS), image_text]
+            else:
+                renderables = [f"--- {image_name} ---", image_text, f"--- End {image_name} ---"]
+
+        buffer.print(Padding(Group(*renderables), (1, 0)))

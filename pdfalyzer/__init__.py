@@ -124,7 +124,6 @@ def extract_pdf_pages() -> None:
 def extract_pdf_text() -> None:
     """Extract text from a list of file or from all PDF files in a list of directories."""
     args: Namespace = parse_text_extraction_args()
-    with_page_number_panels = not args.no_page_number_panels
 
     for file_path in args.files_to_process:
         pdf_file = PdfFile(file_path)
@@ -135,7 +134,7 @@ def extract_pdf_text() -> None:
             txt_file_path = args.output_dir.joinpath(txt_file_basename)
             log.warning(f"Extracting '{file_path}'\n        to: '{txt_file_path}'")
 
-            if (extracted_text := pdf_file.extract_text(with_page_number_panels=with_page_number_panels)):
+            if (extracted_text := pdf_file.extract_text(args)):
                 with open(txt_file_path, 'wt') as txt_file:
                     txt_file.write(extracted_text + "\n")
 
@@ -143,11 +142,7 @@ def extract_pdf_text() -> None:
             else:
                 log.warning(f"No text extracted from '{file_path}'...")
         else:
-            pdf_file.print_extracted_text(
-                args.page_range,
-                args.print_as_parsed,
-                with_page_number_panels=with_page_number_panels
-            )
+            pdf_file.print_extracted_text(args)
 
 
 def pdfalyzer_install_pdf_parser() -> None:

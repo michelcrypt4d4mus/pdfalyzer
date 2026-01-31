@@ -16,6 +16,7 @@ def test_front_slash_quoted_bytes_extraction(font_info):
     _check_matches(font_info.binary_scanner.extract_front_slash_quoted_bytes, 756, 167814, 2, 62_000)
 
 
+@pytest.mark.slow
 def test_extract_guillemet(font_info):
     _check_matches(font_info.binary_scanner.extract_guillemet_quoted_bytes, 59, 78763)
 
