@@ -14,7 +14,7 @@ from yaralyzer.util.helpers.interaction_helper import ask_to_proceed
 from yaralyzer.util.helpers.shell_helper import ShellResult
 
 from pdfalyzer.config import PDF_PARSER_PATH_ENV_VAR as CFG_PDF_PARSER_PATH_ENV_VAR, PdfalyzerConfig
-from pdfalyzer.util.constants import PDF_PARSER_INSTALL_SCRIPT, PDF_PARSER_PY, PDFALYZER, PIP_INSTALL_EXTRAS
+from pdfalyzer.util.constants import CONSIDER_INSTALLING_EXTRAS_MSG, PDF_PARSER_INSTALL_SCRIPT, PDF_PARSER_PY, PDFALYZER
 from pdfalyzer.util.exceptions import PdfParserError
 from pdfalyzer.util.helpers.filesystem_helper import DEFAULT_PDF_TOOLS_DIR, dir_str
 from pdfalyzer.util.pdf_ocr_check_manager import CHECK_PDF_OCR_TEXT_URL
@@ -123,7 +123,7 @@ class PdfParserManager:
         try:
             import requests
         except ModuleNotFoundError:
-            print_fatal_error_and_exit(f"'requests' package not installed, maybe try:\n\n{PIP_INSTALL_EXTRAS}\n\n")
+            print_fatal_error_and_exit(f"'requests' package not installed. {CONSIDER_INSTALLING_EXTRAS_MSG.plain}")
 
         # Skip confirmation if env var is set (used by Github workflows)
         if is_github_workflow():

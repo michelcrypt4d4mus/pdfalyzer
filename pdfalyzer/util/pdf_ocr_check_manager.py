@@ -5,10 +5,10 @@ from pathlib import Path
 from typing import ClassVar
 
 from rich.text import Text
-from yaralyzer.util.helpers.env_helper import log_console, stderr_notification
+from yaralyzer.util.helpers.env_helper import stderr_notification
 from yaralyzer.util.helpers.shell_helper import ShellResult
 
-from pdfalyzer.util.constants import CONSIDER_INSTALLING_TOOLS_MSG, PIP_INSTALL_EXTRAS
+from pdfalyzer.util.constants import CONSIDER_INSTALLING_EXTRAS_MSG, CONSIDER_INSTALLING_TOOLS_MSG
 from pdfalyzer.util.helpers.filesystem_helper import DEFAULT_PDF_TOOLS_DIR
 from pdfalyzer.util.logging import log
 
@@ -70,7 +70,7 @@ class PdfOcrCheckManager:
                 import numpy
             except ModuleNotFoundError:
                 warning = Text(f"numpy package not installed; {CHECK_PDF_OCR_TEXT_BASENAME} script cannot be run.\n")
-                warning.append(PIP_INSTALL_EXTRAS)
+                warning.append(CONSIDER_INSTALLING_EXTRAS_MSG)
         else:
             warning = Text(f"{CHECK_PDF_OCR_TEXT_BASENAME} script not installed") + CONSIDER_INSTALLING_TOOLS_MSG
 
