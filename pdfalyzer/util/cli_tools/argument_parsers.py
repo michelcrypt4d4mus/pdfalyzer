@@ -191,4 +191,5 @@ def parse_text_extraction_args() -> Namespace:
 
 def _set_log_level(args: Namespace):
     if args.debug:
-        log.setLevel(logging.DEBUG)
+        for lg in [log] + log.handlers:
+            lg.setLevel(logging.DEBUG)

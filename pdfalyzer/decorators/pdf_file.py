@@ -52,6 +52,9 @@ class PdfFile:
 
     @property
     def page_iou_scores(self) -> dict[int, PageIouScore]:
+        if not PdfOcrCheckManager.is_available():
+            self._page_iou_scores = {}
+
         if '_page_iou_scores' not in vars(self):
             try:
                 self._page_iou_scores = PdfOcrCheckManager(self.file_path).page_scores
