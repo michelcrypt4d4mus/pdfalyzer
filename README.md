@@ -39,6 +39,7 @@ extract_pdf_text martin_heidegger-being_illmatic.pdf
 1. **Scan for mad sus content with a bunch of PDF specific [YARA](https://github.com/VirusTotal/yara-python) rules.**
 1. **Forcibly decode suspect bytes**. [The Yaralyzer](https://github.com/michelcrypt4d4mus/yaralyzer) does the heavy lifting.
 1. **Display detailed information about embedded fonts.** With character maps.
+1. **Extract pages and/or text (including from embedded images)** with the optional (command line tools)(#Included-Command-Line-Tools).
 1. **Usable as a library for your own PDF related code.**
 
 If you're looking for one of these things this may be the tool for you.
