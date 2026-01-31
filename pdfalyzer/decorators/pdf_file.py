@@ -190,13 +190,24 @@ class PdfFile:
 
         return "\n\n".join(extracted_pages).strip()
 
-    def print_extracted_text(self, page_range: PageRange | None = None, print_as_parsed: bool = False) -> None:
+    def print_extracted_text(
+        self, page_range: PageRange | None = None,
+        print_as_parsed: bool = False,
+        with_page_number_panels: bool = True
+    ) -> None:
         """Fancy wrapper for printing the extracted text to the screen."""
         console.print(Panel(str(self.file_path), expand=False, style='bright_white reverse', **DEFAULT_TABLE_OPTIONS))
-        txt = self.extract_text(page_range=page_range, print_as_parsed=print_as_parsed)
+
+        text = self.extract_text(
+            page_range=page_range,
+            print_as_parsed=print_as_parsed,
+            with_page_number_panels=with_page_number_panels
+        )
 
         if not print_as_parsed:
-            console.print(txt)
+            console.print(text)
+
+        console.line(2)
 
     def _handle_extraction_error(self, page_number: int, error_msg: str) -> None:
         """Rip the offending page to a new file and suggest that user report bug to PyPDF."""
