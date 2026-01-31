@@ -14,7 +14,6 @@ from pdfalyzer.util.logging import log
 
 CHECK_PDF_OCR_CMD = f'python {PdfalyzerConfig.check_pdf_ocr_text_path} --csv'.split()
 
-CONSIDER_INSTALLING_TOOLS_MSG
 
 @dataclass
 class PageIouScore:
@@ -48,7 +47,8 @@ class PdfOcrCheckManager:
     has_warned: ClassVar[bool] = False
 
     def __post_init__(self):
-        result = ShellResult.from_cmd(CHECK_PDF_OCR_CMD + [self.path_to_pdf], verify_success=True)
+        cmd = ['python', PdfalyzerConfig.check_pdf_ocr_text_path, '--csv', self.path_to_pdf]
+        result = ShellResult.from_cmd(cmd, verify_success=True)
         reader = csv.DictReader(io.StringIO(result.stdout))
 
         for row in list(reader):
