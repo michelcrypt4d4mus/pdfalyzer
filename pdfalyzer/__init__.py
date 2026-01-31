@@ -135,7 +135,7 @@ def extract_pdf_text() -> None:
             txt_file_path = args.output_dir.joinpath(txt_file_basename)
             log.warning(f"Extracting '{file_path}'\n        to: '{txt_file_path}'")
 
-            if (extracted_text := pdf_file.extract_text(args)):
+            if (extracted_text := pdf_file.extract_text_from_args(args)):
                 with open(txt_file_path, 'wt') as txt_file:
                     txt_file.write(extracted_text + "\n")
 

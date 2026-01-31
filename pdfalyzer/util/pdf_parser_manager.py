@@ -17,6 +17,7 @@ from pdfalyzer.config import PDF_PARSER_PATH_ENV_VAR as CFG_PDF_PARSER_PATH_ENV_
 from pdfalyzer.util.constants import PDF_PARSER_INSTALL_SCRIPT, PDF_PARSER_PY, PDFALYZER, PIP_INSTALL_EXTRAS
 from pdfalyzer.util.exceptions import PdfParserError
 from pdfalyzer.util.helpers.filesystem_helper import DEFAULT_PDF_TOOLS_DIR, dir_str
+from pdfalyzer.util.pdf_ocr_check_manager import CHECK_PDF_OCR_TEXT_URL
 
 # PDF Internal Data Regexes
 CONTAINS_STREAM_REGEX = re.compile(r'\s+Contains stream$')
@@ -141,14 +142,10 @@ class PdfParserManager:
             log_install_step(f"Installing to existing dir {install_dir.resolve()}")
 
         for tool in PDF_TOOLS_FILES:
-            tool_path = install_dir.joinpath(tool)
             tool_url = f"{DIDIER_STEVENS_RAW_GITHUB_URL}{tool}"
-            log_install_step(f"Downloading '{tool}' from {tool_url}")
-            response = requests.get(tool_url)
-            tool_path.write_text(response.text)
-            log_install_step(f"Making '{tool_path}' executable...")
-            tool_path.chmod(os.stat(tool_path).st_mode | stat.S_IEXEC)
+            PdfParserManager.install_python_tool(install_dir, tool_url)
 
+        PdfParserManager.install_python_tool(install_dir, CHECK_PDF_OCR_TEXT_URL)
         installed_pdf_parser_path = install_dir.resolve().joinpath(PDF_PARSER_PY)
         pdfalyzer_cfg_line = f'{PDF_PARSER_PATH_ENV_VAR}="{installed_pdf_parser_path}"'
         dotfile_write_txt = Text(f"Write ", style=INSTALL_STYLE)
@@ -170,6 +167,17 @@ class PdfParserManager:
             log_install_step(f"Wrote line to {dotfile_path.resolve()}")
 
         log_install_msg(POST_INSTALL_MSG, style='dim')
+
+    @staticmethod
+    def install_python_tool(install_dir: Path, tool_url: str):
+        import requests
+        tool = tool_url.split('/')[-1]
+        tool_path = install_dir.joinpath(tool)
+        log_install_step(f"Downloading '{tool}' from {tool_url}")
+        response = requests.get(tool_url)
+        tool_path.write_text(response.text)
+        log_install_step(f"Making '{tool_path}' executable...")
+        tool_path.chmod(os.stat(tool_path).st_mode | stat.S_IEXEC)
 
 
 def log_install_step(msg, **kwargs) -> None:
