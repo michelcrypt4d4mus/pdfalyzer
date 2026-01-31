@@ -44,7 +44,7 @@ class PdfOcrCheckManager:
     """Manage calls to check-pdf-text.py to checks whether there is already COR text that matches images in a file."""
     path_to_pdf: Path
     page_scores: dict[int, PageIouScore] = field(default_factory=dict)
-    has_warned: ClassVar[bool] = False
+    _is_available: ClassVar[bool | None] = None
 
     def __post_init__(self):
         cmd = ['python', PdfalyzerConfig.check_pdf_ocr_text_path, '--csv', self.path_to_pdf]
@@ -57,11 +57,12 @@ class PdfOcrCheckManager:
     @classmethod
     def is_available(cls) -> bool:
         """Return `True` if `check-pdf-text.py` script is available and runnable."""
-        if cls.has_warned:
+        if cls._is_available is True:
+            return True
+        elif cls._is_available is False:
             return False
 
         warning = None
-        print(f"PdfalyzerConfig.check_pdf_ocr_text_path: {PdfalyzerConfig.check_pdf_ocr_text_path }")
 
         if PdfalyzerConfig.check_pdf_ocr_text_path is not None and PdfalyzerConfig.check_pdf_ocr_text_path.exists():
             try:
@@ -74,7 +75,8 @@ class PdfOcrCheckManager:
 
         if warning:
             stderr_notification(warning)
-            cls.has_warned = True
-            return False
+            cls._is_available = False
         else:
-            return True
+            cls._is_available = True
+
+        return cls._is_available
