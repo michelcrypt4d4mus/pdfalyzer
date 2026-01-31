@@ -6,7 +6,7 @@ import logging
 from argparse import Namespace
 from os import path
 from pathlib import Path
-from typing import Callable, TypeVar
+from typing import Callable
 
 from yaralyzer.config import YaralyzerConfig
 from yaralyzer.util.argument_parser import rules, tuning
@@ -22,7 +22,6 @@ from pdfalyzer.util.logging import log, log_handler_kwargs
 from pdfalyzer.util.output_section import ALL_STREAMS
 
 PDF_PARSER_PATH_ENV_VAR = 'PDF_PARSER_PY_PATH'  # Github workflow depends on this value!
-T = TypeVar('T')
 
 # These options will be read from env vars prefixed with YARALYZER, not PDFALYZER
 # TODO: for some reasonm PDFALYZER_PATTERNS_LABEL and PDFALYZER_REGEX_MODIFIER are showing up
@@ -89,10 +88,9 @@ class PdfalyzerConfig(YaralyzerConfig):
 
     @classmethod
     def _parse_arguments(cls, args: Namespace) -> Namespace:
-        """Overloads/extends YaralyzerConfig method of the same name."""
+        """Overloads/extends `YaralyzerConfig` method of the same name to provide some additional processing."""
         args = super()._parse_arguments(args)
         args.extract_quoteds = args.extract_quoteds or []
-        args._yaralyzer_standalone_mode = False  # TODO: this sucks
         args._export_basename = f"{args.file_prefix}{args.file_to_scan_path.name}"
 
         if not args.streams:
