@@ -104,7 +104,8 @@ class PdfFile:
         self,
         page_range: PageRange | None = None,
         logger: Logger | None = None,
-        print_as_parsed: bool = False
+        print_as_parsed: bool = False,
+        with_page_number_panels: bool = True
     ) -> str | None:
         """
         Use PyPDF to extract text page by page and use Tesseract to OCR any embedded images.
@@ -115,6 +116,7 @@ class PdfFile:
             log (Logger | None, optional): If provided, log progress to this logger. Otherwise use default logger.
             print_as_parsed (bool, optional): If True, print each page's text to STDOUT as it is parsed.
             output_dir (Path, optional): Write the extracted text to a file in this directory.
+            with_page_number_panels (bool, optional): If True include PAGE 1, PAGE 2, etc. panels in output.
 
         Returns:
             str | None: The extracted text, or None if extraction failed.
@@ -137,7 +139,11 @@ class PdfFile:
 
                 self._log_to_stderr(f"Parsing page {page_number}...")
                 page_buffer = Console(file=io.StringIO())
-                page_buffer.print(Panel(f"PAGE {page_number}", padding=(0, 15), expand=False, **DEFAULT_TABLE_OPTIONS))
+
+                if with_page_number_panels:
+                    page_panel = Panel(f"PAGE {page_number}", padding=(0, 15), expand=False, **DEFAULT_TABLE_OPTIONS)
+                    page_buffer.print(page_panel)
+
                 page_buffer.print(escape(page.extract_text().strip()))
                 image_number = 1
 
@@ -145,11 +151,16 @@ class PdfFile:
                 try:
                     for image_number, image in enumerate(page.images, start=1):
                         image_name = f"Page {page_number}, Image {image_number}"
+                        image_number_panel = Panel(image_name, expand=False, **DEFAULT_TABLE_OPTIONS)
                         self._log_to_stderr(f"   OCRing {image_name}...", "dim")
-                        page_buffer.print(Panel(image_name, expand=False, **DEFAULT_TABLE_OPTIONS))
+                        page_buffer.print('\n', image_number_panel)
                         image_obj = Image.open(io.BytesIO(image.data))
-                        image_text = ocr_text(image_obj, f"{self.file_path} ({image_name})")
-                        page_buffer.print(escape(image_text or '').strip())
+                        image_text = (ocr_text(image_obj, f"{self.file_path} ({image_name})") or '').strip()
+
+                        if image_text:
+                            page_buffer.print(escape(image_text).strip())
+                        else:
+                            page_buffer.print(f' (no text found in image)')
                 except (OSError, NotImplementedError, TypeError, ValueError) as e:
                     error_str = exception_str(e)
                     msg = f"{error_str} while parsing embedded image {image_number} on page {page_number}..."

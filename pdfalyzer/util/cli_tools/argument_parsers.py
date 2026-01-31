@@ -130,9 +130,13 @@ extract_text_parser = ArgumentParser(
 extract_text_parser.add_argument('file_or_dir', nargs='+', metavar='FILE_OR_DIR')
 extract_text_parser.add_argument('--debug', action='store_true', help='turn on debug level logging')
 
-extract_text_parser.add_argument('--output-dir',
-                                 help='write extracted text to .txt files with the same name in this directory',
+extract_text_parser.add_argument('--output-dir', '-out',
+                                 help='write extracted text to .txt files of the same name as the PDF in this directory',
                                  type=DirValidator())
+
+extract_text_parser.add_argument('--no-page-number-panels', '-n',
+                                 action='store_true',
+                                 help="don't print the PAGE 1, PAGE 2, etc. panels")
 
 extract_text_parser.add_argument('--page-range', '-r',
                                  help=f"[PDFs only] {page_range_validator.HELP_MSG}",

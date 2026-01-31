@@ -1,4 +1,5 @@
 # NEXT RELEASE
+* New `--output-dir` and `--no-page-number-panels` options for `extract_pdf_text` tool to enable bulk extraction of many PDFs to `.txt` files
 
 ### 1.19.4
 * Log highlighting fixes/improvements
