@@ -1,5 +1,6 @@
 import io
 from argparse import Namespace
+from dataclasses import dataclass
 from logging import Logger
 from os import path
 from pathlib import Path
@@ -31,34 +32,31 @@ NO_TEXT_MSG = '(no text found in image)'
 PANEL_OPTIONS = {'box': box.SQUARE}
 
 
+@dataclass
 class PdfFile:
     """
     Wrapper for a PDF file path that provides useful methods and properties.
 
     Attributes:
         file_path (Path): The path to the PDF file.
-        basename (str): The base name of the PDF file (with extension).
-        basename_without_ext (str): The base name of the PDF file (without extension).
-        dirname (Path): The directory containing the PDF file.
-        extname (str): The file extension of the PDF file.
-        file_size (int): The size of the file in bytes.
     """
+    file_path: Path
 
-    def __init__(self, file_path: str | Path) -> None:
+    @property
+    def dirname(self) -> Path:
+        return self.file_path.parent
+
+    @property
+    def file_size(self) -> int:
+        return self.file_path.stat().st_size
+
+    def __post_init__(self) -> None:
         """
         Args:
             file_path (str | Path): Path to the PDF file.
         """
-        self.file_path: Path = Path(file_path)
-
         if not self.file_path.exists():
-            raise FileNotFoundError(f"'{file_path}' is not a valid file or directory.")
-
-        self.dirname = self.file_path.parent
-        self.basename: str = path.basename(file_path)
-        self.basename_without_ext: str = str(Path(self.basename).with_suffix(''))
-        self.extname: str = self.file_path.suffix
-        self.file_size = self.file_path.stat().st_size
+            raise FileNotFoundError(f"'{self.file_path}' is not a valid file.")
 
     def extract_page_range(
         self,

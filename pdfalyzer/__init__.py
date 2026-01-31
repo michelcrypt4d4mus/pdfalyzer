@@ -8,6 +8,7 @@ from rich.text import Text
 from yaralyzer.output.console import console
 from yaralyzer.output.file_export import invoke_rich_export
 from yaralyzer.util.exceptions import print_fatal_error
+from yaralyzer.util.helpers.file_helper import file_size_str
 from yaralyzer.util.helpers.interaction_helper import ask_to_proceed
 from yaralyzer.util.logging import invocation_txt, log_console
 
@@ -138,7 +139,10 @@ def extract_pdf_text() -> None:
                 with open(txt_file_path, 'wt') as txt_file:
                     txt_file.write(extracted_text + "\n")
 
-                print(extracted_text)
+                console.print(extracted_text)
+                console.line()
+                console.print(f"Wrote text to '{txt_file_path}' ({file_size_str(txt_file_path)})...", style='dim')
+                console.line()
             else:
                 log.warning(f"No text extracted from '{file_path}'...")
         else:

@@ -14,7 +14,7 @@ from pathlib import Path
 
 from rich_argparse_plus import RichHelpFormatterPlus
 from rich.text import Text
-from yaralyzer.util.cli_option_validators import DirValidator
+from yaralyzer.util.cli_option_validators import DirValidator, PathValidator
 from yaralyzer.util.exceptions import print_fatal_error_and_exit
 from yaralyzer.util.helpers.env_helper import stderr_notification
 from yaralyzer.util.helpers.file_helper import files_in_dir
@@ -40,7 +40,8 @@ combine_pdfs_parser = ArgumentParser(
 combine_pdfs_parser.add_argument('pdfs',
                                  help='two or more PDFs to combine',
                                  metavar='PDF_PATH',
-                                 nargs='+')
+                                 nargs='+',
+                                 type=PathValidator())
 
 combine_pdfs_parser.add_argument('-iq', '--image-quality',
                                  help='image quality for embedded images (can compress PDF at loss of quality)',
@@ -91,7 +92,7 @@ extract_pdf_parser = ArgumentParser(
     description="Extract pages from one PDF into a new PDF.",
 )
 
-extract_pdf_parser.add_argument('pdf_file', metavar='PDF_FILE', help='PDF to extract pages from')
+extract_pdf_parser.add_argument('pdf_file', metavar='PDF_FILE', help='PDF to extract pages from', type=PathValidator())
 extract_pdf_parser.add_argument('--debug', action='store_true', help='turn on debug level logging')
 
 extract_pdf_parser.add_argument('--page-range', '-r',
@@ -121,13 +122,14 @@ def parse_pdf_page_extraction_args() -> Namespace:
 ######################
 #  extract_pdf_text  #
 ######################
+# TODO: rename extract_pdf_text_parser
 extract_text_parser = ArgumentParser(
     formatter_class=RichHelpFormatterPlus,
     description="Extract the text from one or more files or directories.",
     epilog="If any of the FILE_OR_DIRs is a directory all PDF files in that directory will be extracted."
 )
 
-extract_text_parser.add_argument('file_or_dir', nargs='+', metavar='FILE_OR_DIR')
+extract_text_parser.add_argument('file_or_dir', nargs='+', metavar='FILE_OR_DIR', type=PathValidator())
 extract_text_parser.add_argument('--debug', action='store_true', help='turn on debug level logging')
 
 extract_text_parser.add_argument('--output-dir', '-out',

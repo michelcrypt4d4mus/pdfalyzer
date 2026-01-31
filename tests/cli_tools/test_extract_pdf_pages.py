@@ -30,5 +30,5 @@ def test_extract_pdf_pages(extracted_pdf_path, multipage_pdf_path, script_cmd_pr
     cmd_stdout = ShellResult.from_cmd(cmd, verify_success=True).stdout
     assert "__page_2.pdf" in cmd_stdout
     assert extracted_pdf_path.exists()
-    text = check_output(['extract_pdf_text', extracted_pdf_path], env=environ).decode()
-    assert "woefully ignorant and unprepared" in text
+    result = ShellResult.from_cmd(['extract_pdf_text', extracted_pdf_path], verify_success=True)
+    assert "woefully ignorant and unprepared" in result.stdout
