@@ -1,4 +1,6 @@
 # NEXT RELEASE
+
+### 1.19.5
 * New `--output-dir`, `--no-page-number-panels`, and `--recurse` options for `extract_pdf_text` tool to enable bulk extraction of many PDFs to `.txt` files
 * Ask user if they want to create an `--output-dir` that doesn't exist, import `ask_to_proceed()` from Yaralyzer
 
