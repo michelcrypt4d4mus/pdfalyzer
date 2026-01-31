@@ -20,7 +20,7 @@
 * Drop the `pdfalyzer_show_color_theme` script in favour of a `--show-colors` debug option
 * Accomodate lower python 3.11 minor versions
 
-# 1.19.0
+## 1.19.0
 * Add `--export-png` option to render .png images of output
 * Add `--env-vars` option to display exactly which command line options can be set by which variables
 * Add `--echo-command` option to save the exact command used along with the output
@@ -42,7 +42,7 @@
 ### 1.18.1
 * Ensure `cryptography` package is installable as an extra
 
-# 1.18.0
+## 1.18.0
 * `pdfalyze` now returns error code (1) to shell if there are unplaced nodes unless the new `--allow-missed-nodes` option is used
 * Handle encrypted PDFs via `--password` option and/or prompting user for the password
 * Make `PdfObjectProperties`, `IndeterminateNode`, `PdfObjectRelationship` into dataclasses
@@ -102,7 +102,7 @@
 ### 1.17.1
 * Fix issue where `extract_pdf_pages` page ranges were indexed from 0 instead of 1
 
-# 1.17.0
+## 1.17.0
 * Add `extract_pdf_pages` command line tool (imported from `clown_sort`)
 * Add `extract_text_from_pdfs` command line tool (imported from `clown_sort`)
 
@@ -156,14 +156,14 @@
 ### 1.16.1
 * Configure a `Changelog` link for `pypi` to display
 
-# 1.16.0
+## 1.16.0
 * Upgrade `PyPDF2` 2.x to `pypdf` 5.0.1 (new name, same package)
 * Add `--image-quality` option to `combine_pdfs` tool
 
 ### 1.15.1
 * Add `--no-default-yara-rules` command line option so users can use _only_ their own custom YARA rules files if they want. Previously you could only use custom YARA rules _in addition to_ the default rules; now you can just skip the default rules.
 
-# 1.15.0
+## 1.15.0
 * Add `combine_pdfs` command line script to merge a bunch of PDFs into one
 * Remove unused `Deprecated` dependency
 
@@ -198,7 +198,7 @@
 ### 1.14.1
 * Fix export filename
 
-# 1.14.0
+## 1.14.0
 * Add `--preview-stream-length` option
 * Store parsed `args` on `PdfalyzerConfig` class
 * Yaralyzer CLI options all configurable with env vars.
@@ -209,7 +209,7 @@
 ### 1.13.1
 * Add **all** the possible PDF internal commands that can lead to JavaScript execution or local/remote command exection to `DANGEROUS_PDF_KEYS` list.
 
-# 1.13.0
+## 1.13.0
 * New `--extract-quoted` argument can be specified to have `yaralyzer` extract and decode all bytes between the specified quote chars.
 * Quoted bytes are no longer force decoded by default.
 * New `--suppress-boms` argument suppresses BOM search.
@@ -226,7 +226,7 @@
 * Check for any explicit `/Kids` relationships when placing indeterminate nodes
 * All other things being equal prefer a single `/Page` or `/Pages` referrer as the parent
 
-# 1.12.0
+## 1.12.0
 * Rich table view displays object properties and referenced nodes with appropriate color and labeling
 * Style `/Encoding` objects as part of the font family
 * Refactor text coloring/styling to `pdfalyzer.output.styles` package
@@ -258,7 +258,7 @@
 * Fix regressions
 * Fix issue when `/Resources` is referred to by multiple addresses from different nodes
 
-# 1.11.0
+## 1.11.0
 * Scan all binaries (not just font binaries) with included PDF related YARA rules
 * Better warning about stream decode failures
 * Remove warnings that should not be warnings
@@ -292,13 +292,13 @@
 ### 1.10.1
 * Use `rich_argparse_plus` for help text
 
-# 1.10.0
+## 1.10.0
 * `--streams` arg now takes an optional PDF object ID
 * `--fonts` no longer takes an optional PDF object ID
 * YARA matches will display more than 512 bytes
 * Improved output formatting
 
-# 1.9.0
+## 1.9.0
 * Scan all binary streams, not just fonts.  Separate `--streams` option is provided. (`--font` option has much less output)
 * Display MD5, SHA1, and SHA256 for all binary streams as well as overall file
 
@@ -314,22 +314,22 @@
 ### 1.8.1
 * Show defaults and valid values for command line options
 
-# 1.8.0
+## 1.8.0
 * Add table of stream lengths for PDF objects containing streams to `--doc-info` output
 * Quote extraction API methods should use yara, not bespoke extraction
 * Fix bug with rich tree view of non binary streams
 
-# 1.7.0
+## 1.7.0
 * Use `yaralyzer` as the match engine
 * Scan all binary streams, not just the fonts
 
-# 1.6.0
+## 1.6.0
 * Integrate YARA scanning - all the rules I could dig up relating to PDFs
 * Add MD5, SHA1, SHA256 to document info section
 * `pdfalyzer_show_color_theme` script shows the theme
 * Make `README` more PyPi friendly
 
-# 1.5.0
+## 1.5.0
 Bunch of small changes to support releasing on [pypi](https://pypi.org/project/pdfalyzer/)
 * Invoke with shell command `pdfalyze` instead of local python file `./pdfalyzer.py` (options are the same)
 * Core class renames: `PdfWalker` -> `Pdfalyzer`, `DataStreamHandler` -> `BinaryScanner`
@@ -347,31 +347,31 @@ Bunch of small changes to support releasing on [pypi](https://pypi.org/project/p
 * Ensure `/OpenAction` etc are not subsumed by parent/child relationships in the condensed tree view
 * Tweak available configuration options for logging to file.
 
-# 1.3.1
+### 1.3.1
 * Fix bug with validating directly embedded objects
 
-# 1.3.0
-### General
+## 1.3.0
+**General**
 * Improved scanning of binaries for `UTF-X` encoded data where X is not a prime number.
 * Lots of summary data is now displayed about what were the most and least successful encodings at extracting some meaning (or at least not failing) from binary sequences surrounded by quote chars, frong slashes, backticks, etc etc.
 * Will execute "by the book" decodes using normally untested encodings if the `chardet.detect()` library feels strongly enough about it.
 * Exporting SVGs, HTML, and colored text can be done in a single invocation.
 
-### Logging
+**Logging**
 * Invocations of the tool are now logged in a history file `log/pdfalyzer.invocation.log`
 * Logging to a file can be enabled by setting a `PDFALYZER_LOG_DIR` environment variable but see comments in `.pdfalyzer.example` about side effects.
 
-### Command line options
+**Command line options**
 * `--maximize-width` arg means you can set yr monitor to teeny tiny fonts and print out absolutely monstrous SVGs (yay!)
 * `--chardet-cutoff` option lets you control the the cutoff for adding untested encodings to the output based on what `chardet.detect()` thinks is the right encoding
 * `--suppress-chardet` command line option removes the chardet tables that are (mostly) duplicative of the decoded text tables
 * `--output-dir` and `--file-prefix` are now shared by all the export modes
 * You can use `dotenv` to permanently turn on or off or change the value of some command line options; see  [`.pdfalyzer.example`](.pdfalyzer.example) for mdetails on what is configurable.
 
-### Visualizations
+**Visualizations**
 * Default `TerminalTheme` colors kind of sucked when you went to export SVGs and HTML... like black was not black, or even close. Things are simpler now - black is black, blue is blue, etc. Makes exports look better.
 
-### Bugfixes
+**Bugfixes**
 * Binary data highlighting now goes all the way to the end of the matched string in most cases (small bug had it falling 1-4 chars behind sometimes)
 * Fix small bug with exporting font/binary details to SVGs
 * Fix `Win-
@@ -380,7 +380,7 @@ Bunch of small changes to support releasing on [pypi](https://pypi.org/project/p
 
 
 
-# 1.2.0
+## 1.2.0
 * Dramatic expansion in the `pdfalyzer`'s binary data scouring capabilities:
    * Add `chardet` library guesses as to the encoding of all unknown byte sequences and ranks them from most to least likely
    * Add attempted decodes of all backtick, frontslash, single, double, and guillemet quoted strings in font binaries
@@ -394,13 +394,13 @@ Bunch of small changes to support releasing on [pypi](https://pypi.org/project/p
 * `extract_guillemet_quoted_bytes()` and `extract_backtick_quoted_bytes()` are now iterators
 * Fix scanning for `UTF-16` BOM in font binary
 
-# 1.1.0
+## 1.1.0
 * Print unprintable ascii characters in the font binary forced decode attempt with a bracket notation. e.g. print the string `[BACKSPACE]` instead of deleting the previous character
 * Add an attempt to decode font binary as `latin-1` in addition to `utf-8`
 * Highlight the suspicious bytes in the font binary forced decode attempts
 * Fix printing of suspicious font bytes when suspicions are near start or end of stream
 
-# 1.0.2
+### 1.0.2
 * Color `/Widths` tables
 * Color `/Catalog` and other summary nodes with with green
 * Color `ByteStringObject` like bytes
@@ -408,7 +408,7 @@ Bunch of small changes to support releasing on [pypi](https://pypi.org/project/p
 * Remove redundant `/First` and `/Last` non tree refs when those relationships are part of the tree
 * Couple of edge case bug fixes
 
-# 1.0.1
+### 1.0.1
 * Fix issue with directly embedded `/Resources` not being walked correctly (along with their fonts)
 * Introduce `PdfObjectRelationship` tuple to contain the root reference key, the actual reference address string, and the referenced obj
 * Add warnings if any PDF objects are missing from the tree
