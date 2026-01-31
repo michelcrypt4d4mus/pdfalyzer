@@ -8,6 +8,7 @@ from rich.text import Text
 from yaralyzer.output.console import console
 from yaralyzer.output.file_export import invoke_rich_export
 from yaralyzer.util.exceptions import print_fatal_error
+from yaralyzer.util.helpers.interaction_helper import ask_to_proceed
 from yaralyzer.util.logging import invocation_txt, log_console
 
 from pdfalyzer.config import PdfalyzerConfig
@@ -19,7 +20,6 @@ from pdfalyzer.util.cli_tools.argument_parsers import (MAX_QUALITY, parse_combin
      parse_pdf_page_extraction_args, parse_text_extraction_args)
 from pdfalyzer.util.exceptions import PdfParserError
 from pdfalyzer.util.helpers.filesystem_helper import file_size_in_mb, replace_extension, set_max_open_files
-from pdfalyzer.util.helpers.interaction_helper import ask_to_proceed
 from pdfalyzer.util.logging import log  # noqa: F401  Trigger log setup
 from pdfalyzer.util.output_section import OutputSection
 from pdfalyzer.util.pdf_parser_manager import PdfParserManager
