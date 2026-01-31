@@ -8,14 +8,11 @@ from rich.text import Text
 from yaralyzer.util.helpers.env_helper import stderr_notification
 from yaralyzer.util.helpers.shell_helper import ShellResult
 
-from pdfalyzer.util.constants import CONSIDER_INSTALLING_EXTRAS_MSG, CONSIDER_INSTALLING_TOOLS_MSG
-from pdfalyzer.util.helpers.filesystem_helper import DEFAULT_PDF_TOOLS_DIR
+from pdfalyzer.config import PdfalyzerConfig
+from pdfalyzer.util.constants import CHECK_PDF_OCR_TEXT_BASENAME, CONSIDER_INSTALLING_EXTRAS_MSG, CONSIDER_INSTALLING_TOOLS_MSG
 from pdfalyzer.util.logging import log
 
-CHECK_PDF_OCR_TEXT_URL = 'https://raw.githubusercontent.com/hypothesis/pdf-text-quality/refs/heads/main/check-pdf-text.py'
-CHECK_PDF_OCR_TEXT_BASENAME = CHECK_PDF_OCR_TEXT_URL.split('/')[-1]
-CHECK_PDF_OCR_TEXT_PATH = DEFAULT_PDF_TOOLS_DIR.joinpath(CHECK_PDF_OCR_TEXT_BASENAME)
-CHECK_PDF_OCR_CMD = f'python {CHECK_PDF_OCR_TEXT_PATH} --csv'.split()
+CHECK_PDF_OCR_CMD = f'python {PdfalyzerConfig.check_pdf_ocr_text_path} --csv'.split()
 
 CONSIDER_INSTALLING_TOOLS_MSG
 
@@ -64,15 +61,16 @@ class PdfOcrCheckManager:
             return False
 
         warning = None
+        print(f"PdfalyzerConfig.check_pdf_ocr_text_path: {PdfalyzerConfig.check_pdf_ocr_text_path }")
 
-        if CHECK_PDF_OCR_TEXT_PATH.exists():
+        if PdfalyzerConfig.check_pdf_ocr_text_path is not None and PdfalyzerConfig.check_pdf_ocr_text_path.exists():
             try:
                 import numpy
             except ModuleNotFoundError:
-                warning = Text(f"numpy package not installed; {CHECK_PDF_OCR_TEXT_BASENAME} script cannot be run.\n")
+                warning = Text(f"numpy package not installed, {CHECK_PDF_OCR_TEXT_BASENAME} script cannot be run.\n")
                 warning.append(CONSIDER_INSTALLING_EXTRAS_MSG)
         else:
-            warning = Text(f"{CHECK_PDF_OCR_TEXT_BASENAME} script not installed") + CONSIDER_INSTALLING_TOOLS_MSG
+            warning = Text(f"{CHECK_PDF_OCR_TEXT_BASENAME} script not installed. ") + CONSIDER_INSTALLING_TOOLS_MSG
 
         if warning:
             stderr_notification(warning)

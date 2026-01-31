@@ -10,7 +10,7 @@ from yaralyzer.util.helpers.env_helper import stderr_notification
 from yaralyzer.util.helpers.file_helper import files_in_dir, relative_path
 from yaralyzer.util.logging import log
 
-from pdfalyzer.util.constants import PDF_PARSER_PY, PDFALYZER
+from pdfalyzer.util.constants import CHECK_PDF_OCR_TEXT_BASENAME, PDF_PARSER_PY, PDFALYZER
 
 NUMBERED_PAGE_REGEX = re.compile(r'.*_(\d+)\.\w{3,4}$')
 DEFAULT_MAX_OPEN_FILES = 256  # macOS default
@@ -22,6 +22,7 @@ PROJECT_ROOT = Path(str(importlib.resources.files(PDFALYZER))).parent
 SCRIPTS_DIR = PROJECT_ROOT.joinpath('scripts')
 DEFAULT_PDF_TOOLS_DIR = Path('pdf_tools')
 DEFAULT_PDF_PARSER_PATH = DEFAULT_PDF_TOOLS_DIR.joinpath(PDF_PARSER_PY)
+DEFAULT_CHECK_PDF_OCR_TEXT_PATH = DEFAULT_PDF_TOOLS_DIR.joinpath(CHECK_PDF_OCR_TEXT_BASENAME)
 
 
 def create_dir_if_it_does_not_exist(dir: Path) -> None:

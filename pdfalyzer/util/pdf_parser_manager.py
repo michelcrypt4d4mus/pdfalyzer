@@ -13,15 +13,18 @@ from yaralyzer.util.exceptions import print_fatal_error_and_exit
 from yaralyzer.util.helpers.interaction_helper import ask_to_proceed
 from yaralyzer.util.helpers.shell_helper import ShellResult
 
-from pdfalyzer.config import PDF_PARSER_PATH_ENV_VAR as CFG_PDF_PARSER_PATH_ENV_VAR, PdfalyzerConfig
-from pdfalyzer.util.constants import CONSIDER_INSTALLING_EXTRAS_MSG, PDF_PARSER_INSTALL_SCRIPT, PDF_PARSER_PY, PDFALYZER
+from pdfalyzer.config import (CHECK_PDF_OCR_TEXT_PATH_ENV_VAR as CFG_CHECK_PDF_OCR_TEXT_PATH_ENV_VAR,
+     PDF_PARSER_PATH_ENV_VAR as CFG_PDF_PARSER_PATH_ENV_VAR, PdfalyzerConfig)
+from pdfalyzer.util.constants import CHECK_PDF_OCR_TEXT_URL, CONSIDER_INSTALLING_EXTRAS_MSG, PDF_PARSER_INSTALL_SCRIPT, PDF_PARSER_PY, PDFALYZER
 from pdfalyzer.util.exceptions import PdfParserError
 from pdfalyzer.util.helpers.filesystem_helper import DEFAULT_PDF_TOOLS_DIR, dir_str
-from pdfalyzer.util.pdf_ocr_check_manager import CHECK_PDF_OCR_TEXT_URL
 
 # PDF Internal Data Regexes
 CONTAINS_STREAM_REGEX = re.compile(r'\s+Contains stream$')
 PDF_OBJECT_START_REGEX = re.compile(r'^obj (\d+) \d+$')
+
+# check-pdf installation
+CHECK_PDF_OCR_TEXT_PATH_ENV_VAR = PdfalyzerConfig.env_var_for_option_dest(CFG_CHECK_PDF_OCR_TEXT_PATH_ENV_VAR)
 
 # Installation of pdf-parser.py info
 DIDIER_STEVENS_RAW_GITHUB_URL = 'https://raw.githubusercontent.com/DidierStevens/DidierStevensSuite/master/'
@@ -73,7 +76,7 @@ class PdfParserManager:
         """Examine output of pdf-parser.py to find all object IDs as well as those object IDs that have streams"""
         try:
             result = ShellResult.from_cmd(self.base_shell_cmd, verify_success=True)
-            log.debug(result.output_logs(True))
+            log.debug(result.output_logs())
         except Exception as e:
             raise PdfParserError(f"Failed to execute '{self.base_shell_cmd}' ({e})")
 
@@ -145,9 +148,11 @@ class PdfParserManager:
             tool_url = f"{DIDIER_STEVENS_RAW_GITHUB_URL}{tool}"
             PdfParserManager.install_python_tool(install_dir, tool_url)
 
-        PdfParserManager.install_python_tool(install_dir, CHECK_PDF_OCR_TEXT_URL)
-        installed_pdf_parser_path = install_dir.resolve().joinpath(PDF_PARSER_PY)
+        installed_pdf_parser_path = install_dir.joinpath(PDF_PARSER_PY).resolve()
         pdfalyzer_cfg_line = f'{PDF_PARSER_PATH_ENV_VAR}="{installed_pdf_parser_path}"'
+
+        check_ocr_path = PdfParserManager.install_python_tool(install_dir, CHECK_PDF_OCR_TEXT_URL).resolve()
+        check_pdf_ocr_text_line = f'{CHECK_PDF_OCR_TEXT_PATH_ENV_VAR}="{check_ocr_path}"'
         dotfile_write_txt = Text(f"Write ", style=INSTALL_STYLE)
         dotfile_write_txt.append(pdfalyzer_cfg_line, style='cyan').append(' to ')
         dotfile_write_txt.append(PdfalyzerConfig.dotfile_name, style='cyan').append('?')
@@ -162,14 +167,14 @@ class PdfParserManager:
             dotfile_path = Path(PdfalyzerConfig.dotfile_name)
 
             with open(dotfile_path, 'at') as dotfile:
-                dotfile.write(f'\n{pdfalyzer_cfg_line}\n')
+                dotfile.write(f'\n{pdfalyzer_cfg_line}\n{check_pdf_ocr_text_line}\n')
 
             log_install_step(f"Wrote line to {dotfile_path.resolve()}")
 
         log_install_msg(POST_INSTALL_MSG, style='dim')
 
     @staticmethod
-    def install_python_tool(install_dir: Path, tool_url: str):
+    def install_python_tool(install_dir: Path, tool_url: str) -> Path:
         import requests
         tool = tool_url.split('/')[-1]
         tool_path = install_dir.joinpath(tool)
@@ -178,6 +183,7 @@ class PdfParserManager:
         tool_path.write_text(response.text)
         log_install_step(f"Making '{tool_path}' executable...")
         tool_path.chmod(os.stat(tool_path).st_mode | stat.S_IEXEC)
+        return tool_path
 
 
 def log_install_step(msg, **kwargs) -> None:

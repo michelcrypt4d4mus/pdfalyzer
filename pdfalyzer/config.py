@@ -17,10 +17,11 @@ from yaralyzer.util.helpers.env_helper import is_env_var_set_and_not_false, stde
 
 from pdfalyzer.output.theme import COMPLETE_THEME_DICT
 from pdfalyzer.util.constants import PDF_PARSER_NOT_FOUND_MSG, PDFALYZE, PDFALYZER_UPPER
-from pdfalyzer.util.helpers.filesystem_helper import DEFAULT_PDF_PARSER_PATH
+from pdfalyzer.util.helpers.filesystem_helper import DEFAULT_CHECK_PDF_OCR_TEXT_PATH, DEFAULT_PDF_PARSER_PATH
 from pdfalyzer.util.logging import log, log_handler_kwargs
 from pdfalyzer.util.output_section import ALL_STREAMS
 
+CHECK_PDF_OCR_TEXT_PATH_ENV_VAR = 'CHECK_PDF_OCR_TEXT_PATH'
 PDF_PARSER_PATH_ENV_VAR = 'PDF_PARSER_PY_PATH'  # Github workflow depends on this value!
 
 # These options will be read from env vars prefixed with YARALYZER, not PDFALYZER
@@ -40,6 +41,7 @@ class PdfalyzerConfig(YaralyzerConfig):
     COLOR_THEME = COMPLETE_THEME_DICT
     ONLY_CLI_ARGS = YaralyzerConfig.ONLY_CLI_ARGS + ['extract_binary_streams']
 
+    check_pdf_ocr_text_path: Path | None = None
     pdf_parser_path: Path | None = None
     _log_handler_kwargs = dict(log_handler_kwargs)
 
@@ -112,8 +114,21 @@ class PdfalyzerConfig(YaralyzerConfig):
 
         if not cls.pdf_parser_path.exists():
             if is_env_var_set_and_not_false(PDF_PARSER_PATH_ENV_VAR):
-                log.warning(f"Configured {PDF_PARSER_PATH_ENV_VAR}='{cls.pdf_parser_path}' but no such file exists!")
+                log.warning(f"Configured {PDF_PARSER_PATH_ENV_VAR}='{cls.pdf_parser_path}' but no such file!")
             else:
                 stderr_notification(PDF_PARSER_NOT_FOUND_MSG)
 
             cls.pdf_parser_path = None
+
+        if (check_pdf_ocr_text_path := cls.get_env_value(CHECK_PDF_OCR_TEXT_PATH_ENV_VAR)):
+            check_pdf_ocr_text_path = Path(check_pdf_ocr_text_path)
+
+            if check_pdf_ocr_text_path.exists():
+                cls.check_pdf_ocr_text_path = check_pdf_ocr_text_path
+            else:
+                if DEFAULT_CHECK_PDF_OCR_TEXT_PATH.exists():
+                    cls.check_pdf_ocr_text_path = DEFAULT_CHECK_PDF_OCR_TEXT_PATH
+                else:
+                    log.warning(f"Configured {CHECK_PDF_OCR_TEXT_PATH_ENV_VAR}='{check_pdf_ocr_text_path}' but no such file!")
+
+        
