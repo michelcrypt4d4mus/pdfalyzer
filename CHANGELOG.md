@@ -1,8 +1,9 @@
 # NEXT RELEASE
-* Add `--panelize-image-text` option to `extract_pdf_text` tool
+* `extract_pdf_text`: Add `--panelize-image-text` option
+* `extract_pdf_text`: use `check-pdf-text` to look for existing OCR text and if it exists and is decent, skip OCRing the images
 
 ### 1.19.5
-* New `--output-dir`, `--no-page-number-panels`, and `--recurse` options for `extract_pdf_text` tool to enable bulk extraction of many PDFs to `.txt` files
+* `extract_pdf_text`: New `--output-dir`, `--no-page-number-panels`, and `--recurse` options to enable bulk extraction of many PDFs to `.txt` files
 * Ask user if they want to create an `--output-dir` that doesn't exist, import `ask_to_proceed()` from Yaralyzer
 
 ### 1.19.4

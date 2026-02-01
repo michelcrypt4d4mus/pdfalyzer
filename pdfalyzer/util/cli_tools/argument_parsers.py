@@ -87,26 +87,33 @@ def parse_combine_pdfs_args() -> Namespace:
 #####################
 page_range_validator = PageRangeArgumentValidator()
 
-extract_pdf_parser = ArgumentParser(
+extract_pdf_pages_parser = ArgumentParser(
     formatter_class=RichHelpFormatterPlus,
     description="Extract pages from one PDF into a new PDF.",
 )
 
-extract_pdf_parser.add_argument('pdf_file', metavar='PDF_FILE', help='PDF to extract pages from', type=PathValidator())
-extract_pdf_parser.add_argument('--debug', action='store_true', help='turn on debug level logging')
+extract_pdf_pages_parser.add_argument('pdf_file',
+                                      help='PDF to extract pages from',
+                                      metavar='PDF_FILE',
+                                      type=PathValidator())
 
-extract_pdf_parser.add_argument('--page-range', '-r',
-                                help=page_range_validator.HELP_MSG,
-                                type=page_range_validator,
-                                required=True)
+extract_pdf_pages_parser.add_argument('--debug',
+                                      action='store_true',
+                                      help='turn on debug level logging')
 
-extract_pdf_parser.add_argument('--destination-dir', '-d',
-                                help="directory to write the new PDF to",
-                                default=Path.cwd())
+extract_pdf_pages_parser.add_argument('--page-range', '-r',
+                                      help=page_range_validator.HELP_MSG,
+                                      type=page_range_validator,
+                                      required=True)
+
+extract_pdf_pages_parser.add_argument('--destination-dir', '-d',
+                                      help="directory to write the new PDF to",
+                                      default=Path.cwd(),
+                                      type=DirValidator(allow_create=True))
 
 
 def parse_pdf_page_extraction_args() -> Namespace:
-    args = extract_pdf_parser.parse_args()
+    args = extract_pdf_pages_parser.parse_args()
 
     if not is_pdf(args.pdf_file):
         log.error(f"'{args.pdf_file}' is not a PDF.")
@@ -123,50 +130,47 @@ def parse_pdf_page_extraction_args() -> Namespace:
 #  extract_pdf_text  #
 ######################
 # TODO: rename extract_pdf_text_parser
-extract_text_parser = ArgumentParser(
+extract_pdf_text_parser = ArgumentParser(
     formatter_class=RichHelpFormatterPlus,
     description="Extract the text from one or more files or directories.",
     epilog="If any of the FILE_OR_DIRs is a directory all PDF files in that directory will be extracted."
 )
 
-extract_text_parser.add_argument('file_or_dir', nargs='+', metavar='FILE_OR_DIR', type=PathValidator())
-extract_text_parser.add_argument('--debug', action='store_true', help='turn on debug level logging')
+extract_pdf_text_parser.add_argument('file_or_dir', nargs='+', metavar='FILE_OR_DIR', type=PathValidator())
+extract_pdf_text_parser.add_argument('--debug', action='store_true', help='turn on debug level logging')
 
-extract_text_parser.add_argument('--output-dir', '-out',
-                                 help='write extracted text to .txt files of the same name as the PDF in this directory',
-                                 type=DirValidator(allow_create=True))
+extract_pdf_text_parser.add_argument('--output-dir', '-out',
+                                     help='write extracted text to .txt files of the same name as the PDF in this directory',
+                                     type=DirValidator(allow_create=True))
 
-extract_text_parser.add_argument('--no-page-number-panels', '-n',
-                                 help="don't print the PAGE 1, PAGE 2, etc. panels",
-                                 action='store_false',
-                                 dest='with_page_number_panels')
+extract_pdf_text_parser.add_argument('--no-page-number-panels', '-n',
+                                     help="don't print the PAGE 1, PAGE 2, etc. panels",
+                                     action='store_false',
+                                     dest='with_page_number_panels')
 
-extract_text_parser.add_argument('--page-range', '-pr',
-                                 help=f"[PDFs only] {page_range_validator.HELP_MSG}",
-                                 type=page_range_validator)
+extract_pdf_text_parser.add_argument('--page-range', '-pr',
+                                     help=f"[PDFs only] {page_range_validator.HELP_MSG}",
+                                     type=page_range_validator)
 
-extract_text_parser.add_argument('--panelize-image-text', '-pit', action='store_true',
-                                 help="enclose text OCRed from embedded images in a panel")
+extract_pdf_text_parser.add_argument('--panelize-image-text', '-pit',
+                                     help="enclose text OCRed from embedded images in a panel",
+                                     action='store_true')
 
-extract_text_parser.add_argument('--print-as-parsed', '-p',
-                                 action='store_true',
-                                 help='print pages as they are parsed instead of waiting until parsing complete')
+extract_pdf_text_parser.add_argument('--print-as-parsed', '-p',
+                                     help='print pages as they are parsed instead of waiting until parsing complete',
+                                     action='store_true')
 
-extract_text_parser.add_argument('--recurse', '-r', action='store_true',
-                                 help=f"recursively traverse directory for .pdf files")
+extract_pdf_text_parser.add_argument('--recurse', '-r',
+                                     help=f"recursively traverse directory for .pdf files",
+                                     action='store_true')
 
 
 def parse_text_extraction_args() -> Namespace:
-    args = extract_text_parser.parse_args()
+    args = extract_pdf_text_parser.parse_args()
     args.files_to_process = []
 
-    for file_or_dir in args.file_or_dir:
-        file_path = Path(file_or_dir)
-
-        if not file_path.exists():
-            log.error(f"'{file_path}' is not a valid file or directory.")
-            sys.exit(-1)
-        elif file_path.is_dir():
+    for file_path in args.file_or_dir:
+        if file_path.is_dir():
             if args.recurse:
                 pdf_files_in_dir = [f for f in file_path.glob('**/*.pdf')]
                 log.warning(f"Collected {len(pdf_files_in_dir)} PDF files via recursive traverse of {file_path}...")
@@ -187,4 +191,5 @@ def parse_text_extraction_args() -> Namespace:
 
 def _set_log_level(args: Namespace):
     if args.debug:
-        log.setLevel(logging.DEBUG)
+        for lg in [log] + log.handlers:
+            lg.setLevel(logging.DEBUG)

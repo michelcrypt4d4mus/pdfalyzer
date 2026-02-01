@@ -135,14 +135,16 @@ def extract_pdf_text() -> None:
             txt_file_path = args.output_dir.joinpath(txt_file_basename)
             log.warning(f"Extracting '{file_path}'\n        to: '{txt_file_path}'")
 
-            if (extracted_text := pdf_file.extract_text(args)):
+            if (extracted_text := pdf_file.extract_text_from_args(args)):
                 with open(txt_file_path, 'wt') as txt_file:
                     txt_file.write(extracted_text + "\n")
 
-                console.print(extracted_text)
-                console.line()
-                console.print(f"Wrote text to '{txt_file_path}' ({file_size_str(txt_file_path)})...", style='dim')
-                console.line()
+                if not args.print_as_parsed:
+                    console.print(extracted_text, highlight=False)
+                    console.line()
+
+                log_console.print(f"Wrote text to '{txt_file_path}' ({file_size_str(txt_file_path)})...", style='dim')
+                log_console.line()
             else:
                 log.warning(f"No text extracted from '{file_path}'...")
         else:
