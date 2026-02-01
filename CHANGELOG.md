@@ -1,4 +1,6 @@
 # NEXT RELEASE
+
+### 1.19.6
 * `extract_pdf_text`: Add `--panelize-image-text` option
 * `extract_pdf_text`: use `check-pdf-text` to look for existing OCR text and if it exists and is decent, skip OCRing the images
 
