@@ -60,17 +60,17 @@ class PdfParserManager:
     object_ids: list[int] = field(default_factory=list)
     object_ids_containing_stream_data: list[int] = field(default_factory=list)
 
-    @classmethod
-    def from_args(cls, args: Namespace) -> Self:
-        """Alternate constructor that takes the result of an `ArgumentParser.`"""
-        return cls(args.file_to_scan_path, args.output_dir)
-
     def __post_init__(self):
         if PdfalyzerConfig.pdf_parser_path is None:
             raise PdfParserError(f"{PDF_PARSER_PATH_ENV_VAR} not configured.\n\n{TOOLS_INSTALL_MSG}")
 
         self.base_shell_cmd = ['python', PdfalyzerConfig.pdf_parser_path, '-O', self.path_to_pdf]
         self.extract_object_ids()
+
+    @classmethod
+    def from_args(cls, args: Namespace) -> Self:
+        """Alternate constructor that takes the result of an `ArgumentParser.`"""
+        return cls(args.file_to_scan_path, args.output_dir)
 
     def extract_object_ids(self) -> None:
         """Examine output of pdf-parser.py to find all object IDs as well as those object IDs that have streams"""
@@ -175,6 +175,7 @@ class PdfParserManager:
 
     @staticmethod
     def install_python_tool(install_dir: Path, tool_url: str) -> Path:
+        """Download a single `.py` file python tool and place it in `install_dir`."""
         import requests
         tool = tool_url.split('/')[-1]
         tool_path = install_dir.joinpath(tool)

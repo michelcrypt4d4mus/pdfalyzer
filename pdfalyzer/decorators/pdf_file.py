@@ -221,10 +221,10 @@ class PdfFile:
                 iou_weighted = self.page_iou_scores[page_number].iou_weighted or 0
 
                 if iou_weighted > OCR_IOU_SCORE_CUTOFF:
-                    log.warning(f"IOU score of {iou_weighted} for page {page_number} with 1 image, skipping OCR...")
+                    log.info(f"IOU score of {iou_weighted} for page {page_number} with 1 image, skipping OCR...")
                     return None
                 else:
-                    log.warning(f"Bad IOU score of {iou_weighted} for page {page_number} with 1 image, doing OCR...")
+                    log.warning(f"Bad IOU score of {iou_weighted} for page {page_number} with 1 image, redoing OCR...")
 
             for image_number, image in enumerate(page.images, start=1):
                 image_name = f"Page {page_number}, Image {image_number}"
