@@ -1,6 +1,6 @@
 # NEXT RELEASE
 * `extract_pdf_text`: Add `--panelize-image-text` option
-* `extract_pdf_text`: use check-pdf-text to look for existing OCR text and if it exists don't OCR images
+* `extract_pdf_text`: use `check-pdf-text` to look for existing OCR text and if it exists and is decent, skip OCRing the images
 
 ### 1.19.5
 * `extract_pdf_text`: New `--output-dir`, `--no-page-number-panels`, and `--recurse` options to enable bulk extraction of many PDFs to `.txt` files
