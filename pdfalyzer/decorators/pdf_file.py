@@ -12,7 +12,7 @@ from rich.panel import Panel
 from rich.padding import Padding
 from rich.text import Text
 from yaralyzer.output.console import console
-from yaralyzer.util.helpers.env_helper import log_console
+from yaralyzer.util.helpers.env_helper import DEFAULT_CONSOLE_WIDTH, log_console
 
 from pdfalyzer.util.cli_tools.page_range import PageRange
 from pdfalyzer.util.constants import CONSIDER_INSTALLING_EXTRAS_MSG
@@ -167,7 +167,7 @@ class PdfFile:
                     continue
 
                 self._log_to_stderr(f"Parsing page {page_number}...")
-                page_buffer = Console(file=io.StringIO())
+                page_buffer = Console(file=io.StringIO(), width=DEFAULT_CONSOLE_WIDTH)
 
                 if with_page_number_panels:
                     page_panel = Panel(f"PAGE {page_number}", padding=(0, 15), expand=False, **PANEL_OPTIONS)
