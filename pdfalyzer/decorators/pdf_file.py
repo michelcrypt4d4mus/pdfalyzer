@@ -1,59 +1,83 @@
 import io
-from logging import Logger
-from os import path
+from argparse import Namespace
+from dataclasses import dataclass, field
 from pathlib import Path
 
-from pypdf import PdfReader, PdfWriter
+from pypdf import PageObject, PdfReader, PdfWriter
 from pypdf.errors import DependencyError, EmptyFileError, PdfStreamError
-from rich.console import Console
+from rich import box
+from rich.console import Console, Group
 from rich.markup import escape
 from rich.panel import Panel
+from rich.padding import Padding
 from rich.text import Text
 from yaralyzer.output.console import console
-from yaralyzer.util.helpers.env_helper import log_console
-from yaralyzer.util.helpers.rich_helper import DEFAULT_TABLE_OPTIONS
+from yaralyzer.util.helpers.env_helper import DEFAULT_CONSOLE_WIDTH, log_console
 
 from pdfalyzer.util.cli_tools.page_range import PageRange
-from pdfalyzer.util.constants import PIP_INSTALL_EXTRAS
+from pdfalyzer.util.constants import CONSIDER_INSTALLING_EXTRAS_MSG
 from pdfalyzer.util.helpers.filesystem_helper import create_dir_if_it_does_not_exist, insert_suffix_before_extension
 from pdfalyzer.util.helpers.image_helper import ocr_text
 from pdfalyzer.util.helpers.rich_helper import attention_getting_panel, error_text, mild_warning
 from pdfalyzer.util.helpers.string_helper import exception_str
-from pdfalyzer.util.logging import log as _log
+from pdfalyzer.util.logging import log
+from pdfalyzer.util.pdf_ocr_check_manager import PageIouScore, PdfOcrCheckManager
 
-DEPENDENCY_ERROR_MSG = f"Missing an optional dependency required to extract text. Try '{PIP_INSTALL_EXTRAS}'."
+DEPENDENCY_ERROR_MSG = f"Missing an optional dependency required to extract text. {CONSIDER_INSTALLING_EXTRAS_MSG.plain}."
 DEFAULT_PDF_ERRORS_DIR = Path.cwd().joinpath('pdf_errors')
 MIN_PDF_SIZE_TO_LOG_PROGRESS_TO_STDERR = 1024 * 1024 * 20
+NO_TEXT_MSG = '(no text found in image)'
+OCR_IOU_SCORE_CUTOFF = 0.5
+PANEL_OPTIONS = {'box': box.SQUARE}
 
 
+@dataclass
 class PdfFile:
     """
     Wrapper for a PDF file path that provides useful methods and properties.
 
     Attributes:
         file_path (Path): The path to the PDF file.
-        basename (str): The base name of the PDF file (with extension).
-        basename_without_ext (str): The base name of the PDF file (without extension).
-        dirname (Path): The directory containing the PDF file.
-        extname (str): The file extension of the PDF file.
-        file_size (int): The size of the file in bytes.
     """
+    file_path: Path
+    _page_iou_scores: dict[int, PageIouScore] = field(init=False)
 
-    def __init__(self, file_path: str | Path) -> None:
+    @property
+    def dirname(self) -> Path:
+        return self.file_path.parent
+
+    @property
+    def file_size(self) -> int:
+        return self.file_path.stat().st_size
+
+    @property
+    def page_iou_scores(self) -> dict[int, PageIouScore]:
+        if not PdfOcrCheckManager.is_available():
+            self._page_iou_scores = {}
+
+        if '_page_iou_scores' not in vars(self):
+            try:
+                self._page_iou_scores = PdfOcrCheckManager(self.file_path).page_scores
+
+                loggable_page_scores = {
+                    iou_score.page: iou_score.iou_weighted
+                    for iou_score in self._page_iou_scores.values()
+                }
+
+                log.debug(f"Got IOU scores for '{self.file_path.name}': {loggable_page_scores}")
+            except Exception as e:
+                log.warning(f"Failed to check the IOU scores for '{self.file_path}', will OCR all images ({e})")
+                self._page_iou_scores = {}
+
+        return self._page_iou_scores
+
+    def __post_init__(self) -> None:
         """
         Args:
             file_path (str | Path): Path to the PDF file.
         """
-        self.file_path: Path = Path(file_path)
-
         if not self.file_path.exists():
-            raise FileNotFoundError(f"'{file_path}' is not a valid file or directory.")
-
-        self.dirname = self.file_path.parent
-        self.basename: str = path.basename(file_path)
-        self.basename_without_ext: str = str(Path(self.basename).with_suffix(''))
-        self.extname: str = self.file_path.suffix
-        self.file_size = self.file_path.stat().st_size
+            raise FileNotFoundError(f"'{self.file_path}' is not a valid file.")
 
     def extract_page_range(
         self,
@@ -100,11 +124,20 @@ class PdfFile:
         console.print(f"Extracted pages to new PDF: '{extracted_pages_pdf_path}'.")
         return extracted_pages_pdf_path
 
+    def extract_text_from_args(self, args: Namespace) -> str | None:
+        return self.extract_text(
+            args.page_range,
+            args.print_as_parsed,
+            args.with_page_number_panels,
+            args.panelize_image_text
+        )
+
     def extract_text(
         self,
         page_range: PageRange | None = None,
-        logger: Logger | None = None,
-        print_as_parsed: bool = False
+        print_as_parsed: bool = True,
+        with_page_number_panels: bool = True,
+        panelize_image_text: bool = True
     ) -> str | None:
         """
         Use PyPDF to extract text page by page and use Tesseract to OCR any embedded images.
@@ -112,14 +145,13 @@ class PdfFile:
         Args:
             page_range (PageRange | None, optional): If provided, only extract text from pages in this range.
                 Page numbers are 1-indexed. If not provided, extract text from all pages.
-            log (Logger | None, optional): If provided, log progress to this logger. Otherwise use default logger.
-            print_as_parsed (bool): If True, print each page's text to STDOUT as it is parsed.
+            print_as_parsed (bool, optional): If True, print each page's text to the terminal as it is parsed.
+            with_page_number_panels (bool, optional): If True include PAGE 1, PAGE 2, etc. panels in output.
+            panelize_image_text (bool, optional): If True wrap all text extracted from images in a `Panel`.
 
         Returns:
             str | None: The extracted text, or None if extraction failed.
         """
-        from PIL import Image  # Imported here to avoid hard dependency if not using this method
-        log = logger or _log
         log.debug(f"Extracting text from '{self.file_path}'...")
         self._page_numbers_of_errors: list[int] = []
         extracted_pages = []
@@ -135,32 +167,17 @@ class PdfFile:
                     continue
 
                 self._log_to_stderr(f"Parsing page {page_number}...")
-                page_buffer = Console(file=io.StringIO())
-                page_buffer.print(Panel(f"PAGE {page_number}", padding=(0, 15), expand=False, **DEFAULT_TABLE_OPTIONS))
+                page_buffer = Console(file=io.StringIO(), width=DEFAULT_CONSOLE_WIDTH)
+
+                if with_page_number_panels:
+                    page_panel = Panel(f"PAGE {page_number}", padding=(0, 15), expand=False, **PANEL_OPTIONS)
+                    page_buffer.print(page_panel)
+
+                # layout_mode_space_vertically adds newlines based on distance from top/bottom of page
                 page_buffer.print(escape(page.extract_text().strip()))
-                image_number = 1
 
-                # Extracting images is a bit fraught (lots of PIL and pypdf exceptions have come from here)
-                try:
-                    for image_number, image in enumerate(page.images, start=1):
-                        image_name = f"Page {page_number}, Image {image_number}"
-                        self._log_to_stderr(f"   OCRing {image_name}...", "dim")
-                        page_buffer.print(Panel(image_name, expand=False, **DEFAULT_TABLE_OPTIONS))
-                        image_obj = Image.open(io.BytesIO(image.data))
-                        image_text = ocr_text(image_obj, f"{self.file_path} ({image_name})")
-                        page_buffer.print(escape(image_text or '').strip())
-                except (OSError, NotImplementedError, TypeError, ValueError) as e:
-                    error_str = exception_str(e)
-                    msg = f"{error_str} while parsing embedded image {image_number} on page {page_number}..."
-                    mild_warning(msg)
-
-                    # Dump an error PDF and encourage user to report to pypdf team.
-                    if 'JBIG2Decode' not in str(e):
-                        log_console.print_exception()
-
-                        if page_number not in self._page_numbers_of_errors:
-                            self._handle_extraction_error(page_number, error_str)
-                            self._page_numbers_of_errors.append(page_number)
+                if (page_images_text := self._extract_page_image_text(page, page_number, panelize_image_text, with_page_number_panels)):
+                    page_buffer.print(page_images_text)
 
                 page_text = page_buffer.file.getvalue()
                 extracted_pages.append(page_text)
@@ -178,13 +195,65 @@ class PdfFile:
 
         return "\n\n".join(extracted_pages).strip()
 
-    def print_extracted_text(self, page_range: PageRange | None = None, print_as_parsed: bool = False) -> None:
+    def print_extracted_text(self, args: Namespace) -> None:
         """Fancy wrapper for printing the extracted text to the screen."""
-        console.print(Panel(str(self.file_path), expand=False, style='bright_white reverse', **DEFAULT_TABLE_OPTIONS))
-        txt = self.extract_text(page_range=page_range, print_as_parsed=print_as_parsed)
+        console.print(Panel(str(self.file_path), expand=False, style='bright_white reverse', **PANEL_OPTIONS))
+        text = self.extract_text_from_args(args)
 
-        if not print_as_parsed:
-            console.print(txt)
+        if not args.print_as_parsed:
+            console.print(text)
+
+        console.line(2)
+
+    def _extract_page_image_text(
+        self, page: PageObject,
+        page_number: int,
+        panelize_image_text: bool,
+        with_page_number_panels: bool
+    ) -> Padding | None:
+        """OCR image objects in a page if necessary."""
+        from PIL import Image  # Imported here to avoid hard dependency if not using this method
+        image_number = 1
+
+        # Extracting images is a bit fraught (lots of PIL and pypdf exceptions have come from here)
+        try:
+            if len(page.images) == 1 and page_number in self.page_iou_scores:
+                iou_weighted = self.page_iou_scores[page_number].iou_weighted or 0
+
+                if iou_weighted > OCR_IOU_SCORE_CUTOFF:
+                    log.info(f"IOU score of {iou_weighted} for page {page_number} with 1 image, skipping OCR...")
+                    return None
+                else:
+                    log.warning(f"Bad IOU score of {iou_weighted} for page {page_number} with 1 image, redoing OCR...")
+
+            for image_number, image in enumerate(page.images, start=1):
+                image_name = f"Page {page_number}, Image {image_number}"
+                self._log_to_stderr(f"   OCRing {image_name}...", "dim")
+                image_obj = Image.open(io.BytesIO(image.data))
+                image_text = ocr_text(image_obj, f"{self.file_path} ({image_name})")
+                image_text = ((image_text or '').strip()) or NO_TEXT_MSG
+
+                if panelize_image_text:
+                    renderables = [Panel(escape(image_text).strip(), expand=False, title=image_name)]
+                else:
+                    if with_page_number_panels:
+                        renderables = [Panel(image_name, expand=False, **PANEL_OPTIONS), image_text]
+                    else:
+                        renderables = [f"--- {image_name} ---", image_text, f"--- End {image_name} ---"]
+
+                return Padding(Group(*renderables), (1, 0))
+        except (OSError, NotImplementedError, TypeError, ValueError) as e:
+            error_str = exception_str(e)
+            msg = f"{error_str} while parsing embedded image {image_number} on page {page_number}..."
+            mild_warning(msg)
+
+            # Dump an error PDF and encourage user to report to pypdf team.
+            if 'JBIG2Decode' not in str(e):
+                log_console.print_exception()
+
+                if page_number not in self._page_numbers_of_errors:
+                    self._handle_extraction_error(page_number, error_str)
+                    self._page_numbers_of_errors.append(page_number)
 
     def _handle_extraction_error(self, page_number: int, error_msg: str) -> None:
         """Rip the offending page to a new file and suggest that user report bug to PyPDF."""

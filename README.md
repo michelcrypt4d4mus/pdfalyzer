@@ -12,8 +12,6 @@
 
 A PDF analysis tool for [visualizing](#example-output) the inner tree-like data structure[^1] of a PDF in [spectacularly large and colorful diagrams](#example-output) as well as scanning the binary streams embedded in the PDF for hidden potentially malicious content. The Pdfalyzer makes heavy use of YARA (via [The Yaralyzer](https://github.com/michelcrypt4d4mus/yaralyzer)) for matching/extracting byte patterns.
 
-**PyPi Users:** This document renders a lot better [on GitHub](https://github.com/michelcrypt4d4mus/pdfalyzer). Pictures, footnotes, etc.
-
 ### Quick Start
 You can use `pip` but `pipx` is a cleaner way to install for normal users. Developers should probably use `poetry`.
 
@@ -39,6 +37,7 @@ extract_pdf_text martin_heidegger-being_illmatic.pdf
 1. **Scan for mad sus content with a bunch of PDF specific [YARA](https://github.com/VirusTotal/yara-python) rules.**
 1. **Forcibly decode suspect bytes**. [The Yaralyzer](https://github.com/michelcrypt4d4mus/yaralyzer) does the heavy lifting.
 1. **Display detailed information about embedded fonts.** With character maps.
+1. **Extract pages and/or text (including from embedded images)** with the included [command line tools](#Included-Command-Line-Tools).
 1. **Usable as a library for your own PDF related code.**
 
 If you're looking for one of these things this may be the tool for you.
