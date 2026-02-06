@@ -12,8 +12,6 @@
 
 A PDF analysis tool for [visualizing](#example-output) the inner tree-like data structure[^1] of a PDF in [spectacularly large and colorful diagrams](#example-output) as well as scanning the binary streams embedded in the PDF for hidden potentially malicious content. The Pdfalyzer makes heavy use of YARA (via [The Yaralyzer](https://github.com/michelcrypt4d4mus/yaralyzer)) for matching/extracting byte patterns.
 
-**PyPi Users:** This document renders a lot better [on GitHub](https://github.com/michelcrypt4d4mus/pdfalyzer). Pictures, footnotes, etc.
-
 ### Quick Start
 You can use `pip` but `pipx` is a cleaner way to install for normal users. Developers should probably use `poetry`.
 
