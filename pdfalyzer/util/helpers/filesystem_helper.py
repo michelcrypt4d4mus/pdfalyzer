@@ -20,7 +20,7 @@ PDF_EXT = '.pdf'
 # 3rd party pdf-parser.py
 PROJECT_ROOT = Path(str(importlib.resources.files(PDFALYZER))).parent
 SCRIPTS_DIR = PROJECT_ROOT.joinpath('scripts')
-DEFAULT_PDF_TOOLS_DIR = Path('pdf_tools')
+DEFAULT_PDF_TOOLS_DIR = Path(os.environ.get("PDF_TOOLS_DIR", "pdf_tools"))
 DEFAULT_PDF_PARSER_PATH = DEFAULT_PDF_TOOLS_DIR.joinpath(PDF_PARSER_PY)
 DEFAULT_CHECK_PDF_OCR_TEXT_PATH = DEFAULT_PDF_TOOLS_DIR.joinpath(CHECK_PDF_OCR_TEXT_BASENAME)
 
